@@ -1,0 +1,42 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# python build / cache
+__pycache__/
+*.egg-info/
+build/
+dist/
+*.pyc
+
+# tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# data artifacts — user owns the data/ layout; uncomment if data is local-only
+# data/
+
+# skore Project store — large/binary; commit selectively if at all
+reports/
+
+# mlflow filesystem fallback (sqlite backend is .db; keep both ignored to be safe)
+mlruns/
+mlartifacts/
+*.db
+*.db-journal
+
+# jupytext source-of-truth is .py; never commit .ipynb
+*.ipynb
+
+# generated figures (uncomment if you regenerate from scripts)
+# figures/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# claude harness state
+.claude/mlflow
+.claude/settings.*
