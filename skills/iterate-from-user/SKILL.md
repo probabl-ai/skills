@@ -1,212 +1,272 @@
 ---
 name: iterate-from-user
 description: >
-  Source the next ML experiment proposal from the user directly,
-  from a GitHub issue tracker the user has pointed us at, or from
-  a spec / notes / reference repo the user has pointed us at.
-  Hand the proposal back to `iterate-ml-experiment`, which writes
-  it into `plan/NN_short_name.md` and seeks the user's approval.
-  Stops at "a proposal (question, motivation, method outline) has
-  been returned"; does not write any plan file itself, and does
-  not author acceptance criteria — the user judges the result.
+  Source the next ML experiment proposal from the user via one of
+  three entry points selected by `AskUserQuestion`:
+  (a) a scientific article URL the agent must read and synthesize,
+  (b) a resource link or path (GitHub issue / spec file / reference
+  repo), or (c) free-text the user types directly. In every branch,
+  the agent reads the source, synthesizes its understanding of what
+  to implement, and confirms with the user *before* returning the
+  Proposal block. Hand the confirmed Proposal back to
+  `iterate-ml-experiment`, which writes it into
+  `plan/NN_short_name.md` and seeks the user's plan-file approval.
+  Stops at "Proposal returned, user-confirmed"; never writes a plan
+  file, never authors acceptance criteria.
 
   TRIGGER when: `iterate-ml-experiment` is picking a sourcing
-  strategy and the user has offered a concrete idea ("I want to
-  try X", "let's add Y", "tweak the encoder"); the user pastes or
-  links a GitHub issue / discussion that describes the next
-  experiment; the user says "use the issue tracker" or "check
-  issue #N"; the user points us at another repo / folder / set of
-  notes ("look at the spec at <path>", "see the notes in
-  <repo-url>", "read what's in <dir>").
+  strategy and the user picks `user` from the menu; the user
+  volunteers a concrete idea ("I want to try X"); the user pastes
+  or links a scientific article, GitHub issue, spec file, or
+  reference repo and asks us to read it.
 
-  SKIP when: the user is open-ended ("what's next?") with no idea
-  in hand — try a different strategy (diagnostic / methodology /
-  literature) first; the user is asking for a symbol lookup or
-  pipeline mechanics (use the `*-api` skills); there is no `gh`
-  CLI / GitHub access and the user wants the issue tracker —
-  surface the gap and fall back to direct user input.
+  SKIP when: the user wants to mine the previous report (use
+  `iterate-from-skore`); the user is asking for a symbol lookup or
+  pipeline mechanics (use the `python-api` skill); the work is
+  evaluation mechanics on a single report (route to
+  `evaluate-ml-pipeline`).
 
-  HOW TO USE: this skill is shallow — it elicits the proposal
-  and returns it. If the user has a verbal idea, ask the three
-  shaping questions in the body and synthesize a proposal. If a
-  GitHub issue is the source, fetch it with `gh issue view <N>`
-  (or `gh api`), summarize it through the same three-question
-  lens, and flag anything the issue doesn't answer. If a spec /
-  notes repo is the source, read the relevant files (README,
-  proposal docs, referenced notebooks) and summarize through the
-  same lens. Always return: question / motivation / method
-  outline — not a plan file, not acceptance criteria.
+  HOW TO USE: open with an `AskUserQuestion` for the entry point —
+  article-link / resource-link / free-text. In each branch: gather
+  the source material with the appropriate tool (`WebFetch`,
+  `gh issue view`, `Read`), synthesize what you understand into the
+  three shaping questions, and **confirm with the user via plain
+  text** (one or two sentences: "you'd like to implement X by
+  changing src/<pkg>/<file>.py — right?") before returning the
+  Proposal. Do not write any plan file. Do not author acceptance
+  criteria.
 ---
 
 # Iterate from user
 
-Source: the user (directly, or via a GitHub issue they own).
-Output: a proposal handed back to `iterate-ml-experiment`.
+Source: the user — directly, or via something they've pointed at
+(article, issue, spec, repo). Output: a **user-confirmed** Proposal
+block, handed back to `iterate-ml-experiment`.
 
 ## Output contract (read this before the body)
 
 This skill **never writes `plan/` files** and **never authors
-acceptance criteria**. It returns a **Proposal block** back to
-`iterate-ml-experiment` (full shape in § What is returned at the
-bottom): `Question`, `Motivation` (with the user quote, issue
-link, or spec-repo path as `Source`), `Method outline`,
-`Open gaps`. Required:
+acceptance criteria**. It returns a single **Proposal block** as
+conversation text (full shape in § What is returned at the bottom):
+`Question`, `Motivation` (with `Source` field — quote, URL, or path),
+`Method outline`, `Open gaps`. Required, in every branch:
 
-- Every Proposal must answer all **three shaping questions**
-  (see § The three shaping questions). Missing → ask the user
-  before returning.
-- **GitHub-issue path:** check `gh auth status` first;
-  resolve repo per § Resolution priority; fetch comments if
-  the issue body is short.
-- **Spec / notes repo path:** confirm the path / URL the user
-  gave, read the relevant files only (don't crawl the whole
-  repo), and cite specific files in the `Source` field.
-- **Goal shifts** (different output shape, downstream
-  consumer, or metric class) require user confirmation of a
-  PLAN.md Status update **before** returning the proposal —
-  see § Stop conditions.
+- All three **shaping questions** are answered (see § The three
+  shaping questions).
+- The **synthesis confirmation gate** has fired and the user has
+  said yes (see § Confirm before returning).
+- **`Source`** field is concrete: the user's quote, the article
+  URL with the exact claim, the `gh issue` link, or the spec-file
+  path with line numbers.
 
-There is **no "no proposal" outcome** for this skill: it only
-fires when the user has volunteered an idea (or pointed at an
-issue / repo). If the user is open-ended without an idea, the
-dispatcher in `iterate-ml-experiment` asks them directly via
-the sourcing menu instead of invoking this skill.
+There is **no "no proposal" outcome**: this skill only fires when
+the user has picked `user` from the parent's sourcing menu. If they
+have nothing in hand, the parent's menu re-presents itself.
 
 ## Stop conditions
 
 - **Don't write `plan/` files.** That belongs to
-  `iterate-ml-experiment`. This skill returns a proposal as
-  conversation text or structured fields; the parent skill
-  drafts the file.
-- **Don't infer an issue's content.** If the user references an
-  issue, fetch it (`gh issue view <N>` / `gh api`) — don't
-  reconstruct from the issue title alone.
-- **Don't paper over missing fields.** If the user's idea (or
-  the issue) doesn't answer one of the four shaping questions,
-  surface the gap to the user before returning the proposal.
-- **Check `gh` auth before fetching anything.** Before any
-  `gh issue view` / `gh api` call, run `gh auth status`
-  (cheap, cached). If unauthenticated or on the wrong host,
-  **do not** retry blindly — ask the user to either run
-  `gh auth login` themselves (suggest they type `! gh auth
-  login` in the prompt so it runs in this session) or paste
-  the issue body directly. A failed `gh` call surfaces a
-  confusing error; the auth check makes the failure mode
-  explicit.
-- **Flag goal shifts before returning the proposal.** If the
-  user's idea (or the issue) materially changes the **project
-  goal** as recorded in `PLAN.md` Status — different output
-  shape (point estimate → prediction interval), different
-  downstream consumer (offline batch → online serving),
-  different metric class (squared error → coverage) — that's
-  not just a method change. Surface it as a question to the
-  user **before** returning the proposal: *"this would update
-  PLAN.md Status from <X> to <Y>; confirm or amend the goal
-  first?"* The parent skill's per-experiment plan file should
-  not silently re-define what success means while the Status
+  `iterate-ml-experiment`. This skill returns the Proposal as
+  conversation text; the parent skill drafts the file.
+- **Don't infer source content from memory.** If the user
+  references an article, an issue, or a file, fetch / read it.
+  Don't reconstruct from a title or a one-line description.
+- **Confirm before returning.** The Proposal goes back to the
+  parent *only after* the user has explicitly said "yes, that's
+  what I want." Free-text "hmm" / "maybe" / "interesting" is not
+  confirmation. See § Confirm before returning.
+- **Check `gh` auth before fetching anything from GitHub.** Before
+  any `gh issue view` / `gh api` call, run `gh auth status`
+  (cheap, cached). If unauthenticated, ask the user to run
+  `gh auth login` themselves (suggest `! gh auth login` in the
+  prompt) or paste the issue body directly. A failed `gh` call
+  surfaces a confusing error; the auth check makes the failure
+  mode explicit.
+- **Flag goal shifts before returning.** If the user's idea (or
+  the source) materially changes the **project goal** as recorded
+  in `PLAN.md` Status — different output shape (point estimate →
+  prediction interval), different downstream consumer (offline
+  batch → online serving), different metric class (squared error →
+  coverage) — surface it as a question *before* returning the
+  Proposal: *"this would update PLAN.md Status from <X> to <Y>;
+  confirm or amend the goal first?"* The parent's per-experiment
+  plan file should not silently redefine success while the Status
   block still reflects the old goal.
+- **New dependencies are gated, not assumed.** If the proposal
+  requires a library outside the project's existing env
+  (e.g. an article uses `lightgbm` / `pytorch` / `jax`), do **not**
+  silently include it in `Method outline` as a fait accompli. Flag
+  it as an open gap (`"this approach needs <library>; OK to add,
+  or should we adapt to the existing stack?"`) and defer the
+  resolution to `data-science-python-stack` + the user.
+- **Domain-specific assertions need user confirmation.** If the
+  source asserts something the article / issue / spec alone can't
+  establish for *our* dataset — e.g. "feature X is monotone in the
+  target," "interaction Y matters for this asset class," "metric Z
+  is right because the use case is one-sided" — list each
+  assertion in `Open gaps` and ask the user before returning. Don't
+  ship paper-flavored guesses as facts.
+
+## The entry-point AskUserQuestion
+
+When this skill is invoked, open with `AskUserQuestion` — three
+mutually exclusive options, no silent default:
+
+- **article-link** — the user has a scientific article (paper,
+  blog post, or library doc) they want adapted to this project.
+  The agent reads, synthesizes, and confirms.
+- **resource-link** — the user has a GitHub issue, a spec file,
+  a notes repo, or any other concrete artifact describing what
+  to try. The agent reads, summarizes through the three-question
+  lens, and confirms.
+- **free-text** — the user has a verbal/written idea and will
+  describe it directly. The agent reflects it back through the
+  three shaping questions and confirms.
+
+Use the canonical `AskUserQuestion` UI; only fall back to plain-
+text enumeration if it is genuinely unavailable in the current
+session.
+
+**Exception — pre-resolved entry point.** When
+`iterate-ml-experiment` dispatches here after free-text handling
+at the sourcing-menu level has already resolved the branch (the
+user typed a URL, an issue link, or a concrete idea directly
+into the sourcing AskUserQuestion), the parent passes the
+resolved branch + content in. *Skip this AskUserQuestion* and
+go straight to the matching branch with the content already in
+hand — the user has effectively already answered it. The
+synthesis-confirmation gate at the end of the branch still
+fires; only the entry-point question is short-circuited.
 
 ## The three shaping questions
 
-Every proposal returned from this skill must answer:
+Every Proposal returned from this skill — in every branch — must
+answer:
 
 1. **What are we trying to learn?** (turns "try X" into a
    hypothesis)
 2. **Why now?** (the specific reason this idea surfaced — quote
-   the user, link the issue, cite the spec-repo file)
+   the user, link the article, cite the issue / file)
 3. **What changes vs. the previous experiment?** (which file in
    `src/<pkg>/` is touched, in prose — not code)
 
-Missing → ask the user. Don't fabricate.
+Missing → ask the user. Don't fabricate. There is no fourth
+"how will we know it worked" question — acceptance criteria are
+out of scope for this skill.
 
-**No "how will we know it answered the question?" question.**
-That's an acceptance-criteria slot, and the skill does not
-author those — the user reads the headline result after the run
-and judges. See `iterate-ml-experiment` § "What this skill does
-NOT do".
+## The three branches
 
-## Three intake paths
+### Branch A — article-link
 
-### Direct user input
+The user picks `article-link` and provides a URL (paste, follow-up
+prompt, or implicit in the parent message).
 
-The user has a verbal or written idea. Ask the three questions in
-order, in plain language. Quote them back when summarizing the
-proposal so the framing stays theirs. Hand the synthesis to
-`iterate-ml-experiment`.
+1. **Fetch with `WebFetch`** (or `WebSearch` first if only a topic
+   was given and the specific paper has to be located). Read the
+   abstract and the section most relevant to the technique.
+2. **Map to the three shaping questions.** What does the article
+   propose? What concretely changes in `src/<pkg>/` to adopt it?
+   Quote the article verbatim for "why now?".
+3. **Surface transfer risks.** If the article ran on a different
+   modality, much larger dataset, or different target type, note
+   where the technique might not port cleanly. The Proposal's
+   `Open gaps` carries these explicitly.
+4. **Flag new dependencies as open gaps**, not as silent additions
+   to `Method outline` (Stop conditions, above).
+5. **Flag domain-specific assertions** as `[needs user
+   confirmation]` in `Open gaps`.
+6. **Confirm before returning** — see § Confirm before returning.
 
-### Spec / notes repo
+### Branch B — resource-link
 
-The user pointed us at a separate repo / folder / set of notes
-("read the spec at `~/code/<repo>`", "see the notes at
-`https://github.com/<owner>/<repo>`", "look at `<dir>` for
-ideas"). Treat it as a structured input source distinct from
-their own verbal idea — the proposal still needs to come back
-through the three-question lens.
+The user picks `resource-link` and points at:
 
-Procedure:
+- A **GitHub issue**: run the resolution priority below, then
+  `gh issue view <N> --json title,body,labels,url` (and pull the
+  most recent ~5 comments via `--json …,comments` or
+  `gh api repos/<owner>/<repo>/issues/<N>/comments` if the body is
+  under-specified — the proposal often lives in the thread).
+- A **spec file / notes file**: `Read` the file the user named;
+  don't crawl neighbors.
+- A **reference repo**: read `README.md` / `SPEC.md` / `NOTES.md`
+  or whichever top-level proposal doc the user named. Don't crawl
+  the whole tree — that hides the signal.
 
-1. **Confirm the path / URL** the user gave; if it's remote and
-   not yet cloned, ask where to clone it (don't pick silently).
-2. **Read selectively, not exhaustively.** Start with `README.md`
-   / `SPEC.md` / `NOTES.md` / a top-level proposal doc; if the
-   user named a specific file or directory, prioritize that.
-   Don't crawl every file — that hides the actual signal.
-3. **Map to the three shaping questions.** What does the spec
-   want to learn? What's the motivation as the spec frames it?
-   What concretely changes in `src/<pkg>/`? Quote the spec
-   verbatim when answering "why now?".
-4. **Cite specifically.** The `Source` field in the returned
-   Proposal must reference the file paths (and line numbers if
-   useful) — not just the repo name.
-5. **Flag gaps.** If the spec doesn't answer one of the three
-   questions, ask the user before returning — same rule as for
-   issues.
-
-### GitHub issue tracker
-
-The user pointed us at an issue (number, link, or "check the
-tracker").
-
-**Resolution priority (never silently guess).** Pick the
-owner/repo using the first rule that matches:
+**GitHub-issue resolution priority** (never silently guess the
+repo):
 
 1. **Explicit URL** in the user's message
    (`https://github.com/<owner>/<repo>/issues/<N>`) — wins
    unconditionally.
-2. **`org/repo#N` shorthand** in the user's message
-   (`probabl-ai/skore#42`) — wins over current context.
+2. **`org/repo#N` shorthand** (`probabl-ai/skore#42`) — wins over
+   current context.
 3. **Bare `#N` or "issue 42"** with no qualifier — fall back to
    the current `gh` context (`gh repo view --json
-   nameWithOwner` to confirm). If that returns nothing, ask
-   the user before fetching.
+   nameWithOwner` to confirm). If nothing, ask the user before
+   fetching.
 
-Then fetch:
+In all three resource sub-shapes:
 
-- `gh issue view <N> --json title,body,labels,url` for the
-  baseline.
-- **If the issue body is short (<200 chars) or visibly
-  under-specified**, also pull the latest comments —
-  `gh issue view <N> --json title,body,labels,url,comments`
-  or `gh api repos/<owner>/<repo>/issues/<N>/comments` — and
-  read the most recent ~5. The actual proposal often lives
-  in the thread, not the top-post.
+1. **Map to the three shaping questions.** What does the resource
+   want to learn? What's the motivation as it frames it? What
+   concretely changes in `src/<pkg>/`?
+2. **Cite specifically.** The `Source` field references the issue
+   URL, the file path (and line numbers if useful), or the repo +
+   file — not just the repo name.
+3. **Flag gaps.** If the resource doesn't answer one of the three
+   shaping questions, list it under `Open gaps`.
+4. **Confirm before returning** — see below.
 
-Map the assembled issue (body + relevant comments) to the three
-shaping questions; flag missing fields and ask the user to
-clarify before returning the proposal. The proposal returned
-must include the issue link as **Source** so the per-experiment
-plan file can cite it.
+### Branch C — free-text
+
+The user picks `free-text` and types their idea directly.
+
+1. **Walk the three shaping questions in plain language.** Quote
+   the user when summarizing so the framing stays theirs.
+2. **Treat their words as the `Source`.** The Proposal's `Source`
+   field is the user quote (or a one-sentence paraphrase the user
+   has approved).
+3. **Confirm before returning** — even free-text proposals get
+   the synthesis gate. The agent's restatement of the idea may
+   miss the user's framing in subtle ways.
+
+## Confirm before returning
+
+In every branch, before handing the Proposal back to
+`iterate-ml-experiment`, the agent emits a short plain-text
+synthesis to the user and waits for explicit approval:
+
+> "From <source>, I understand you'd like to **<one-line
+> intent>** — concretely, change `src/<pkg>/<file>.py` to
+> **<method-outline-summary>**. Open gaps: **<bullets>**. Does
+> this capture what you want before I hand it to the planner?"
+
+The user's answer determines what happens next:
+
+- **"Yes / confirm / go" → return the Proposal.** The parent
+  skill drafts `plan/NN_*.md` from it.
+- **"No / not quite / adjust X" → revise and re-confirm.** Iterate
+  the synthesis until the user is happy. Do not return a Proposal
+  the user hasn't signed off on.
+
+This gate is non-optional. It is the user-side analogue of the
+parent's plan-file approval gate — it catches misunderstandings
+*before* a plan file is drafted, when the cost of revision is
+cheapest.
 
 ## What is returned
 
 A short structured block, not a plan file:
 
 ```
-Proposal (from: user | issue #<N> | spec-repo:<path>):
+Proposal (from: user via <article-link | resource-link | free-text>):
   Question:        <one sentence>
-  Motivation:      <quote / link / spec-file path>
+  Motivation:      <quote / URL / file path + the why-now reason>
+  Source:          <article URL with claim | gh issue URL | spec file:line | user quote>
   Method outline:  <prose; which file in src/<pkg>/ is touched>
-  Open gaps:       <anything the user / issue / spec didn't answer>
+  Open gaps:       <transfer risks, dep questions, domain assertions
+                    needing user confirmation, anything the source
+                    didn't answer>
 ```
 
 `iterate-ml-experiment` consumes this and drafts
@@ -216,7 +276,12 @@ the result post-run.
 
 ## Companion skills
 
-- **`iterate-ml-experiment`** — the caller; owns the plan file.
-- **`iterate-from-literature` / `iterate-from-methodology` /
-  `iterate-from-diagnostic`** — sibling strategies for when the
-  user is open-ended.
+- **`iterate-ml-experiment`** — the caller; owns the plan files.
+- **`iterate-from-skore`** — the only sibling strategy; sources
+  the next experiment by mining the previous skore report into
+  the Backlog.
+- **`data-science-python-stack`** — consulted when an article
+  introduces a new dependency (Stop conditions, above).
+- **`build-ml-pipeline`** / **`evaluate-ml-pipeline`** — owners
+  of the files (`pipeline.py`, `evaluate.py`, …) that the
+  `Method outline` will eventually touch.

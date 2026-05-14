@@ -31,24 +31,32 @@ result is good enough.
 
 <!--
 Why now. Cite the source concretely:
-  - user input → quote the request, link the issue, cite the spec / notes repo
-  - literature → paper title + link, paste the exact claim
-  - methodology audit → which prior experiment, what was off
-  - diagnostic → which skore report section / which slice / which plot
-  - backlog → the `B<N>` index it was promoted from
+  - user (free-text)    → quote the request the user typed
+  - user (article-link) → article title + year + URL + the exact
+                          claim to build on
+  - user (resource)     → GitHub issue link, or spec file:line,
+                          or reference-repo path
+  - my-pick             → which PLAN.md / prior-plan fields fed
+                          the synthesis (Status, last Implication,
+                          last Risks, current Backlog state)
+  - skore               → `report.diagnosis()` section / metric /
+                          slice / plot from the prior experiment's
+                          report
+  - backlog (B<N>)      → the index promoted + the row's original
+                          Source carried forward
 -->
 
-- **Sourcing strategy:** <user | literature | methodology | diagnostic | my-pick | backlog:B<N>>
+- **Sourcing strategy:** <user | my-pick | skore:<stem> | backlog:B<N>>
 - **Source(s):**
   <!--
-  Single line OK for user / methodology / diagnostic / backlog
-  (one issue link, one prior-experiment stem, one report-section
-  reference, one B<N>). For literature, expand into a bulleted
-  list — one line per paper / doc / post — with title, year,
-  URL, and the exact claim you'd build on. Two or three is the
-  right ceiling; more than that means the proposal is unfocused.
+  Single line is the right shape for most strategies. For an
+  article-link, paste the exact claim verbatim — the design
+  note becomes the postmortem and the original claim is what
+  makes the result interpretable later.
   -->
-  - <e.g. issue #42 / `01_baseline` / `report.diagnosis().residuals.by_target_bin` / B2>
+  - <e.g. issue #42 / "Paper Title" (year) URL — "exact claim" /
+    `report.diagnosis().residuals.by_target_bin` on `01_baseline` /
+    B2 (originally skore:01_baseline)>
 - **Why this matters:** <one or two sentences>
 
 ## Method

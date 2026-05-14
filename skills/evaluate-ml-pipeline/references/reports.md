@@ -13,7 +13,7 @@ something the dispatcher doesn't expose.
 | Side-by-side of ≥ 2 learners                  | `ComparisonReport([...])` | Aligned metric tables and plots       |
 
 For exact signatures and what each report exposes (metrics,
-inspection accessors, diagnostic plots), see `skore-api`.
+inspection accessors, diagnostic plots), see `python-api`.
 
 ## When NOT to escalate
 

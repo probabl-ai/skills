@@ -38,11 +38,22 @@ surfaces this table to the user every time it presents the
 sourcing menu.
 
 Columns:
-  - `#`     — stable index (B1, B2, ...). Don't renumber on removal;
-              new rows take the next free B<N>.
-  - `Item`  — one-line description of the idea.
-  - `Source` — where the idea came from (diagnostic from `<stem>`,
-              user input, literature, methodology audit, ...).
+  - `#`      — stable index (B1, B2, ...). Don't renumber on
+               removal; new rows take the next free B<N>.
+  - `Item`   — one-line description of the idea.
+  - `Source` — where the idea came from. Use one of:
+                 `skore:<stem>`    — written by `iterate-from-skore`
+                                     from the report of `<stem>`
+                 `my-pick:<stem>`  — agent-synthesized; <stem> is
+                                     the experiment whose context
+                                     (Implication, Risks, …) fed
+                                     the synthesis. Written by § 4
+                                     when implications seed future
+                                     leads, or by § 2's my-pick
+                                     branch when unpicked
+                                     candidates are saved
+                 `user`            — the user added the row
+                                     directly (in conversation)
 
 When an item graduates into a plan file, remove the row from this
 table and add the new experiment to History above.
@@ -50,4 +61,5 @@ table and add the new experiment to History above.
 
 | # | Item | Source |
 |---|---|---|
-| <!-- B1 --> | <!-- "try grouped CV by patient_id — current splits may leak across groups" --> | <!-- "methodology audit on `01_baseline`" --> |
+| <!-- B1 --> | <!-- "investigate target-bin>0.95 residual bias via target transform" --> | <!-- `skore:01_baseline` --> |
+| <!-- B2 --> | <!-- "audit hourly-vs-15min data resolution split — likely fix for fold variance" --> | <!-- `my-pick:02_calendar_features` --> |

@@ -15,9 +15,35 @@ the first `.skb.apply_func` in the graph. At fit / cross-validate time the
 env-dict is one binding per source; swapping a source is a one-string
 change.
 
+The `value=` keyword on `skrub.var` is the **preview** — it controls only
+what `learner.skb.preview()` shows during interactive iteration. Expose it
+as an optional caller-supplied parameter on `build_learner`; never bake a
+relative-path literal into `pipeline.py` (that would resolve against the
+CWD at execution time and silently break runs from anywhere but the
+project root).
+
 ```python
-path = skrub.var("path", "data/train.parquet")
-data = path.skb.apply_func(load_parquet)
+def build_learner(path_preview: str | Path | None = None):
+    path = (
+        skrub.var("path", value=str(path_preview))
+        if path_preview is not None
+        else skrub.var("path")
+    )
+    data = path.skb.apply_func(load_parquet)
+    ...
+```
+
+The experiment script then passes an absolute path resolved from the
+package's `PROJECT_ROOT` (no `value=` baked into `pipeline.py`):
+
+```python
+from <pkg> import PROJECT_ROOT
+TRAIN_PATH = PROJECT_ROOT / "data/train.parquet"
+
+learner = build_learner(path_preview=TRAIN_PATH)
+report = skore.evaluate(
+    learner, data={"path": str(TRAIN_PATH)}, splitter=splitter,
+)
 ```
 
 Common identifier types:
@@ -55,12 +81,22 @@ y = skrub.y(y_value)
 def build_pipeline():
     df_preview = load_parquet("data/train.parquet") # loader inside build, not graph
     return skrub.var("data", df_preview)...
+
+# DON'T — relative-path literal baked into the graph
+def build_pipeline():
+    path = skrub.var("path", value="data/train.parquet")  # CWD-dependent
+    return path.skb.apply_func(load_parquet)...
+# The loader IS in the graph here, which is correct. The bug is that the
+# preview value `"data/train.parquet"` resolves against the CWD at execution
+# time — fine from the project root, broken from anywhere else. Expose the
+# preview as an optional parameter on `build_pipeline` and let the caller
+# pass an absolute path (e.g. `<pkg>.PROJECT_ROOT / "data/train.parquet"`).
 ```
 
 `skrub.X(...)` and `skrub.y(...)` are also discouraged as roots in
-general: per `skrub-api` → `data_ops.md` they are literally
-`var("X", value).skb.mark_as_X()` and `var("y", value).skb.mark_as_y()`,
-which forces both the variable name and the marker at the root. Mark
+general: they are literally `var("X", value).skb.mark_as_X()` and
+`var("y", value).skb.mark_as_y()`, which forces both the variable
+name and the marker at the root. Mark
 X / y *at the X / y split* inside the graph instead.
 
 ## OK but offer the user an upgrade
@@ -98,9 +134,23 @@ auto-rewrite.
 
 1. Is there an external source identifier (path, URL, table, query)?
    Yes → bind the identifier; the loader is the first
-   `.skb.apply_func`.
+   `.skb.apply_func`. **Expose the preview as an optional caller-supplied
+   parameter** on `build_pipeline` (e.g. `path_preview: str | Path | None
+   = None`); the experiment script passes an absolute path resolved from
+   `<pkg>.PROJECT_ROOT`. Do not bake a relative-path literal into the
+   `value=` of `skrub.var`.
 2. No — the data is generated in-process? Bind the generated object
    directly via `skrub.var`. The synthetic case is the only case where
    binding a materialized object is the intended form.
 
 Mark X and y inside the graph at the split point in either case.
+
+## Companion references
+
+- `python-api/references/pre_mark_alignment.md` — the full 3-layer
+  walkthrough showing how source-bound vars at Layer 1 feed the
+  pre-mark alignment at Layer 2 and the history-dependent features
+  at Layer 3.
+- `python-api/references/skrub_interop.md` — how the env-dict at
+  `skore.evaluate(learner, data={...})` time binds those same
+  source variables for fit / CV.

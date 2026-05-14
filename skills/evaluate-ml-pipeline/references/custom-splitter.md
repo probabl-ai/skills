@@ -44,7 +44,7 @@ Optional but encouraged: subclass
 protocol. Implement `_iter_test_indices(self, X, y, groups)` and
 `get_n_splits(...)`; the base class fills in `split`.
 
-Look up the exact base class signature in `sklearn-api`.
+Look up the exact base class signature in `python-api`.
 
 ## Wiring with `split_kwargs`
 

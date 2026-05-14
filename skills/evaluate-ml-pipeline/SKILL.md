@@ -31,8 +31,8 @@ description: >
   facts about the data (group keys, time ordering) should already be
   encoded at the X marker via `split_kwargs` — if they aren't and you
   can't tell from the data, return to `build-ml-pipeline` and ask the
-  user. For symbol-level lookups, defer to `skore-api` (skore
-  symbols) and `sklearn-api` (splitters); don't guess names from
+  user. For symbol-level lookups, defer to `python-api` (skore
+  symbols) and `python-api` (splitters); don't guess names from
   memory.
 ---
 
@@ -55,7 +55,7 @@ read the report. The pipeline declaration is out of scope (see
 - **Symbol from memory is forbidden.** Any `skore` entry point
   (`evaluate`, `EstimatorReport`, `CrossValidationReport`,
   `ComparisonReport`) and any sklearn splitter name must come from a
-  `Skill(skore-api)` or `Skill(sklearn-api)` call **in this turn**.
+  `Skill(python-api)` or `Skill(python-api)` call **in this turn**.
   "I remember `KFold(n_splits=5)`" is not acceptable.
 - **Splitter choice is data-driven, not default-driven.** Pick from
   the `split_kwargs` content at the X marker via the table in rule 3
@@ -65,6 +65,33 @@ read the report. The pipeline declaration is out of scope (see
 - **No `Stratified*` for class imbalance.** It compresses across-fold
   variance and produces over-confident error bars. Imbalance does
   not change the splitter choice.
+- **CV is necessary but not sufficient for any pipeline with
+  history-dependent features.** `skore.evaluate(...)` materializes
+  the graph **once** with one env-dict and splits *indices* — it
+  never exercises a different env-dict at predict time, which is
+  exactly the binding shape production faces. A pipeline that
+  loads-then-features-then-splits passes CV trivially and still
+  silently drops cold-start rows when handed a fresh
+  `learner.predict(env₂)`. The structural check that catches this
+  is the smoke test owned by `smoke-test-ml-pipeline` — required
+  alongside CV for any pipeline that has a backward shift, lag,
+  rolling window, target shift, or join with side history. If
+  you produce a CV report and the pipeline has any such step,
+  the matching `tests/smoke/test_NN_<short_name>.py` must also
+  pass before the experiment can flip to `done` (enforced by
+  `iterate-ml-experiment` § 4).
+- **Multi-line probes go to `scratch/`, not inline.** Any
+  Python investigation longer than 2 lines lands in
+  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per the
+  workspace's `scratch/README.md`), not in
+  `pixi run python -c "..."`. The 2-line cap is contract;
+  ignoring it defeats the traceability the scratch folder
+  exists for. Common shapes that trigger this rule during
+  evaluation: walking the skore report's metrics accessors,
+  extracting per-fold values, sanity-checking the splitter's
+  fold geometry, multi-symbol `inspect.signature(...)` on
+  skore / sklearn classes. See `python-api` § "Scratch
+  traceability" for the file layout.
 
 ## Pre-flight — emit this checklist as visible text before any code
 
@@ -76,11 +103,26 @@ tool call or an explicit decision documented in the response.
 Pre-flight (evaluate-ml-pipeline):
 - [ ] Tier 1 mandatory libs importable in this env: sklearn, skrub, skore
       (per `data-science-python-stack` § "Tier 1")
-- [ ] Skill(skore-api) consulted for: evaluate / report classes
-- [ ] Skill(sklearn-api) consulted for splitter: <name>
+- [ ] Skill(python-api) consulted for: evaluate / report classes
+- [ ] Skill(python-api) consulted for splitter: <name>
 - [ ] split_kwargs at the X marker read: <groups | time | none>
 - [ ] Splitter chosen via rule 3 mapping table: <name + reason>
 - [ ] Data-passing form picked: <X, y> | <data={...}>
+- [ ] Smoke test status (per `smoke-test-ml-pipeline`):
+        passing  — CV report can be persisted and experiment can
+                   flip to `done`;
+        failing  — pipeline has a structural bug; route back to
+                   `build-ml-pipeline` (CV report can still be
+                   produced, but the experiment stays `approved`,
+                   not `done`, until smoke passes);
+        n/a      — pipeline has no history-dependent step (rare
+                   for time-series / panel data; explain why in
+                   the response).
+- [ ] If a probe is needed in this turn (skore report walk,
+      metric extraction, splitter fold inspection), the payload
+      goes to `scratch/<ts>_<short>.py`, not inline `pixi run
+      python -c "..."`. The 2-line cap is the only inline
+      allowance.
 ```
 
 ## Scope
@@ -99,7 +141,7 @@ Pre-flight (evaluate-ml-pipeline):
    prints, and don't drop back to bare sklearn for evaluation. If you
    see existing `cross_val_score` / `cross_validate` /
    `classification_report` / `mean_squared_error` calls in the diff,
-   redirect them through `skore.evaluate`. Consult `skore-api` for
+   redirect them through `skore.evaluate`. Consult `python-api` for
    the exact signature.
 
    **Two data-passing forms — pick the one that matches the
@@ -116,8 +158,12 @@ Pre-flight (evaluate-ml-pipeline):
    `X`/`y` and `data` are mutually exclusive. The same split applies
    to `CrossValidationReport(...)`; `EstimatorReport(...)` uses
    `train_data=` / `test_data=` for the env-dict equivalent of
-   `X_train` / `y_train` / `X_test` / `y_test`. See
-   `skore-api/reports.md` § "skrub interop".
+   `X_train` / `y_train` / `X_test` / `y_test`. The full interop
+   pattern (env-dict-style vs sklearn-style, how `data={...}` keys
+   map to `skrub.var` roots, key conventions in the Project store)
+   is in `python-api/references/skrub_interop.md`; for exact
+   signatures, look them up via `python-api` against the installed
+   skore version.
 
 2. **Escalate to explicit report classes only when `evaluate` is too
    coarse.** The escalation order:
@@ -130,7 +176,7 @@ Pre-flight (evaluate-ml-pipeline):
    - `ComparisonReport` — two or more learners side-by-side.
 
    See `references/reports.md` for the escalation table; defer all
-   API details to `skore-api`.
+   API details to `python-api`.
 
 3. **Pick the cross-validator from the structural facts of the data
    — not by default.** The data tells you what splitter is correct.
@@ -160,19 +206,51 @@ Pre-flight (evaluate-ml-pipeline):
    See `references/cross-validation.md` § "Avoid" for the reasoning.
    Wiring details: `references/metadata-routing.md`.
 
-   **Time-ordered data — user-question flow.** When the data is
-   temporal, ask the user *before* picking a splitter:
-   1. Is `TimeSeriesSplit` sufficient, or do they want a custom
-      splitter (purged windows, calendar blocks, walk-forward)? If
-      custom, see `references/custom-splitter.md`.
-   2. Should the time column stay as a covariate or be dropped from
-      the feature matrix? Encoders can extract calendar patterns
-      from a timestamp; the user's call.
+   **Time-ordered data — `AskUserQuestion` is mandatory.** When
+   the data is temporal, fire `AskUserQuestion` *before* picking
+   a splitter, with **four explicit options**:
 
-   If `split_kwargs` is empty *and* you cannot confirm there's no
-   structure (from build-time checks or from the user), do not
-   silently default. Return to `build-ml-pipeline` and ask the user
-   first.
+   1. **`TimeSeriesSplit(gap=horizon)`** — growing-window train,
+      contiguous test, embargo equal to the forecast horizon.
+      The safe default for any horizon-`h` forecasting task: it
+      prevents the train tail from leaking into the test head
+      by up to one horizon. Follow up to surface `n_splits` /
+      `test_size` / `max_train_size`.
+   2. **`TimeSeriesSplit(gap=0)`** — only on the user's explicit
+      pick. Warn in the option description that with horizon
+      `h > 0`, the last `h` rows of every training fold predict
+      values whose target time is *inside* the test fold; the
+      reported metric is optimistic.
+   3. **Custom splitter** — purged-and-embargoed (finance),
+      blocked calendar windows, walk-forward with refit
+      cadence. Pick this when the time structure has more shape
+      than `TimeSeriesSplit` captures. See
+      `references/custom-splitter.md`.
+   4. **`KFold` ignoring time** — only when the user confirms
+      the temporal structure shouldn't drive splitting (e.g.
+      the time column is a covariate but the task is treated
+      as IID). The skill should *not* recommend this option on
+      time-ordered data without an explicit user reason.
+
+   **No silent default.** Even if the data looks "obviously
+   `TimeSeriesSplit`", the user picks via `AskUserQuestion`.
+   The gap parameter is the one most often wrong by default —
+   `TimeSeriesSplit(n_splits=5)` from memory uses `gap=0`,
+   which silently leaks for any non-trivial horizon. The
+   structured pick exists to make that visible. Ambiguous free
+   text ("just pick something", "you decide") routes to a
+   clarifying `AskUserQuestion`; don't infer.
+
+   Separately, ask whether the time column should stay as a
+   covariate or be dropped from the feature matrix (encoders
+   can extract calendar patterns from a timestamp; the user's
+   call). This is a follow-up question, not a substitute for
+   the splitter pick.
+
+   If `split_kwargs` is empty *and* you cannot confirm there's
+   no structure (from build-time checks or from the user), do
+   not silently default. Return to `build-ml-pipeline` and ask
+   the user first.
 
 4. **Trust skore's metric defaults; override only on explicit user
    request.** `skore.evaluate` picks task-appropriate metrics
@@ -204,17 +282,43 @@ Pre-flight (evaluate-ml-pipeline):
 
 ## Companion skills
 
-- **`skore-api`** — every skore symbol used here. Mandatory before
+- **`python-api`** — every skore symbol used here. Mandatory before
   naming `evaluate`, `EstimatorReport`, `CrossValidationReport`,
-  `ComparisonReport`. Don't guess from memory.
-- **`sklearn-api`** — every splitter used here. Mandatory before
-  naming `KFold`, `GroupKFold`, `TimeSeriesSplit`, etc.
+  `ComparisonReport`. Don't guess from memory. **Cache hits
+  first**: check `scratch/api/skore/<version>/` before
+  WebSearching for narrative pages; cache new findings back
+  there (per `python-api` Shape 0/3).
+- **`python-api`** — every splitter used here. Mandatory before
+  naming `KFold`, `GroupKFold`, `TimeSeriesSplit`, etc. **Cache
+  hits first**: check `scratch/api/sklearn/<version>/` before
+  WebSearching.
 - **`build-ml-pipeline`** — upstream pipeline shape and where
   structural metadata is attached via `split_kwargs`. Return there
-  if the metadata you need at evaluation time isn't wired in.
+  if the metadata you need at evaluation time isn't wired in,
+  *or* if the smoke test (below) fails on row count — that's a
+  graph-topology bug owned by `build-ml-pipeline` (rule 2,
+  early-`mark_as_X`).
+- **`smoke-test-ml-pipeline`** — the structural check CV cannot
+  do by construction: predict on a *different* env-dict from the
+  one used at fit, assert the prediction count matches the
+  predict-grid row count exactly. Required alongside CV for any
+  pipeline with a history-dependent step. The CV report and the
+  smoke test are independent artifacts — both must be in place
+  before an experiment can flip to `done`.
+- **`test-ml-pipeline`** — router for `tests/`. Owns layout and
+  the stem pairing between an experiment and its smoke test.
 - **`python-env-manager`** — detection + install commands for the
   project's environment manager (pixi / uv / poetry / hatch / conda
   / pip+venv). **Invoke whenever** the Stop condition on
   `import skore` fires, or whenever any other dependency is missing
   from the env. Don't infer the manager or hand-craft the install
   command — that skill owns it.
+- **`python-code-style`** — **must be invoked** after writing or
+  editing `src/<pkg>/evaluate.py` (and, if a custom splitter is
+  authored, the module that holds it). Running `pixi run ruff
+  check` directly without invoking this skill silently drops the
+  NumPyDoc docstring convention this stack expects: ruff's
+  `D`-rules pass on a one-line summary, but only the skill body
+  teaches the parameter-shape-in-type-slot, `Parameters` /
+  `Returns` / `Yields` sections, and the imperative one-line
+  summary.
