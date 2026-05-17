@@ -150,7 +150,7 @@ changes.
   smoke-test gate enforced by `test-ml-pipeline` /
   `smoke-test-ml-pipeline`. Every approved experiment must have a
   passing `tests/smoke/test_NN_<short_name>.py` before its row
-  in `PLAN.md` can flip to `done`; pytest is what runs that
+  in `JOURNAL.md` can flip to `done`; pytest is what runs that
   test, so the dependency is non-negotiable even on workspaces
   that haven't authored any tests yet. Install in the **same
   feature/env as the rest of the Tier 1 stack**.

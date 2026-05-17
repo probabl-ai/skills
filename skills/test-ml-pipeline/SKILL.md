@@ -12,7 +12,7 @@ description: >
   `experiments/NN_<short_name>.py`, and dispatches to the matching
   subskill when the user asks for a test.
 
-  TRIGGER when: a new experiment plan was just approved by
+  TRIGGER when: a new design note was just approved by
   `iterate-ml-experiment` and the matching test has to be drafted
   before the experiment can be marked done; the user asks "write
   the smoke test for `02`", "add the regression test", "do we have
@@ -20,7 +20,7 @@ description: >
   paired test needs revisiting; about to run `pytest tests/`
   and one of the expected paired tests is missing.
 
-  SKIP when: the experiment plan does not yet exist (route to
+  SKIP when: the design note does not yet exist (route to
   `iterate-ml-experiment` first); the test is for the package's
   internal helpers and unrelated to a specific experiment (regular
   unit tests live wherever the project's `pytest` config picks
@@ -45,12 +45,12 @@ and which subskill owns the body of each test category.
 
 Before answering anything else:
 
-1. **Confirm an approved experiment plan exists** for the test
+1. **Confirm an approved design note exists** for the test
    the user is asking about. The pairing rule is hard:
    `tests/<category>/test_NN_<short_name>.py` only exists if
-   `plan/NN_<short_name>.md` is at least `approved` and
+   `journal/NN_<short_name>.md` is at least `approved` and
    `experiments/NN_<short_name>.py` is the matching script. If
-   the plan doesn't exist, hand back to `iterate-ml-experiment`.
+   the design note doesn't exist, hand back to `iterate-ml-experiment`.
 2. **Emit the Pre-flight checklist** (below) as visible text in
    your response, with each box marked.
 3. **Use the Dispatch table** to pick the subskill that owns the
@@ -60,7 +60,7 @@ Before answering anything else:
 
 ```
 Pre-flight (test-ml-pipeline):
-- [ ] `plan/NN_<short_name>.md` exists and is at least `approved`
+- [ ] `journal/NN_<short_name>.md` exists and is at least `approved`
       (or confirmed n/a — about to hand off to `iterate-ml-experiment`)
 - [ ] `experiments/NN_<short_name>.py` exists with the matching stem
       (or confirmed n/a — about to hand off to `organize-ml-workspace`)
@@ -73,9 +73,9 @@ Pre-flight (test-ml-pipeline):
 
 ## Stop conditions — read before anything else
 
-- **No test without an approved experiment plan.** Never create
-  `tests/<category>/test_NN_*.py` if the matching `plan/NN_*.md`
-  isn't on disk and at least `approved`. The plan is the contract;
+- **No test without an approved design note.** Never create
+  `tests/<category>/test_NN_*.py` if the matching `journal/NN_*.md`
+  isn't on disk and at least `approved`. The design note is the contract;
   the test asserts the contract holds. Reverse order is incoherent.
 - **The stem rule is hard.** Test file basename is
   `test_NN_<short_name>.py` (with the `test_` prefix that pytest
@@ -108,7 +108,7 @@ project/
 The pairing rule:
 
 ```
-plan/NN_<short_name>.md
+journal/NN_<short_name>.md
 experiments/NN_<short_name>.py
 tests/<category>/test_NN_<short_name>.py
 ```
@@ -141,8 +141,8 @@ table is the contract for adding them.
 ## The required-test-per-experiment rule
 
 **Every approved experiment must have a passing smoke test before
-it can be marked `done` in `PLAN.md`.** This is enforced by
-`iterate-ml-experiment` § 3 (after plan approval, before script
+it can be marked `done` in `JOURNAL.md`.** This is enforced by
+`iterate-ml-experiment` § 3 (after design-note approval, before script
 creation) and § 4 (before recording outcome): the test is part of
 the iteration loop, not an afterthought. If the smoke test fails,
 the iteration that follows is on the **pipeline** (re-enter
@@ -156,9 +156,9 @@ opt-in and added when the workspace's needs warrant them.
 
 ## Decision flow
 
-1. Is there an approved `plan/NN_<short_name>.md` and a matching
+1. Is there an approved `journal/NN_<short_name>.md` and a matching
    `experiments/NN_<short_name>.py`?
-   - **No** → hand off to `iterate-ml-experiment` (plan first) or
+   - **No** → hand off to `iterate-ml-experiment` (design note first) or
      `organize-ml-workspace` (script first). Stop.
    - **Yes** → continue.
 2. Identify the test category from the user's signal (Dispatch
@@ -196,11 +196,11 @@ opt-in and added when the workspace's needs warrant them.
   assertions, failure semantics). The only required test category
   in v1.
 - **`organize-ml-workspace`** — scaffolds `tests/<category>/`
-  alongside `plan/` / `experiments/` at workspace creation time.
+  alongside `journal/` / `experiments/` at workspace creation time.
   The placeholder test files are placed by this skill, not by
   `organize-ml-workspace`.
 - **`iterate-ml-experiment`** — drives the iteration loop. After
-  plan approval, dispatches to this skill (which dispatches to
+  design-note approval, dispatches to this skill (which dispatches to
   `smoke-test-ml-pipeline`) to draft the matching test. After
   the experiment runs, requires the smoke test to pass before the
   experiment can flip to `done`.

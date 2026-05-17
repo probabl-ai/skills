@@ -572,7 +572,7 @@ know" the name, that's a Stop-condition violation — go consult.
 
 `iterate-ml-experiment` enforces a hard rule (Stop conditions §
 "Prior experiments stay reproducible"): every `done` row in
-`PLAN.md` History must remain runnable on `main` and produce
+`JOURNAL.md` History must remain runnable on `main` and produce
 the same result. When the next iteration touches a shared
 module under `src/<pkg>/` (`pipeline.py`, `features.py`,
 `data.py`, `evaluate.py`), the default behavior must preserve
@@ -645,7 +645,7 @@ layering issue worth surfacing to the user before cloning.
 Pattern: copy `pipeline.py` to `pipeline_v2.py` (or a
 descriptive name), edit freely. Prior experiments keep
 importing the original. Document the split in the new
-experiment's plan-file Risks.
+experiment's design-note Risks.
 
 ### Tripwires
 

@@ -7,7 +7,7 @@ one-to-one with the script. Owner: `iterate-ml-experiment`.
 Lifecycle:
   planned   → draft, not yet shown to the user / not approved
   approved  → user said "go"; safe to create the matching .py
-  done      → result recorded; status block + PLAN.md row updated
+  done      → result recorded; status block + JOURNAL.md row updated
   abandoned → discarded; record one-line reason on State
 
 This skill is user-triggered (no polling, no auto-detection),
@@ -36,7 +36,7 @@ Why now. Cite the source concretely:
                           claim to build on
   - user (resource)     → GitHub issue link, or spec file:line,
                           or reference-repo path
-  - my-pick             → which PLAN.md / prior-plan fields fed
+  - my-pick             → which JOURNAL.md / prior-design-note fields fed
                           the synthesis (Status, last Implication,
                           last Risks, current Backlog state)
   - skore               → `report.diagnosis()` section / metric /
@@ -93,7 +93,7 @@ run (to interpret the headline result honestly).
   - `abandoned`: requires a one-line reason on this line itself
     (e.g., `abandoned — paper's required dep was non-trivial; deferred to v2`).
     Headline result becomes `n/a — abandoned: <reason>`.
-    The row stays in PLAN.md History; only the State field flips.
+    The row stays in JOURNAL.md History; only the State field flips.
   - User-decided only: the skill never auto-abandons.
   -->
 - **Approved by user on:** <date or n/a>

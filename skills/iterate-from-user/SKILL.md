@@ -10,9 +10,9 @@ description: >
   to implement, and confirms with the user *before* returning the
   Proposal block. Hand the confirmed Proposal back to
   `iterate-ml-experiment`, which writes it into
-  `plan/NN_short_name.md` and seeks the user's plan-file approval.
-  Stops at "Proposal returned, user-confirmed"; never writes a plan
-  file, never authors acceptance criteria.
+  `journal/NN_short_name.md` and seeks the user's design-note approval.
+  Stops at "Proposal returned, user-confirmed"; never writes a
+  design note, never authors acceptance criteria.
 
   TRIGGER when: `iterate-ml-experiment` is picking a sourcing
   strategy and the user picks `user` from the menu; the user
@@ -33,7 +33,7 @@ description: >
   three shaping questions, and **confirm with the user via plain
   text** (one or two sentences: "you'd like to implement X by
   changing src/<pkg>/<file>.py — right?") before returning the
-  Proposal. Do not write any plan file. Do not author acceptance
+  Proposal. Do not write any design note. Do not author acceptance
   criteria.
 ---
 
@@ -45,7 +45,7 @@ block, handed back to `iterate-ml-experiment`.
 
 ## Output contract (read this before the body)
 
-This skill **never writes `plan/` files** and **never authors
+This skill **never writes `journal/` files** and **never authors
 acceptance criteria**. It returns a single **Proposal block** as
 conversation text (full shape in § What is returned at the bottom):
 `Question`, `Motivation` (with `Source` field — quote, URL, or path),
@@ -65,7 +65,7 @@ have nothing in hand, the parent's menu re-presents itself.
 
 ## Stop conditions
 
-- **Don't write `plan/` files.** That belongs to
+- **Don't write `journal/` files.** That belongs to
   `iterate-ml-experiment`. This skill returns the Proposal as
   conversation text; the parent skill drafts the file.
 - **Don't infer source content from memory.** If the user
@@ -84,13 +84,13 @@ have nothing in hand, the parent's menu re-presents itself.
   mode explicit.
 - **Flag goal shifts before returning.** If the user's idea (or
   the source) materially changes the **project goal** as recorded
-  in `PLAN.md` Status — different output shape (point estimate →
+  in `JOURNAL.md` Status — different output shape (point estimate →
   prediction interval), different downstream consumer (offline
   batch → online serving), different metric class (squared error →
   coverage) — surface it as a question *before* returning the
-  Proposal: *"this would update PLAN.md Status from <X> to <Y>;
+  Proposal: *"this would update JOURNAL.md Status from <X> to <Y>;
   confirm or amend the goal first?"* The parent's per-experiment
-  plan file should not silently redefine success while the Status
+  design note should not silently redefine success while the Status
   block still reflects the old goal.
 - **New dependencies are gated, not assumed.** If the proposal
   requires a library outside the project's existing env
@@ -244,19 +244,19 @@ synthesis to the user and waits for explicit approval:
 The user's answer determines what happens next:
 
 - **"Yes / confirm / go" → return the Proposal.** The parent
-  skill drafts `plan/NN_*.md` from it.
+  skill drafts `journal/NN_*.md` from it.
 - **"No / not quite / adjust X" → revise and re-confirm.** Iterate
   the synthesis until the user is happy. Do not return a Proposal
   the user hasn't signed off on.
 
 This gate is non-optional. It is the user-side analogue of the
-parent's plan-file approval gate — it catches misunderstandings
-*before* a plan file is drafted, when the cost of revision is
+parent's design-note approval gate — it catches misunderstandings
+*before* a design note is drafted, when the cost of revision is
 cheapest.
 
 ## What is returned
 
-A short structured block, not a plan file:
+A short structured block, not a design note:
 
 ```
 Proposal (from: user via <article-link | resource-link | free-text>):
@@ -270,13 +270,13 @@ Proposal (from: user via <article-link | resource-link | free-text>):
 ```
 
 `iterate-ml-experiment` consumes this and drafts
-`plan/NN_short_name.md`. **No `Success` field** — the skill
+`journal/NN_short_name.md`. **No `Success` field** — the skill
 deliberately does not author acceptance criteria; the user judges
 the result post-run.
 
 ## Companion skills
 
-- **`iterate-ml-experiment`** — the caller; owns the plan files.
+- **`iterate-ml-experiment`** — the caller; owns the design notes.
 - **`iterate-from-skore`** — the only sibling strategy; sources
   the next experiment by mining the previous skore report into
   the Backlog.

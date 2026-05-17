@@ -21,7 +21,7 @@ description: >
   executable proof; an experiment script changes the pipeline
   shape and the matching smoke test needs revisiting.
 
-  SKIP when: the experiment plan does not exist or is not yet
+  SKIP when: the design note does not exist or is not yet
   approved (route to `iterate-ml-experiment`); the user is asking
   about a regression test or schema invariant (route to
   `regression-test-ml-pipeline` /
@@ -29,7 +29,7 @@ description: >
   is the *interpretation* of CV metrics, not predict-time
   correctness (route to `evaluate-ml-pipeline`).
 
-  HOW TO USE: read the matching experiment's `plan/NN_*.md` and
+  HOW TO USE: read the matching experiment's `journal/NN_*.md` and
   `experiments/NN_*.py` first to understand the pipeline's source
   binding (what env-dict keys does `build_learner` expect?). Then
   construct two env-dicts from the **real `data/` source** — a
@@ -38,7 +38,7 @@ description: >
   buffer*. The hard assertion is that the prediction count
   matches the predict-env row count exactly. The soft assertion
   is that the smoke set's MAE is within `3 × CV_mean` (or the
-  task-appropriate analogue). **Do not write the experiment plan
+  task-appropriate analogue). **Do not write the design note
   or run CV — that's other skills' job.**
 ---
 
@@ -49,10 +49,10 @@ anti-pattern at iteration time, before it reaches production.
 
 ## Stop conditions — read before anything else
 
-- **No smoke test without an approved plan + script.** The pairing
+- **No smoke test without an approved design note + script.** The pairing
   rule from `test-ml-pipeline` is hard:
   `tests/smoke/test_NN_<short_name>.py` exists only when
-  `plan/NN_<short_name>.md` is at least `approved` *and*
+  `journal/NN_<short_name>.md` is at least `approved` *and*
   `experiments/NN_<short_name>.py` exists with the matching stem.
 - **Symbol from memory is forbidden.** Any skrub /
   scikit-learn name you write in the smoke test must come from a
@@ -82,8 +82,8 @@ anti-pattern at iteration time, before it reaches production.
   any environment that can `import skrub` + `import sklearn` —
   the skore Project is a side artifact, not a test dependency.
   Soft-assertion baselines (CV-mean MAE, etc.) are **hardcoded
-  from the plan's Status.headline** with a comment pointing to
-  the plan; update by hand when the experiment's headline number
+  from the design note's Status.headline** with a comment pointing to
+  the design note; update by hand when the experiment's headline number
   changes.
 
 ## Pre-flight — emit this checklist as visible text before any test code
@@ -94,7 +94,7 @@ Pre-flight (smoke-test-ml-pipeline):
       (per `data-science-python-stack` § "Tier 1"). **Not skore** —
       see the Stop conditions; the smoke test is intentionally
       portable to any skrub-capable environment
-- [ ] `plan/NN_<short_name>.md` read this turn (frozen sections:
+- [ ] `journal/NN_<short_name>.md` read this turn (frozen sections:
       Question, Method) so the test asserts what the experiment claims
 - [ ] `experiments/NN_<short_name>.py` skimmed this turn for the env-dict
       keys `build_learner` consumes (`data_dir` / `start` + `end` /
@@ -110,7 +110,7 @@ Pre-flight (smoke-test-ml-pipeline):
 - [ ] Soft assertion wired (or explicitly skipped): smoke MAE within
       `3 × CV_MEAN_HARDCODED_FROM_PLAN` (or task-appropriate
       analogue). Value is a literal pulled from the matching
-      `plan/NN_<short_name>.md` § Status.headline; the test does
+      `journal/NN_<short_name>.md` § Status.headline; the test does
       not import `skore` / read the project store at runtime.
 ```
 
@@ -333,7 +333,7 @@ def test_NN_<short_name>(train_predict_envs):
     from sklearn.metrics import mean_absolute_error
     smoke_mae = mean_absolute_error(y_true, predictions)
     # CV_MAE_MEAN is hardcoded at the top of the file from
-    # `plan/NN_<short_name>.md` § Status.headline. The smoke test
+    # `journal/NN_<short_name>.md` § Status.headline. The smoke test
     # uses only the predicting package's API (skrub/sklearn) —
     # no skore import, so it runs anywhere skrub does.
     assert smoke_mae < 3 * CV_MAE_MEAN, (
@@ -365,13 +365,13 @@ metric problem.
   refuses to flip an experiment to `done` until the matching
   smoke test passes. The CV report can land in the skore Project
   before the smoke test passes (CV is independent of predict-time
-  binding), but the experiment row in `PLAN.md` stays `approved`
+  binding), but the experiment row in `JOURNAL.md` stays `approved`
   until smoke passes.
 
 ## What this skill does NOT do
 
 - Run pytest. Test execution is the user's call (or CI's).
-- Write the experiment plan or the experiment script. Those are
+- Write the design note or the experiment script. Those are
   `iterate-ml-experiment` and `organize-ml-workspace` /
   `build-ml-pipeline`.
 - Touch the skore Project. The smoke test does not call
@@ -394,7 +394,7 @@ metric problem.
 - **`evaluate-ml-pipeline`** — owns CV. The smoke test fills the
   predict-time-binding gap CV doesn't cover. The soft assertion's
   CV-mean baseline is *hardcoded* in the smoke test from the
-  matching plan's Status.headline (which `evaluate-ml-pipeline`
+  matching design note's Status.headline (which `evaluate-ml-pipeline`
   ultimately fills in after the run); the test does not import
   skore at runtime.
 - **`python-api`** / **`python-api`** — symbol references for

@@ -2,8 +2,9 @@
 
 Agent scratch space. Used by the iteration agent for ad-hoc Python the user
 doesn't need to maintain — inspecting a persisted skore report, walking
-`report.diagnosis()` to fill a Status block, extracting a metric for a plan
-file. The folder exists for **traceability**: every probe lands as a file
+`report.diagnosis()` to fill a Status block, extracting a metric for a
+design note. The folder exists for **traceability**: every probe lands as
+a file
 on disk, not as an inline `pixi run python -c "..."` lost to the
 conversation log.
 

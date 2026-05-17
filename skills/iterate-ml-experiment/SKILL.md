@@ -2,43 +2,43 @@
 name: iterate-ml-experiment
 description: >
   Owns the iteration loop on top of an ML workspace: the
-  `plan/PLAN.md` history log and the per-experiment
-  `plan/NN_short_name.md` design notes that must be written
+  `journal/JOURNAL.md` history log and the per-experiment
+  `journal/NN_short_name.md` design notes that must be written
   **and validated by the user** before the matching
   `experiments/NN_short_name.py` is created. Drives the
   conversational loop where the next experiment is proposed,
-  refined, and committed to plan, then dispatches to one of the
+  refined, and committed to the journal, then dispatches to one of the
   `iterate-from-*` strategy skills when the source of the next
-  proposal needs to be picked. Stops at "the plan file is on disk
+  proposal needs to be picked. Stops at "the design note is on disk
   and the user has approved it".
 
   TRIGGER when: a session starts in an ML workspace that already
-  has a `plan/` folder (read `PLAN.md` first to see where things
+  has a `journal/` folder (read `JOURNAL.md` first to see where things
   stand); the user says "what's next", "resume", "where were we",
   "let's iterate", "propose the next experiment", or similar;
   about to create a new `experiments/NN_*.py` (the matching
-  `plan/NN_*.md` must exist and be validated first); the user
+  `journal/NN_*.md` must exist and be validated first); the user
   wants to record an outcome from a finished experiment in
-  `PLAN.md`; the user asks to compare past experiments or review
+  `JOURNAL.md`; the user asks to compare past experiments or review
   what's been tried.
 
-  SKIP when: there is no `plan/` folder yet and no workspace
+  SKIP when: there is no `journal/` folder yet and no workspace
   scaffolded (route to `organize-ml-workspace` first); the work
   is mechanical inside `pipeline.py` / `evaluate.py` / `data.py`
-  with no plan implication (those are owned by
+  with no journal-level implication (those are owned by
   `build-ml-pipeline` / `evaluate-ml-pipeline`); the user asks
   for a symbol lookup (use the `python-api` skill); the user is
   reviewing/diagnosing a single skore report without a "what
   next" framing (route to `evaluate-ml-pipeline`).
 
-  HOW TO USE: **First action — always — read `plan/PLAN.md` and
+  HOW TO USE: **First action — always — read `journal/JOURNAL.md` and
   emit the Pre-flight checklist as visible text in your
   response.** Both are mandatory before writing or modifying any
-  plan file. Then use the **Mode picker** (top of the body) to
+  design note. Then use the **Mode picker** (top of the body) to
   decide which section to read this turn — the body covers seven
   operational modes (bootstrap, iterate, overview, compare,
   goal pivots, abandoned, re-runs); you only need one per turn.
-  Plan files are the only artifact this skill writes; reads,
+  Design notes are the only artifact this skill writes; reads,
   comparisons, and overviews don't write.
 ---
 
@@ -53,18 +53,18 @@ layout are out of scope and live in sibling skills.
 
 Before answering anything else:
 
-1. **Read `plan/PLAN.md`.** If it doesn't exist or is the
+1. **Read `journal/JOURNAL.md`.** If it doesn't exist or is the
    placeholder dropped by `organize-ml-workspace`, you're in
    bootstrap mode (§ 0).
 2. **Read `overview/summary.md` if it exists.** The workspace
    carries an agent-authored narrative digest at
    `overview/summary.md` — project framing + cross-experiment
    metrics table + curated per-experiment Headline + Implication
-   blocks. `PLAN.md` is the *index* (Status, History one-liners,
+   blocks. `JOURNAL.md` is the *index* (Status, History one-liners,
    Backlog); `summary.md` is the *narrative* (what was learned,
    in one scannable read). Both are agent-facing; read both at
    session start. The source of truth remains the per-experiment
-   plan files in `plan/NN_*.md` — `summary.md` is the curated
+   design notes in `journal/NN_*.md` — `summary.md` is the curated
    view across them, rewritten by hand at every § 4 outcome
    recording (no auto-generation script).
 3. **Emit the Pre-flight checklist** (below) as visible text
@@ -82,9 +82,9 @@ the table, then jump straight to that section.
 
 | User signal / workspace state | Mode | Section to read |
 |---|---|---|
-| `plan/PLAN.md` missing, empty, or placeholder; OR exists but has no rows in History | **Bootstrap** | § 0 Bootstrap |
-| `plan/` not even scaffolded (no `src/`, no `experiments/`) | **Bootstrap → handoff first** | § 0 step 1, then `organize-ml-workspace` |
-| "what's next?", "let's iterate", "propose next", "resume" — and PLAN.md has ≥1 done row | **Iterate (propose)** | §§ 1-3 + Dispatch table |
+| `journal/JOURNAL.md` missing, empty, or placeholder; OR exists but has no rows in History | **Bootstrap** | § 0 Bootstrap |
+| `journal/` not even scaffolded (no `src/`, no `experiments/`) | **Bootstrap → handoff first** | § 0 step 1, then `organize-ml-workspace` |
+| "what's next?", "let's iterate", "propose next", "resume" — and JOURNAL.md has ≥1 done row | **Iterate (propose)** | §§ 1-3 + Dispatch table |
 | "the run finished", "log the result", "we got X = ...", "record outcome" | **Iterate (record)** | § 4 |
 | "where are we?", "give me a one-pager", "status?", "what have we tried?" | **Project overview** | § Project overview / status requests |
 | "compare X and Y", "X vs Y", "trend across runs", "stack up against baseline" | **Compare (read-only)** | § Compare past experiments |
@@ -99,15 +99,15 @@ something based on it"), pick the **read** mode first
 
 ## Stop conditions — read before anything else
 
-- **No plan, no script.** Never create or edit
-  `experiments/NN_*.py` until `plan/NN_*.md` exists, is filled
-  in, and the user has explicitly approved it. The plan is
+- **No design note, no script.** Never create or edit
+  `experiments/NN_*.py` until `journal/NN_*.md` exists, is filled
+  in, and the user has explicitly approved it. The design note is
   written *first* and validated *first*; the script is a
-  consequence of the plan, not the other way around. If you
-  catch yourself about to write Python before the plan exists:
-  STOP and write the plan.
-- **`PLAN.md` is read at session start, not improvised.** When a
-  session opens in a workspace with `plan/PLAN.md`, read the
+  consequence of the design note, not the other way around. If you
+  catch yourself about to write Python before the design note exists:
+  STOP and write the design note.
+- **`JOURNAL.md` is read at session start, not improvised.** When a
+  session opens in a workspace with `journal/JOURNAL.md`, read the
   file before answering any "what next" question. Don't
   reconstruct history from `experiments/` filenames or
   `git log` — those don't carry the *why*.
@@ -119,8 +119,8 @@ something based on it"), pick the **read** mode first
   backlog-promotion (`B<N>`). If the user hasn't signalled one,
   ask — but accept clear free-text intents (see § "The
   sourcing menu" § Free-text handling). Don't silently default
-  to one — that's how plans turn into wishlists.
-  **Exception: bootstrap (§ 0).** When `PLAN.md` has
+  to one — that's how the journal turns into a wishlist.
+  **Exception: bootstrap (§ 0).** When `JOURNAL.md` has
   no recorded experiment, the baseline is forced by the
   workspace defaults — no strategy dispatch, no "what do you
   want to try?". The user's role is to approve or amend the
@@ -129,13 +129,13 @@ something based on it"), pick the **read** mode first
   user is the gate. Anything ambiguous ("hmm interesting") is
   not approval. If unsure, ask.
 - **Outcomes are recorded, not narrated.** When an experiment
-  finishes, the outcome lands in `PLAN.md` *and* in the per-
+  finishes, the outcome lands in `JOURNAL.md` *and* in the per-
   experiment file's status block, before the conversation moves
   on. The skore report is the source of truth for metrics; the
-  plan files capture what was learned and what it implies for
+  design notes capture what was learned and what it implies for
   the next iteration.
 - **Prior experiments stay reproducible.** Every `done` row in
-  `PLAN.md` History must remain runnable on `main` and produce
+  `JOURNAL.md` History must remain runnable on `main` and produce
   the same result. When the next iteration touches a shared
   module under `src/<pkg>/` (`features.py`, `pipeline.py`,
   `data.py`, `evaluate.py`), the **default behavior must
@@ -150,7 +150,7 @@ something based on it"), pick the **read** mode first
   test gate): if any prior smoke test goes red, default
   behavior is broken.
 - **Three skills, in order, before any code lands in
-  `src/<pkg>/`.** After plan approval, the implementation step
+  `src/<pkg>/`.** After design-note approval, the implementation step
   is *not* "let me write the modules"; it is a non-skippable
   three-skill sequence:
   1. `build-ml-pipeline` — `pipeline.py`, `features.py`,
@@ -170,15 +170,15 @@ something based on it"), pick the **read** mode first
   in Write/Edit without an `evaluate-ml-pipeline` invocation
   earlier in the same turn, STOP and invoke the skill.
 
-## Pre-flight — emit this checklist as visible text before any plan write
+## Pre-flight — emit this checklist as visible text before any design-note write
 
-Before writing or editing any file under `plan/`, output the
+Before writing or editing any file under `journal/`, output the
 following block verbatim. Each box must be backed by an actual
 tool call or an explicit decision documented in the response.
 
 ```
 Pre-flight (iterate-ml-experiment):
-- [ ] `plan/PLAN.md` read this turn (or confirmed missing → about to scaffold)
+- [ ] `journal/JOURNAL.md` read this turn (or confirmed missing → about to scaffold)
 - [ ] Mode: bootstrap (no recorded experiment) | iterate
 - [ ] Last experiment + its status known: <NN_name> | n/a (bootstrap)
 - [ ] In iterate mode, the **sourcing menu was presented to the user
@@ -190,10 +190,10 @@ Pre-flight (iterate-ml-experiment):
 - [ ] Strategy skill dispatched (iterate mode only):
       iterate-from-skore | iterate-from-user | n/a — my-pick or
       backlog item handled inline
-- [ ] Proposal turned into a `plan/NN_short_name.md` draft
+- [ ] Proposal turned into a `journal/NN_short_name.md` draft
       (or, for `skore`, Backlog enriched and the sourcing menu
-      re-presented — no plan file on this turn)
-- [ ] User has explicitly approved the plan file before any
+      re-presented — no design note on this turn)
+- [ ] User has explicitly approved the design note before any
       `experiments/NN_*.py` is touched
 - [ ] Post-approval implementation chain (§ 3) is the three-skill
       sequence: `build-ml-pipeline` → `evaluate-ml-pipeline` →
@@ -206,22 +206,22 @@ Pre-flight (iterate-ml-experiment):
 ## Layout this skill owns
 
 ```
-plan/
-├── PLAN.md                     # session-start log + index + future ideas
+journal/
+├── JOURNAL.md                     # session-start log + index + future ideas
 ├── 01_baseline.md              # design note for experiments/01_baseline.py
 ├── 02_text_encoder.md          # design note for experiments/02_text_encoder.py
 └── ...
 ```
 
-The pairing rule is hard: `plan/NN_short_name.md` ↔
+The pairing rule is hard: `journal/NN_short_name.md` ↔
 `experiments/NN_short_name.py`, identical stems, one-to-one. The
-plan file is created first and edited until the user approves;
+design note is created first and edited until the user approves;
 the script is created only after that. This is the contract
-that lets `PLAN.md` stay a faithful index of what was tried.
+that lets `JOURNAL.md` stay a faithful index of what was tried.
 
-## `PLAN.md` shape
+## `JOURNAL.md` shape
 
-`PLAN.md` is a thin, durable index — *not* a long-form journal.
+`JOURNAL.md` is a thin, durable index — *not* a long-form journal.
 It has three sections:
 
 1. **Status (top).** A two-or-three-line snapshot: the dataset,
@@ -230,7 +230,7 @@ It has three sections:
    start.
 2. **History (chronological).** One row per experiment: stem,
    one-line intent, status (planned / running / done / abandoned),
-   headline result, link to the per-experiment plan file. New
+   headline result, link to the per-experiment design note. New
    rows go at the bottom.
 3. **Backlog (forward-looking).** Indexed **table** of ideas not
    yet committed to a `NN_*.md` file. Each row carries a stable
@@ -247,22 +247,22 @@ It has three sections:
    - `user` — the user added the row directly (in conversation,
      not via a strategy skill).
 
-   When an item graduates into a plan file, the row is removed
+   When an item graduates into a design note, the row is removed
    and the new experiment lands in History above. The skill
    **must surface this table to the user** every time it presents
    the sourcing menu (see § "The sourcing menu") — the backlog
    is one of the menu's branches, not a side-document.
 
-Use `templates/PLAN.md` as the starting skeleton. Don't invent
+Use `templates/JOURNAL.md` as the starting skeleton. Don't invent
 new sections per project — the three sections above are the
 contract.
 
-## Per-experiment plan file
+## Per-experiment design note
 
-Each `plan/NN_short_name.md` file is the design note for one
+Each `journal/NN_short_name.md` file is the design note for one
 experiment. It is **the proposal** while it is being drafted,
 **the contract** once approved, and **the postmortem** once the
-experiment has run. Use `templates/experiment_plan.md` as the
+experiment has run. Use `templates/experiment_design.md` as the
 starting skeleton; sections are:
 
 - **Question / hypothesis** — one sentence. What are we trying
@@ -308,7 +308,7 @@ is one-shot; iterate is the recurring loop.
 
 ### 0. Bootstrap (first session only)
 
-A workspace is in bootstrap mode when **either** `plan/PLAN.md`
+A workspace is in bootstrap mode when **either** `journal/JOURNAL.md`
 is missing or is the one-line placeholder dropped by
 `organize-ml-workspace`, **or** it exists but has no rows in
 History (no experiment has been planned yet). In bootstrap mode
@@ -316,13 +316,13 @@ the session-start ritual below does **not** apply — there is no
 last experiment to summarize and no backlog to look at. Instead:
 
 1. **Scaffold first if needed.** If the workspace itself isn't
-   in place (no `src/`, no `experiments/`, no `plan/`), hand
+   in place (no `src/`, no `experiments/`, no `journal/`), hand
    off to `organize-ml-workspace`; come back here when its
-   placeholder `PLAN.md` exists.
-2. **Rewrite `PLAN.md` from this skill's template.** Read
-   `templates/PLAN.md` and write it to `plan/PLAN.md`,
+   placeholder `JOURNAL.md` exists.
+2. **Rewrite `JOURNAL.md` from this skill's template.** Read
+   `templates/JOURNAL.md` and write it to `journal/JOURNAL.md`,
    replacing the placeholder. This skill — not
-   `organize-ml-workspace` — owns plan content.
+   `organize-ml-workspace` — owns design-note content.
 3. **Derive a goal default from what the project tells you.**
    Read `data/README.md` (or whatever dataset card / problem
    statement is at the project root) **before** asking the
@@ -331,7 +331,7 @@ last experiment to summarize and no backlog to look at. Instead:
    confirms or amends. **Do not prompt the user with a blank.**
    If no README / dataset card exists, then ask — but make that
    the exception, not the default.
-4. **Auto-draft `plan/01_baseline.md` via the consultation
+4. **Auto-draft `journal/01_baseline.md` via the consultation
    chain.** The baseline is forced, not invented — but its
    defaults come from sibling skills, not from memory:
    - **Learner default**: consult `build-ml-pipeline` for what
@@ -350,15 +350,15 @@ last experiment to summarize and no backlog to look at. Instead:
      section** of `01_baseline.md`. Don't silently override the
      default — surface the tension to the user.
 5. **The user's role in bootstrap is to approve or amend the
-   baseline plan**, not to invent it. Skip the strategy
+   baseline design note**, not to invent it. Skip the strategy
    dispatch entirely for this one.
 6. **Exit bootstrap.** Once the baseline is approved and
-   recorded in `PLAN.md`'s History, the workspace is out of
+   recorded in `JOURNAL.md`'s History, the workspace is out of
    bootstrap. Every session afterwards uses § 1.
 
 ### 1. Session start (iterate mode)
 
-- Read `plan/PLAN.md`.
+- Read `journal/JOURNAL.md`.
 - Summarize to the user, in two or three lines: dataset, goal,
   last experiment + its status, anything in the backlog that
   looks ripe.
@@ -379,7 +379,7 @@ last experiment to summarize and no backlog to look at. Instead:
 
 Every time § 2 runs in iterate mode, surface this menu
 **verbatim** before any strategy dispatch — and pair it with the
-`PLAN.md` Backlog table so the user can pick a `B<N>` row. The
+`JOURNAL.md` Backlog table so the user can pick a `B<N>` row. The
 menu is the contract: the skill never *silently* picks for the
 user, but it does propose candidates when asked (via `my-pick`).
 
@@ -396,7 +396,7 @@ How would you like me to source the next experiment?
                (b) point me at a GitHub issue / spec file /
                    reference repo,
                (c) just describe the idea in free text.
-  my-pick  — I synthesize from current context (PLAN.md Status,
+  my-pick  — I synthesize from current context (JOURNAL.md Status,
              the last experiment's Implication and Risks, the
              current Backlog) and propose 2-4 candidate ideas;
              you pick one via a follow-up AskUserQuestion. Use
@@ -406,7 +406,7 @@ How would you like me to source the next experiment?
              into a new experiment (no strategy skill invoked).
 
 Backlog (pick by index):
-<paste the PLAN.md Backlog table here>
+<paste the JOURNAL.md Backlog table here>
 ```
 
 Use `AskUserQuestion` for the pick — four options plus the
@@ -455,7 +455,7 @@ the *default*, not the *only* path.
 
 - **Always present the sourcing menu first** — see § "The
   sourcing menu" for the canonical wording. Surface the
-  `PLAN.md` Backlog table next to it so the user can pick a
+  `JOURNAL.md` Backlog table next to it so the user can pick a
   `B<N>` row directly. **Do not silently default.** Use
   `AskUserQuestion` for the pick (the runtime exposes it); only
   fall back to plain-text enumeration if `AskUserQuestion` is
@@ -466,10 +466,10 @@ the *default*, not the *only* path.
   - **`skore`** — dispatch to `iterate-from-skore`. The skill
     walks `report.diagnosis()` and returns Backlog-candidate
     rows + a one-paragraph summary. **Write the rows into
-    `PLAN.md` Backlog** with stable `B<N>` indices appended at
+    `JOURNAL.md` Backlog** with stable `B<N>` indices appended at
     the end, surface the summary to the user verbatim, and
     **re-present the sourcing menu** with the enriched Backlog
-    visible. *No plan file is drafted on this turn* — the
+    visible. *No design note is drafted on this turn* — the
     proposal comes from the user's next pick (typically `B<N>`).
   - **`user`** — dispatch to `iterate-from-user`. The skill
     opens its own `AskUserQuestion` (article-link /
@@ -478,11 +478,11 @@ the *default*, not the *only* path.
     the free-text handler already resolved the entry point
     (URL / issue link / inline idea), pass the resolved
     branch + content to `iterate-from-user` so it skips its
-    inner AskUserQuestion. Draft into `plan/NN_short_name.md`
+    inner AskUserQuestion. Draft into `journal/NN_short_name.md`
     per the bullet below.
   - **`my-pick`** — *handled inline by this skill, no sibling
-    skill invoked.* Read PLAN.md Status, the last experiment's
-    `plan/NN_*.md` (Implication, Risks), and the current Backlog
+    skill invoked.* Read JOURNAL.md Status, the last experiment's
+    `journal/NN_*.md` (Implication, Risks), and the current Backlog
     state. Synthesize 2-4 candidate next-experiment ideas drawn
     from that context; present them via a follow-up
     `AskUserQuestion` (one option per candidate, short labels,
@@ -492,34 +492,34 @@ the *default*, not the *only* path.
     which context fields fed the synthesis (e.g.
     `my-pick: 01_baseline.md Implication`). Unpicked candidates
     are discarded — the user can re-invoke `my-pick` later if
-    they want a fresh shortlist. Then draft the plan file per
+    they want a fresh shortlist. Then draft the design note per
     the bullet below.
   - **`B<N>`** — promote the named Backlog row directly: no
     strategy skill invoked. The row's `Item` text becomes the
-    seed for the new plan file's `Question` / `Method outline`;
+    seed for the new design note's `Question` / `Method outline`;
     the row's `Source` becomes the `Sourcing strategy` (e.g.
     `skore:02_target_transform` for a row that came from mining
-    `02`'s report). Remove the row from Backlog when the plan
-    file is approved.
+    `02`'s report). Remove the row from Backlog when the design
+    note is approved.
 
 - For the `user`, `my-pick`, and `B<N>` branches: write the
-  draft to `plan/NN_short_name.md` using the template. The `NN`
+  draft to `journal/NN_short_name.md` using the template. The `NN`
   is the next free integer; the `short_name` is the user's call
   (offer one, don't force it).
 
-### 3. Iterate on the plan with the user
+### 3. Iterate on the design note with the user
 
 - Show the draft to the user — surface the file path plus a 3-5
   line headline summary (Question / Method bullets / Risks
   bullets) so the user can read in chat or open the file.
 - **Mid-iteration feedback is free-text.** The user pushes back
   on Method / Risks / scope / short_name in plain language; edit
-  `plan/NN_short_name.md` in place and re-surface the changes.
+  `journal/NN_short_name.md` in place and re-surface the changes.
   Loop here for as long as the user keeps amending.
 - **The final approval gate is an `AskUserQuestion`** with two
   options:
   - **approved** — flip status to `approved`, add the row to
-    `PLAN.md` History, hand off to `organize-ml-workspace`.
+    `JOURNAL.md` History, hand off to `organize-ml-workspace`.
   - **more changes** — back to the free-text amendment loop.
 
   Fire it once you've made all requested changes or the user
@@ -528,7 +528,7 @@ the *default*, not the *only* path.
   text handling"; ambiguous responses ("hmm interesting", "I
   guess") get the structured pick — don't infer approval.
 - **Do not** create `experiments/NN_*.py` during this step —
-  the plan file is the only artifact in play.
+  the design note is the only artifact in play.
 - **Track provenance honestly.** If the user's amendment touches
   only the **Risks** section (a guard-rail tweak), keep the
   original `Sourcing strategy` line. If it changes the
@@ -540,7 +540,7 @@ the *default*, not the *only* path.
   **Motivation**. The per-experiment file should never lie about
   its own origin.
 - When the user approves, flip the status block from `planned` to
-  `approved`, add the row to `PLAN.md` history (status:
+  `approved`, add the row to `JOURNAL.md` history (status:
   `approved`), and hand off to `organize-ml-workspace` to create
   the experiment script with the matching stem.
 - **Three-skill implementation chain, in order, before the
@@ -606,7 +606,7 @@ the *default*, not the *only* path.
     copy-paste.
   - **leave for later** — do **not** print the command, do
     **not** auto-propose the next experiment. Instead, surface
-    a short read of `PLAN.md` so the user can see where things
+    a short read of `JOURNAL.md` so the user can see where things
     stand: the **Status block** verbatim plus the **Backlog
     table** verbatim. Then stop. § 4 fires whenever the user
     later comes back with "the run finished, record it".
@@ -661,7 +661,7 @@ off). Mark the per-experiment file's "Implication" field as
 diagnostic up next time.
 
 In both branches, fill **all four** Status-block fields in
-`plan/NN_*.md`:
+`journal/NN_*.md`:
 
 - **State:** `done` (or `abandoned` with a one-line reason)
 - **Approved by user on:** unchanged from approval (don't edit)
@@ -685,13 +685,13 @@ its § "Reproducibility mechanics" (pick parametrize / new
 function / branch the module per the judgment ladder). Resolve;
 re-run; only then re-record the outcome. The CV report can land
 in the skore Project regardless (CV is independent of
-predict-time binding), but the experiment row in `PLAN.md`
+predict-time binding), but the experiment row in `JOURNAL.md`
 stays `approved` until the full smoke suite is green.
 **Abandonment** does not require passing smoke tests — an
 experiment can move from `approved` straight to `abandoned`
 with a one-line reason on State, exactly as before.
 
-And append the headline result to `PLAN.md`'s History row for
+And append the headline result to `JOURNAL.md`'s History row for
 that experiment.
 
 **Backlog hygiene at outcome time.** Scan the existing Backlog
@@ -714,7 +714,7 @@ prunes existing items; it never appends new findings.
 `summary.md` is *not* generated by a script. It is rewritten by
 hand at every outcome recording so the cross-experiment
 narrative stays curated rather than dump-pasted. Procedure,
-once the per-experiment Status block and `PLAN.md` are up to
+once the per-experiment Status block and `JOURNAL.md` are up to
 date:
 
 1. **Probe the data via a scratch script.** Write
@@ -724,7 +724,7 @@ date:
      `Project` / `summarize` signatures in this turn — don't
      guess) and call `project.summarize()` for the
      cross-experiment metrics table.
-   - List `plan/[0-9][0-9]_*.md` files and extract each one's
+   - List `journal/[0-9][0-9]_*.md` files and extract each one's
      `## Status` block (State, Headline result, Implication).
    - Print or pickle whatever the agent needs to read next.
 
@@ -744,7 +744,7 @@ date:
      unless the user cares).
    - **Per-experiment status** — one subsection per `done`
      experiment with the curated Headline + Implication. Quote
-     the plan's Status text where it's already concise; rewrite
+     the design note's Status text where it's already concise; rewrite
      where it isn't. The point is a *narrative*, not a paste.
 
    **Do not regenerate from a script.** If `overview/summary.py`
@@ -765,7 +765,7 @@ the headline result back as an issue comment via
 `AskUserQuestion` with exactly two options:
 
 - **comment back** — run
-  `gh issue comment <N> --body "<headline + plan-file link>"`
+  `gh issue comment <N> --body "<headline + design-note link>"`
   in this turn.
 - **skip** — move on, no outbound action.
 
@@ -785,7 +785,7 @@ exactly two options:
   proposal seed; route via the sourcing menu (`skore` for the
   full diagnostic walk into the Backlog, `user` if the user
   already has a specific idea drawn from the implication).
-- **not yet** — record the implication in `PLAN.md` Backlog
+- **not yet** — record the implication in `JOURNAL.md` Backlog
   as a one-liner and stop.
 
 The user controls cadence; this skill records, it doesn't
@@ -795,23 +795,23 @@ propose-and-record in one breath.
 
 When the user asks "where are we?", "give me a one-pager",
 "what's the status?", "what have we tried?" — that is a *read*
-of `plan/PLAN.md`, not a new artifact. **PLAN.md is the canonical
+of `journal/JOURNAL.md`, not a new artifact. **JOURNAL.md is the canonical
 project digest** (Status + History + Backlog, three sections by
 design). Do not generate a separate summary document.
 
 - For short asks ("status?"), surface the **Status block** verbatim
   plus the last one or two History rows.
-- For "one-pager" / "where are we" framing, surface PLAN.md as-is
+- For "one-pager" / "where are we" framing, surface JOURNAL.md as-is
   (or summarize it section-by-section if it has grown long), and
   add a one-sentence "what's ripe next" line drawn from Backlog
   + most recent Implication. Nothing else.
-- Do not write to `plan/` during these requests. Read-only.
+- Do not write to `journal/` during these requests. Read-only.
 
-If `PLAN.md` has drifted (Status references an experiment that
+If `JOURNAL.md` has drifted (Status references an experiment that
 no longer matches History's last row, Backlog has stale items),
 flag the drift to the user — but **don't auto-edit** during a
 read-only request. Drift fixes belong to § 4 (next time an
-outcome is recorded) or to an explicit "tidy up PLAN.md" ask.
+outcome is recorded) or to an explicit "tidy up JOURNAL.md" ask.
 
 ## Goal pivots
 
@@ -825,7 +825,7 @@ experiment is judged.
 
 When the user signals a goal pivot:
 
-1. **Update `PLAN.md` Status** with the new goal and the date,
+1. **Update `JOURNAL.md` Status** with the new goal and the date,
    keeping a one-line trace of what changed: `Goal pivoted
    <date>: <old> → <new>. Reason: <one sentence>.`
 2. **Insert a horizontal-rule row in History** below the last
@@ -835,7 +835,7 @@ When the user signals a goal pivot:
    | --- | **Goal pivoted <date>: <old> → <new>** | --- | rows above evaluated against <old>; rows below against <new> | --- |
    ```
 
-3. **Do not mass-edit prior `plan/NN_*.md` files.** Their
+3. **Do not mass-edit prior `journal/NN_*.md` files.** Their
    Success criteria are frozen at approval — that's the
    contract. Their Headline result cells in History stay too
    (they were valid against the old goal).
@@ -884,7 +884,7 @@ handling rigor as `done`:
 
 When the user says "compare 01 and 02", "how does this run stack
 up against the baseline?", "what's the trend across runs?" — that
-is **not** a new-experiment request. Don't draft a plan file.
+is **not** a new-experiment request. Don't draft a design note.
 Don't add a row to History. This is a *read* of past work.
 
 **v1 scope: pairwise side-by-side, no programmatic
@@ -895,7 +895,7 @@ single-learner by its declared scope, and we do not stretch it.
 Procedure for "compare X and Y":
 
 - **Headline side-by-side.** Pull the Headline result cells for
-  each requested stem from `PLAN.md` History and surface them
+  each requested stem from `JOURNAL.md` History and surface them
   side by side, with one-sentence intent for each (also from
   History). This is usually enough to answer "is the new one
   worth it?".
@@ -905,7 +905,7 @@ Procedure for "compare X and Y":
   — that skill is single-learner by scope. The user does the
   cross-experiment synthesis from the two narratives; the skill
   does not.
-- **Don't write to `plan/`** during a compare request. If the
+- **Don't write to `journal/`** during a compare request. If the
   side-by-side reading surfaces a finding the user wants to act
   on, re-enter § 1 with the sourcing menu — typically `skore`
   (mine one or both reports into Backlog rows) or `user` (the
@@ -919,7 +919,7 @@ significance test or "stat-sig comparison", surface this gap:
 significance, you'd need to run a paired re-run (see § Re-runs
 → Batch re-run) and compare the per-fold metrics manually."*
 
-The plan files are the durable record of *experiments tried*;
+The design notes are the durable record of *experiments tried*;
 comparisons are derived views, not new entries.
 
 ## Re-runs
@@ -936,7 +936,7 @@ Use when the user (often after a `skore`-surfaced finding) asks
 to redo exactly one prior experiment under a controlled change.
 
 - New stem: `NN_<original_stem>_rerun.py` and the matching
-  `plan/NN_<original_stem>_rerun.md`. The numeric prefix is the
+  `journal/NN_<original_stem>_rerun.md`. The numeric prefix is the
   next free integer; `<original_stem>` preserves provenance.
 - `Sourcing strategy` line: typically `user re-run` (the user
   asks for the redo, often after a `skore`-surfaced finding
@@ -954,10 +954,10 @@ past runs) calls for N≥2 prior experiments to be redone under a
 controlled condition — for example, "redo 01, 02, 03 with
 paired seeds and a fixed splitter so the comparisons are
 sound." This is **one** intervention, not N; it gets **one**
-plan file.
+design note.
 
 - New stem: `NN_paired_comparison.py` and
-  `plan/NN_paired_comparison.md` (or another descriptive name
+  `journal/NN_paired_comparison.md` (or another descriptive name
   reflecting the controlled condition: `NN_seeded_redo`,
   `NN_aligned_splits`, …). One numeric prefix; one approval; one
   History row.
@@ -981,14 +981,14 @@ plan file.
 
 ### Both shapes
 
-A new row goes into `PLAN.md` History at approval; the
+A new row goes into `JOURNAL.md` History at approval; the
 original rows are **not** edited. The `Implication` block of
 each original may be updated post-re-run with a one-line link
 ("see `NN_X_rerun` for the seeded comparison" or
 "see `NN_paired_comparison` for the paired-seed redo") — that
 is the only edit allowed to a frozen file.
 
-In-place edits to an approved plan file are reserved for the
+In-place edits to an approved design note are reserved for the
 Status block. Re-runs are not amendments — they're new
 experiments that happen to share most of the design.
 
@@ -999,17 +999,17 @@ otherwise.
 
 | Situation | Action |
 |---|---|
-| **No prior experiment in `PLAN.md`** (bootstrap) | None — § 0 forces an auto-drafted baseline. The strategy skills only apply once at least one experiment is recorded. |
-| **The user names a Backlog row** ("go with B2", "let's do B5") | Promote directly: no strategy skill invoked. Frame the proposal from the row's `Item` + `Source`; remove the row from Backlog when the plan file is approved. |
-| "mine the report", "what does skore see?", "fill the backlog from the diagnostic" | `iterate-from-skore` — enriches Backlog, summarizes, re-shows the menu. *No plan file drafted on this turn.* |
+| **No prior experiment in `JOURNAL.md`** (bootstrap) | None — § 0 forces an auto-drafted baseline. The strategy skills only apply once at least one experiment is recorded. |
+| **The user names a Backlog row** ("go with B2", "let's do B5") | Promote directly: no strategy skill invoked. Frame the proposal from the row's `Item` + `Source`; remove the row from Backlog when the design note is approved. |
+| "mine the report", "what does skore see?", "fill the backlog from the diagnostic" | `iterate-from-skore` — enriches Backlog, summarizes, re-shows the menu. *No design note drafted on this turn.* |
 | "I want to try X", "let's add Y", a scientific article link, a GitHub issue link, a spec file path | `iterate-from-user` — opens its own three-branch AskUserQuestion (article / resource / free-text), confirms synthesis with the user, returns a Proposal. (If the user already typed a URL / issue / inline idea, pass it in pre-resolved.) |
-| "give me ideas", "what do you suggest", "you decide", "come up with something", "propose for me" | `my-pick` — handled inline. Synthesize 2-4 candidates from PLAN.md context, present via AskUserQuestion, user picks, plan file drafted. |
+| "give me ideas", "what do you suggest", "you decide", "come up with something", "propose for me" | `my-pick` — handled inline. Synthesize 2-4 candidates from JOURNAL.md context, present via AskUserQuestion, user picks, design note drafted. |
 | Open-ended ("what's next?") with at least one recorded experiment | **Present the sourcing menu** (see § "The sourcing menu") — paired with the Backlog table — and let the user pick. No silent default. Free text resolves per § "Free-text handling". |
 
 The strategy skills are intentionally shallow: each one knows
 how to *source* a proposal (or, for `skore`, a set of Backlog
 rows) and hand it back here. This skill is where the proposal
-becomes a plan file. The `skore` strategy requires a prior
+becomes a design note. The `skore` strategy requires a prior
 experiment with an on-disk report — that's why bootstrap (§ 0)
 skips dispatch entirely.
 
@@ -1018,7 +1018,7 @@ report was clean (every diagnostic surface looks fine) or the
 report wasn't accessible (no skore Project store, key missing,
 skore not importable; see `iterate-from-skore`'s
 "empty-diagnosis outcome" and "inaccessible-report fallback")
-— append a one-liner under `PLAN.md` Status citing the date:
+— append a one-liner under `JOURNAL.md` Status citing the date:
 
 - `Skore diagnosis clean on <stem> as of <YYYY-MM-DD>`, or
 - `Skore report inaccessible on <stem> as of <YYYY-MM-DD>;
@@ -1039,7 +1039,7 @@ instead.
   owned by `build-ml-pipeline`.
 - Decide *whether* a workspace exists or where things go. That's
   `organize-ml-workspace`.
-- Write commits or PRs describing what was done. The plan files
+- Write commits or PRs describing what was done. The design notes
   are the durable record; commit messages are out of scope here.
 - **Define what counts as a successful experiment.** No
   "Success criteria" / "Acceptance criteria" / "target metric
@@ -1052,28 +1052,28 @@ instead.
 
 ## Companion skills
 
-- **`organize-ml-workspace`** — scaffolds `plan/` (empty
-  `PLAN.md`) and `tests/smoke/` (placeholder
+- **`organize-ml-workspace`** — scaffolds `journal/` (empty
+  `JOURNAL.md`) and `tests/smoke/` (placeholder
   `test_01_baseline.py`); enforces the three-way stem-pairing
-  rule between `plan/NN_*.md`, `experiments/NN_*.py`, and
+  rule between `journal/NN_*.md`, `experiments/NN_*.py`, and
   `tests/smoke/test_NN_*.py`.
 - **`iterate-from-user`** — sources the next experiment from
   the user via three entry points (article URL, resource link,
   free text); confirms its synthesis with the user before
   returning a Proposal block.
 - **`iterate-from-skore`** — walks the prior experiment's skore
-  report via `report.diagnosis()`, enriches `PLAN.md` Backlog
+  report via `report.diagnosis()`, enriches `JOURNAL.md` Backlog
   with one row per actionable finding, summarizes for the user,
   and hands back to the sourcing menu (where the user typically
   picks a `B<N>` row next).
 - **`evaluate-ml-pipeline`** — read the skore report after a run
   before recording the outcome.
 - **`build-ml-pipeline`** — implementation of the *method*
-  section once the plan is approved. Also where § 3 routes when
+  section once the design note is approved. Also where § 3 routes when
   a smoke-test failure points at a graph-topology bug (typically
   a late `mark_as_X`).
 - **`test-ml-pipeline`** — router for `tests/`. § 3 dispatches
-  here right after plan approval to draft the matching smoke
+  here right after design-note approval to draft the matching smoke
   test; § 4 refuses to flip an experiment to `done` until that
   smoke test passes.
 - **`smoke-test-ml-pipeline`** — owns the smoke test contract
@@ -1083,10 +1083,10 @@ instead.
 
 ## Templates
 
-- `templates/PLAN.md` — the three-section index skeleton.
-- `templates/experiment_plan.md` — the per-experiment design
+- `templates/JOURNAL.md` — the three-section index skeleton.
+- `templates/experiment_design.md` — the per-experiment design
   note skeleton with status block.
 
 Copy, don't rewrite. The templates encode the contract — keep
-the section names stable so `PLAN.md` stays diffable across
+the section names stable so `JOURNAL.md` stays diffable across
 experiments and sessions.

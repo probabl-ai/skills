@@ -95,7 +95,7 @@ Pre-flight (organize-ml-workspace):
 - [ ] Skill(python-api) consulted for: Project, put, evaluate
 - [ ] Decision recorded: new experiment file vs. edit existing
       (asked the user if this is an iteration)
-- [ ] `plan/` scaffolded: empty `PLAN.md` placed (content owned by
+- [ ] `journal/` scaffolded: empty `JOURNAL.md` placed (content owned by
       `iterate-ml-experiment`, not this skill)
 ```
 
@@ -122,7 +122,7 @@ whether a layout already exists:
 | `src/<pkg>/__init__.py` or `<pkg>/__init__.py` at root | package directory already chosen — keep it |
 | `<pkg>.egg-info/` at the project root or under `src/` | a stale or out-of-band `pip install -e .` ran at some point; if the manager's manifest does **not** carry the editable entry, surface this as drift and offer to clean up + wire it through the manager |
 | `experiments/`, `notebooks/`, `scripts/`, `analyses/` | experiment location already chosen — keep it |
-| `plan/`, `plans/`, `proposals/` | plan/iteration location already chosen — keep it |
+| `journal/`, `plans/`, `proposals/` | journal / iteration-log location already chosen — keep it |
 | `reports/`, `results/`, `runs/` | report location already chosen — keep it |
 | `tests/` | test location already chosen — keep it; per-test-category subfolders (`tests/smoke/`, `tests/regression/`, …) are owned by `test-ml-pipeline` |
 | `mlflow.db` / `mlruns/` at the project root | tracker artifacts from prior work — **leave them alone**; skore is the canonical tracker for this stack (see `data-science-python-stack`). Note their presence to the user once and move on. |
@@ -148,15 +148,15 @@ project/
 │   ├── features.py         # transformers, encoders, feature functions
 │   ├── pipeline.py         # the learner declaration (skrub DataOps)
 │   └── evaluate.py         # ONLY: CV strategy + (optional) metric overrides
-├── plan/                   # iteration log + per-experiment design notes
-│   ├── PLAN.md             # session-start log; index of experiments
+├── journal/                   # iteration log + per-experiment design notes
+│   ├── JOURNAL.md             # session-start log; index of experiments
 │   └── 01_baseline.md      # one `.md` per planned experiment, same stem
 ├── experiments/            # one `# %%` script per experiment
 │   └── 01_baseline.py
 ├── tests/                  # pytest tests; pairs 1:1 with experiments
 │   └── smoke/              # body owned by `smoke-test-ml-pipeline`;
 │                           # per-experiment files placed by
-│                           # `test-ml-pipeline` once each plan is approved
+│                           # `test-ml-pipeline` once each design note is approved
 ├── overview/               # cross-experiment project digest
 │   └── summary.md          # agent-authored narrative; refreshed by
 │                           # `iterate-ml-experiment` § 4 via scratch probe
@@ -197,8 +197,8 @@ places the empty subfolder + the placeholder file.
 
 `overview/` is part of the default scaffold too. It carries a
 single file — `summary.md` — that is the agent's read target
-for the project-level narrative (complementing `plan/PLAN.md`'s
-index role). The per-experiment `plan/NN_*.md` files remain the
+for the project-level narrative (complementing `journal/JOURNAL.md`'s
+index role). The per-experiment `journal/NN_*.md` files remain the
 source of truth (frozen Method / Risks); `summary.md` is the
 *curated* view across them, plus the cross-experiment metrics
 table extracted from the skore Project.
@@ -207,7 +207,7 @@ table extracted from the skore Project.
 `iterate-ml-experiment` § 4 rewrites it by hand after every
 outcome recording: the agent runs a one-off probe under
 `scratch/<ts>_refresh_summary.py` to extract `project.summarize()`
-and the `## Status` blocks from `plan/NN_*.md`, then writes a
+and the `## Status` blocks from `journal/NN_*.md`, then writes a
 curated narrative to `summary.md` (not a verbatim dump). This
 skill places the `summary.md` placeholder from
 `templates/summary.md` at scaffold time; § 4 of
@@ -283,32 +283,32 @@ version control.
 
 ### File-creation rule
 
-- **Plan first, then code.** Before creating
+- **Design note first, then code.** Before creating
   `experiments/NN_short_name.py`, the matching
-  `plan/NN_short_name.md` must exist and have been validated by the
-  user. Plan content (sections, validation checklist) is owned by
+  `journal/NN_short_name.md` must exist and have been validated by the
+  user. Design-note content (sections, validation checklist) is owned by
   `iterate-ml-experiment`; this skill only enforces the
   pairing — same stem, planned-before-coded.
 - **Three-way stem pairing.** Every experiment is identified by a
   single `NN_<short_name>` stem that appears in **three** places:
 
   ```
-  plan/NN_<short_name>.md                       (design note)
+  journal/NN_<short_name>.md                       (design note)
   experiments/NN_<short_name>.py                (script)
   tests/smoke/test_NN_<short_name>.py           (smoke test)
   ```
 
   All three exist for every experiment by the time it can flip
-  to `done` in `PLAN.md`. The plan is written first
+  to `done` in `JOURNAL.md`. The design note is written first
   (`iterate-ml-experiment`); the script and the test are placed
-  by this skill on plan approval; the smoke test body is filled
+  by this skill on design-note approval; the smoke test body is filled
   in by `smoke-test-ml-pipeline`. The `test_` prefix on the
   test file is the pytest naming convention; the
   `NN_<short_name>` portion matches the experiment exactly.
 - **New experiment → new file.** Default to creating a new file:
   `NN_short_name.py` (e.g. `02_text_encoder.py`,
   `03_grouped_cv.py`). The numeric prefix preserves the iteration
-  order in `ls`. The companion `plan/NN_short_name.md` and
+  order in `ls`. The companion `journal/NN_short_name.md` and
   `tests/smoke/test_NN_short_name.py` share the exact same stem.
 - **Iterating on an existing experiment → ask first.** When the
   user says "let's tweak experiment 02" or "iterate on the text
@@ -436,19 +436,19 @@ trivial later.
    implementation chain.
 6. Create the **empty** `tests/smoke/` folder. Do **not** drop a
    placeholder test file here — `test-ml-pipeline`'s Stop condition
-   forbids a test file before the matching plan is approved, and
-   no plan exists yet at scaffold time. Per-experiment placeholders
+   forbids a test file before the matching design note is approved, and
+   no design note exists yet at scaffold time. Per-experiment placeholders
    land later via `test-ml-pipeline` (called from
-   `iterate-ml-experiment` § 3 once a plan is approved). Verify
+   `iterate-ml-experiment` § 3 once a design note is approved). Verify
    pytest is on the manifest (per `data-science-python-stack`
    § Tier 1); if not, hand off to `python-env-manager` to add it.
-7. Create `plan/` with a one-line **placeholder** `PLAN.md`
+7. Create `journal/` with a one-line **placeholder** `JOURNAL.md`
    (literally `# PLAN\n\n<!-- placeholder; populated by iterate-ml-experiment on first invocation -->`).
    This skill **does not** read `iterate-ml-experiment`'s
    template — each skill owns its own template surface. Hand
-   off immediately; `iterate-ml-experiment` rewrites `PLAN.md`
-   from its own `templates/PLAN.md` and writes the matching
-   `plan/01_baseline.md`, validated **before** the experiment
+   off immediately; `iterate-ml-experiment` rewrites `JOURNAL.md`
+   from its own `templates/JOURNAL.md` and writes the matching
+   `journal/01_baseline.md`, validated **before** the experiment
    script runs.
 8. Create `overview/` and drop the **placeholder `summary.md`**
    from `templates/summary.md`. The placeholder documents the
@@ -499,7 +499,7 @@ trivial later.
 13. Hand back to the relevant sibling skill: `build-ml-pipeline`
     for what goes inside `pipeline.py`, `evaluate-ml-pipeline` for
     what `splitter` should be in `evaluate.py`,
-    `iterate-ml-experiment` for the plan content and the
+    `iterate-ml-experiment` for the design-note content and the
     conversational loop with the user, `test-ml-pipeline` /
     `smoke-test-ml-pipeline` for the body of
     `tests/smoke/test_*.py`.
@@ -536,9 +536,9 @@ Copy, don't rewrite. The templates encode the contracts above
 
 ## Companion skills
 
-- **`iterate-ml-experiment`** — owns `plan/PLAN.md` and the
-  per-experiment `plan/NN_*.md` design notes. This skill places
-  the empty `plan/` folder; that skill fills it. Hand off any time
+- **`iterate-ml-experiment`** — owns `journal/JOURNAL.md` and the
+  per-experiment `journal/NN_*.md` design notes. This skill places
+  the empty `journal/` folder; that skill fills it. Hand off any time
   a new experiment is being proposed, before the experiment
   script is written.
 - **`build-ml-pipeline`** — what goes inside `pipeline.py`,
@@ -550,7 +550,7 @@ Copy, don't rewrite. The templates encode the contracts above
   the stem-pairing rule between an experiment and its tests.
   Lightweight router; dispatches to per-category subskills.
 - **`smoke-test-ml-pipeline`** — fills the placeholder smoke
-  test body once the matching plan is approved. The smoke test
+  test body once the matching design note is approved. The smoke test
   is required for every experiment per
   `iterate-ml-experiment` § 3 / § 4.
 - **`python-api`** — `skore.Project`, `skore.evaluate`,

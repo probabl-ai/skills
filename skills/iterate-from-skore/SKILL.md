@@ -3,12 +3,12 @@ name: iterate-from-skore
 description: >
   Source the next ML experiment proposal by walking the skore
   report's diagnostic surface (`report.diagnosis()`) and converting
-  every actionable finding into a row in `PLAN.md`'s Backlog. Returns
+  every actionable finding into a row in `JOURNAL.md`'s Backlog. Returns
   the enriched Backlog rows + a one-paragraph summary back to
-  `iterate-ml-experiment`, which writes the rows into `PLAN.md` and
+  `iterate-ml-experiment`, which writes the rows into `JOURNAL.md` and
   re-presents the sourcing menu so the user can now promote a `B<N>`
   row. Stops at "Backlog enriched, summary returned"; never writes a
-  per-experiment plan file, never picks the "winning" finding — the
+  per-experiment design note, never picks the "winning" finding — the
   user picks via `B<N>`.
 
   TRIGGER when: `iterate-ml-experiment` is picking a sourcing strategy
@@ -29,9 +29,9 @@ description: >
   memory), call `report.diagnosis()` on the latest experiment's
   report, walk every actionable finding it returns, and emit one
   Backlog-candidate row per finding. Dedupe against rows already in
-  `PLAN.md` Backlog by source citation. Return the candidate rows + a
+  `JOURNAL.md` Backlog by source citation. Return the candidate rows + a
   one-paragraph human summary. The parent skill writes the rows to
-  `PLAN.md` and re-shows the sourcing menu.
+  `JOURNAL.md` and re-shows the sourcing menu.
 ---
 
 # Iterate from skore
@@ -39,12 +39,12 @@ description: >
 Source: `report.diagnosis()` on the prior experiment's skore report.
 Output: a set of **Backlog-candidate rows** + a short human summary,
 handed back to `iterate-ml-experiment`. The parent skill writes the
-rows to `PLAN.md` Backlog and re-presents the sourcing menu so the
+rows to `JOURNAL.md` Backlog and re-presents the sourcing menu so the
 user can promote one via `B<N>`.
 
 ## Output contract (read this before the body)
 
-This skill **never writes `plan/` files** (including `PLAN.md`) — the
+This skill **never writes `journal/` files** (including `JOURNAL.md`) — the
 parent owns those. It returns two artifacts as conversation text:
 
 1. **Backlog-candidate rows** — one row per actionable diagnostic
@@ -73,7 +73,7 @@ If `report.diagnosis()` surfaces nothing actionable (rare — a clean
 report is real), return zero candidate rows and a summary that says so
 explicitly: "the report looks clean on <metric>, <calibration>,
 <residuals>; no actionable findings on this turn." The parent will
-note this in `PLAN.md` Status and the user picks `user` next.
+note this in `JOURNAL.md` Status and the user picks `user` next.
 
 ### Inaccessible-report fallback
 
@@ -86,7 +86,7 @@ surface the gap to the user.
 
 ## Stop conditions
 
-- **Don't write `plan/` files.** That includes `PLAN.md`. This skill
+- **Don't write `journal/` files.** That includes `JOURNAL.md`. This skill
   returns rows as conversation text; the parent writes them.
 - **Don't read the report from memory.** Always go through
   `Skill(python-api)` for the report API and `evaluate-ml-pipeline` for
@@ -104,7 +104,7 @@ surface the gap to the user.
   parent's sourcing menu (`B<N>`). Emitting only one row when the
   diagnosis surfaced five hides choices the user is supposed to make.
 - **Dedup against existing Backlog rows by `Source` citation.** Read
-  `PLAN.md` Backlog before emitting; skip any candidate whose `Source`
+  `JOURNAL.md` Backlog before emitting; skip any candidate whose `Source`
   matches an existing row. Re-mining a stale report shouldn't double
   the Backlog.
 - **Don't fabricate when the report is inaccessible.** Return zero
@@ -143,7 +143,7 @@ surface the gap to the user.
    *not* actionable (sample too small); a systematic residual on a
    feature we control *is* actionable. Skip the un-actionable ones —
    they're noise.
-4. **Dedup against the existing Backlog.** Read `PLAN.md` Backlog
+4. **Dedup against the existing Backlog.** Read `JOURNAL.md` Backlog
    (the parent's most recent state). For each candidate, check
    whether a row with the same `Source` citation already exists.
    Drop the duplicates.
@@ -155,7 +155,7 @@ surface the gap to the user.
 
 ## What is returned
 
-A short structured block, not a plan file:
+A short structured block, not a design note:
 
 ```
 Backlog candidates (from: skore diagnosis on <prev_stem>):
@@ -173,7 +173,7 @@ Summary:
 ```
 
 `iterate-ml-experiment` consumes this:
-1. Writes the candidate rows into `PLAN.md` Backlog with stable
+1. Writes the candidate rows into `JOURNAL.md` Backlog with stable
    `B<N>` indices appended at the end.
 2. Surfaces the summary verbatim to the user.
 3. Re-presents the sourcing menu with the enriched Backlog visible
@@ -182,8 +182,8 @@ Summary:
 
 ## Companion skills
 
-- **`iterate-ml-experiment`** — the caller; owns the plan files
-  (including `PLAN.md`).
+- **`iterate-ml-experiment`** — the caller; owns the design notes
+  (including `JOURNAL.md`).
 - **`evaluate-ml-pipeline`** — for "what does the report say" before
   "what should we try next". This skill is the *next-step* side;
   `evaluate-ml-pipeline` is the *read* side.
