@@ -99,17 +99,23 @@ is **install it**, not substitute. Specifically:
 
 ## Tier 1 — Mandatory (install at project start)
 
-These four libraries are always installed in a data-science / ML
+These five libraries are always installed in a data-science / ML
 project. The first three co-own the modeling workflow:
 scikit-learn provides the estimators, skrub provides the
 data-cleaning + DataOps layer that sits before them, skore
 evaluates the result and persists it as a project on disk. The
 fourth, `ruff`, owns lint + format and is non-negotiable: every
-project Claude touches should pass `ruff check`. Each is named
-explicitly even when transitively present, because the workflow
-skills (`build-ml-pipeline`, `evaluate-ml-pipeline`,
-`python-code-style`) depend on them directly and should not
-silently lose them if upstream packaging changes.
+project Claude touches should pass `ruff check`. The fifth,
+`pytest`, runs the smoke test that every approved experiment
+must have per the `test-ml-pipeline` / `smoke-test-ml-pipeline`
+contract — without pytest the smoke-test gate can't enforce
+predict-time correctness, so pytest stays mandatory even when
+no other tests have been written yet. Each is named explicitly
+even when transitively present, because the workflow skills
+(`build-ml-pipeline`, `evaluate-ml-pipeline`,
+`python-code-style`, `test-ml-pipeline`) depend on them
+directly and should not silently lose them if upstream packaging
+changes.
 
 - [`scikit-learn`](references/scikit-learn.md) — tabular ML
   algorithms, preprocessing, model-selection helpers. Use
@@ -140,6 +146,14 @@ silently lose them if upstream packaging changes.
   ignores) and the rule "Claude runs ruff after generating code"
   are owned by the `python-code-style` skill, which also ships the
   canonical `ruff.toml` template.
+- [`pytest`](references/pytest.md) — test runner for the
+  smoke-test gate enforced by `test-ml-pipeline` /
+  `smoke-test-ml-pipeline`. Every approved experiment must have a
+  passing `tests/smoke/test_NN_<short_name>.py` before its row
+  in `JOURNAL.md` can flip to `done`; pytest is what runs that
+  test, so the dependency is non-negotiable even on workspaces
+  that haven't authored any tests yet. Install in the **same
+  feature/env as the rest of the Tier 1 stack**.
 
 ## Tier 2 — User choice: tabular library
 
@@ -201,10 +215,6 @@ the conversion to/from notebook format when needed.
 - [`jupytext`](references/jupytext.md) — sync `.ipynb` ↔ `.py`
   (`# %%` markers) so the notebook source-of-truth stays
   version-control friendly.
-
-### Testing
-
-- [`pytest`](references/pytest.md) — testing.
 
 ## Tier 4 — Transitive (already pulled in; do not install explicitly)
 

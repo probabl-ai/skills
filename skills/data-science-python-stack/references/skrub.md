@@ -4,7 +4,7 @@
 > (`skrub.var`, `.skb.apply`, `.skb.apply_func`, `mark_as_X` /
 > `mark_as_y`, `SkrubLearner`) and the env-dict it expects at fit
 > time evolve across minor versions; older versions silently diverge
-> from the examples in `build-ml-pipeline` and `skrub-api`. Use
+> from the examples in `build-ml-pipeline` and `python-api`. Use
 > `skrub = ">=<latest>"` as a floor; refresh the floor on every
 > install.
 

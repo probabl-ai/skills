@@ -8,9 +8,24 @@
 # %%
 import skore
 
+from <pkg> import PROJECT_ROOT
 from <pkg>.data import load_dataset
 from <pkg>.evaluate import splitter
 from <pkg>.pipeline import build_learner
+
+# %% [markdown]
+# ## Paths
+#
+# `PROJECT_ROOT` comes from the package's `__init__.py` and resolves
+# from `__file__` — independent of the current working directory.
+# Replace `"data"` with the project's actual data folder if different;
+# data layout is user-owned. The same absolute path is passed both as
+# the pipeline preview and via `data=` to `skore.evaluate`, so
+# `learner.skb.preview()` and `skore.evaluate(...)` see the same
+# binding.
+
+# %%
+DATA_DIR = PROJECT_ROOT / "data"
 
 # %% [markdown]
 # ## Project
@@ -30,10 +45,14 @@ project = skore.Project(workspace="reports", name="<project-name>", mode="local"
 
 # %% [markdown]
 # ## Data and learner
+#
+# `data_dir_preview=DATA_DIR` makes `learner.skb.preview()` work; it
+# does not affect what `skore.evaluate` actually fits on (that comes
+# from `data=` below).
 
 # %%
 X, y = load_dataset()
-learner = build_learner()
+learner = build_learner(data_dir_preview=DATA_DIR)
 
 # %% [markdown]
 # ## Evaluate
@@ -41,10 +60,13 @@ learner = build_learner()
 # Cross-validator and any metric overrides are imported from
 # `<pkg>.evaluate`. The experiment script does not redefine them.
 # `SkrubLearner.fit` takes a single environment dict (it does *not*
-# implement `fit(X, y)`), so we pass the bindings via `data=`.
+# implement `fit(X, y)`), so we pass the bindings via `data=`. Use
+# the source-bound form (`data={"data_dir": str(DATA_DIR)}`) when the
+# pipeline binds a source identifier; use `data={"X": X, "y": y}` for
+# materialized bindings.
 
 # %%
-report = skore.evaluate(learner, data={"X": X, "y": y}, splitter=splitter)
+report = skore.evaluate(learner, data={"data_dir": str(DATA_DIR)}, splitter=splitter)
 report
 
 # %% [markdown]

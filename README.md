@@ -10,16 +10,16 @@ and [skore](https://skore.probabl.ai/).
 | --- | --- |
 | [build-ml-pipeline](skills/build-ml-pipeline/SKILL.md) | Declare the pipeline from data source to predictor as a skrub DataOps graph. Stops at the declared object — no fit, split, tuning, or persistence. |
 | [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a single sklearn-compatible learner: pick the right entry point (`skore.evaluate` first), the right cross-validator, and consume report metadata. |
+| [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Router that owns the `tests/` folder of an ML workspace and the experiment ↔ test pairing rule. Dispatches to a per-category subskill. |
+| [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Diagnostic-by-construction pytest that catches the "load → featurize → split" anti-pattern by predicting on a disjoint, no-buffer slice of the real data source. |
 
 ## Iteration loop
 
 | Skill | Description |
 | --- | --- |
-| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Drives the iteration loop on top of an ML workspace — owns `plan/PLAN.md` and per-experiment design notes, and dispatches to a sourcing strategy below. |
-| [iterate-from-diagnostic](skills/iterate-from-diagnostic/SKILL.md) | Source the next experiment by inspecting the previous skore report — residuals, calibration, per-slice metrics. |
-| [iterate-from-literature](skills/iterate-from-literature/SKILL.md) | Source the next experiment by searching papers, blog posts, and library docs for applicable techniques. |
-| [iterate-from-methodology](skills/iterate-from-methodology/SKILL.md) | Source the next experiment by auditing the methodology of previous runs — split, leakage, target encoding, sample size, metric, baseline. |
-| [iterate-from-user](skills/iterate-from-user/SKILL.md) | Source the next experiment from the user directly, or from a GitHub issue / spec / notes they point at. |
+| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Drives the iteration loop on top of an ML workspace — owns `journal/JOURNAL.md` and per-experiment design notes, and dispatches to a sourcing strategy below. |
+| [iterate-from-skore](skills/iterate-from-skore/SKILL.md) | Source the next experiment by walking `report.diagnosis()` on the previous skore report and turning every actionable finding into a Backlog row. |
+| [iterate-from-user](skills/iterate-from-user/SKILL.md) | Source the next experiment from the user directly — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo). |
 
 ## Workspace and tooling
 
@@ -34,6 +34,4 @@ and [skore](https://skore.probabl.ai/).
 
 | Skill | Description |
 | --- | --- |
-| [sklearn-api](skills/sklearn-api/SKILL.md) | File-per-module index of scikit-learn's public API — names, signatures, and one-line summaries generated from `doc/api_reference.py`. |
-| [skore-api](skills/skore-api/SKILL.md) | API reference for skore as an evaluation library: `evaluate`, the report types and their accessors, and `Project` for persisting and comparing runs. |
-| [skrub-api](skills/skrub-api/SKILL.md) | Reference index for skrub's public API — top-level estimators, joiners, the DataOps framework, column selectors, datasets, configuration. |
+| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package — `inspect.signature` + `__doc__` for a symbol, `dir` / `pkgutil.iter_modules` for a module, versioned-docs WebSearch + cache for narrative. Carries conceptual orientation for sklearn / skrub / skore. |

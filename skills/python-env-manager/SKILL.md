@@ -299,6 +299,35 @@ Surface to the user that `pip install` alone leaves no audit trail.
 If the project is fresh, offer migration to a managed alternative
 (pixi by default).
 
+## Editable workspace package — wire `src/<pkg>/` per manager
+
+When the project ships a local Python package under `src/<pkg>/`
+(declared by a `pyproject.toml` at the project root), it must be
+installed in **editable** mode so that `from <pkg>.X import Y` works
+from any CWD without `PYTHONPATH=src` hacks **and** so that edits to
+the source tree are picked up immediately. `organize-ml-workspace`
+hands off to this section after dropping `pyproject.toml`.
+
+The wiring differs per manager. Use the matching command — never
+fall back to `pip install -e .` inside a managed env (that produces
+the same out-of-manifest drift as any other wrong-manager install).
+
+| Manager | Wiring | Notes |
+|---|---|---|
+| **pixi** | `pixi add --pypi --editable .` | Adds to `[pypi-dependencies]`. Pass `--feature <name>` to scope (e.g. the same feature where Tier 1 lives). On next `pixi install`, the package is editable in every env that includes that feature. |
+| **uv** | nothing extra — `uv sync` installs the `[project]` package editable by default | If the workspace has multiple packages, add `[tool.uv.sources]` entries; for the single-package case the default `uv sync` behavior is enough. |
+| **poetry** | nothing extra — `poetry install` is editable by default | Make sure `pyproject.toml` carries `[tool.poetry] packages = [{include = "<pkg>", from = "src"}]` (or that the build backend's package discovery picks up `src/<pkg>/`). |
+| **hatch** | nothing extra — `hatch run` envs install editable by default | Make sure `[tool.hatch.build.targets.wheel] packages = ["src/<pkg>"]` is declared in `pyproject.toml`. |
+| **conda / mamba** | after the env is in place: `pip install -e .` (run inside the conda env) | conda has no native concept of editable installs from a local `pyproject.toml`; pip is the right tool. The `pip install -e .` here is **inside a conda-managed env** — that's the supported hybrid, not a wrong-manager install. |
+| **pip + venv** | activate the venv, then `pip install -e .` | The standalone case. There is no manifest entry — surface this and offer migration to a managed alternative. |
+
+Detection cleanup: if you find a stale `<pkg>.egg-info/` at the
+project root or under `src/` (typically a relic of an out-of-band
+`pip install -e .`) **and** the manager's manifest does not carry
+the editable entry, that is drift. Clean up the egg-info **after**
+wiring the install correctly through the manager — never before
+(the cleanup can break a working but unmanaged setup).
+
 ## Bootstrap — when no manager is detected
 
 If detection found nothing **and the user agrees to use pixi**:
@@ -346,7 +375,11 @@ whenever those skills surface a missing dependency or a new install:
   the right shell command.
 - **`organize-ml-workspace`** — its Stop condition "Tabular library
   is asked, not assumed" produces a pandas-vs-polars decision; this
-  skill executes the install.
+  skill executes the install. It also hands off to § "Editable
+  workspace package" once `pyproject.toml` is on disk so the local
+  `src/<pkg>/` package gets installed editable through the project's
+  manager (no `PYTHONPATH=src` workaround, no out-of-band
+  `pip install -e .`).
 - **`build-ml-pipeline`** / **`evaluate-ml-pipeline`** — their Stop
   conditions on missing `skrub` / `skore` redirect here for the
   install command. Their Pre-flight checklists include "Tier 1
