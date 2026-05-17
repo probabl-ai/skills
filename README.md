@@ -2,7 +2,8 @@
 
 A collection of skills for ML experimentation in Python, organized around
 [skrub](https://skrub-data.org/), [scikit-learn](https://scikit-learn.org/),
-and [skore](https://skore.probabl.ai/).
+and [skore](https://skore.probabl.ai/) and more broadly to the PyData
+ecosystem.
 
 ## Install
 
@@ -77,4 +78,4 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 | Skill | Description |
 | --- | --- |
-| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package — `inspect.signature` + `__doc__` for a symbol, `dir` / `pkgutil.iter_modules` for a module, versioned-docs WebSearch + cache for narrative. Carries conceptual orientation for sklearn / skrub / skore. |
+| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package — `inspect.signature` + `pydoc.render_doc` for a symbol, `dir` / `pkgutil.iter_modules` for a module, versioned-docs WebSearch + cache for narrative. Carries conceptual orientation for sklearn / skrub / skore. |
