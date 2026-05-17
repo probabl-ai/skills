@@ -4,6 +4,48 @@ A collection of skills for ML experimentation in Python, organized around
 [skrub](https://skrub-data.org/), [scikit-learn](https://scikit-learn.org/),
 and [skore](https://skore.probabl.ai/).
 
+## Install
+
+One command, 55+ agents — including **Claude Code, Codex, Cursor, OpenCode, Gemini CLI, and Mistral Vibe**:
+
+```bash
+npx skills add probabl-ai/skills
+```
+
+That's the [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel
+Labs. It auto-detects which coding agents you have installed and drops the
+skills into each one's skills directory — no per-agent configuration. Useful
+flags:
+
+```bash
+npx skills add probabl-ai/skills --list                    # preview the catalog
+npx skills add probabl-ai/skills --skill data-scientist-companion
+npx skills add probabl-ai/skills -g                        # global install (~/<agent>/skills/)
+npx skills add probabl-ai/skills -a claude-code -a codex   # target specific agents
+npx skills update                                          # pull the latest
+```
+
+See the full agent list and command reference in the
+[`skills` CLI docs](https://github.com/vercel-labs/skills#supported-agents).
+
+### Alternative — Claude Code plugin marketplace
+
+If you only use Claude Code and prefer the native plugin flow, this repo is
+also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces):
+
+```
+/plugin marketplace add probabl-ai/skills
+/plugin install probabl-skills@probabl-skills
+```
+
+`/plugin update` pulls new releases.
+
+## Entry point
+
+| Skill | Description |
+| --- | --- |
+| [data-scientist-companion](skills/data-scientist-companion/SKILL.md) | Front door for an ML / data-science session. Reads the workspace state on the opening turn, picks the right *first* skill to dispatch to, and hands off. Install this with the other skills if you want a single, guided entry; the other skills already route between each other internally once they own the turn. |
+
 ## ML pipeline lifecycle
 
 | Skill | Description |
