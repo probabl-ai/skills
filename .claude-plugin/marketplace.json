@@ -12,7 +12,7 @@
     {
       "name": "probabl-skills",
       "source": ".",
-      "description": "Companion + workflow skills for ML experimentation with skrub, scikit-learn, and skore. Includes a front-door router (`data-scientist-companion`) that picks the right starting skill from your first message.",
+      "description": "Workflow skills for ML experimentation with skrub, scikit-learn, and skore: pipeline build / evaluate / test, iteration loop, workspace + tooling.",
       "version": "0.1.0",
       "author": {
         "name": "Probabl",

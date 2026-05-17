@@ -14,15 +14,22 @@ npx skills add probabl-ai/skills
 
 That's the [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel
 Labs. It auto-detects which coding agents you have installed and drops the
-skills into each one's skills directory — no per-agent configuration. Useful
-flags:
+skills into each one's skills directory — no per-agent configuration.
+
+Install the **full bundle**. The skills cross-reference each other (the
+iteration-loop skill dispatches to its sourcing strategies, the test router
+dispatches to the smoke-test skill, several skills point to `python-api` for
+symbol lookups), and the Agent Skills spec doesn't yet carry a `requires`
+field, so the CLI can't auto-resolve those references — a partial install
+will leave dangling pointers.
+
+Useful flags once you have it:
 
 ```bash
-npx skills add probabl-ai/skills --list                    # preview the catalog
-npx skills add probabl-ai/skills --skill data-scientist-companion
-npx skills add probabl-ai/skills -g                        # global install (~/<agent>/skills/)
-npx skills add probabl-ai/skills -a claude-code -a codex   # target specific agents
-npx skills update                                          # pull the latest
+npx skills add probabl-ai/skills --list                  # preview the catalog
+npx skills add probabl-ai/skills -g                      # global install (~/<agent>/skills/)
+npx skills add probabl-ai/skills -a claude-code -a codex # target specific agents
+npx skills update                                        # pull the latest
 ```
 
 See the full agent list and command reference in the
@@ -39,12 +46,6 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 ```
 
 `/plugin update` pulls new releases.
-
-## Entry point
-
-| Skill | Description |
-| --- | --- |
-| [data-scientist-companion](skills/data-scientist-companion/SKILL.md) | Front door for an ML / data-science session. Reads the workspace state on the opening turn, picks the right *first* skill to dispatch to, and hands off. Install this with the other skills if you want a single, guided entry; the other skills already route between each other internally once they own the turn. |
 
 ## ML pipeline lifecycle
 
