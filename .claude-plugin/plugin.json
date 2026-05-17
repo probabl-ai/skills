@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "probabl-skills",
+  "version": "0.1.0",
+  "description": "Skills for ML experimentation in Python, organized around skrub, scikit-learn, and skore. Includes a front-door router (`data-scientist-companion`) that picks the right starting skill from your first message, plus workflow skills for the full pipeline lifecycle (build / evaluate / test), the iteration loop on top of a `journal/`, and workspace + tooling skills (env manager, library stack, code style, API discovery).",
+  "author": {
+    "name": "Probabl",
+    "url": "https://probabl.ai"
+  },
+  "homepage": "https://github.com/probabl-ai/skills",
+  "repository": "https://github.com/probabl-ai/skills",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "machine-learning",
+    "data-science",
+    "scikit-learn",
+    "skrub",
+    "skore",
+    "ml-experimentation"
+  ],
+  "category": "data-science"
+}
