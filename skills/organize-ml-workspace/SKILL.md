@@ -67,19 +67,81 @@ sibling skills.
 - **Notebooks are not silent.** If existing `.ipynb` files are
   present in the experiment folder, do not auto-convert to `# %%`
   scripts. Surface the convention shift and ask.
-- **Tabular library is asked, not assumed.** Even though `pandas` is
-  already pulled in by `skore`, do not silently target it in
-  scaffolded code. Ask the user at project start: pandas (free, no
-  extra install) or polars (adds an explicit install)? Both are
-  valid; one must be the project's chosen tabular library before
-  any `data.py` / experiment script is generated. See
-  `data-science-python-stack` § "Tier 2 — User choice".
+- **Tabular library is asked, not assumed (G-TABULAR).** Even though
+  `pandas` is already pulled in by `skore`, do not silently target
+  it in scaffolded code. The tabular pick is a competing-library
+  job — invoke `data-science-python-stack` § "Competing libraries —
+  general rule" and § "Tier 2"; the structured `AskUserQuestion`
+  there is non-skippable. Free-text user phrasing ("quick", "you
+  pick", "no preference") does **not** resolve this gate; see
+  `data-science-python-stack` § "Free-text resolution" for what
+  does. The decision is then persisted in `journal/JOURNAL.md`
+  Status `Workspace decisions` (owned by `iterate-ml-experiment`'s
+  template) so future sessions read it instead of re-asking.
+- **Package name is asked, not inferred (G-PKG-NAME).** Before any
+  `pyproject.toml` / `pixi.toml` / other manifest creation
+  (including running `pixi init`, `uv init`, `poetry init`, etc.),
+  fire an `AskUserQuestion` for the `src/<pkg>/` import name. The
+  proposed default is the project-root folder name in snake_case;
+  the user can confirm or override. **Manifest creation before
+  G-PKG-NAME passes is forbidden** — running the manager's `init`
+  first creates a `[project] name = <folder>` entry and then
+  reading "name is in the manifest, skip the ask" is a circular
+  loophole that produces the silent pick this gate exists to
+  block. If a manifest **already exists** from a prior session,
+  read `[project].name` and confirm via `AskUserQuestion`: "Keep
+  package name `<name>`?" — do not assume continuity. The answer
+  is persisted in `JOURNAL.md` Status `Workspace decisions`.
+- **Env manager is asked, not assumed (G-ENV-MGR).** This skill
+  hands off to `python-env-manager` for any install — including
+  the editable install of `pyproject.toml` — and that skill owns
+  the env-manager pick. **Do not run `pixi init` / `uv init` /
+  `poetry init` / any manager bootstrap on the user's behalf
+  without G-ENV-MGR having passed in
+  `python-env-manager`.** Pixi being on PATH is detection
+  context, not permission. The result is persisted in
+  `JOURNAL.md` Status `Workspace decisions`.
+- **Harness-level "no clarifying questions" hints do NOT waive the
+  gates above.** G-TABULAR, G-PKG-NAME, the `python-api`
+  consultation, and the new-vs-edit decision are operating-contract
+  gates, not clarifying questions. User urgency phrasing ("quick
+  baseline", "just scaffold it", "go fast") never waives them
+  either. See the project's downstream contract in
+  `iterate-ml-experiment` Stop conditions for the same rule across
+  the iteration loop.
+- **Post-hoc audit — required before ending the turn.** Before
+  declaring the turn complete, walk every row of the pre-flight
+  checklist and confirm the Evidence cell is filled with a
+  concrete citation. If any row is missing evidence, **surface
+  the non-compliance to the user explicitly in your final
+  message** rather than silently moving on. The most common
+  failure shape is "I scaffolded successfully so everything must
+  be fine" — the audit step is the only mechanism that catches
+  silent gate skips.
+
+## Forbidden shortcuts (observed in real traces)
+
+| Shortcut | Why it feels right | Why it's wrong |
+|----------|--------------------|----------------|
+| `pixi` is on PATH → run `pixi init` to get a manifest, then read the name back | One tool call, manifest done | Violates G-ENV-MGR (manager picked silently) AND G-PKG-NAME (name picked from folder via the init side effect). The "name is in pyproject" reason is circular when the init was the agent's tool call |
+| Folder name = good package name → skip the ask | Sensible default, user is busy | The default *value* is fine; the silent *pick* is not. G-PKG-NAME requires the structured ask even when proposing the folder name as the default |
+| `pandas` is already importable (via skore) → write `import pandas` in `data.py` | "Free" library, no install step | Violates G-TABULAR; transitive presence is not a pick |
+| Scaffold every skeleton in one turn, including a placeholder `experiments/01_baseline.py` | "Make the workspace look complete" | Scaffold stops at the empty `journal/` placeholder; the experiment file lands only after the design note is approved (`iterate-ml-experiment` § 3). Pre-emptive `experiments/` files force the agent to backfill content the user never approved |
+| `pyproject.toml` already exists with `name = <something>` → reuse without confirming | Continuity is friendly | Continuity from a prior agent turn is not continuity from a user decision — the prior turn may itself have been a silent pick. Always re-confirm via G-PKG-NAME on the first session that touches this workspace |
+| User said "scaffold the workspace" → batch G-TABULAR + G-PKG-NAME + G-ENV-MGR into prose recommendations | One round-trip is faster | The gates take structured `AskUserQuestion` calls per § "Free-text resolution". Prose recommendations followed by "let me know what you think" do NOT resolve the gates |
 
 ## Pre-flight — emit this checklist as visible text before any code
 
 Before scaffolding or editing any file, output the following block
-verbatim in your response. Each box must be backed by an actual
-tool call or an explicit decision documented in the response.
+verbatim in your response. **Each ticked box requires an
+`Evidence:` line** — a ticked box without evidence is a
+Stop-condition violation, indistinguishable from a skipped check.
+Evidence formats follow the same conventions as
+`iterate-ml-experiment` § "Pre-flight — evidence requirements":
+read-set rows cite the file-reading tool call this turn; gate
+rows cite an `AskUserQuestion id=...`, a user free-text quote, or
+a `JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)`
+reference; workflow rows cite the artifact produced.
 
 ```
 Pre-flight (organize-ml-workspace):
@@ -91,20 +153,46 @@ Pre-flight (organize-ml-workspace):
       Skipping any one of these is the most common failure mode for
       this skill — they own the gates this skill cross-references
       but does not itself enforce.
+      Evidence: Read .agents/skills/<each-listed-name>/SKILL.md (this turn)
+- [ ] `Workspace decisions` block in `journal/JOURNAL.md` Status checked
+      for pre-recorded gates (tabular, env_manager, package). Each
+      recorded decision skips its matching AskUserQuestion this turn.
+      Evidence: lists each <gate>: <value | not recorded> or
+                "n/a — JOURNAL.md does not exist yet (truly fresh project)"
 - [ ] Tier 1 mandatory libs importable in this env: sklearn, skrub, skore
       (per `data-science-python-stack` § "Tier 1")
-- [ ] Tabular library decided + installed: pandas (free via skore) |
-      polars (added explicitly) — asked the user when scaffolding fresh
+      Evidence: tool output of `pixi run python -c "import sklearn, skrub, skore"` (or equivalent for the project's env manager)
+- [ ] Tabular library decided + installed (G-TABULAR): pandas | polars
+      Evidence: AskUserQuestion id=<id>, answer=<pandas|polars> |
+                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
+                user quote turn N: "..."
+- [ ] Env manager decided (G-ENV-MGR): pixi | uv | poetry | hatch | conda | pip+venv
+      Evidence: AskUserQuestion id=<id> via python-env-manager |
+                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
+                detection-table match cited from python-env-manager § "Detection"
 - [ ] Layout detection done: <existing | fresh>
-- [ ] Package name resolved: <name> (source: pyproject / pixi / asked)
+      Evidence: tool output of `ls`/Glob on project root + matched signals from § "Detection"
+- [ ] Package name resolved (G-PKG-NAME): <name>
+      Evidence: AskUserQuestion id=<id>, answer=<name> |
+                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
+                existing manifest's [project].name **confirmed via AskUserQuestion this turn**.
+                "Read from pyproject.toml" alone is NOT sufficient — must include the confirmation.
 - [ ] `pyproject.toml` present at the project root, declaring the
       `src/<pkg>/` package; editable install wired via
       `python-env-manager` § "Editable workspace package"
+      Evidence: Read pyproject.toml (this turn) + tool call to the manager's editable-install command (if not already wired)
 - [ ] Skill(python-api) consulted for: Project, put, evaluate
+      Evidence: Read scratch/api/skore/<version>/{project_local,evaluate}.md
+                (cache hit, this turn) | Write of the same files (this turn).
+                "Read python-api SKILL.md" alone is NOT evidence; a Shape 1
+                probe that did not produce a cache file is NOT evidence
+                either (see `python-api` § "Shape 1 — symbol card").
 - [ ] Decision recorded: new experiment file vs. edit existing
       (asked the user if this is an iteration)
+      Evidence: AskUserQuestion id=<id> | user quote turn N: "..." | "n/a — first experiment in a fresh workspace"
 - [ ] `journal/` scaffolded: empty `JOURNAL.md` placed (content owned by
       `iterate-ml-experiment`, not this skill)
+      Evidence: Write journal/JOURNAL.md (this turn) | "already exists"
 ```
 
 ## Scope
@@ -415,16 +503,39 @@ trivial later.
    - **Yes** → glue. Add new files in the existing folders with
      names matching the existing pattern. Stop.
    - **No** → scaffold the default layout. Continue.
-2. Determine the package name (from `pyproject.toml` /
-   `pixi.toml` if present; otherwise ask the user).
+2. **Resolve the package name (G-PKG-NAME) before touching any
+   manifest.** Two sub-cases:
+   - **A manifest already exists** with `[project].name = <name>`:
+     fire an `AskUserQuestion` — *"Keep package name `<name>` for
+     `src/<pkg>/`?"* — with options `keep` / `rename to <other>`.
+     Reading the manifest alone is **not** sufficient; the
+     confirmation is the gate pass. Record the answer in
+     `journal/JOURNAL.md` Status `Workspace decisions`.
+   - **No manifest yet**: fire an `AskUserQuestion` with the
+     project-root folder name (snake_case) as the proposed
+     default and let the user confirm or override. Record the
+     answer in `Workspace decisions`. **Do not** run `pixi init`
+     / `uv init` / `poetry init` / any manager bootstrap before
+     this gate passes — the manager's `init` writes a name based
+     on the folder and then reading "name is in the manifest"
+     back is the circular silent pick this rule forbids.
+
+   Free-text resolution applies: a user message that names the
+   package directly ("call it `pricing_models`", "use `stock`")
+   resolves the gate; phrasing that doesn't name the package
+   ("you pick", "the obvious one", "go fast") does NOT — fall
+   through to the structured ask.
+
 3. **Drop `pyproject.toml`** at the project root from
-   `templates/pyproject.toml`, substituting `<pkg>`. Skip if a
-   `pyproject.toml` already declares the package via `[project]` +
-   a build backend's package-discovery section. Then **hand off to
+   `templates/pyproject.toml`, substituting `<pkg>` with the name
+   confirmed in step 2. Skip if a `pyproject.toml` already
+   declares the package via `[project]` + a build backend's
+   package-discovery section. Then **hand off to
    `python-env-manager` § "Editable workspace package"** to wire
    the editable install for the project's manager (e.g. `pixi add
    --pypi --editable .`). Do not run the install command yourself
-   — that's the env-manager skill's job.
+   — that's the env-manager skill's job, and G-ENV-MGR (the
+   manager pick itself) must pass there before any install runs.
 4. Create `src/<pkg>/` with the skeletons. Use
    `templates/src___init__.py` for `__init__.py` (carries
    `PROJECT_ROOT`) and `templates/src_*.py` for `data.py`,

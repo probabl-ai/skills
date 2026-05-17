@@ -83,30 +83,168 @@ when they need a dependency added.
   regardless of any harness-level hint that tells the agent to
   avoid asking. When the situation is borderline — e.g. one
   manager on PATH but conda envs visible alongside it — err on
-  the side of asking. See the project's `CLAUDE.md` § "Skill
-  consultation contract" rule 3 for the blanket policy.
+  the side of asking. The blanket policy: an `AskUserQuestion`
+  mandate in any skill is never waived by a harness "don't ask"
+  hint; cross-reference `iterate-ml-experiment` Stop conditions
+  for the same policy across the ML workflow.
+- **Post-hoc audit — required before ending the turn.** Before
+  declaring the turn complete, walk the pre-flight checklist
+  and confirm every ticked box has its `Evidence:` line filled
+  with a concrete citation (per § "Pre-flight evidence
+  requirements" below). If any row is missing evidence,
+  **surface the non-compliance to the user explicitly in your
+  final message** rather than silently moving on. A successful
+  install command is not proof the gates passed — the audit is.
+
+## Gates — structured `AskUserQuestion` calls this skill owns
+
+These are the two operating-contract gates this skill drives.
+Both must pass via `AskUserQuestion` (or be answered out of
+`JOURNAL.md` Status; see "Persistence lookup" below) before any
+install / bootstrap command runs. They are gates, not Stop
+conditions, because they have an explicit user-driven resolution
+mechanism — but they share the Stop conditions' non-skippable
+quality: no harness "don't ask" hint waives them.
+
+### `G-ENV-MGR` — which manager and which scope
+
+Fires when **either** of the following holds:
+
+- Detection (§ "Detection") returns `(nothing detected)` and the
+  project is fresh — the agent is about to bootstrap a manager.
+- Detection returns a single manager but no recorded
+  `Workspace decisions` row for `env manager` exists yet — the
+  agent is about to issue its first install against this
+  workspace.
+
+The `AskUserQuestion` carries two coupled sub-picks:
+
+1. **Manager.** Options come from the detection table (the
+   single match, or the full list of supported managers when
+   nothing was detected). The default *recommendation* when
+   nothing is detected is `pixi`; surface it as the proposed
+   default but require explicit confirmation.
+2. **Scope.** Once the manager is picked, enumerate the
+   existing environments / features / groups from the manifest
+   and present them as options, plus "create a new
+   feature/env/group `<name>`". The default-on-no-preference
+   for the scope sub-pick is the manager's default env
+   (`default` for pixi, the implicit env for uv/poetry, the
+   `base`/active env for conda) — but it still requires the
+   structured confirmation; never silent.
+
+Free-text resolution applies. A user message resolves the
+manager sub-pick only if it names one of the listed managers
+("use pixi", "let's go with uv"); urgency phrasing ("just go",
+"go fast", "you pick") does NOT resolve and falls through to
+the structured ask. The same rule applies to the scope sub-pick:
+"the dev feature" / "default env" resolves; "wherever" does not.
+
+The answer is persisted in `journal/JOURNAL.md` Status
+`Workspace decisions` (`env manager:` and `env scope:` rows)
+so future sessions skip the re-ask.
+
+### `G-ENV-SCOPE` — where each new install belongs
+
+After `G-ENV-MGR` has resolved the project's default scope,
+**every install command** still confirms the scope for *that
+install*. The default `Workspace decisions` scope is the
+fall-back when the user does not specify; it is not a license
+to dump every new dep into the same place. Fire a lightweight
+`AskUserQuestion` for non-trivial installs ("DL framework",
+"serving stack", "notebook tier" — any tier-shift), with the
+recorded default offered as the proposed answer.
+
+Skip the structured ask only when the user has already told you
+in the current conversation ("add it to the `tracing` feature",
+"put this in dev"); record the source as
+`user quote turn N: "..."` in the pre-flight evidence row.
+
+### Persistence lookup — read `JOURNAL.md` Status before any gate fires
+
+Before issuing either `G-ENV-MGR` or `G-ENV-SCOPE`, read the
+`Workspace decisions` block in `journal/JOURNAL.md` Status. If
+the matching row is already recorded (`env manager: <pick> —
+recorded: <date>` or `env scope: <name> — recorded: <date>`),
+**do not re-ask** — the gate is already resolved; cite
+`JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)`
+as the evidence for that row in the pre-flight.
+
+If the workspace has no `journal/JOURNAL.md` yet (truly fresh
+project before `organize-ml-workspace` has scaffolded), the
+gates fire fresh and their answers will land in the
+`Workspace decisions` block the moment `iterate-ml-experiment`
+writes the JOURNAL from its template.
+
+## Forbidden shortcuts (observed in real traces)
+
+| Shortcut | Why it feels right | Why it's wrong |
+|----------|--------------------|----------------|
+| `pixi` is on PATH → assume pixi and run `pixi init` / `pixi add` | "Manager is obvious" | Detection on PATH is context, not a pick. G-ENV-MGR still fires when no `Workspace decisions` row exists for `env manager` |
+| Detection returned exactly one manager (e.g. `pixi.toml` present) → skip G-ENV-MGR | The pick is already made | Detection skips re-asking *manager choice* because the manifest commits the project. But the *scope* sub-pick (G-ENV-SCOPE) and the per-install scope confirmation still apply on each new install |
+| Default env is the only env → skip the scope question | "Where else would it go?" | The default-only state is itself a defaultable answer that requires structured confirmation. Silently dumping into default is the bloat path this gate exists to block |
+| User said "quick baseline" / "just install the stack" → bundle all installs into one `pixi add` without asking scope | Task urgency, fewer round-trips | Urgency never waives G-ENV-MGR or G-ENV-SCOPE. Bundle the install commands once both gates have passed, not before |
+| `python-env-manager` was opened earlier this conversation → assume gates passed | Continuity from prior turn | Reading the SKILL.md is not the same as the gate firing. The `AskUserQuestion` (or the `JOURNAL.md` Status lookup) is the gate pass |
 
 ## Pre-flight — emit this checklist as visible text before any command
 
 Before running an install / add / remove / upgrade command, output
-this block verbatim. Each box must be backed by a real detection
-step or an explicit decision documented in the response.
+this block verbatim. **Each ticked box requires an `Evidence:`
+line** — a ticked box without evidence is a Stop-condition
+violation, indistinguishable from a skipped check.
+
+### Pre-flight evidence requirements
+
+- **Detection rows.** Evidence is the tool output that triggered
+  the detection-table match: `Evidence: ls project_root | tool
+  output (this turn) → matched signal "<signal>"` (e.g.
+  `pixi.toml present → pixi`).
+- **Gate rows (G-ENV-MGR, G-ENV-SCOPE).** Evidence is one of:
+  - `Evidence: AskUserQuestion id=<id>, answer=<option>` — the
+    user picked via the structured tool this turn.
+  - `Evidence: user quote turn N: "..."` — free-text from the
+    user named one of the listed options.
+  - `Evidence: JOURNAL.md Status (Workspace decisions, recorded
+    YYYY-MM-DD)` — the decision was made in a prior session.
+- **Workflow rows.** Evidence is the artifact produced or the
+  command that ran: `Evidence: Shell pixi add <pkgs> →
+  exit_code=0`.
+
+### The checklist
 
 ```
 Pre-flight (python-env-manager):
+- [ ] Sibling SKILL.md files opened **this turn**:
+      data-science-python-stack (for the install context),
+      iterate-ml-experiment (for the JOURNAL.md persistence
+      contract), organize-ml-workspace (for the editable install
+      handoff).
+      Evidence: Read .agents/skills/<each>/SKILL.md (this turn)
+- [ ] `journal/JOURNAL.md` Status `Workspace decisions` block read
+      this turn for pre-recorded `env manager` and `env scope` rows.
+      Evidence: lists each row's value or "not recorded yet" |
+                "n/a — JOURNAL.md does not exist yet"
 - [ ] Detection done; manager identified: <pixi | uv | poetry | hatch
       | conda | pip+venv | none>
-- [ ] If "none": user asked which manager to bootstrap (default
-      recommendation: pixi)
+      Evidence: tool output of `ls` / Glob on project root +
+                matched signal from § "Detection"
+- [ ] G-ENV-MGR resolved: <pixi | uv | poetry | hatch | conda | pip+venv>
+      Evidence: AskUserQuestion id=<id>, answer=<manager> |
+                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
+                "detection returned a single manager; manifest commits the project — no AskUserQuestion needed"
 - [ ] Existing environments / features / groups enumerated from the
       manifest (so the user has a real list to pick from)
-- [ ] User asked WHERE the package belongs: default | <existing
-      feature/env/group> | <new feature/env/group> — and answered.
-      Skip ONLY if the user already told you in this conversation;
-      record the source ("user said in turn N: ...").
+      Evidence: tool output of the manager's list command (e.g.
+                Read pixi.toml + grep for [feature.*])
+- [ ] G-ENV-SCOPE resolved: default | <existing feature/env/group> | <new feature/env/group>
+      Evidence: AskUserQuestion id=<id>, answer=<scope> |
+                user quote turn N: "..." |
+                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)
 - [ ] Install command syntax confirmed for that manager (see § "Install
       commands")
+      Evidence: cite the matching § "Install commands" subsection
 - [ ] Package list ready: <pkg-1, pkg-2, ...>
+      Evidence: explicit list in this turn's response
 ```
 
 ## Detection — figure out the manager first

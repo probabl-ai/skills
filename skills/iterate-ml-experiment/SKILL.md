@@ -53,9 +53,45 @@ counts as a result, and how the trail of past experiments is
 recorded. Pipeline mechanics, evaluation mechanics, and workspace
 layout are out of scope and live in sibling skills.
 
-## First action (every turn)
+## FIRST ACTION — emit this block before anything else
 
-Before answering anything else:
+**This block must be the first visible content in every turn that
+touches an ML workspace.** It renders the cross-skill read-status
+*before* any prose can be anchored on, which is the only reliable
+way to prevent the agent from skipping sibling skills under the
+"I already know the gist" reflex. Fill the right column with
+`read` (full file opened **this turn** via the file-reading tool)
+or `not read`. Inferring sibling content from a cross-reference
+in this file does not count as "read".
+
+```
+Skills opened this turn (must be filled before continuing):
+  - organize-ml-workspace:        <read | not read>
+  - data-science-python-stack:    <read | not read>
+  - python-env-manager:           <read | not read>
+  - python-api:                   <read | not read>
+  - python-code-style:            <read | not read>
+  - build-ml-pipeline:            <read | not read>
+  - evaluate-ml-pipeline:         <read | not read>
+  - test-ml-pipeline:             <read | not read>
+  - smoke-test-ml-pipeline:       <read | not read>
+If any are "not read", reading them is your next action — not
+writing files, not asking the user, not running shell commands.
+```
+
+The block above is the **non-negotiable first emit**. The
+**read-set** that must be filled depends on the mode (see § "Mode
+picker" below) — bootstrap requires *all nine* siblings, while
+later modes need a smaller subset that the per-mode section
+declares. In all modes the sourcing-strategy skills
+(`iterate-from-skore`, `iterate-from-user`) are added to the
+read-set the moment the user picks them.
+
+## Second action (every turn) — context reads
+
+Once the FIRST ACTION block is rendered and any "not read" lines
+have been resolved, do the context reads below before answering
+anything else:
 
 1. **Read `journal/JOURNAL.md`.** If it doesn't exist or is the
    placeholder dropped by `organize-ml-workspace`, you're in
@@ -71,9 +107,17 @@ Before answering anything else:
    design notes in `journal/NN_*.md` — `summary.md` is the curated
    view across them, rewritten by hand at every § 4 outcome
    recording (no auto-generation script).
-3. **Emit the Pre-flight checklist** (below) as visible text
-   in your response, with each box marked.
-4. **Use the Mode picker** to find which one section to read
+3. **Read the `Workspace decisions` block** in `JOURNAL.md`
+   Status. Every gate this skill (or a sibling) is about to fire
+   in this turn first checks whether the matching row already
+   exists in `Workspace decisions`; recorded decisions skip the
+   `AskUserQuestion` and cite `JOURNAL.md Status (recorded
+   YYYY-MM-DD)` as the evidence for that gate in the pre-flight
+   checklist.
+4. **Emit the Pre-flight checklist** (below) as visible text
+   in your response, with each box marked **and an Evidence
+   cell filled** — see § "Pre-flight — evidence requirements".
+5. **Use the Mode picker** to find which one section to read
    this turn.
 
 Skipping any of these is a Stop-condition violation.
@@ -173,12 +217,80 @@ something based on it"), pick the **read** mode first
   you catch yourself opening `src/<pkg>/evaluate.py` directly
   in Write/Edit without an `evaluate-ml-pipeline` invocation
   earlier in the same turn, STOP and invoke the skill.
+- **Harness-level "no clarifying questions" hints do NOT waive
+  this skill's `AskUserQuestion` mandates.** Every gate this
+  skill drives (G-DESIGN, G-RUN, the §1 mode pick, the §2
+  sourcing menu, the §0 config gates listed in "Bootstrap skips
+  sourcing menu — NOT the config gates") is an
+  operating-contract gate, not a clarifying question. The same
+  applies to user urgency phrasing: "quick", "just do it", "go
+  fast", "you pick", "whatever" do NOT resolve any of those
+  gates — they fall through to the structured ask. The harness
+  hint applies to agent-discretionary asks; it never overrides
+  a gate a skill explicitly mandates.
+- **Post-hoc audit — required before ending the turn.** Before
+  declaring the turn complete, walk every row of the pre-flight
+  checklist and confirm the Evidence cell is filled with a
+  concrete citation (per § "Pre-flight — evidence
+  requirements"). If any row is `Evidence: <empty>` or the
+  citation does not actually match the row type, **surface the
+  non-compliance to the user explicitly in your final message**
+  — naming the row(s) and why they failed audit — rather than
+  silently moving on. Visible non-compliance is recoverable;
+  hidden non-compliance is the failure mode this audit closes.
+
+## Forbidden shortcuts (observed in real traces)
+
+| Shortcut | Why it feels right | Why it's wrong |
+|----------|--------------------|----------------|
+| User said "quick baseline" → skip the design-note approval gate (G-DESIGN) | Task urgency reads as permission; the design is "obvious" | G-DESIGN is non-negotiable; "quick" never waives it. The design note is the postmortem's frozen Method section — silently skipping approval means the postmortem cites text the user never saw |
+| Scaffold + implement in one turn before G-DESIGN passes | "I'll show the user the running thing instead of the doc" | Inverts the contract (design note first, code is a consequence). Code that lands before approval has no Motivation/Risks the user signed off on |
+| Skipped `evaluate-ml-pipeline` because `KFold(5)` is obviously right for IID tabular | The splitter choice "is" the default | Even the empty-`split_kwargs` case is a justified pick that the skill exists to surface. Bypassing the skill means the user never got the choice — that's the failure mode, not the splitter value |
+| Bootstrap mode → skip ALL questions, not just the sourcing menu | "Bootstrap = forced baseline = silent everything" | Bootstrap forbids the sourcing menu only. G-PKG-NAME / G-ENV-MGR / G-TABULAR / G-CV-SPLITTER / G-DESIGN / G-RUN still fire (see § 0 sub-block) |
+| Ambiguous user response ("hmm interesting", "I guess") read as approval | Conversational momentum | Approval is explicit (§ 3); ambiguity gets the structured `AskUserQuestion` re-fired, never silent yes |
+| Auto-detect that a run finished by looking at `reports/` mtime | Closing the loop quickly | § 4 is user-triggered (v1); the skill never auto-records. The user says "the run finished, record it" — only then does § 4 start |
 
 ## Pre-flight — emit this checklist as visible text before any design-note write
 
 Before writing or editing any file under `journal/`, output the
-following block verbatim. Each box must be backed by an actual
-tool call or an explicit decision documented in the response.
+following block verbatim. **Each ticked box requires an
+`Evidence:` line** — a ticked box without evidence is a
+Stop-condition violation, indistinguishable from a skipped
+check.
+
+### Evidence requirements
+
+Every row in the pre-flight is one of three rows: a **read-set
+row** (sibling SKILL.md opened this turn), a **gate row** (an
+`AskUserQuestion` or recorded decision was the trigger), or a
+**workflow row** (a procedural action this skill drives, e.g.
+"design note drafted"). The Evidence field has to match the
+row type:
+
+- **Read-set rows.** Evidence is the file-reading tool call this
+  turn for the named SKILL.md. Format:
+  `Evidence: Read .agents/skills/<name>/SKILL.md (this turn)`.
+  Citing the cross-reference *to* a sibling skill is not
+  evidence — the sibling file itself must have been opened.
+- **Gate rows.** Evidence is one of:
+  - `Evidence: AskUserQuestion id=<id>, answer=<option>` —
+    the user picked via the structured tool this turn.
+  - `Evidence: user quote turn N: "..."` — free-text from the
+    user resolves the gate per § "Free-text handling"; quote
+    the exact phrase and the turn number.
+  - `Evidence: JOURNAL.md Status (Workspace decisions, recorded
+    YYYY-MM-DD)` — the decision was made in a prior session and
+    persisted; this skill read the Status block in this turn's
+    Second action step.
+- **Workflow rows.** Evidence is the artifact produced:
+  `Evidence: Write journal/<NN>_<name>.md (this turn)`,
+  `Evidence: Backlog rows B5..B7 appended to JOURNAL.md`, etc.
+
+A box ticked with `Evidence: n/a` is allowed **only** when the
+row's narrative explicitly carves out an n/a case (e.g. "n/a in
+bootstrap mode"); cite which carve-out applies.
+
+### The checklist
 
 ```
 Pre-flight (iterate-ml-experiment):
@@ -190,29 +302,63 @@ Pre-flight (iterate-ml-experiment):
       smoke-test-ml-pipeline. For iterate (§ 1+): the strategy skill
       named by the user's pick (iterate-from-skore / iterate-from-user)
       plus the three implementation-chain skills above.
-- [ ] `journal/JOURNAL.md` read this turn (or confirmed missing → about to scaffold)
+      Evidence: Read .agents/skills/<each-listed-name>/SKILL.md (this turn)
+- [ ] `journal/JOURNAL.md` read this turn (or confirmed missing → about to scaffold).
+      Evidence: Read journal/JOURNAL.md (this turn) | "file missing, scaffolding"
+- [ ] `Workspace decisions` block in JOURNAL.md Status checked for
+      pre-recorded gates (tabular, env_manager, package, cv_splitter).
+      Each recorded decision skips its matching AskUserQuestion this turn.
+      Evidence: lists each <gate>: <value | not recorded>
 - [ ] Mode: bootstrap (no recorded experiment) | iterate
+      Evidence: derived from JOURNAL.md History (0 rows → bootstrap; ≥1 → iterate)
 - [ ] Last experiment + its status known: <NN_name> | n/a (bootstrap)
+      Evidence: last row of JOURNAL.md History
 - [ ] In iterate mode, the **sourcing menu was presented to the user
       verbatim** (see § "The sourcing menu") and the user picked one
       option — no silent default. Skip in bootstrap mode.
+      Evidence: AskUserQuestion id=<id>, answer=<skore|user|my-pick|B<N>> | "n/a — bootstrap"
 - [ ] Sourcing strategy chosen by user: skore | user | my-pick |
       B<N> | n/a — bootstrap, baseline forced by workspace
-      defaults
+      defaults.
+      Evidence: same AskUserQuestion id as above | "n/a — bootstrap"
 - [ ] Strategy skill dispatched (iterate mode only):
       iterate-from-skore | iterate-from-user | n/a — my-pick or
-      backlog item handled inline
+      backlog item handled inline.
+      Evidence: Read .agents/skills/<strategy-skill>/SKILL.md (this turn) +
+                tool call invoking it | "n/a — handled inline"
+- [ ] Bootstrap config gates fired (bootstrap only): G-PKG-NAME,
+      G-ENV-MGR, G-TABULAR, G-CV-SPLITTER (see § 0
+      "Bootstrap skips sourcing menu — NOT the config gates").
+      Evidence: per-gate AskUserQuestion id OR JOURNAL.md Status reference |
+                "n/a — iterate mode"
 - [ ] Proposal turned into a `journal/NN_short_name.md` draft
       (or, for `skore`, Backlog enriched and the sourcing menu
-      re-presented — no design note on this turn)
+      re-presented — no design note on this turn).
+      Evidence: Write journal/<NN>_<name>.md (this turn) | "Backlog rows
+                B<x>..B<y> appended to JOURNAL.md"
 - [ ] User has explicitly approved the design note before any
-      `experiments/NN_*.py` is touched
+      `experiments/NN_*.py` is touched (G-DESIGN).
+      Evidence: AskUserQuestion id=<id>, answer=approved | user quote
+                turn N: "approved/yes/go/looks good" | "n/a — Backlog enrichment turn"
 - [ ] Post-approval implementation chain (§ 3) is the three-skill
       sequence: `build-ml-pipeline` → `evaluate-ml-pipeline` →
       `test-ml-pipeline` (→ `smoke-test-ml-pipeline`) — *none*
       substituted by writing the file directly. `evaluate.py` in
       particular has `evaluate-ml-pipeline` invoked first.
       (n/a outside § 3.)
+      Evidence: Read .agents/skills/<each>/SKILL.md (this turn) +
+                each owning skill produced its file | "n/a outside § 3"
+- [ ] Skill(python-api) consulted for any new external symbol
+      introduced by this turn's experiment assembly (§ 3) or
+      outcome read (§ 4): <symbols, or "none">
+      Evidence: Read scratch/api/<lib>/<version>/<topic>.md (this turn)
+                | Write scratch/api/<lib>/<version>/<topic>.md (this turn)
+                | "n/a — only re-using symbols already cached or already
+                  present in src/<pkg>/"
+      "Read python-api SKILL.md" alone is NOT evidence.
+- [ ] Run gate (post-smoke): G-RUN asked once smoke tests pass.
+      Evidence: AskUserQuestion id=<id>, answer=<run now | leave for later> |
+                "n/a — not at G-RUN this turn"
 ```
 
 ## Layout this skill owns
@@ -348,7 +494,7 @@ last experiment to summarize and no backlog to look at. Instead:
    defaults come from sibling skills, not from memory:
    - **Learner default**: consult `build-ml-pipeline` for what
      a "baseline" means for the data shape (tabular
-     regression / classification → skrub `tabular_learner`;
+     regression / classification → skrub `tabular_pipeline`;
      other shapes have their own defaults).
    - **Splitter default**: consult `evaluate-ml-pipeline` for
      the cross-validator default (typically `KFold` for IID
@@ -367,6 +513,52 @@ last experiment to summarize and no backlog to look at. Instead:
 6. **Exit bootstrap.** Once the baseline is approved and
    recorded in `JOURNAL.md`'s History, the workspace is out of
    bootstrap. Every session afterwards uses § 1.
+
+#### Bootstrap skips the sourcing menu — NOT the config gates
+
+The most common bootstrap failure shape is the agent treating
+"bootstrap = forced baseline" as "bootstrap = silent everything".
+This is wrong. Bootstrap forbids one specific question (which
+*experiment* to run next — the sourcing menu) precisely because
+the workspace has no history to draw from. Every other gate the
+workflow normally fires still fires in bootstrap, and skipping
+them is the exact non-compliance that makes the baseline look
+like the agent "just picked" the project's shape.
+
+**Skipped in bootstrap (by design):**
+
+- Sourcing menu (`skore` / `user` / `my-pick` / `B<N>`) — no
+  prior report, no backlog, no history; nothing to source from.
+- "Resume / record outcome / propose next" pick from § 1 — no
+  last experiment exists, so the three branches are
+  ill-defined.
+
+**MUST still fire in bootstrap (the config gates):**
+
+| Gate ID | What it picks | Owning skill | When it fires |
+|---------|---------------|--------------|---------------|
+| `G-PKG-NAME` | `src/<pkg>/` import name | `organize-ml-workspace` | **Before** any `pyproject.toml` / `pixi.toml` / manifest creation |
+| `G-ENV-MGR` | Python env manager (`pixi`, `uv`, `poetry`, `hatch`, `conda`, `pip+venv`) and the feature/group/env scope to install into | `python-env-manager` | **Before** any `pixi init` / `pixi add` / equivalent install command |
+| `G-TABULAR` | Tabular dataframe library (`pandas` / `polars`) plus any other Tier 2 competing-library job in scope | `data-science-python-stack` | **Before** any `Write` of `data.py` / experiment script that imports the contested library |
+| `G-CV-SPLITTER` | Cross-validator family for `skore.evaluate` (`KFold`, `StratifiedKFold`, `GroupKFold`, `TimeSeriesSplit`, ...) | `evaluate-ml-pipeline` | **Before** any `Write` of `src/<pkg>/evaluate.py`; mandatory even when `split_kwargs` at the X marker is empty (the empty case is itself a justified pick, not a default) |
+| `G-DESIGN` | Explicit user approval of `journal/01_baseline.md` | `iterate-ml-experiment` (this skill, § 3) | **Before** any `Write` of `experiments/01_baseline.py` / `src/<pkg>/*.py` content authored from the design note |
+| `G-RUN` | "Run now" vs "leave for later" once smoke tests pass | `iterate-ml-experiment` (this skill, § 3) | **Before** the shell call that executes `experiments/01_baseline.py` |
+
+Each gate's owning skill is responsible for the actual
+`AskUserQuestion` mechanics; this table is the **bootstrap
+contract** that says they all still fire even though the
+sourcing menu doesn't. Every gate's answer is recorded in
+`JOURNAL.md` Status `Workspace decisions` (for `G-PKG-NAME`,
+`G-ENV-MGR`, `G-TABULAR`, `G-CV-SPLITTER` — the persistent
+ones) so a later session can read the decision instead of
+re-asking. `G-DESIGN` and `G-RUN` are per-experiment, not
+persistent — they fire fresh on every experiment.
+
+**Free-text resolution applies** (see § "Free-text handling"):
+a user message resolves a config gate only if it names one of
+the gate's options. "Quick baseline" / "go fast" / "you pick"
+do NOT resolve any of the gates above; they fall through to
+the structured `AskUserQuestion`.
 
 ### 1. Session start (iterate mode)
 

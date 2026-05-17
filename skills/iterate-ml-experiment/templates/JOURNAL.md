@@ -17,6 +17,37 @@ with `experiments/NN_short_name.py` (identical stems).
 - **Last experiment:** <NN_name> — <status: planned | approved | running | done | abandoned>
 - **Last result:** <one-line headline metric, or "n/a" if not yet run>
 
+<!--
+Workspace decisions: persistent picks for the config gates that fire in
+bootstrap (see `iterate-ml-experiment` § 0 "Bootstrap skips sourcing
+menu — NOT the config gates"). Each row records a one-time pick the
+user made via `AskUserQuestion`; on every later session, skills read
+this block first and skip the matching question.
+
+Immutability rule: rows are immutable unless the user explicitly pivots
+("let's switch to polars", "move env to uv"). Do NOT silently update
+a row because a newer tool would obviously fit better; surface the
+proposal and wait for the user. The `recorded:` date is the date the
+row was last user-confirmed.
+
+Adding rows: when a new competing-library job comes into scope
+mid-project (e.g. DL is added), the matching skill fires its
+`AskUserQuestion`, then this block gets a new row.
+
+Owning skills:
+  - tabular library     → data-science-python-stack § Tier 2
+  - env manager + scope → python-env-manager
+  - package name        → organize-ml-workspace
+  - CV splitter family  → evaluate-ml-pipeline
+-->
+
+- **Workspace decisions** (immutable unless the user pivots):
+  - tabular library: <pandas | polars> — recorded: <YYYY-MM-DD>
+  - env manager: <pixi | uv | poetry | hatch | conda | pip+venv> — recorded: <YYYY-MM-DD>
+  - env scope (feature/group/env): <default | named-feature> — recorded: <YYYY-MM-DD>
+  - package name (`src/<pkg>/`): <pkg> — recorded: <YYYY-MM-DD>
+  - CV splitter family: <KFold | StratifiedKFold | GroupKFold | TimeSeriesSplit | other> — recorded: <YYYY-MM-DD>
+
 ## History
 
 <!--
@@ -26,7 +57,7 @@ Status values: planned | approved | running | done | abandoned.
 
 | Stem | Intent (one line) | Status | Headline result | Design note |
 |---|---|---|---|---|
-| <!-- e.g. `01_baseline` --> | <!-- "tabular_learner on raw features" --> | <!-- done --> | <!-- "ROC-AUC 0.86 ± 0.01" --> | <!-- [design note](01_baseline.md) --> |
+| <!-- e.g. `01_baseline` --> | <!-- "tabular_pipeline on raw features" --> | <!-- done --> | <!-- "ROC-AUC 0.86 ± 0.01" --> | <!-- [design note](01_baseline.md) --> |
 
 ## Backlog
 

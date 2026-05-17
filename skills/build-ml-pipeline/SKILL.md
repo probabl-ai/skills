@@ -24,7 +24,7 @@ description: >
   a sklearn-compatible custom transformer class, or simply called in
   the training path before the estimator), composition objects
   (`Pipeline`, `make_pipeline`, `ColumnTransformer`, `FeatureUnion`,
-  skrub `tabular_learner`, `nn.Module` / `LightningModule`
+  skrub `tabular_pipeline`, `nn.Module` / `LightningModule`
   definitions), or an estimator instantiated as the tail of the chain;
   a step is added, removed, swapped, or reordered inside an existing
   pipeline declaration; a bare `sklearn.Pipeline` / `make_pipeline` is
@@ -177,8 +177,16 @@ Pre-flight (build-ml-pipeline):
 - [ ] Tabular library identified: pandas | polars
       (informs the loader function and any frame-level ops; if not
        set yet, return to `organize-ml-workspace` and ask the user)
-- [ ] Skill(python-api) consulted for: <symbols, or "none">
-- [ ] Skill(python-api) consulted for: <symbols, or "none">
+- [ ] Skill(python-api) consulted for skrub symbols: <symbols, or "none">
+      Evidence: Read scratch/api/skrub/<version>/<topic>.md (this turn)
+                | Write scratch/api/skrub/<version>/<topic>.md (this turn)
+                | "n/a — no new skrub symbol introduced this turn"
+      "Read python-api SKILL.md" alone is NOT evidence.
+- [ ] Skill(python-api) consulted for sklearn symbols: <symbols, or "none">
+      Evidence: Read scratch/api/sklearn/<version>/<topic>.md (this turn)
+                | Write scratch/api/sklearn/<version>/<topic>.md (this turn)
+                | "n/a — no new sklearn symbol introduced this turn"
+      "Read python-api SKILL.md" alone is NOT evidence.
 - [ ] Source-binding pattern chosen (one or more skrub.var roots —
       identifier(s) for raw history sources, plus identifier(s) for the
       predict-time-grid description if the pipeline has any
@@ -697,7 +705,7 @@ shape applies, not the precise signature.
    instead of building a `ColumnTransformer`.
 
 2. **Default starting point for tabular data.** Reach for
-   `skrub.tabular_learner(...)` (or `TableVectorizer` + estimator)
+   `skrub.tabular_pipeline(...)` (or `TableVectorizer` + estimator)
    first. Specialize column-by-column only when the default is
    insufficient.
 

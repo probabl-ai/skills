@@ -117,8 +117,19 @@ tool call or an explicit decision documented in the response.
 Pre-flight (evaluate-ml-pipeline):
 - [ ] Tier 1 mandatory libs importable in this env: sklearn, skrub, skore
       (per `data-science-python-stack` § "Tier 1")
-- [ ] Skill(python-api) consulted for: evaluate / report classes
-- [ ] Skill(python-api) consulted for splitter: <name>
+- [ ] Skill(python-api) consulted for skore symbols (evaluate /
+      report classes): <symbols>
+      Evidence: Read scratch/api/skore/<version>/<topic>.md (this turn)
+                | Write scratch/api/skore/<version>/<topic>.md (this turn)
+                | "n/a — no new skore symbol introduced this turn"
+      "Read python-api SKILL.md" alone is NOT evidence.
+- [ ] Skill(python-api) consulted for sklearn splitter: <name>
+      Evidence: Read scratch/api/sklearn/<version>/cv_splitters.md
+                (or topic-matching file, this turn)
+                | Write of the same (this turn)
+                | "n/a — splitter is one already in src/<pkg>/evaluate.py
+                  and its arguments are unchanged"
+      "Read python-api SKILL.md" alone is NOT evidence.
 - [ ] split_kwargs at the X marker read: <groups | time | none>
 - [ ] Splitter chosen via rule 3 mapping table: <name + reason>
 - [ ] Data-passing form picked: <X, y> | <data={...}>

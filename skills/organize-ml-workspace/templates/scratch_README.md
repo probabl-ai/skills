@@ -34,7 +34,7 @@ doesn't re-WebFetch the same page.
 - **Version subfolder == `<pkg>.__version__` exactly** (e.g.
   `scratch/api/skrub/0.9.0/`, `scratch/api/skore/0.18.0/`).
 - **Topic file** mirrors the docs URL slug, snake_cased
-  (`data_ops.md`, `cross_validation.md`, `tabular_learner.md`).
+  (`data_ops.md`, `cross_validation.md`, `tabular_pipeline.md`).
   One topic per file.
 - **First line is the source URL** the content came from.
   Future agents can re-verify against the live docs.
