@@ -95,6 +95,19 @@ extracts in the cache.
   URL on the first line. Read-and-discard is forbidden — the
   *next* agent that needs the same page should hit the cache,
   not the network.
+- **Ad-hoc `scratch/<ts>_*.py` probes are not a substitute for
+  a cache write.** When `inspect.signature` / `dir` / WebFetch
+  has yielded a *conclusion* about a library — "skore.evaluate
+  rejects `X=, y=` for a SkrubLearner; use `data={"X": ..., "y":
+  ...}`"; "skore.Project.summarize() returns a MultiIndex with
+  `id` as the second level"; "skrub.X / skrub.y are sugar for
+  `var().skb.mark_as_X`" — that conclusion **must** land in
+  `scratch/api/<lib>/<version>/<topic>.md` *in addition to* any
+  probe `.py` file. The probe records the *investigation*; the
+  cache file records the *conclusion*. The next agent reads the
+  cache, not the probes. A multi-file scratch tree that
+  rediscovers the same surfaces every session is the failure
+  mode this rule blocks.
 
 ## The lookup procedure — four shapes
 

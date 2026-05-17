@@ -83,6 +83,14 @@ tool call or an explicit decision documented in the response.
 
 ```
 Pre-flight (organize-ml-workspace):
+- [ ] Sibling SKILL.md files opened **this turn** (do NOT infer
+      sibling content from cross-reference text — open each file):
+      data-science-python-stack, python-env-manager, python-api,
+      python-code-style, iterate-ml-experiment, build-ml-pipeline,
+      evaluate-ml-pipeline, test-ml-pipeline, smoke-test-ml-pipeline.
+      Skipping any one of these is the most common failure mode for
+      this skill — they own the gates this skill cross-references
+      but does not itself enforce.
 - [ ] Tier 1 mandatory libs importable in this env: sklearn, skrub, skore
       (per `data-science-python-stack` § "Tier 1")
 - [ ] Tabular library decided + installed: pandas (free via skore) |

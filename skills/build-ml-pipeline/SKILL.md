@@ -80,6 +80,21 @@ Declarative shape of a Python ML pipeline from data source to predictor.
   splitter in pipeline code. That decision belongs to
   `evaluate-ml-pipeline`. The only CV-related thing this skill
   handles is wiring `split_kwargs` at the X marker (see rule 2).
+- **`skrub.X(...)` / `skrub.y(...)` are not acceptable as graph
+  roots.** They are sugar for `var("X", value).skb.mark_as_X()` and
+  `var("y", value).skb.mark_as_y()`, which (1) bake the marker at
+  the source — defeating Layer 1 of rule 2; (2) force a pre-loaded,
+  pre-split binding so the graph cannot be replayed at predict time
+  against a fresh source identifier; (3) collapse the three-layer
+  pattern even when the data has cross-row features (lags, joins,
+  rolling windows), silently re-enabling the late-`mark_as_X` bug.
+  When tempted (typically because materialising `(X, y)` upstream
+  "feels simpler"), return to rule 2 and root the graph on
+  `skrub.var("<source>", preview)` — at least one source identifier
+  per raw input, plus a `predict_grid` identifier when the data is
+  panel / time-series. The smoke test
+  (`smoke-test-ml-pipeline`) is what makes the difference between
+  these two shapes visible; CV alone passes either.
 - **Late `mark_as_X` is forbidden when any feature step has a
   cross-row dependency.** Unifying property: an operation is
   cross-row when its output for a row depends on values from

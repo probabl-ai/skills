@@ -75,6 +75,16 @@ when they need a dependency added.
   manager) is missing, surface the install command and let the
   user run it. `curl | sh` is a system-level action that needs the
   user's hands on it, not Claude's.
+- **Harness-level "no clarifying questions" instructions do not
+  apply to this skill's `AskUserQuestion` mandates.** The manager
+  pick (when nothing is detected or when ambient state is mixed)
+  and the scope pick (where does the package belong) are
+  operating-contract gates, not clarifying questions. They fire
+  regardless of any harness-level hint that tells the agent to
+  avoid asking. When the situation is borderline — e.g. one
+  manager on PATH but conda envs visible alongside it — err on
+  the side of asking. See the project's `CLAUDE.md` § "Skill
+  consultation contract" rule 3 for the blanket policy.
 
 ## Pre-flight — emit this checklist as visible text before any command
 
@@ -129,6 +139,38 @@ Notes:
 - If both `pixi.toml` and a `pyproject.toml` with another manager's
   `[tool.X]` are present, the project may be transitioning. Ask
   before picking.
+
+### Ambient managers — check before recommending a fresh bootstrap
+
+When § "Detection" finds **no project-root signals**, do not silently
+default to "pixi is the recommendation". A bare project root often sits
+on top of a developer machine that already has one or more managers
+installed and existing envs the user might want to reuse. Before
+firing any `pixi init` (or equivalent), probe the *ambient* state:
+
+```bash
+command -v pixi uv poetry hatch conda mamba
+conda env list 2>/dev/null  # if conda/mamba is on PATH
+```
+
+If **two or more** managers are on PATH, **or** there are existing
+conda envs that already carry parts of the stack (sklearn / skrub /
+skore), surface the situation to the user via `AskUserQuestion`. Offer
+at least these branches:
+
+- **Bootstrap a fresh pixi project** (the default *recommendation*
+  when nothing has to be reused).
+- **Reuse an existing env**: if `conda env list` shows an env with
+  the stack already installed (or close to it), reusing avoids a
+  duplicate install. Name the envs in the option description so the
+  user can see what's on offer.
+- **Bootstrap a different manager** (uv / poetry / hatch / conda):
+  pick this when the user's team standard differs from pixi.
+
+The contract: "no project-root signals" does not mean "no relevant
+state." Defaulting to pixi when an existing conda env could have
+served is a frequent ergonomic miss; the `AskUserQuestion` exists
+to surface that choice rather than presume it.
 
 ## Where does the package belong? — ask before installing
 

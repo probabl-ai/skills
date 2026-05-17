@@ -92,6 +92,20 @@ read the report. The pipeline declaration is out of scope (see
   fold geometry, multi-symbol `inspect.signature(...)` on
   skore / sklearn classes. See `python-api` § "Scratch
   traceability" for the file layout.
+- **The time-ordered splitter AskUserQuestion is non-skippable,
+  even under harness-level "no clarifying questions"
+  instructions.** When the data is temporal, the four-option
+  pick from rule 3 is an operating-contract gate, not a
+  clarifying question. The harness's "no clarifying questions"
+  hint applies to agent-discretionary asks (ambiguous wording,
+  unclear intent); it never overrides a gate a skill explicitly
+  mandates. The same override rule applies to every other
+  mandatory `AskUserQuestion` in this stack —
+  `python-env-manager` § "Where does the package belong?",
+  `data-science-python-stack` § Tier 2 (pandas vs polars),
+  `iterate-ml-experiment` § 1 (sourcing menu), `iterate-from-user`
+  § "The entry-point AskUserQuestion". When in doubt: the user's
+  approval is the gate, not the harness's instruction text.
 
 ## Pre-flight — emit this checklist as visible text before any code
 

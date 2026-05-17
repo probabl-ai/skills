@@ -12,15 +12,19 @@ description: >
   proposal needs to be picked. Stops at "the design note is on disk
   and the user has approved it".
 
-  TRIGGER when: a session starts in an ML workspace that already
-  has a `journal/` folder (read `JOURNAL.md` first to see where things
-  stand); the user says "what's next", "resume", "where were we",
-  "let's iterate", "propose the next experiment", or similar;
-  about to create a new `experiments/NN_*.py` (the matching
-  `journal/NN_*.md` must exist and be validated first); the user
-  wants to record an outcome from a finished experiment in
-  `JOURNAL.md`; the user asks to compare past experiments or review
-  what's been tried.
+  TRIGGER when: **a session starts in an ML workspace — whether or
+  not `journal/JOURNAL.md` exists yet**. If the folder is missing or
+  carries only the placeholder, you are in bootstrap mode (§ 0),
+  which dispatches to `organize-ml-workspace` for the scaffold and
+  then returns here to auto-draft the baseline design note. Also
+  triggers when the user says "what's next", "resume", "where were
+  we", "let's iterate", "propose the next experiment", "implement
+  the simplest model", "first baseline", or similar bootstrap-shaped
+  phrasing; about to create a new `experiments/NN_*.py` (the
+  matching `journal/NN_*.md` must exist and be validated first);
+  the user wants to record an outcome from a finished experiment
+  in `JOURNAL.md`; the user asks to compare past experiments or
+  review what's been tried.
 
   SKIP when: there is no `journal/` folder yet and no workspace
   scaffolded (route to `organize-ml-workspace` first); the work
@@ -178,6 +182,14 @@ tool call or an explicit decision documented in the response.
 
 ```
 Pre-flight (iterate-ml-experiment):
+- [ ] Sibling SKILL.md files opened **this turn** (do NOT infer
+      sibling content from cross-reference text). For bootstrap (§ 0):
+      organize-ml-workspace, data-science-python-stack,
+      python-env-manager, python-api, python-code-style,
+      build-ml-pipeline, evaluate-ml-pipeline, test-ml-pipeline,
+      smoke-test-ml-pipeline. For iterate (§ 1+): the strategy skill
+      named by the user's pick (iterate-from-skore / iterate-from-user)
+      plus the three implementation-chain skills above.
 - [ ] `journal/JOURNAL.md` read this turn (or confirmed missing → about to scaffold)
 - [ ] Mode: bootstrap (no recorded experiment) | iterate
 - [ ] Last experiment + its status known: <NN_name> | n/a (bootstrap)

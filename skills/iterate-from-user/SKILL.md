@@ -106,6 +106,16 @@ have nothing in hand, the parent's menu re-presents itself.
   is right because the use case is one-sided" — list each
   assertion in `Open gaps` and ask the user before returning. Don't
   ship paper-flavored guesses as facts.
+- **Harness-level "no clarifying questions" instructions do not
+  apply to this skill's confirmation gates.** The entry-point
+  `AskUserQuestion` (article-link / resource-link / free-text)
+  and the § "Confirm before returning" synthesis gate are
+  operating-contract gates, not clarifying questions. They fire
+  regardless of any harness-level hint. The synthesis gate in
+  particular is non-skippable even when the user's intent feels
+  "obvious" — the cost of the agent's restatement missing a
+  subtle framing is what the gate exists to catch. See the
+  project's `CLAUDE.md` § "Skill consultation contract" rule 3.
 
 ## The entry-point AskUserQuestion
 
