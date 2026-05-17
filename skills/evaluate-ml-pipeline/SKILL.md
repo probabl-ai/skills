@@ -92,6 +92,24 @@ read the report. The pipeline declaration is out of scope (see
   fold geometry, multi-symbol `inspect.signature(...)` on
   skore / sklearn classes. See `python-api` § "Scratch
   traceability" for the file layout.
+- **`skore.evaluate(...)` and `project.put(...)` live only in
+  `experiments/NN_*.py`.** The experiment script is the sole
+  producer of a report in the workspace's skore Project.
+  Re-running `evaluate` from a `scratch/` probe (or a notebook,
+  or a one-off Python file in `src/`) duplicates the report
+  under the same `key` and pollutes `project.summarize()` —
+  the cross-experiment metrics view that `overview/summary.md`
+  reads from. If a scratch probe needs report contents, use
+  the read-only pattern owned by `organize-ml-workspace`
+  § "Scratch is read-only against the skore Project": call
+  `project.summarize()` to enumerate `(key, id)` pairs and
+  `project.get(id)` to retrieve a specific report. The trap
+  this rule blocks: `project.get(key)` raising `KeyError`
+  reads as "the report is missing" but actually means "the
+  lookup shape is wrong — `get` is by id, not by `key`". Never
+  substitute by re-running `evaluate` + `put`. See `python-api`
+  § "Lookup failure ≠ artifact missing" for the general
+  registry-lookup discipline.
 - **The time-ordered splitter AskUserQuestion is non-skippable,
   even under harness-level "no clarifying questions"
   instructions.** When the data is temporal, the four-option
@@ -123,6 +141,13 @@ Pre-flight (evaluate-ml-pipeline):
                 | Write scratch/api/skore/<version>/<topic>.md (this turn)
                 | "n/a — no new skore symbol introduced this turn"
       "Read python-api SKILL.md" alone is NOT evidence.
+- [ ] Call site for `skore.evaluate(...)` / `project.put(...)`
+      is `experiments/NN_*.py` (not `scratch/`, not a notebook,
+      not `src/<pkg>/`). See Stop condition
+      "`skore.evaluate(...)` and `project.put(...)` live only in
+      `experiments/NN_*.py`".
+      Evidence: Write experiments/<NN>_<name>.py (this turn) |
+                "the call already lives in an existing experiments/ file"
 - [ ] Skill(python-api) consulted for sklearn splitter: <name>
       Evidence: Read scratch/api/sklearn/<version>/cv_splitters.md
                 (or topic-matching file, this turn)

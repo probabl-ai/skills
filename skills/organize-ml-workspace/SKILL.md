@@ -67,6 +67,23 @@ sibling skills.
 - **Notebooks are not silent.** If existing `.ipynb` files are
   present in the experiment folder, do not auto-convert to `# %%`
   scripts. Surface the convention shift and ask.
+- **Scratch is read-only against the skore Project.** Probes
+  under `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` may call
+  `project.get(...)`, `project.summarize()`, and walk an
+  existing report. They MUST NOT call `skore.evaluate(...)` or
+  `project.put(...)` — those are experiment-script-only calls
+  (see `evaluate-ml-pipeline` § Stop conditions). When a lookup
+  raises (typically `project.get(key)` raising `KeyError`), the
+  fix is the lookup shape: `project.get(...)` resolves by
+  report **id**, not by the user-facing `key`. Use
+  `project.summarize()` to enumerate `(key, id)` pairs and
+  `get` by id. See `python-api` § "Lookup failure ≠ artifact
+  missing" for the general registry-lookup discipline. The
+  failure mode this rule blocks: a scratch probe that
+  rebuilds the learner and re-fires `evaluate` + `put`,
+  silently writing a duplicate row under the same `key` into
+  `project.summarize()` and polluting the cross-experiment
+  view that `overview/summary.md` reads from.
 - **Tabular library is asked, not assumed (G-TABULAR).** Even though
   `pandas` is already pulled in by `skore`, do not silently target
   it in scaffolded code. The tabular pick is a competing-library
@@ -129,6 +146,7 @@ sibling skills.
 | Scaffold every skeleton in one turn, including a placeholder `experiments/01_baseline.py` | "Make the workspace look complete" | Scaffold stops at the empty `journal/` placeholder; the experiment file lands only after the design note is approved (`iterate-ml-experiment` § 3). Pre-emptive `experiments/` files force the agent to backfill content the user never approved |
 | `pyproject.toml` already exists with `name = <something>` → reuse without confirming | Continuity is friendly | Continuity from a prior agent turn is not continuity from a user decision — the prior turn may itself have been a silent pick. Always re-confirm via G-PKG-NAME on the first session that touches this workspace |
 | User said "scaffold the workspace" → batch G-TABULAR + G-PKG-NAME + G-ENV-MGR into prose recommendations | One round-trip is faster | The gates take structured `AskUserQuestion` calls per § "Free-text resolution". Prose recommendations followed by "let me know what you think" do NOT resolve the gates |
+| `project.get(key)` raised `KeyError` → re-run `skore.evaluate` + `project.put` from a scratch probe to "recover" the report | The artifact looks missing; recreating it seems faster than digging into the API | The artifact is there; the lookup shape is wrong (`get` is by id, not by `key`). Recreating it puts a duplicate row in `project.summarize()` under the same `key` and silently breaks the "one report per experiment key" contract that `overview/summary.md` reads from. Use `project.summarize()` to enumerate `(key, id)` pairs and `project.get(id)` instead |
 
 ## Pre-flight — emit this checklist as visible text before any code
 

@@ -55,6 +55,21 @@ to read vs. cache.
   metrics for a Status block.
 - **No** — reusable code (experiment / smoke test) goes to its proper
   folder.
+- **No** — re-fitting / re-evaluating / `project.put`-ing from scratch.
+  `experiments/NN_*.py` is the **sole producer** of reports in the
+  workspace's skore Project; scratch only inspects existing ones via
+  `project.summarize()` (enumerate `(key, id)` pairs) and
+  `project.get(id)` (retrieve by id). The trap: `project.get(key)`
+  raising `KeyError` looks like "the report is missing" but actually
+  means "the lookup shape is wrong — `get` is by id, not by `key`".
+  Never substitute by calling `skore.evaluate(...)` + `project.put(...)`
+  from a scratch probe — that writes a duplicate row under the same
+  `key` into `project.summarize()` and breaks the cross-experiment
+  metrics view. See `organize-ml-workspace` § Stop conditions
+  ("Scratch is read-only against the skore Project") and
+  `evaluate-ml-pipeline` § Stop conditions
+  ("`skore.evaluate(...)` and `project.put(...)` live only in
+  `experiments/NN_*.py`") for the full rule.
 - **Special case**: the data-extraction probe behind `overview/summary.md`
   lives here as `scratch/<ts>_refresh_summary.py` (per
   `iterate-ml-experiment` § 4). The probe is one-shot scratch; the

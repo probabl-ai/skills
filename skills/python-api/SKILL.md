@@ -68,6 +68,28 @@ extracts in the cache.
   WebFetch. "I remember sklearn has X" is not acceptable; the
   model's training data may be older than the installed version
   (or newer).
+- **Lookup failure ≠ artifact missing.** When a registry-style
+  API raises on a lookup (`project.get(key)` → `KeyError`,
+  `mlflow.get_run(run_id)` → not-found, `joblib.load(path)` →
+  no-such-file, `dict[key]` → `KeyError`, `getattr(obj, name)`
+  → `AttributeError`), the failure mode is almost always the
+  lookup *shape* (a user-facing key vs an internal id, a
+  relative path vs an absolute one, the wrong accessor on a
+  composite object) or stale state — not a missing artifact.
+  Consult the API cache (`scratch/api/<lib>/<version>/`) or
+  fetch the docs for the correct signature **before**
+  concluding the artifact does not exist. **Never substitute
+  by re-creating the artifact** — that is how duplicate-write
+  bugs land in the audit trail. The named instance of this
+  trap in this workspace's stack: `skore.Project.get(...)`
+  resolves by report **id**, not by the user-facing `key` you
+  put it under; `project.summarize()` is what enumerates
+  `(key, id)` pairs. A failed `project.get("01_baseline")`
+  does **not** mean the report is missing — it means the
+  lookup shape is wrong. See `organize-ml-workspace`
+  § "Scratch is read-only against the skore Project" and
+  `evaluate-ml-pipeline` § Stop conditions for the
+  experiment-script-only producer rule that closes the loop.
 - **Version-correct first.** Before any lookup, confirm the
   installed version: `pixi run python -c "import <pkg>;
   print(<pkg>.__version__)"`. The version is what keys the
