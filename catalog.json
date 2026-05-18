@@ -1,0 +1,132 @@
+{
+  "name": "probabl-skills",
+  "description": "Skills for ML experimentation in Python, organized around skrub, scikit-learn, and skore, and more broadly the PyData ecosystem.",
+  "skills": [
+    {
+      "id": "build-ml-pipeline",
+      "title": "Build ML Pipeline",
+      "summary": "Declare the pipeline from data source to predictor as a skrub DataOps graph. Stops at the declared object — no fit, split, tuning, or persistence.",
+      "category": "methodology",
+      "subcategory": null
+    },
+    {
+      "id": "evaluate-ml-pipeline",
+      "title": "Evaluate ML Pipeline",
+      "summary": "Evaluate a single sklearn-compatible learner: pick the right entry point (skore.evaluate first), the right cross-validator, and consume report metadata.",
+      "category": "methodology",
+      "subcategory": null
+    },
+    {
+      "id": "test-ml-pipeline",
+      "title": "Test ML Pipeline",
+      "summary": "Router that owns the tests/ folder of an ML workspace and the experiment ↔ test pairing rule. Dispatches to a per-category subskill.",
+      "category": "orchestration",
+      "subcategory": "dispatchers"
+    },
+    {
+      "id": "smoke-test-ml-pipeline",
+      "title": "Smoke Test ML Pipeline",
+      "summary": "Diagnostic-by-construction pytest that catches the 'load → featurize → split' anti-pattern by predicting on a disjoint, no-buffer slice of the real data source.",
+      "category": "orchestration",
+      "subcategory": "test-strategies"
+    },
+    {
+      "id": "iterate-ml-experiment",
+      "title": "Iterate ML Experiment",
+      "summary": "Drives the iteration loop on top of an ML workspace — owns journal/JOURNAL.md and per-experiment design notes, and dispatches to a sourcing strategy.",
+      "category": "orchestration",
+      "subcategory": "dispatchers"
+    },
+    {
+      "id": "iterate-from-skore",
+      "title": "Iterate from Skore",
+      "summary": "Source the next experiment by walking report.diagnosis() on the previous skore report and turning every actionable finding into a Backlog row.",
+      "category": "orchestration",
+      "subcategory": "experiment-sourcing"
+    },
+    {
+      "id": "iterate-from-user",
+      "title": "Iterate from User",
+      "summary": "Source the next experiment from the user directly — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo).",
+      "category": "orchestration",
+      "subcategory": "experiment-sourcing"
+    },
+    {
+      "id": "organize-ml-workspace",
+      "title": "Organize ML Workspace",
+      "summary": "Decide where files live: reusable code, per-experiment scripts (jupytext-style # %%), reports. One file per experiment.",
+      "category": "tooling",
+      "subcategory": "project-setup"
+    },
+    {
+      "id": "python-code-style",
+      "title": "Python Code Style",
+      "summary": "Place the project's ruff.toml template and run ruff (lint + format) on touched files. numpydoc for docstrings.",
+      "category": "tooling",
+      "subcategory": "code-quality"
+    },
+    {
+      "id": "python-env-manager",
+      "title": "Python Environment Manager",
+      "summary": "Detect the project's env manager (pixi / uv / poetry / hatch / conda / pip+venv) and issue the right install command. Defaults to pixi when bootstrapping.",
+      "category": "tooling",
+      "subcategory": "project-setup"
+    },
+    {
+      "id": "data-science-python-stack",
+      "title": "Data Science Python Stack",
+      "summary": "Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers.",
+      "category": "reference",
+      "subcategory": null
+    },
+    {
+      "id": "python-api",
+      "title": "Python API Discovery",
+      "summary": "Discover the public API of any installed Python package — inspect.signature + pydoc.render_doc for a symbol, dir / pkgutil.iter_modules for a module, versioned-docs WebSearch + cache for narrative.",
+      "category": "reference",
+      "subcategory": null
+    }
+  ],
+  "meta_skills": [
+    {
+      "id": "ml-pipeline-lifecycle",
+      "title": "ML Pipeline Lifecycle",
+      "summary": "Build → evaluate → test the pipeline that goes from a raw data source to a predictor.",
+      "includes": [
+        "build-ml-pipeline",
+        "evaluate-ml-pipeline",
+        "test-ml-pipeline",
+        "smoke-test-ml-pipeline"
+      ]
+    },
+    {
+      "id": "iteration-loop",
+      "title": "Iteration Loop",
+      "summary": "Drive a journaled iteration loop on top of an ML workspace, sourcing each next experiment from skore diagnostics or from the user.",
+      "includes": [
+        "iterate-ml-experiment",
+        "iterate-from-skore",
+        "iterate-from-user"
+      ]
+    },
+    {
+      "id": "workspace-and-tooling",
+      "title": "Workspace and Tooling",
+      "summary": "Lay out an ML experimentation project: file organisation, env manager, code style, and the opinionated Python stack.",
+      "includes": [
+        "organize-ml-workspace",
+        "python-code-style",
+        "python-env-manager",
+        "data-science-python-stack"
+      ]
+    },
+    {
+      "id": "api-references",
+      "title": "API References",
+      "summary": "On-demand discovery of the public API of installed Python packages, with conceptual orientation for sklearn / skrub / skore.",
+      "includes": [
+        "python-api"
+      ]
+    }
+  ]
+}
