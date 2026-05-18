@@ -27,13 +27,16 @@ description: >
   cache file already answers the question (still a Shape 0
   consultation — you just don't fetch).
 
-  HOW TO USE: resolve the package version first
-  (`pixi run python -c "import <pkg>; print(<pkg>.__version__)"`),
-  list `scratch/api/<lib>/<version>/`, then pick the shape from
-  the "What kind of question?" table. Narrative findings get
-  cached back. Anything multi-line goes through a `scratch/<ts>_*.py`
-  file, not inline `python -c`. Stack-specific orientation lives
-  in `references/stack_orientation.md` — load on demand.
+  HOW TO USE: resolve the package version first via a scratch
+  file (`scratch/<ts>_version_<pkg>.py` with `import <pkg>;
+  print(<pkg>.__version__)` — run with `pixi run python
+  scratch/<ts>_version_<pkg>.py`). Then list
+  `scratch/api/<lib>/<version>/`. Then pick the shape from the
+  "What kind of question?" table. Narrative findings get cached
+  back. **All Python execution goes through `scratch/<ts>_*.py`
+  files — inline `python -c` is forbidden regardless of length.**
+  Stack-specific orientation lives in
+  `references/stack_orientation.md` — load on demand.
 ---
 
 # python-api
@@ -110,10 +113,31 @@ that lives in the narrative docs.
   `key`; `project.summarize()` enumerates `(key, id)` pairs.
   **Never substitute by re-creating the artifact** — that lands a
   duplicate row.
-- **Multi-line probes go to `scratch/<ts>_*.py`, not inline.** The
-  inline `pixi run python -c "..."` cap is **2 lines**. Multi-symbol
-  walks, multi-line introspection, docstring extracts → write a
-  scratch file. The 2-line cap is contract.
+- **All Python execution goes to `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py`.
+  No exceptions.** Every Python command — `pixi run python -c`,
+  `python -c`, heredoc-style `python << 'EOF'`, or any inline
+  Python invocation — is forbidden, regardless of length. Write
+  the code to a scratch file first, then execute it via
+  `pixi run python scratch/<ts>_<short>.py`. Applies to:
+  - version checks (`print(<pkg>.__version__)`),
+  - existence / import smoke checks (`from <pkg> import X`),
+  - signature lookups (`inspect.signature(...)`),
+  - module surface dumps (`dir(...)`, `pkgutil.iter_modules(...)`),
+  - docstring extraction (`pydoc.render_doc(...)`, `help(...)`),
+  - any other Python investigation, including "just one line".
+
+  If you catch yourself typing `python -c` — STOP and write the
+  file instead. The scratch file is the deliverable; inline
+  execution leaves no trace and no cache, which is exactly the
+  bypass this rule blocks.
+- **`inspect.signature` / `dir(...)` / `pydoc.render_doc` /
+  `help(...)` executed inline is NOT a python-api consultation.**
+  These are the exact APIs this skill wraps. Running them via
+  `python -c "..."` (any length) and reading the output does NOT
+  satisfy the "python-api consulted" pre-flight row in any
+  sibling skill. The deliverable is a
+  `scratch/api/<lib>/<version>/<topic>.md` file written this
+  turn — Shape 1 probe template, no shortcut.
 - **`pydoc.render_doc`, not `__doc__`.** `__doc__` is empty /
   misleading on properties, descriptors, decorated callables, and
   accessors like `report.metrics.rmse` — exactly the cases the cache
@@ -135,14 +159,21 @@ that lives in the narrative docs.
 | Probe ran, answer is on screen → stop without writing the cache | Probe is investigation; cache is conclusion. Next session will repeat the probe |
 | Bundled `.agents/skills/python-api/references/X.md` exists → treat as the cache | References are workflow patterns; cache is per-version extracts. Both must exist |
 | Version subfolder missing → write into the latest existing one | The subfolder is the freshness key. Create the right one |
-| Multiple symbols needed → string several `inspect.signature` calls into one inline `python -c` | The 2-line cap is contract. Multi-symbol → one scratch file, one consolidated cache file |
+| Multiple symbols needed → string several `inspect.signature` calls into one inline `python -c` | All Python execution goes to scratch — there is no inline `python -c` allowance. Multi-symbol → one scratch file, one consolidated cache file |
+| Used `python -c "import <pkg>; print(<pkg>.__version__)"` for a quick version check | The rule is unconditional. Length is not the criterion — traceability is. Version checks go to `scratch/<ts>_version_<pkg>.py`. Inline calls leave no record in `scratch/`, breaking the convention |
+| Cache for the topic already exists; ran inline `inspect.signature(X)` to re-confirm one arg name | Shape 1a (inline single-signature carve-out) is removed. Every Shape 1 lookup uses the probe template. Re-confirming one arg appends to the existing cache file via a fresh probe — no inline shortcut |
+| Used `python -c "...inspect.signature..."` instead of writing the Shape 1 probe | "Inline gave me the signature this turn, that's enough" → the probe records the *investigation*; the cache file records the *conclusion*. Next session needs the file, not your transcript. Inline introspection ≠ python-api consultation |
 | User pasted a docs URL → treat as the answer | The lookup still requires `inspect` or `WebFetch` + cache write. URLs are leads |
 | Use `__doc__` instead of `pydoc.render_doc` | `__doc__` is empty on many accessors; the cache file must be readable standalone |
 
 ## First action — every turn that triggers this skill
 
-1. **Resolve the version** of every library at stake:
-   `pixi run python -c "import <pkg>; print(<pkg>.__version__)"`.
+1. **Resolve the version** of every library at stake. Write
+   `scratch/<YYYY-MM-DD>_<HHMMSS>_version_<pkg>.py` containing
+   `import <pkg>; print(<pkg>.__version__)`, run with
+   `pixi run python scratch/<ts>_version_<pkg>.py`. **Do NOT use
+   inline `python -c`** — the rule is unconditional (see Stop
+   conditions).
 2. **List the cache:** `ls scratch/api/<lib>/<version>/`.
 3. **Cache hit?** Read the matching file. Done. Skip the rest.
 4. **Cache miss?** Classify the question (see decision table) → run
@@ -155,8 +186,10 @@ that lives in the narrative docs.
 ```
 Pre-flight (python-api):
 - [ ] Package version resolved this turn: <lib> <version>
-      Evidence: tool call `pixi run python -c "import <lib>; print(<lib>.__version__)"`
-                output (paste version string)
+      Evidence: Write scratch/<ts>_version_<lib>.py (this turn) +
+                tool call `pixi run python scratch/<ts>_version_<lib>.py`
+                output (paste version string).
+                **Inline `python -c "..."` is NOT evidence.**
 - [ ] Cache listed this turn (Shape 0): `ls scratch/api/<lib>/<version>/`
       Evidence: tool output (paste the listing, even if empty)
 - [ ] Question shape classified (see table): signature | module surface | narrative
@@ -164,9 +197,10 @@ Pre-flight (python-api):
 - [ ] Lookup decision: cache hit (Read <file>) | Shape 1 | Shape 2 | Shape 3
       Evidence: name the file Read, the probe script written, or the URL fetched
 - [ ] Cache file lands on disk before turn end
-      Evidence: Write scratch/api/<lib>/<version>/<topic>.md
-                | "n/a — cache hit, file already on disk"
-                | "n/a — Shape 1a inline confirmation against existing cache file"
+      Evidence: Write scratch/api/<lib>/<version>/<topic>.md (this turn)
+                | "n/a — cache hit, file already on disk + Read this turn"
+      **Inline `inspect.signature(...)` / `dir(...)` / `pydoc.render_doc(...)`
+      WITHOUT a corresponding cache file is NOT evidence. Re-do as Shape 1.**
 - [ ] If Shape 1: Usage section filled in (Call / Don't call / Trap / Returns)
       Evidence: Edit scratch/api/<lib>/<version>/<topic>.md (this turn)
                 | "n/a — cache hit / Shape 2 / Shape 3"
@@ -244,11 +278,17 @@ print(out.getvalue())
 file and replace each `TODO` with one line. Read the actual `help()`
 output the probe produced — do not write the synthesis from memory.
 
-**Shape 1a — inline single-signature check (not cached).** Permitted
-only when a cache file already exists and you need to re-confirm one
-arg name at the call site:
-`pixi run python -c "from <pkg> import <Sym>; import inspect; print(inspect.signature(<Sym>))"`.
-Any other Shape 1 usage runs the probe template above.
+**No inline carve-out for single-signature checks.** Even when a
+cache file already exists and you need to re-confirm one arg, you
+run a fresh probe (or read the existing cache file). Inline
+`pixi run python -c "...inspect.signature..."` is forbidden — the
+2-line carve-out that previously allowed it is removed. The
+reasons: (a) the probe records the investigation and the cache
+file records the conclusion, both with traceability; (b) inline
+calls leave no record in `scratch/`, so future agents can't audit
+how the answer was reached; (c) the gradient from "one inline
+call" to "I'll just inspect everything inline" is exactly the
+bypass this rule blocks.
 
 **Multi-symbol consolidation.** When several symbols share a topic
 (e.g. `Project.put` / `Project.get` / `Project.summarize` under
@@ -262,19 +302,57 @@ works on Python 3.10+ (pass `pydoc.plaintext`, do not call it).
 
 ### Shape 2 — module surface
 
-```bash
-pixi run python -c "import <pkg>; print(sorted(n for n in dir(<pkg>) if not n.startswith('_')))"
+Write a scratch probe that dumps both the top-level surface and
+the submodule list, then writes `surface.md` directly. **No inline
+`python -c`** — same rule as Shape 1.
+
+Probe template — save as
+`scratch/<YYYY-MM-DD>_<HHMMSS>_surface_<lib>.py`, run with
+`pixi run python <path>`:
+
+```python
+"""Surface dump: dir(<lib>) + pkgutil.iter_modules() @ installed version."""
+from __future__ import annotations
+
+import datetime
+import importlib
+import pkgutil
+from pathlib import Path
+
+LIB = "skrub"   # top-level package name
+
+mod = importlib.import_module(LIB)
+version = mod.__version__
+
+top_level = sorted(n for n in dir(mod) if not n.startswith("_"))
+try:
+    submods = sorted(m.name for m in pkgutil.iter_modules(mod.__path__))
+except AttributeError:
+    submods = []
+
+lines = [
+    f"# {LIB} {version} — module surface",
+    "",
+    f"Source: dir({LIB}) + pkgutil.iter_modules({LIB}.__path__) "
+    f"@ {datetime.date.today():%Y-%m-%d}",
+    "",
+    "## Top-level",
+    "",
+    *[f"- {n}" for n in top_level],
+    "",
+    "## Submodules",
+    "",
+    *[f"- {n}" for n in submods],
+    "",
+]
+
+cache_dir = Path("scratch/api") / LIB / version
+cache_dir.mkdir(parents=True, exist_ok=True)
+(cache_dir / "surface.md").write_text("\n".join(lines))
+print("\n".join(lines))
 ```
 
-Subpackage discovery:
-
-```bash
-pixi run python -c "import pkgutil, <pkg>; print([m.name for m in pkgutil.iter_modules(<pkg>.__path__)])"
-```
-
-If you'll re-grep the listing, cache as
-`scratch/api/<lib>/<version>/surface.md` with the listing under
-`## Top-level` / `## Submodules` and `Source:` on line 1.
+One topic per file. Replace only on a version bump.
 
 ### Shape 3 — narrative
 
@@ -373,7 +451,7 @@ Two structured uses of `scratch/`, both gitignored:
 | **What** | Multi-line `inspect` walks, sanity checks, metric extraction | Signature / help() / docs extract per topic |
 | **Naming** | Timestamped (chronological) | Topic-organised (no timestamp) |
 | **Lifecycle** | Append-only after success; overwrite on error in same loop | Append-on-success; replace on version bump |
-| **Inline cap** | Inline `python -c` ≤ 2 lines; longer → scratch file | n/a (probes write the cache) |
+| **Inline cap** | **No inline `python -c`. All Python execution goes to scratch, regardless of length** (see Stop conditions) | n/a (probes write the cache) |
 
 **Never edit an experiment script to add agent-only `print(...)` calls
 for inspection.** Inspection goes in `scratch/`. Experiment scripts

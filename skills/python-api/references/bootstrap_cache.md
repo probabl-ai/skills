@@ -30,11 +30,12 @@ abbreviating (`0.18.0` → `0.18`) silently bifurcates the cache.
 
 ## Why these files, why now
 
-Inline `pixi run python -c "inspect.signature(...)"` calls and
-ad-hoc `scratch/<ts>_*.py` probes record the *investigation*; they
-expire from the conversation log and do not carry forward. The
-cache file records the *conclusion*; the next agent reads it and
-skips the round-trip.
+Inline `pixi run python -c "..."` calls are **forbidden** by the
+Stop conditions in `SKILL.md` regardless of length; all Python
+execution goes to `scratch/<ts>_*.py`. Probes record the
+*investigation*; they expire from the conversation log and do not
+carry forward. The cache file records the *conclusion*; the next
+agent reads it and skips the round-trip.
 
 A bootstrap turn that fits skrub + skore + sklearn into a working
 baseline without leaving the cache behind has done the discovery

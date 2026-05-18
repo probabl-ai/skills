@@ -141,7 +141,11 @@ Pre-flight (organize-ml-workspace):
       Evidence: lists each <gate>: <value | not recorded>
                 | "n/a — JOURNAL.md does not exist yet (truly fresh)"
 - [ ] Tier 1 mandatory libs importable: sklearn, skrub, skore
-      Evidence: tool output of `pixi run python -c "import sklearn, skrub, skore"`
+      Evidence: Write scratch/<ts>_check_tier1.py with
+                `import sklearn, skrub, skore` + `pixi run python
+                scratch/<ts>_check_tier1.py` output.
+                **Inline `python -c` is NOT evidence** (see
+                `python-api` § Stop conditions).
 - [ ] Layout detection done: <existing | fresh>
       Evidence: ls/Glob on project root + matched signal from Detection
 - [ ] Tabular library decided (G-TABULAR): pandas | polars

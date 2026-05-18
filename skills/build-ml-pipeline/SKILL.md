@@ -117,11 +117,14 @@ predictor.
   into Layer 1, smoke passes by construction, CV looks fine, and
   the structural debt only surfaces when the *next* experiment
   tries to compose anything new against the raw source.
-- **Multi-line probes go to `scratch/`, not inline.** Any Python
-  investigation longer than 2 lines lands in
-  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per `python-api`
-  § "Scratch traceability"), not in `pixi run python -c "..."`.
-  The 2-line cap is contract.
+- **All Python execution goes to `scratch/`.** Every Python
+  command — version checks, signature lookups, data inspection,
+  loader sanity-checks, anything — lands in
+  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and runs via
+  `pixi run python scratch/<ts>_<short>.py`. **Inline
+  `pixi run python -c "..."` is forbidden regardless of length**
+  (see `python-api` § Stop conditions). The previous "2-line
+  inline cap" is removed — there is no length carve-out.
 
 ## Pre-flight — emit before any code
 

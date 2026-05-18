@@ -53,8 +53,9 @@ scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py
 ```
 
 See `python-api` § "Scratch traceability" for the full
-convention. Inline `pixi run python -c "..."` is reserved for ≤ 2
-lines; anything longer → scratch file.
+convention. **Inline `pixi run python -c "..."` is forbidden
+regardless of length** (see `python-api` § Stop conditions). All
+Python execution goes to `scratch/<ts>_<short>.py`.
 
 **Do NOT edit the experiment script to add agent-only `print`
 calls.** The script is the durable record of what was run; the

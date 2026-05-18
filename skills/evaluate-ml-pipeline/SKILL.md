@@ -80,18 +80,16 @@ read the report. The pipeline declaration is out of scope (see
   the matching `tests/smoke/test_NN_<short_name>.py` must also
   pass before the experiment can flip to `done` (enforced by
   `iterate-ml-experiment` § 4).
-- **Multi-line probes go to `scratch/`, not inline.** Any
-  Python investigation longer than 2 lines lands in
-  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per `python-api`
-  § "Scratch traceability"), not in
-  `pixi run python -c "..."`. The 2-line cap is contract;
-  ignoring it defeats the traceability the scratch folder
-  exists for. Common shapes that trigger this rule during
-  evaluation: walking the skore report's metrics accessors,
-  extracting per-fold values, sanity-checking the splitter's
-  fold geometry, multi-symbol `inspect.signature(...)` on
-  skore / sklearn classes. See `python-api` § "Scratch
-  traceability" for the file layout.
+- **All Python execution goes to `scratch/`.** Every Python
+  command — version checks, signature lookups, walking the skore
+  report's metrics accessors, extracting per-fold values,
+  sanity-checking the splitter's fold geometry, multi-symbol
+  `inspect.signature(...)` on skore / sklearn classes — lands in
+  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and runs via
+  `pixi run python scratch/<ts>_<short>.py`. **Inline
+  `pixi run python -c "..."` is forbidden regardless of length**
+  (see `python-api` § Stop conditions). The previous "2-line
+  inline cap" is removed.
 - **`skore.evaluate(...)` and `project.put(...)` live only in
   `experiments/NN_*.py`.** The experiment script is the sole
   producer of a report in the workspace's skore Project.
@@ -170,9 +168,9 @@ Pre-flight (evaluate-ml-pipeline):
                    the response).
 - [ ] If a probe is needed in this turn (skore report walk,
       metric extraction, splitter fold inspection), the payload
-      goes to `scratch/<ts>_<short>.py`, not inline `pixi run
-      python -c "..."`. The 2-line cap is the only inline
-      allowance.
+      goes to `scratch/<ts>_<short>.py`, **not inline `pixi run
+      python -c "..."`**. No inline allowance — all Python
+      execution goes to scratch.
 ```
 
 ## Scope

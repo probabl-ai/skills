@@ -114,13 +114,14 @@ surface the gap to the user.
   *experiment ideas*, not goals with target deltas. The user judges
   the result after the run, per `iterate-ml-experiment`'s broader
   rule.
-- **Multi-line probes go to `scratch/`, not inline.** Walking
-  `report.diagnosis()` and pulling its actionable rows grows
-  multi-line fast. Any payload longer than 2 lines lands in
-  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per `python-api`
-  § "Scratch traceability"), not in `pixi run python -c
-  "..."`. The 2-line cap is contract; ignoring it defeats the
-  traceability the scratch folder exists for.
+- **All Python execution goes to `scratch/`.** Walking
+  `report.diagnosis()`, pulling its actionable rows, version
+  checks, any payload — every Python command lands in
+  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and runs via
+  `pixi run python scratch/<ts>_<short>.py`. **Inline
+  `pixi run python -c "..."` is forbidden regardless of length**
+  (see `python-api` § Stop conditions). No 2-line cap; no inline
+  allowance.
 
 ## The inspection loop
 
