@@ -60,6 +60,16 @@ touched, no hook involved.
   `src/<pkg>/`, `experiments/`, top-level `*.py` scripts, and any
   package directory the user owns. Skip vendored paths, generated
   files, and anything under `.pixi/`, `.venv/`, `node_modules/`, etc.
+- **Never write `ruff.toml` from memory.** The bundled
+  `templates/ruff.toml` is the single source of truth — it encodes
+  the per-file ignores (`experiments/**`), the numpydoc convention,
+  and the rule selection this stack expects. Initial setup requires
+  **`Read .agents/skills/python-code-style/templates/ruff.toml`**
+  *this turn*, then `Write <project-root>/ruff.toml` verbatim from
+  that file's content. Authoring a custom `ruff.toml` from training-
+  data memory drops half the contract silently. If you catch
+  yourself typing `[lint]` / `[format]` / `select = [...]` without
+  having read the template this turn, STOP and `Read` it first.
 
 ## Pre-flight — emit this checklist as visible text before running ruff
 
@@ -67,13 +77,20 @@ touched, no hook involved.
 Pre-flight (python-code-style):
 - [ ] ruff importable in the project's env (`pixi run ruff --version`
       succeeds, per `data-science-python-stack` Tier 1)
-- [ ] `ruff.toml` present at project root — if absent and the stack
-      + workspace are already set up, drop `templates/ruff.toml`
-      from this skill into the root before running ruff
+- [ ] `ruff.toml` present at project root.
+      If absent AND stack + workspace are already set up: the
+      bundled template MUST be read **this turn** before being
+      written verbatim.
+      Evidence: Read .agents/skills/python-code-style/templates/ruff.toml
+                (this turn) + Write <project-root>/ruff.toml (this turn)
+                | "n/a — ruff.toml already at project root"
+      **Inline-authored ruff.toml from memory is NOT evidence.**
 - [ ] File list ready: <abs paths of .py files touched this turn>
 - [ ] Decision recorded: this is the first ruff pass on these files
       (proceed) | second pass (proceed but stop on persistent
       issues) | third pass on same warning (STOP, surface to user)
+- [ ] One-fix-per-file rule acknowledged: max two passes per warning,
+      then surface remaining diagnostics + diff to the user.
 ```
 
 ## Scope
@@ -122,6 +139,18 @@ isn't loaded — check that it lives at the project root.
 
 Public functions and classes carry numpydoc-format docstrings; ruff's
 `D` rules with `pydocstyle.convention = "numpy"` enforce the shape.
+
+**A bare one-line summary is NOT sufficient for public functions.**
+The `Parameters` / `Returns` (and `Raises` when applicable) sections
+are mandatory — even when the function is small, even when the user
+says "just the summary is fine". Approving a one-line docstring on
+a public function silently fails the contract this skill enforces;
+the function looks `D`-rule-clean (D100/D103 don't fire) but the
+parameter shapes and return type that callers actually need are
+missing. Private helpers (`_leading_underscore`) are the only
+exception: the default `D` rules allow them to omit docstrings, but
+public callable surfaces always carry the full numpydoc shape.
+
 Skeleton:
 
 ```python
@@ -166,16 +195,32 @@ When this skill is invoked on a fresh project that has no
 `ruff.toml` at its root **and** the stack + workspace have been
 scaffolded by their respective skills:
 
-1. Read `templates/ruff.toml` from this skill (path:
-   `.claude/skills/python-code-style/templates/ruff.toml`).
-2. Write it verbatim to `<project-root>/ruff.toml`.
-3. Verify ruff picks it up: `pixi run ruff check --show-settings
+1. **Read the bundled template** with the file-reading tool *this
+   turn*:
+   `Read .agents/skills/python-code-style/templates/ruff.toml`.
+   The pre-flight Evidence row for the `ruff.toml present` check
+   requires this read; an inline-authored config from memory does
+   not satisfy it.
+2. **Write the content verbatim** to `<project-root>/ruff.toml`.
+   No edits, no "improvements", no rule additions. The template
+   encodes the per-file ignores (`experiments/**`), the
+   `pydocstyle.convention = "numpy"` setting, and the rule
+   selection this stack expects. Diverging from it drops half the
+   contract.
+3. **Verify ruff picks it up**: `pixi run ruff check --show-settings
    .` should report the `numpy` convention and the `select` list
    from the template.
 
 Do not fold ruff config into `pyproject.toml` automatically — the
 project may not have one, or the user may prefer a separate file.
 The standalone `ruff.toml` is unambiguous.
+
+**Forbidden shortcuts:**
+
+| Shortcut | Why it's wrong |
+|---|---|
+| "I know what ruff.toml should contain" → author from memory | The bundled template carries `experiments/**` per-file ignores, the numpydoc convention, and a curated rule selection. Memory misses these and the contract silently breaks |
+| Read this skill's SKILL.md text describing the template → write from that | The SKILL.md describes; the template file *is*. Read the file itself, write it verbatim |
 
 ## When ruff finds something Claude didn't write
 
