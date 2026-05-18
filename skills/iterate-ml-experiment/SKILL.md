@@ -2,1295 +2,574 @@
 name: iterate-ml-experiment
 description: >
   Owns the iteration loop on top of an ML workspace: the
-  `journal/JOURNAL.md` history log and the per-experiment
-  `journal/NN_short_name.md` design notes that must be written
-  **and validated by the user** before the matching
-  `experiments/NN_short_name.py` is created. Drives the
-  conversational loop where the next experiment is proposed,
-  refined, and committed to the journal, then dispatches to one of the
-  `iterate-from-*` strategy skills when the source of the next
-  proposal needs to be picked. Stops at "the design note is on disk
-  and the user has approved it".
+  `journal/JOURNAL.md` index and the per-experiment
+  `journal/NN_short_name.md` design notes that must be drafted and
+  approved by the user **before** `experiments/NN_short_name.py` is
+  created. Drives the propose → iterate → approve → implement →
+  record loop; dispatches to `iterate-from-skore` /
+  `iterate-from-user` for sourcing.
 
-  TRIGGER when: **a session starts in an ML workspace — whether or
-  not `journal/JOURNAL.md` exists yet**. If the folder is missing or
-  carries only the placeholder, you are in bootstrap mode (§ 0),
-  which dispatches to `organize-ml-workspace` for the scaffold and
-  then returns here to auto-draft the baseline design note. Also
-  triggers when the user says "what's next", "resume", "where were
-  we", "let's iterate", "propose the next experiment", "implement
-  the simplest model", "first baseline", or similar bootstrap-shaped
-  phrasing; about to create a new `experiments/NN_*.py` (the
-  matching `journal/NN_*.md` must exist and be validated first);
-  the user wants to record an outcome from a finished experiment
-  in `JOURNAL.md`; the user asks to compare past experiments or
-  review what's been tried.
+  TRIGGER — any of:
+  - A session opens in an ML workspace (whether or not `journal/`
+    exists yet — missing/placeholder → bootstrap mode).
+  - User says "what's next", "resume", "where were we", "let's
+    iterate", "propose next", "first baseline".
+  - About to create a new `experiments/NN_*.py` (the matching
+    `journal/NN_*.md` must exist and be approved first).
+  - User wants to record an outcome from a finished run.
+  - User asks to compare past experiments or review what's been
+    tried ("compare X and Y", "where are we?").
 
-  SKIP when: there is no `journal/` folder yet and no workspace
-  scaffolded (route to `organize-ml-workspace` first); the work
-  is mechanical inside `pipeline.py` / `evaluate.py` / `data.py`
-  with no journal-level implication (those are owned by
-  `build-ml-pipeline` / `evaluate-ml-pipeline`); the user asks
-  for a symbol lookup (use the `python-api` skill); the user is
-  reviewing/diagnosing a single skore report without a "what
-  next" framing (route to `evaluate-ml-pipeline`).
+  SKIP when: no `journal/` yet AND no workspace scaffold (route to
+  `organize-ml-workspace`); the work is mechanical inside
+  `pipeline.py` / `evaluate.py` / `data.py` with no journal-level
+  implication (owned by `build-ml-pipeline` /
+  `evaluate-ml-pipeline`); the user asks for a symbol lookup
+  (`python-api`); the user is diagnosing a single skore report
+  without a "what next" framing (`evaluate-ml-pipeline`).
 
-  HOW TO USE: **First action — always — read `journal/JOURNAL.md` and
-  emit the Pre-flight checklist as visible text in your
-  response.** Both are mandatory before writing or modifying any
-  design note. Then use the **Mode picker** (top of the body) to
-  decide which section to read this turn — the body covers seven
-  operational modes (bootstrap, iterate, overview, compare,
-  goal pivots, abandoned, re-runs); you only need one per turn.
-  Design notes are the only artifact this skill writes; reads,
-  comparisons, and overviews don't write.
+  HOW TO USE: read `journal/JOURNAL.md` first, classify the turn via
+  the **Mode picker** (table near the top), then read only the
+  matching section. Sibling skills open *just-in-time* when a step
+  requires them — do not pre-read all nine at session start.
+  Design notes are the only artifact this skill writes; read,
+  compare, and overview modes don't write.
 ---
 
 # Iterate ML Experiment
 
 The loop on top of `experiments/`: what to try next, why, what
-counts as a result, and how the trail of past experiments is
-recorded. Pipeline mechanics, evaluation mechanics, and workspace
-layout are out of scope and live in sibling skills.
+counts as a result, how the trail is recorded. Pipeline / evaluation
+mechanics live in sibling skills.
 
-## FIRST ACTION — emit this block before anything else
+## First action — read state + emit read-set tracker
 
-**This block must be the first visible content in every turn that
-touches an ML workspace.** It renders the cross-skill read-status
-*before* any prose can be anchored on, which is the only reliable
-way to prevent the agent from skipping sibling skills under the
-"I already know the gist" reflex. Fill the right column with
-`read` (full file opened **this turn** via the file-reading tool)
-or `not read`. Inferring sibling content from a cross-reference
-in this file does not count as "read".
+Track which siblings you've opened **this turn**. Open each
+sibling SKILL.md **just-in-time** when a step in this skill calls
+for it (e.g. open `evaluate-ml-pipeline` before § 3's CV-strategy
+step). Do not pre-read all nine at session start — that produces
+paralysis and the user is left waiting.
+
+Emit this tracker as visible text once per turn (mark each
+`opened` / `pending`):
 
 ```
-Skills opened this turn (must be filled before continuing):
-  - organize-ml-workspace:        <read | not read>
-  - data-science-python-stack:    <read | not read>
-  - python-env-manager:           <read | not read>
-  - python-api:                   <read | not read>
-  - python-code-style:            <read | not read>
-  - build-ml-pipeline:            <read | not read>
-  - evaluate-ml-pipeline:         <read | not read>
-  - test-ml-pipeline:             <read | not read>
-  - smoke-test-ml-pipeline:       <read | not read>
-If any are "not read", reading them is your next action — not
-writing files, not asking the user, not running shell commands.
+Sibling skills (open just-in-time when a step requires):
+  - organize-ml-workspace, data-science-python-stack,
+    python-env-manager, python-api, python-code-style,
+    build-ml-pipeline, evaluate-ml-pipeline, test-ml-pipeline,
+    smoke-test-ml-pipeline, iterate-from-skore / iterate-from-user
 ```
 
-The block above is the **non-negotiable first emit**. The
-**read-set** that must be filled depends on the mode (see § "Mode
-picker" below) — bootstrap requires *all nine* siblings, while
-later modes need a smaller subset that the per-mode section
-declares. In all modes the sourcing-strategy skills
-(`iterate-from-skore`, `iterate-from-user`) are added to the
-read-set the moment the user picks them.
+Then do the context reads below before answering:
 
-## Second action (every turn) — context reads
-
-Once the FIRST ACTION block is rendered and any "not read" lines
-have been resolved, do the context reads below before answering
-anything else:
-
-1. **Read `journal/JOURNAL.md`.** If it doesn't exist or is the
-   placeholder dropped by `organize-ml-workspace`, you're in
-   bootstrap mode (§ 0).
-2. **Read `overview/summary.md` if it exists.** The workspace
-   carries an agent-authored narrative digest at
-   `overview/summary.md` — project framing + cross-experiment
-   metrics table + curated per-experiment Headline + Implication
-   blocks. `JOURNAL.md` is the *index* (Status, History one-liners,
-   Backlog); `summary.md` is the *narrative* (what was learned,
-   in one scannable read). Both are agent-facing; read both at
-   session start. The source of truth remains the per-experiment
-   design notes in `journal/NN_*.md` — `summary.md` is the curated
-   view across them, rewritten by hand at every § 4 outcome
-   recording (no auto-generation script).
-3. **Read the `Workspace decisions` block** in `JOURNAL.md`
-   Status. Every gate this skill (or a sibling) is about to fire
-   in this turn first checks whether the matching row already
-   exists in `Workspace decisions`; recorded decisions skip the
-   `AskUserQuestion` and cite `JOURNAL.md Status (recorded
-   YYYY-MM-DD)` as the evidence for that gate in the pre-flight
-   checklist.
-4. **Emit the Pre-flight checklist** (below) as visible text
-   in your response, with each box marked **and an Evidence
-   cell filled** — see § "Pre-flight — evidence requirements".
-5. **Use the Mode picker** to find which one section to read
-   this turn.
-
-Skipping any of these is a Stop-condition violation.
+1. **Read `journal/JOURNAL.md`.** Missing or placeholder → bootstrap
+   mode (see § 0).
+2. **Read `overview/summary.md` if it exists.** `JOURNAL.md` is the
+   *index*; `summary.md` is the *narrative digest*.
+3. **Check `Workspace decisions` block in JOURNAL.md Status** for
+   pre-recorded gates (tabular, env_manager, package, cv_splitter)
+   — a recorded decision skips its `AskUserQuestion` and cites
+   `JOURNAL.md Status (recorded YYYY-MM-DD)` as evidence.
+4. **Emit the Pre-flight checklist below** with each box filled.
+5. **Use the Mode picker** to find which section to read this turn.
 
 ## Mode picker — read this before navigating the body
 
-You only need to read **one** mode section per turn. Decide
-which by matching the user's signal (or workspace state) to
-the table, then jump straight to that section.
+You only read **one** mode section per turn. Match the user's signal
+to a row, then jump.
 
-| User signal / workspace state | Mode | Section to read |
+| Signal / workspace state | Mode | Section |
 |---|---|---|
-| `journal/JOURNAL.md` missing, empty, or placeholder; OR exists but has no rows in History | **Bootstrap** | § 0 Bootstrap |
-| `journal/` not even scaffolded (no `src/`, no `experiments/`) | **Bootstrap → handoff first** | § 0 step 1, then `organize-ml-workspace` |
-| "what's next?", "let's iterate", "propose next", "resume" — and JOURNAL.md has ≥1 done row | **Iterate (propose)** | §§ 1-3 + Dispatch table |
+| `journal/JOURNAL.md` missing, empty, or placeholder; OR exists but History has 0 rows | **Bootstrap** | § 0 |
+| `journal/` not even scaffolded (no `src/`, no `experiments/`) | **Bootstrap → handoff first** | hand off to `organize-ml-workspace`, then § 0 |
+| "what's next?", "let's iterate", "propose next", "resume" — with ≥1 done row | **Iterate (propose)** | §§ 1-3 + Dispatch table |
 | "the run finished", "log the result", "we got X = ...", "record outcome" | **Iterate (record)** | § 4 |
-| "where are we?", "give me a one-pager", "status?", "what have we tried?" | **Project overview** | § Project overview / status requests |
-| "compare X and Y", "X vs Y", "trend across runs", "stack up against baseline" | **Compare (read-only)** | § Compare past experiments |
-| "let's pivot the goal", "actually we care about <new metric>", goal change signal | **Goal pivot** | § Goal pivots |
-| "abandon X", "drop X", "X isn't going to happen" | **Abandoned** | § Abandoned experiments |
-| User wants to redo a prior experiment under different conditions (paired seeds, fixed splitter, …) | **Re-run** | § Re-runs |
+| "where are we?", "give me a one-pager", "status?", "what have we tried?" | **Project overview** | `references/maintenance_modes.md` § Overview |
+| "compare X and Y", "X vs Y", "trend across runs" | **Compare (read-only)** | `references/maintenance_modes.md` § Compare |
+| "let's pivot the goal", "actually we care about <new metric>" | **Goal pivot** | `references/maintenance_modes.md` § Goal pivots |
+| "abandon X", "drop X" | **Abandoned** | `references/maintenance_modes.md` § Abandoned |
+| User wants to redo a prior experiment under different conditions | **Re-run** | `references/maintenance_modes.md` § Re-runs |
 
-If two modes seem to match (e.g., "compare X and Y, then propose
-something based on it"), pick the **read** mode first
-(Compare/Overview), surface its result, and stop. Re-entering
-§ 1 for a propose-step is a separate user-driven turn.
+If two modes seem to match ("compare X and Y, then propose something"),
+pick the **read** mode first, surface its result, and stop. Re-entering
+§ 1 is a separate user-driven turn.
 
 ## Stop conditions — read before anything else
 
 - **No design note, no script.** Never create or edit
   `experiments/NN_*.py` until `journal/NN_*.md` exists, is filled
   in, and the user has explicitly approved it. The design note is
-  written *first* and validated *first*; the script is a
-  consequence of the design note, not the other way around. If you
-  catch yourself about to write Python before the design note exists:
-  STOP and write the design note.
-- **`JOURNAL.md` is read at session start, not improvised.** When a
-  session opens in a workspace with `journal/JOURNAL.md`, read the
-  file before answering any "what next" question. Don't
-  reconstruct history from `experiments/` filenames or
-  `git log` — those don't carry the *why*.
-- **Strategy is picked, not assumed.** When you propose a next
-  experiment, name the sourcing strategy you used: `skore`
-  (diagnostic findings mined from the prior report), `user`
-  (user idea / article / issue / spec), `my-pick`
-  (agent-synthesized candidates the user chose from), or
-  backlog-promotion (`B<N>`). If the user hasn't signalled one,
-  ask — but accept clear free-text intents (see § "The
-  sourcing menu" § Free-text handling). Don't silently default
-  to one — that's how the journal turns into a wishlist.
-  **Exception: bootstrap (§ 0).** When `JOURNAL.md` has
-  no recorded experiment, the baseline is forced by the
-  workspace defaults — no strategy dispatch, no "what do you
-  want to try?". The user's role is to approve or amend the
-  baseline, not invent it.
-- **Approval is explicit.** "Looks good", "yes", "go" from the
-  user is the gate. Anything ambiguous ("hmm interesting") is
-  not approval. If unsure, ask.
-- **Outcomes are recorded, not narrated.** When an experiment
-  finishes, the outcome lands in `JOURNAL.md` *and* in the per-
-  experiment file's status block, before the conversation moves
-  on. The skore report is the source of truth for metrics; the
-  design notes capture what was learned and what it implies for
-  the next iteration.
-- **Prior experiments stay reproducible.** Every `done` row in
-  `JOURNAL.md` History must remain runnable on `main` and produce
-  the same result. When the next iteration touches a shared
-  module under `src/<pkg>/` (`features.py`, `pipeline.py`,
-  `data.py`, `evaluate.py`), the **default behavior must
-  preserve prior experiments' shape** — never silently change
-  what `build_learner()` returns for a caller that didn't ask
-  for the new feature. The choice of *how* — parametrize an
-  existing function with a default that mirrors prior behavior,
-  add a new function called only from the new experiment, or
-  branch the module — is a judgment call; the criterion lives
-  in `build-ml-pipeline` § "Reproducibility mechanics". The
-  cheap executable check is `tests/smoke/` (see § 4's smoke-
-  test gate): if any prior smoke test goes red, default
-  behavior is broken.
-- **Three skills, in order, before any code lands in
-  `src/<pkg>/`.** After design-note approval, the implementation step
-  is *not* "let me write the modules"; it is a non-skippable
-  three-skill sequence:
-  1. `build-ml-pipeline` — `pipeline.py`, `features.py`,
-     `data.py` (the pipeline declaration).
-  2. `evaluate-ml-pipeline` — `evaluate.py` (cross-validator,
-     metric overrides). This skill owns the CV-strategy choice
-     and surfaces it to the user via `AskUserQuestion`; writing
-     `evaluate.py` without invoking it is the most common
-     shortcut and means the user never got to pick.
-  3. `test-ml-pipeline` → `smoke-test-ml-pipeline` — the
-     matching smoke test.
+  written first and validated first; the script is its consequence.
+- **`JOURNAL.md` is read at session start, not improvised.** Don't
+  reconstruct history from `experiments/` filenames or `git log` —
+  those don't carry the *why*.
+- **Strategy is picked, not assumed.** Name the sourcing strategy
+  in every proposal: `skore` / `user` / `my-pick` / `B<N>`. Don't
+  silently default. **Exception: bootstrap** — the baseline is
+  forced by workspace defaults, no strategy dispatch.
+- **Approval is explicit.** "approved" / "yes" / "go" / "looks
+  good" from the user is the gate. Ambiguous ("hmm interesting") →
+  re-ask via `AskUserQuestion`.
+- **Outcomes are recorded, not narrated.** When the run finishes,
+  the outcome lands in `JOURNAL.md` AND the per-experiment Status
+  block before the conversation moves on.
+- **Prior experiments stay reproducible.** Every `done` row must
+  remain runnable on `main` with the same result. When touching
+  `src/<pkg>/`, **default behavior must preserve prior experiments'
+  shape** (see `build-ml-pipeline` § "Reproducibility mechanics").
+  The cheap check is `tests/smoke/`: any prior smoke test going
+  red means default behavior is broken.
+- **Three skills, in order, before any code lands in `src/<pkg>/`.**
+  After design-note approval:
+  1. `build-ml-pipeline` — `pipeline.py`, `features.py`, `data.py`.
+  2. `evaluate-ml-pipeline` — `evaluate.py`. **This skill owns the
+     CV-strategy choice and surfaces it via `AskUserQuestion`;
+     writing `evaluate.py` without invoking it is the most common
+     shortcut and means the user never got to pick.**
+  3. `test-ml-pipeline` → `smoke-test-ml-pipeline` — the smoke test.
 
-  Then `experiments/NN_*.py` ties them together. None of the
-  three skills may be substituted by "I'll just write the file
-  myself" — they exist to surface decisions to the user. If
-  you catch yourself opening `src/<pkg>/evaluate.py` directly
-  in Write/Edit without an `evaluate-ml-pipeline` invocation
-  earlier in the same turn, STOP and invoke the skill.
-- **Harness-level "no clarifying questions" hints do NOT waive
-  this skill's `AskUserQuestion` mandates.** Every gate this
-  skill drives (G-DESIGN, G-RUN, the §1 mode pick, the §2
-  sourcing menu, the §0 config gates listed in "Bootstrap skips
-  sourcing menu — NOT the config gates") is an
-  operating-contract gate, not a clarifying question. The same
-  applies to user urgency phrasing: "quick", "just do it", "go
-  fast", "you pick", "whatever" do NOT resolve any of those
-  gates — they fall through to the structured ask. The harness
-  hint applies to agent-discretionary asks; it never overrides
-  a gate a skill explicitly mandates.
-- **Post-hoc audit — required before ending the turn.** Before
-  declaring the turn complete, walk every row of the pre-flight
-  checklist and confirm the Evidence cell is filled with a
-  concrete citation (per § "Pre-flight — evidence
-  requirements"). If any row is `Evidence: <empty>` or the
-  citation does not actually match the row type, **surface the
-  non-compliance to the user explicitly in your final message**
-  — naming the row(s) and why they failed audit — rather than
-  silently moving on. Visible non-compliance is recoverable;
-  hidden non-compliance is the failure mode this audit closes.
+  Then `experiments/NN_*.py` ties them together. If you catch
+  yourself opening `src/<pkg>/evaluate.py` in Write/Edit without
+  an `evaluate-ml-pipeline` invocation this turn: STOP and invoke.
+- **Harness "no clarifying questions" hints do NOT waive this
+  skill's gates.** G-DESIGN, G-RUN, the §1 mode pick, the §2
+  sourcing menu, and the §0 config gates are operating-contract
+  gates. "Quick" / "just do it" / "you pick" / "whatever" do NOT
+  resolve them — they fall through to the structured ask.
+- **Post-hoc audit — required before ending the turn.** Walk every
+  pre-flight row and confirm the Evidence cell is filled. If any
+  row is empty, surface the non-compliance to the user explicitly.
 
-## Forbidden shortcuts (observed in real traces)
+## Forbidden shortcuts
 
-| Shortcut | Why it feels right | Why it's wrong |
-|----------|--------------------|----------------|
-| User said "quick baseline" → skip the design-note approval gate (G-DESIGN) | Task urgency reads as permission; the design is "obvious" | G-DESIGN is non-negotiable; "quick" never waives it. The design note is the postmortem's frozen Method section — silently skipping approval means the postmortem cites text the user never saw |
-| Scaffold + implement in one turn before G-DESIGN passes | "I'll show the user the running thing instead of the doc" | Inverts the contract (design note first, code is a consequence). Code that lands before approval has no Motivation/Risks the user signed off on |
-| Skipped `evaluate-ml-pipeline` because `KFold(5)` is obviously right for IID tabular | The splitter choice "is" the default | Even the empty-`split_kwargs` case is a justified pick that the skill exists to surface. Bypassing the skill means the user never got the choice — that's the failure mode, not the splitter value |
-| Bootstrap mode → skip ALL questions, not just the sourcing menu | "Bootstrap = forced baseline = silent everything" | Bootstrap forbids the sourcing menu only. G-PKG-NAME / G-ENV-MGR / G-TABULAR / G-CV-SPLITTER / G-DESIGN / G-RUN still fire (see § 0 sub-block) |
-| Ambiguous user response ("hmm interesting", "I guess") read as approval | Conversational momentum | Approval is explicit (§ 3); ambiguity gets the structured `AskUserQuestion` re-fired, never silent yes |
-| Auto-detect that a run finished by looking at `reports/` mtime | Closing the loop quickly | § 4 is user-triggered (v1); the skill never auto-records. The user says "the run finished, record it" — only then does § 4 start |
+| Shortcut | Why it's wrong |
+|---|---|
+| User said "quick baseline" → skip G-DESIGN | G-DESIGN is non-negotiable; "quick" never waives it. The design note is the postmortem's frozen Method — skipping approval means the postmortem cites text the user never saw |
+| Scaffold + implement in one turn before G-DESIGN | Inverts the contract. Code that lands before approval has no Motivation/Risks the user signed off on |
+| Skipped `evaluate-ml-pipeline` because `KFold(5)` is "obviously right" for IID tabular | Even empty `split_kwargs` is a justified pick the skill exists to surface. Bypass = user never got the choice |
+| Bootstrap mode → skip ALL questions, not just the sourcing menu | Bootstrap forbids the sourcing menu only. G-PKG-NAME / G-ENV-MGR / G-TABULAR / G-CV-SPLITTER / G-DESIGN / G-RUN still fire |
+| Ambiguous "hmm interesting" / "I guess" read as approval | Approval is explicit. Ambiguity → re-ask, never silent yes |
+| Auto-detect run finished by looking at `reports/` mtime | § 4 is user-triggered (v1). The skill never auto-records |
+| Pre-read all nine sibling SKILL.md files at session start, refuse to act until done | The read-set tracker is **not a blocking gate**. Open siblings just-in-time when a step requires them; emit what's pending in your response, but always proceed to answer the user's actual question |
 
-## Pre-flight — emit this checklist as visible text before any design-note write
+## Pre-flight — emit before any design-note write
 
-Before writing or editing any file under `journal/`, output the
-following block verbatim. **Each ticked box requires an
-`Evidence:` line** — a ticked box without evidence is a
-Stop-condition violation, indistinguishable from a skipped
-check.
-
-### Evidence requirements
-
-Every row in the pre-flight is one of three rows: a **read-set
-row** (sibling SKILL.md opened this turn), a **gate row** (an
-`AskUserQuestion` or recorded decision was the trigger), or a
-**workflow row** (a procedural action this skill drives, e.g.
-"design note drafted"). The Evidence field has to match the
-row type:
-
-- **Read-set rows.** Evidence is the file-reading tool call this
-  turn for the named SKILL.md. Format:
-  `Evidence: Read .agents/skills/<name>/SKILL.md (this turn)`.
-  Citing the cross-reference *to* a sibling skill is not
-  evidence — the sibling file itself must have been opened.
-- **Gate rows.** Evidence is one of:
-  - `Evidence: AskUserQuestion id=<id>, answer=<option>` —
-    the user picked via the structured tool this turn.
-  - `Evidence: user quote turn N: "..."` — free-text from the
-    user resolves the gate per § "Free-text handling"; quote
-    the exact phrase and the turn number.
-  - `Evidence: JOURNAL.md Status (Workspace decisions, recorded
-    YYYY-MM-DD)` — the decision was made in a prior session and
-    persisted; this skill read the Status block in this turn's
-    Second action step.
-- **Workflow rows.** Evidence is the artifact produced:
-  `Evidence: Write journal/<NN>_<name>.md (this turn)`,
-  `Evidence: Backlog rows B5..B7 appended to JOURNAL.md`, etc.
-
-A box ticked with `Evidence: n/a` is allowed **only** when the
-row's narrative explicitly carves out an n/a case (e.g. "n/a in
-bootstrap mode"); cite which carve-out applies.
-
-### The checklist
+Compact checklist; the full Evidence-format spec lives in
+`references/preflight_evidence.md`.
 
 ```
 Pre-flight (iterate-ml-experiment):
-- [ ] Sibling SKILL.md files opened **this turn** (do NOT infer
-      sibling content from cross-reference text). For bootstrap (§ 0):
-      organize-ml-workspace, data-science-python-stack,
-      python-env-manager, python-api, python-code-style,
-      build-ml-pipeline, evaluate-ml-pipeline, test-ml-pipeline,
-      smoke-test-ml-pipeline. For iterate (§ 1+): the strategy skill
-      named by the user's pick (iterate-from-skore / iterate-from-user)
-      plus the three implementation-chain skills above.
-      Evidence: Read .agents/skills/<each-listed-name>/SKILL.md (this turn)
-- [ ] `journal/JOURNAL.md` read this turn (or confirmed missing → about to scaffold).
-      Evidence: Read journal/JOURNAL.md (this turn) | "file missing, scaffolding"
-- [ ] `Workspace decisions` block in JOURNAL.md Status checked for
-      pre-recorded gates (tabular, env_manager, package, cv_splitter).
-      Each recorded decision skips its matching AskUserQuestion this turn.
+- [ ] `journal/JOURNAL.md` read this turn (or confirmed missing → bootstrap)
+      Evidence: Read journal/JOURNAL.md (this turn) | "missing — bootstrap"
+- [ ] `Workspace decisions` block checked for pre-recorded gates
+      (tabular, env_manager, package, cv_splitter)
       Evidence: lists each <gate>: <value | not recorded>
-- [ ] Mode: bootstrap (no recorded experiment) | iterate
-      Evidence: derived from JOURNAL.md History (0 rows → bootstrap; ≥1 → iterate)
-- [ ] Last experiment + its status known: <NN_name> | n/a (bootstrap)
+- [ ] Mode: bootstrap | iterate-propose | iterate-record |
+      overview | compare | goal-pivot | abandoned | re-run
+      Evidence: rule that matched (Mode picker row)
+- [ ] Last experiment + its status: <NN_name> | n/a — bootstrap
       Evidence: last row of JOURNAL.md History
-- [ ] In iterate mode, the **sourcing menu was presented to the user
-      verbatim** (see § "The sourcing menu") and the user picked one
-      option — no silent default. Skip in bootstrap mode.
-      Evidence: AskUserQuestion id=<id>, answer=<skore|user|my-pick|B<N>> | "n/a — bootstrap"
-- [ ] Sourcing strategy chosen by user: skore | user | my-pick |
-      B<N> | n/a — bootstrap, baseline forced by workspace
-      defaults.
-      Evidence: same AskUserQuestion id as above | "n/a — bootstrap"
-- [ ] Strategy skill dispatched (iterate mode only):
-      iterate-from-skore | iterate-from-user | n/a — my-pick or
-      backlog item handled inline.
-      Evidence: Read .agents/skills/<strategy-skill>/SKILL.md (this turn) +
-                tool call invoking it | "n/a — handled inline"
-- [ ] Bootstrap config gates fired (bootstrap only): G-PKG-NAME,
-      G-ENV-MGR, G-TABULAR, G-CV-SPLITTER (see § 0
-      "Bootstrap skips sourcing menu — NOT the config gates").
-      Evidence: per-gate AskUserQuestion id OR JOURNAL.md Status reference |
-                "n/a — iterate mode"
-- [ ] Proposal turned into a `journal/NN_short_name.md` draft
-      (or, for `skore`, Backlog enriched and the sourcing menu
-      re-presented — no design note on this turn).
+- [ ] (Iterate-propose only) Sourcing menu presented verbatim;
+      user picked one option — no silent default
+      Evidence: AskUserQuestion id=<id>, answer=<skore|user|my-pick|B<N>>
+                | user free-text quote turn N: "..."
+                | "n/a — bootstrap / read-only mode"
+- [ ] (Bootstrap only) Config gates fired (G-PKG-NAME, G-ENV-MGR,
+      G-TABULAR, G-CV-SPLITTER — see § 0)
+      Evidence: per-gate ask id OR JOURNAL.md Status reference
+                | "n/a — iterate mode"
+- [ ] Design note drafted (or Backlog enriched, for `skore`)
       Evidence: Write journal/<NN>_<name>.md (this turn) | "Backlog rows
-                B<x>..B<y> appended to JOURNAL.md"
-- [ ] User has explicitly approved the design note before any
-      `experiments/NN_*.py` is touched (G-DESIGN).
+                B<x>..B<y> appended" | "n/a — read-only mode"
+- [ ] G-DESIGN: user approved before any `experiments/NN_*.py` touched
       Evidence: AskUserQuestion id=<id>, answer=approved | user quote
-                turn N: "approved/yes/go/looks good" | "n/a — Backlog enrichment turn"
-- [ ] Post-approval implementation chain (§ 3) is the three-skill
-      sequence: `build-ml-pipeline` → `evaluate-ml-pipeline` →
-      `test-ml-pipeline` (→ `smoke-test-ml-pipeline`) — *none*
-      substituted by writing the file directly. `evaluate.py` in
-      particular has `evaluate-ml-pipeline` invoked first.
-      (n/a outside § 3.)
-      Evidence: Read .agents/skills/<each>/SKILL.md (this turn) +
-                each owning skill produced its file | "n/a outside § 3"
-- [ ] Skill(python-api) consulted for any new external symbol
-      introduced by this turn's experiment assembly (§ 3) or
-      outcome read (§ 4): <symbols, or "none">
-      Evidence: Read scratch/api/<lib>/<version>/<topic>.md (this turn)
-                | Write scratch/api/<lib>/<version>/<topic>.md (this turn)
-                | "n/a — only re-using symbols already cached or already
-                  present in src/<pkg>/"
-      "Read python-api SKILL.md" alone is NOT evidence.
-- [ ] Run gate (post-smoke): G-RUN asked once smoke tests pass.
-      Evidence: AskUserQuestion id=<id>, answer=<run now | leave for later> |
-                "n/a — not at G-RUN this turn"
+                "approved/yes/go/looks good" | "n/a"
+- [ ] (§ 3 only) Three-skill chain ran in order:
+      build-ml-pipeline → evaluate-ml-pipeline → test-ml-pipeline
+      Evidence: each owning skill produced its file this turn
+                | "n/a outside § 3"
+- [ ] (§ 4 only) Smoke gate green; Status block filled
+      (State, Headline, Implication); JOURNAL.md History updated;
+      Backlog hygiene done; `overview/summary.md` refreshed
+      Evidence: list each artifact written | "n/a outside § 4"
+- [ ] python-api consulted for any new external symbol used
+      Evidence: Read/Write scratch/api/<lib>/<v>/<topic>.md (this turn)
+                | "n/a — only re-using cached symbols"
 ```
 
-## Layout this skill owns
+## § 0 Bootstrap (first session only)
 
-```
-journal/
-├── JOURNAL.md                     # session-start log + index + future ideas
-├── 01_baseline.md              # design note for experiments/01_baseline.py
-├── 02_text_encoder.md          # design note for experiments/02_text_encoder.py
-└── ...
-```
+A workspace is in bootstrap mode when `journal/JOURNAL.md` is
+missing, the placeholder, or has 0 rows in History.
 
-The pairing rule is hard: `journal/NN_short_name.md` ↔
-`experiments/NN_short_name.py`, identical stems, one-to-one. The
-design note is created first and edited until the user approves;
-the script is created only after that. This is the contract
-that lets `JOURNAL.md` stay a faithful index of what was tried.
+**Procedure (compact — full version in `references/bootstrap.md`):**
 
-## `JOURNAL.md` shape
-
-`JOURNAL.md` is a thin, durable index — *not* a long-form journal.
-It has three sections:
-
-1. **Status (top).** A two-or-three-line snapshot: the dataset,
-   the project goal, the most recent experiment and whether it
-   ran/passed/regressed. This is what you read first at session
-   start.
-2. **History (chronological).** One row per experiment: stem,
-   one-line intent, status (planned / running / done / abandoned),
-   headline result, link to the per-experiment design note. New
-   rows go at the bottom.
-3. **Backlog (forward-looking).** Indexed **table** of ideas not
-   yet committed to a `NN_*.md` file. Each row carries a stable
-   `B<N>` index so the user can pick by number when choosing the
-   next experiment ("go with B2"). Columns: `#`, `Item`, `Source`.
-   The `Source` field follows one of three conventions:
-   - `skore:<stem>` — written by `iterate-from-skore` from the
-     report of `<stem>`.
-   - `my-pick:<stem>` — written by § 4 when an experiment's
-     Implication seeds future-iteration leads, or by § 2's
-     `my-pick` branch when unpicked candidates are saved. The
-     `<stem>` is the experiment whose context (Implication,
-     Risks, …) fed the synthesis.
-   - `user` — the user added the row directly (in conversation,
-     not via a strategy skill).
-
-   When an item graduates into a design note, the row is removed
-   and the new experiment lands in History above. The skill
-   **must surface this table to the user** every time it presents
-   the sourcing menu (see § "The sourcing menu") — the backlog
-   is one of the menu's branches, not a side-document.
-
-Use `templates/JOURNAL.md` as the starting skeleton. Don't invent
-new sections per project — the three sections above are the
-contract.
-
-## Per-experiment design note
-
-Each `journal/NN_short_name.md` file is the design note for one
-experiment. It is **the proposal** while it is being drafted,
-**the contract** once approved, and **the postmortem** once the
-experiment has run. Use `templates/experiment_design.md` as the
-starting skeleton; sections are:
-
-- **Question / hypothesis** — one sentence. What are we trying
-  to learn? Not "try X" — *why* X, and what would it tell us.
-- **Motivation** — why now. Pulled from the sourcing strategy:
-  a user idea (free-text), an article the user pointed at, a
-  GitHub issue / spec resource, or a skore diagnostic finding
-  promoted from the Backlog. Cite concretely (issue link, paper
-  title, prior experiment stem, `report.diagnosis()` section).
-- **Method** — what changes versus the previous experiment, in
-  prose. Which file in `src/<pkg>/` is touched (`features.py`,
-  `pipeline.py`, `evaluate.py`, `data.py`)? Mechanics live in
-  `build-ml-pipeline` / `evaluate-ml-pipeline`; this section
-  states the *intent*, not the code.
-- **Risks / things that could invalidate the result** — what
-  would make the metric move for the wrong reason (leakage,
-  sample size, distribution shift, …).
-
-**No "Success criteria" / "Acceptance criteria" section.** The
-skill proposes and runs experiments; **the user judges whether
-the result is good enough.** Inventing a target metric delta or
-"this counts as success" line ahead of time is out of scope —
-it nudges the run toward a foregone conclusion the user didn't
-ask for. The post-run **Headline result** + **Implication**
-fields (in the Status block) are the durable record; the user
-reads them and decides what to do next.
-- **Status block** (filled in over time): planned → approved →
-  done | abandoned, with the headline result on completion.
-  There is no observable "running" state — this skill is
-  user-triggered, so the experiment sits in `approved` from
-  script-creation until the user reports the outcome via § 4.
-
-The status block is the only part that is updated *after* the
-experiment runs. The other sections are frozen at approval —
-that's what makes them useful as a postmortem.
-
-## The conversational loop
-
-This is the choreography that this skill owns end-to-end. There
-are two modes — **bootstrap** (the very first session in a
-workspace) and **iterate** (every session after that). Bootstrap
-is one-shot; iterate is the recurring loop.
-
-### 0. Bootstrap (first session only)
-
-A workspace is in bootstrap mode when **either** `journal/JOURNAL.md`
-is missing or is the one-line placeholder dropped by
-`organize-ml-workspace`, **or** it exists but has no rows in
-History (no experiment has been planned yet). In bootstrap mode
-the session-start ritual below does **not** apply — there is no
-last experiment to summarize and no backlog to look at. Instead:
-
-1. **Scaffold first if needed.** If the workspace itself isn't
-   in place (no `src/`, no `experiments/`, no `journal/`), hand
-   off to `organize-ml-workspace`; come back here when its
-   placeholder `JOURNAL.md` exists.
-2. **Rewrite `JOURNAL.md` from this skill's template.** Read
-   `templates/JOURNAL.md` and write it to `journal/JOURNAL.md`,
-   replacing the placeholder. This skill — not
-   `organize-ml-workspace` — owns design-note content.
-3. **Derive a goal default from what the project tells you.**
-   Read `data/README.md` (or whatever dataset card / problem
-   statement is at the project root) **before** asking the
-   user. Synthesize one sentence of the form "minimize <metric>
-   on <split> for <task description>" and propose it; the user
-   confirms or amends. **Do not prompt the user with a blank.**
-   If no README / dataset card exists, then ask — but make that
-   the exception, not the default.
+1. **Scaffold first if needed.** No `src/` / `experiments/` /
+   `journal/` → hand off to `organize-ml-workspace`, return when
+   the placeholder `JOURNAL.md` exists.
+2. **Rewrite `JOURNAL.md` from `templates/JOURNAL.md`**, replacing
+   the placeholder.
+3. **Derive the goal default from `data/README.md`** *before*
+   asking the user. Propose one sentence: "minimize <metric> on
+   <split> for <task>". User confirms or amends. Only ask blank
+   if no README exists.
 4. **Auto-draft `journal/01_baseline.md` via the consultation
-   chain.** The baseline is forced, not invented — but its
-   defaults come from sibling skills, not from memory:
-   - **Learner default**: consult `build-ml-pipeline` for what
-     a "baseline" means for the data shape (tabular
-     regression / classification → skrub `tabular_pipeline`;
-     other shapes have their own defaults).
-   - **Splitter default**: consult `evaluate-ml-pipeline` for
-     the cross-validator default (typically `KFold` for IID
-     tabular, but the skill picks based on the data structure).
-   - **Metric default**: consult `python-api` for what
-     `skore.evaluate` reports by default for the task type.
+   chain** — the baseline is forced, but its defaults come from
+   sibling skills (open just-in-time):
+   - Learner default: consult `build-ml-pipeline` (tabular
+     regression / classification → `skrub.tabular_pipeline`).
+   - Splitter default: consult `evaluate-ml-pipeline` (typically
+     `KFold` for IID tabular, the skill picks by data structure).
+   - Metric default: consult `python-api` for what
+     `skore.evaluate` reports by default.
    - **Mismatch handling**: if any default conflicts with the
-     project goal (e.g., the README requires Squared Error but
-     skore's default is RMSE; the dataset has 1M rows and
-     5-fold KFold may be slow / OOM), **flag it in the Risks
-     section** of `01_baseline.md`. Don't silently override the
-     default — surface the tension to the user.
-5. **The user's role in bootstrap is to approve or amend the
-   baseline design note**, not to invent it. Skip the strategy
-   dispatch entirely for this one.
-6. **Exit bootstrap.** Once the baseline is approved and
-   recorded in `JOURNAL.md`'s History, the workspace is out of
-   bootstrap. Every session afterwards uses § 1.
+     project goal, flag it in the design note's **Risks** section.
+     Don't silently override.
+5. **The user's role in bootstrap is approve or amend** — not
+   invent.
+6. **Exit bootstrap** once the baseline is approved and recorded.
+   Every session afterwards uses § 1.
 
-#### Bootstrap skips the sourcing menu — NOT the config gates
+### Bootstrap skips the sourcing menu — NOT the config gates
 
-The most common bootstrap failure shape is the agent treating
-"bootstrap = forced baseline" as "bootstrap = silent everything".
-This is wrong. Bootstrap forbids one specific question (which
-*experiment* to run next — the sourcing menu) precisely because
-the workspace has no history to draw from. Every other gate the
-workflow normally fires still fires in bootstrap, and skipping
-them is the exact non-compliance that makes the baseline look
-like the agent "just picked" the project's shape.
+**Skipped in bootstrap** (no history to source from):
+- Sourcing menu (`skore` / `user` / `my-pick` / `B<N>`).
+- "Resume / record outcome / propose next" pick from § 1.
 
-**Skipped in bootstrap (by design):**
+**Still fires in bootstrap**:
 
-- Sourcing menu (`skore` / `user` / `my-pick` / `B<N>`) — no
-  prior report, no backlog, no history; nothing to source from.
-- "Resume / record outcome / propose next" pick from § 1 — no
-  last experiment exists, so the three branches are
-  ill-defined.
+| Gate ID | Picks | Owner | Fires |
+|---|---|---|---|
+| `G-PKG-NAME` | `src/<pkg>/` import name | `organize-ml-workspace` | before manifest creation |
+| `G-ENV-MGR` | Env manager + install scope | `python-env-manager` | before any install command |
+| `G-TABULAR` | Tabular library (pandas/polars) + other Tier 2 picks | `data-science-python-stack` | before `data.py` write |
+| `G-CV-SPLITTER` | Cross-validator family for `skore.evaluate` | `evaluate-ml-pipeline` | before `evaluate.py` write — mandatory even when `split_kwargs` is empty |
+| `G-DESIGN` | Explicit user approval of `journal/01_baseline.md` | this skill | before `experiments/01_baseline.py` write |
+| `G-RUN` | "run now" vs "leave for later" | this skill | before executing the experiment script |
 
-**MUST still fire in bootstrap (the config gates):**
+Free-text "quick baseline" / "you pick" do NOT resolve any of
+these — fall through to structured `AskUserQuestion`.
 
-| Gate ID | What it picks | Owning skill | When it fires |
-|---------|---------------|--------------|---------------|
-| `G-PKG-NAME` | `src/<pkg>/` import name | `organize-ml-workspace` | **Before** any `pyproject.toml` / `pixi.toml` / manifest creation |
-| `G-ENV-MGR` | Python env manager (`pixi`, `uv`, `poetry`, `hatch`, `conda`, `pip+venv`) and the feature/group/env scope to install into | `python-env-manager` | **Before** any `pixi init` / `pixi add` / equivalent install command |
-| `G-TABULAR` | Tabular dataframe library (`pandas` / `polars`) plus any other Tier 2 competing-library job in scope | `data-science-python-stack` | **Before** any `Write` of `data.py` / experiment script that imports the contested library |
-| `G-CV-SPLITTER` | Cross-validator family for `skore.evaluate` (`KFold`, `StratifiedKFold`, `GroupKFold`, `TimeSeriesSplit`, ...) | `evaluate-ml-pipeline` | **Before** any `Write` of `src/<pkg>/evaluate.py`; mandatory even when `split_kwargs` at the X marker is empty (the empty case is itself a justified pick, not a default) |
-| `G-DESIGN` | Explicit user approval of `journal/01_baseline.md` | `iterate-ml-experiment` (this skill, § 3) | **Before** any `Write` of `experiments/01_baseline.py` / `src/<pkg>/*.py` content authored from the design note |
-| `G-RUN` | "Run now" vs "leave for later" once smoke tests pass | `iterate-ml-experiment` (this skill, § 3) | **Before** the shell call that executes `experiments/01_baseline.py` |
-
-Each gate's owning skill is responsible for the actual
-`AskUserQuestion` mechanics; this table is the **bootstrap
-contract** that says they all still fire even though the
-sourcing menu doesn't. Every gate's answer is recorded in
-`JOURNAL.md` Status `Workspace decisions` (for `G-PKG-NAME`,
-`G-ENV-MGR`, `G-TABULAR`, `G-CV-SPLITTER` — the persistent
-ones) so a later session can read the decision instead of
-re-asking. `G-DESIGN` and `G-RUN` are per-experiment, not
-persistent — they fire fresh on every experiment.
-
-**Free-text resolution applies** (see § "Free-text handling"):
-a user message resolves a config gate only if it names one of
-the gate's options. "Quick baseline" / "go fast" / "you pick"
-do NOT resolve any of the gates above; they fall through to
-the structured `AskUserQuestion`.
-
-### 1. Session start (iterate mode)
+## § 1 Session start (iterate mode)
 
 - Read `journal/JOURNAL.md`.
-- Summarize to the user, in two or three lines: dataset, goal,
-  last experiment + its status, anything in the backlog that
-  looks ripe.
-- **Ask via `AskUserQuestion`** — three mutually exclusive
-  options, no silent default:
-  - **resume** — the last experiment is still
-    planned / approved / unfinished; pick up where we left off.
-  - **record outcome** — the last one ran since we last spoke;
-    enter § 4 to log the result.
-  - **propose next** — the last experiment is `done` or
-    `abandoned`; enter § 2 to pick a sourcing strategy.
+- Summarize to the user in 2-3 lines: dataset, goal, last
+  experiment + status, what's ripe in the Backlog.
+- **Ask via `AskUserQuestion`** — three options, no silent default:
+  - **resume** — last experiment still planned/approved/unfinished.
+  - **record outcome** — last one ran; enter § 4.
+  - **propose next** — last one is `done` or `abandoned`; enter § 2.
 
-  Free-text continuations ("let's keep going", "yeah") are
-  ambiguous between the three branches — wait for an explicit
-  pick.
+  Free-text "let's keep going" / "yeah" is ambiguous — wait for an
+  explicit pick.
 
-### The sourcing menu
+## § 2 Propose the next experiment
 
-Every time § 2 runs in iterate mode, surface this menu
-**verbatim** before any strategy dispatch — and pair it with the
-`JOURNAL.md` Backlog table so the user can pick a `B<N>` row. The
-menu is the contract: the skill never *silently* picks for the
-user, but it does propose candidates when asked (via `my-pick`).
+### The sourcing menu — surface VERBATIM
+
+Every time § 2 runs in iterate mode, surface this menu and pair it
+with the `JOURNAL.md` Backlog table. **Never silently default.**
 
 ```
 How would you like me to source the next experiment?
 
   skore    — call `report.diagnosis()` on the latest run; convert
              each actionable finding into a row in the Backlog
-             below, summarize, and re-present this menu so you
-             can pick a B<N> row.
+             below, summarize, re-present this menu.
   user     — you tell me what to try, one of three ways:
-               (a) paste a scientific article URL — I read it
-                   and synthesize before drafting,
-               (b) point me at a GitHub issue / spec file /
-                   reference repo,
-               (c) just describe the idea in free text.
-  my-pick  — I synthesize from current context (JOURNAL.md Status,
-             the last experiment's Implication and Risks, the
-             current Backlog) and propose 2-4 candidate ideas;
-             you pick one via a follow-up AskUserQuestion. Use
-             this when you want suggestions rather than mining
-             a specific report.
-  B<N>     — promote a row from the Backlog table below directly
-             into a new experiment (no strategy skill invoked).
+               (a) paste a scientific article URL — I read it,
+               (b) point me at a GitHub issue / spec / reference repo,
+               (c) describe the idea in free text.
+  my-pick  — I synthesize 2-4 candidate ideas from JOURNAL.md +
+             last experiment's Implication; you pick one.
+  B<N>     — promote a row from the Backlog table directly.
 
 Backlog (pick by index):
 <paste the JOURNAL.md Backlog table here>
 ```
 
-Use `AskUserQuestion` for the pick — four options plus the
-backlog rows displayed as context. Only fall back to plain-text
-enumeration if `AskUserQuestion` is genuinely unavailable in the
-current session. **Do not silently default to one option** —
-even if a fresh report sits on disk, the user must say `skore`
-(or `my-pick`, etc.). The Dispatch table below covers
-signal-driven shortcuts (e.g. the user says "mine the report"
-— that *is* a `skore` pick); they short-circuit the menu but
-never silence it.
+Use `AskUserQuestion` for the pick (four options + backlog rows
+as context). Plain-text enumeration only if `AskUserQuestion` is
+unavailable.
 
-### Free-text handling
+### Free-text handling — priority list, first match wins
 
-Users can type free text instead of picking a structured option.
-Process it as follows, in priority order — first rule that
-matches wins:
+- **Exact-match** to option label (`skore` / `user` / `my-pick` /
+  `B<N>`) → that pick.
+- **Backlog reference** (`B2`, "let's do B2") → `B<N>` pick.
+- **Scientific article URL pasted directly** → `user` → article-
+  link branch, pre-resolved (skip `iterate-from-user`'s inner ask).
+- **GitHub issue URL, `org/repo#N`, spec file path** → `user` →
+  resource-link branch, pre-resolved.
+- **Meta-request** ("give me ideas", "you decide") → `my-pick`.
+- **Concrete experiment idea inline** ("let me try X", "use Y
+  instead") → `user` → free-text branch, pre-resolved.
+- **Ambiguous / off-menu** → fire `AskUserQuestion`, don't guess.
 
-- **Exact-match (case-insensitive, whitespace-trimmed) to an
-  option label** (`skore` / `user` / `my-pick` / `B<N>`):
-  treat as that pick and proceed.
-- **A backlog reference** (`B2`, `let's do B2`, `B2 please`):
-  treat as the `B<N>` pick for that row.
-- **A scientific article URL pasted directly** (the message is
-  primarily a URL): treat as `user` → article-link branch,
-  passing the URL to `iterate-from-user` and skipping its inner
-  entry-point AskUserQuestion.
-- **A GitHub issue URL, `org/repo#N` shorthand, or a spec file
-  path**: treat as `user` → resource-link branch, skipping the
-  inner AskUserQuestion.
-- **A meta-request** ("give me ideas", "what do you suggest",
-  "you decide", "come up with something", "propose for me"):
-  treat as `my-pick`.
-- **A concrete experiment idea typed inline** ("let me try
-  adding future weather covariates", "use a quantile regression
-  instead"): treat as `user` → free-text branch, passing the
-  text in as the idea and skipping the inner AskUserQuestion.
-- **Ambiguous or off-menu** ("hmm", "I'm not sure", "what?"):
-  fire a clarifying AskUserQuestion — do not guess.
+### Branches
 
-The goal: never block the user on the structured pick when
-their intent is clear from free text. The structured pick is
-the *default*, not the *only* path.
+- **`skore`** → dispatch to `iterate-from-skore`. The skill returns
+  Backlog-candidate rows + a one-paragraph summary. Write rows
+  with stable `B<N>` indices, surface the summary, **re-present
+  the sourcing menu** with the enriched Backlog. *No design note
+  on this turn.*
+- **`user`** → dispatch to `iterate-from-user`. The skill returns a
+  Proposal. If the free-text handler already resolved the entry
+  point (URL / issue / inline idea), pass the resolved branch +
+  content so the inner ask is skipped. Draft into
+  `journal/NN_short_name.md`.
+- **`my-pick`** → handled inline. Read JOURNAL.md Status, the last
+  experiment's Implication and Risks, current Backlog. Synthesize
+  2-4 candidate ideas; present via `AskUserQuestion`. User picks
+  one; that becomes the Proposal seed with
+  `Sourcing strategy: my-pick` and a `Source:` citing the context
+  field that fed it. Then draft the design note.
+- **`B<N>`** → promote the named Backlog row directly. The row's
+  `Item` becomes the design-note seed; the row's `Source` becomes
+  `Sourcing strategy`. Remove the row from Backlog on approval.
 
-### 2. Propose the next experiment
+For `user` / `my-pick` / `B<N>`: write the draft to
+`journal/NN_short_name.md` using `templates/experiment_design.md`.
+`NN` is the next free integer; `short_name` is the user's call
+(offer one, don't force).
 
-- **Always present the sourcing menu first** — see § "The
-  sourcing menu" for the canonical wording. Surface the
-  `JOURNAL.md` Backlog table next to it so the user can pick a
-  `B<N>` row directly. **Do not silently default.** Use
-  `AskUserQuestion` for the pick (the runtime exposes it); only
-  fall back to plain-text enumeration if `AskUserQuestion` is
-  genuinely unavailable in the current session.
-- Once the user picks (or their free text resolves to a pick
-  per § "Free-text handling"), the four branches diverge:
+## § 3 Iterate on the design note + implement
 
-  - **`skore`** — dispatch to `iterate-from-skore`. The skill
-    walks `report.diagnosis()` and returns Backlog-candidate
-    rows + a one-paragraph summary. **Write the rows into
-    `JOURNAL.md` Backlog** with stable `B<N>` indices appended at
-    the end, surface the summary to the user verbatim, and
-    **re-present the sourcing menu** with the enriched Backlog
-    visible. *No design note is drafted on this turn* — the
-    proposal comes from the user's next pick (typically `B<N>`).
-  - **`user`** — dispatch to `iterate-from-user`. The skill
-    opens its own `AskUserQuestion` (article-link /
-    resource-link / free-text), gathers the source, synthesizes,
-    confirms with the user, and returns a Proposal block. If
-    the free-text handler already resolved the entry point
-    (URL / issue link / inline idea), pass the resolved
-    branch + content to `iterate-from-user` so it skips its
-    inner AskUserQuestion. Draft into `journal/NN_short_name.md`
-    per the bullet below.
-  - **`my-pick`** — *handled inline by this skill, no sibling
-    skill invoked.* Read JOURNAL.md Status, the last experiment's
-    `journal/NN_*.md` (Implication, Risks), and the current Backlog
-    state. Synthesize 2-4 candidate next-experiment ideas drawn
-    from that context; present them via a follow-up
-    `AskUserQuestion` (one option per candidate, short labels,
-    one-line descriptions). The user picks one. The picked idea
-    becomes the seed for a Proposal block with
-    `Sourcing strategy: my-pick` and a `Source` field citing
-    which context fields fed the synthesis (e.g.
-    `my-pick: 01_baseline.md Implication`). Unpicked candidates
-    are discarded — the user can re-invoke `my-pick` later if
-    they want a fresh shortlist. Then draft the design note per
-    the bullet below.
-  - **`B<N>`** — promote the named Backlog row directly: no
-    strategy skill invoked. The row's `Item` text becomes the
-    seed for the new design note's `Question` / `Method outline`;
-    the row's `Source` becomes the `Sourcing strategy` (e.g.
-    `skore:02_target_transform` for a row that came from mining
-    `02`'s report). Remove the row from Backlog when the design
-    note is approved.
+- Surface the draft: file path + 3-5 line summary (Question / Method
+  / Risks). User reads in chat or opens the file.
+- **Mid-iteration feedback is free-text.** Edit
+  `journal/NN_*.md` in place and re-surface. Loop here.
+- **Final approval gate is `AskUserQuestion`** with two options:
+  - **approved** — flip status, add row to `JOURNAL.md` History,
+    hand off to `organize-ml-workspace`.
+  - **more changes** — back to amendment loop.
 
-- For the `user`, `my-pick`, and `B<N>` branches: write the
-  draft to `journal/NN_short_name.md` using the template. The `NN`
-  is the next free integer; the `short_name` is the user's call
-  (offer one, don't force it).
+  Clear free-text "approved" / "go" / "looks good" resolves;
+  ambiguous ("hmm") → structured ask.
+- **Do not create `experiments/NN_*.py`** during design iteration.
+- **Track provenance honestly.** Risks-only edits keep the original
+  `Sourcing strategy`. Method changes → `<original> + user override`,
+  with both quoted in Motivation.
 
-### 3. Iterate on the design note with the user
+### Three-skill implementation chain — non-skippable
 
-- Show the draft to the user — surface the file path plus a 3-5
-  line headline summary (Question / Method bullets / Risks
-  bullets) so the user can read in chat or open the file.
-- **Mid-iteration feedback is free-text.** The user pushes back
-  on Method / Risks / scope / short_name in plain language; edit
-  `journal/NN_short_name.md` in place and re-surface the changes.
-  Loop here for as long as the user keeps amending.
-- **The final approval gate is an `AskUserQuestion`** with two
-  options:
-  - **approved** — flip status to `approved`, add the row to
-    `JOURNAL.md` History, hand off to `organize-ml-workspace`.
-  - **more changes** — back to the free-text amendment loop.
+After G-DESIGN passes, open and dispatch in order:
 
-  Fire it once you've made all requested changes or the user
-  has stopped pushing back. Clear free-text "approved" / "go"
-  / "looks good" resolves to the approve option per § "Free-
-  text handling"; ambiguous responses ("hmm interesting", "I
-  guess") get the structured pick — don't infer approval.
-- **Do not** create `experiments/NN_*.py` during this step —
-  the design note is the only artifact in play.
-- **Track provenance honestly.** If the user's amendment touches
-  only the **Risks** section (a guard-rail tweak), keep the
-  original `Sourcing strategy` line. If it changes the
-  **Method** (different transform, different estimator,
-  different feature) — that's a *material* override. Update
-  `Sourcing strategy` to `<original> + user override` (e.g.,
-  `skore:02 + user override` or `user:article + user override`)
-  and quote both the original source and the user's amendment in
-  **Motivation**. The per-experiment file should never lie about
-  its own origin.
-- When the user approves, flip the status block from `planned` to
-  `approved`, add the row to `JOURNAL.md` history (status:
-  `approved`), and hand off to `organize-ml-workspace` to create
-  the experiment script with the matching stem.
-- **Three-skill implementation chain, in order, before the
-  experiment script is wired:**
-  1. **`build-ml-pipeline`** for `src/<pkg>/{pipeline,features,
-     data}.py` — the pipeline declaration, X-marker placement,
-     `split_kwargs` wiring.
-  2. **`evaluate-ml-pipeline`** for `src/<pkg>/evaluate.py` —
-     cross-validator + metric overrides. *This skill is
-     non-skippable.* It owns the CV-strategy decision and
-     surfaces it to the user via `AskUserQuestion`; writing
-     `evaluate.py` from memory (e.g. dropping in
-     `KFold(5)` / `TimeSeriesSplit(5)` because they "feel
-     right") bypasses the user choice this skill exists to
-     enable. Even if `split_kwargs` at the X marker is empty,
-     `evaluate-ml-pipeline` must be invoked — its rule 3
-     mapping table is what justifies that emptiness.
-  3. **`test-ml-pipeline`** → `smoke-test-ml-pipeline` for the
-     matching smoke test at
-     `tests/smoke/test_NN_<short_name>.py`.
+1. `build-ml-pipeline` → `src/<pkg>/{pipeline,features,data}.py`.
+2. `evaluate-ml-pipeline` → `src/<pkg>/evaluate.py`. **Owns the
+   CV-strategy decision; surfaces via `AskUserQuestion`. Mandatory
+   even when `KFold(5)` "feels right" — bypassing this skill is
+   the named forbidden shortcut.**
+3. `test-ml-pipeline` → `smoke-test-ml-pipeline` → matching smoke
+   test at `tests/smoke/test_NN_<short_name>.py`.
 
-  Only after all three have written their files does the
-  experiment script in `experiments/NN_*.py` get assembled. The
-  script is the integrator, not the place where evaluation
-  decisions land.
+Only then this skill assembles `experiments/NN_*.py`, overwriting
+the scaffold template. Confirm signatures via `python-api`, not
+memory.
 
-  **This skill owns the assembly.** After the three-skill chain
-  completes, *this skill* rewrites `experiments/NN_<short_name>.py`,
-  overwriting the scaffold-time template that `organize-ml-workspace`
-  step 5 dropped (which had `<pkg>` substituted but otherwise
-  carried placeholder cells). The rewrite plugs in the real
-  imports, sets `skore.Project(..., name=...)` from the project
-  name, calls `skore.evaluate(learner, data={...}, splitter=splitter)`,
-  and persists via `project.put("<stem>", report)`. Confirm
-  signatures via `Skill(python-api)` rather than guessing from
-  memory.
+### G-RUN — post-smoke run gate
 
-  Stop-condition restatement: if you catch yourself opening
-  `src/<pkg>/evaluate.py` in Write/Edit and you have not invoked
-  `evaluate-ml-pipeline` earlier in this turn, STOP and invoke
-  the skill before continuing.
-- **The smoke test is non-optional** for every approved experiment
-  (per `test-ml-pipeline`'s required-test-per-experiment rule) and
-  must exist before the experiment runs, so a structural
-  pipeline bug shows up at iteration time rather than after the
-  CV report is in hand. Do not
-  start the experiment run before **all of `tests/smoke/` has
-  passed locally** (the new test *and* every prior experiment's
-  test). The new test catches structural bugs in this
-  experiment's pipeline shape; the prior tests catch
-  reproducibility regressions — if your change to a shared
-  `src/<pkg>/` module silently broke a previous experiment's
-  default path, *their* test goes red here, cheaply, before any
-  CV time is spent. Route both failure modes to
-  `build-ml-pipeline` (pipeline-shape bug → X-marker rule;
-  reproducibility regression → § "Reproducibility mechanics").
-- **Once the smoke test passes, ask whether to run the
-  experiment.** Use `AskUserQuestion` with exactly two options:
-  - **run now** — execute
-    `pixi run python experiments/NN_<short_name>.py`
-    directly in this turn. The user signed off on the run; the
-    skill does not hand back a shell command for the user to
-    copy-paste.
-  - **leave for later** — do **not** print the command, do
-    **not** auto-propose the next experiment. Instead, surface
-    a short read of `JOURNAL.md` so the user can see where things
-    stand: the **Status block** verbatim plus the **Backlog
-    table** verbatim. Then stop. § 4 fires whenever the user
-    later comes back with "the run finished, record it".
+Once `tests/smoke/` passes (the new test AND every prior one — the
+reproducibility check), ask via `AskUserQuestion`:
 
-  No silent default — even if the smoke test passed cleanly,
-  the user picks. The two options above are the only branches;
-  this is the gate between "ready to run" and "actually ran".
+- **run now** — execute
+  `pixi run python experiments/NN_<short_name>.py` directly.
+- **leave for later** — do **not** print the command, do **not**
+  auto-propose. Surface `JOURNAL.md` Status + Backlog verbatim, stop.
 
-### 4. After the run
+No silent default.
 
-**Trigger is user-driven (v1).** This skill does **not**
-auto-detect that a script has finished — no polling of the
-skore Project store, no file-mtime watching, no background
-hook. The user tells you "the run finished, record it" (or a
-phrase like "log the result", "we got X"), and only then do
-you start this step. If you suspect a run finished but the
-user hasn't said so, ask — don't assume.
+## § 4 Record outcome (user-triggered)
 
-When triggered, decide first whether the report is **accessible
-in this session** — i.e., the skore Project store exists at the
-expected path (`reports/`) and contains the experiment's key.
+**Trigger is user-driven.** The user says "the run finished, log
+it" — only then does this step start. Do **not** auto-detect via
+`reports/` mtime or polling.
 
-**If accessible — read it programmatically.** Open the report
-via the skore Project (route through
-`evaluate-ml-pipeline` for the call site, and **invoke
-`Skill(python-api)` in this turn** to confirm the exact
-signatures). For programmatic access to the diagnostic surface,
-use **`report.diagnosis()`** — for v1 this is the only
-programmatic entry point this skill relies on; do not reach
-into other report attributes from memory. If you need a richer
-diagnostic narrative for the user, hand off to
-`evaluate-ml-pipeline`.
+When triggered:
 
-**Do the inspection in `scratch/`, not in the experiment
-script.** The experiment script's job ends at
-`project.put(...)`. To pull metrics, walk the diagnosis, or
-sanity-check any post-run state, write a
-`scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and run it (see
-`python-api` § "Scratch traceability" for the full
-convention). Inline `pixi run python -c "..."` is reserved
-for ≤ 2 lines; anything longer goes to `scratch/`. Do **not**
-edit the experiment script to add agent-only `print` calls —
-the script is the durable record of what was run; the
-inspection trace lives in `scratch/`.
+1. **Decide if report is accessible** in this session (skore
+   Project at `reports/` exists, key matches).
+2. **If accessible** — open via skore (consult `python-api` for
+   `Project.get` signature this turn; **`get` is by id, not key** —
+   enumerate with `project.summarize()` first). Programmatic
+   diagnostic surface is `report.diagnosis()`. Inspection lives in
+   `scratch/`, NOT in the experiment script.
+3. **If not accessible** — ask the user for the headline metric.
+   Don't fabricate report content from memory.
+4. **Fill all four Status-block fields** in `journal/NN_*.md`:
+   - **State:** `done` (or `abandoned` with a one-line reason)
+   - **Approved by user on:** unchanged from approval
+   - **Headline result:** metric + uncertainty (e.g.
+     `RMSE 0.083 ± 0.004 (5-fold CV)`)
+   - **Implication for next iteration:** one or two sentences
+5. **Smoke-test gate before `done`** — **all** `tests/smoke/`
+   must pass, not just the new one. Prior smoke failures =
+   reproducibility regression → route to `build-ml-pipeline` §
+   "Reproducibility mechanics". The CV report can still land in
+   the skore Project, but the JOURNAL row stays `approved` until
+   the full smoke suite is green. Abandonment doesn't require
+   passing smoke tests.
+6. **Append the headline result** to `JOURNAL.md` History.
+7. **Backlog hygiene** — scan existing Backlog for items the new
+   run answered or killed. Delete or strikethrough (`~~old~~ —
+   resolved in NN_X`). Diagnostic mining of the *new* report is
+   `iterate-from-skore`'s job, not § 4's.
+8. **Refresh `overview/summary.md`** — agent-authored, hand-written
+   from a `scratch/<ts>_refresh_summary.py` extraction probe. NOT
+   script-generated. Structure: Project narrative (1-2 paragraphs)
+   + curated cross-experiment metrics table from
+   `project.summarize()` + per-experiment Headline + Implication.
+   See `references/record_outcome.md` for the full procedure.
+9. **(Opt-in) GitHub issue close-the-loop** — if the experiment's
+   `Source` is a GitHub issue, ask via `AskUserQuestion` whether
+   to `gh issue comment <N>` back with the headline. Never
+   auto-post — only on structured approval.
 
-**If not accessible** (run was on a different machine, batch
-system, the script crashed before `project.put`, …): **do not
-fabricate report content from memory.** Ask the user for the
-headline metric (and a one-line note on anything that looked
-off). Mark the per-experiment file's "Implication" field as
-"deferred — report not accessible this session" and pick the
-diagnostic up next time.
+**Stop here. Do NOT auto-propose the next experiment** in the same
+turn. Surface the implication and ask via `AskUserQuestion`:
 
-In both branches, fill **all four** Status-block fields in
-`journal/NN_*.md`:
-
-- **State:** `done` (or `abandoned` with a one-line reason)
-- **Approved by user on:** unchanged from approval (don't edit)
-- **Headline result:** the metric + uncertainty (e.g.
-  `RMSE 0.083 ± 0.004 (5-fold CV)`)
-- **Implication for next iteration:** one or two sentences;
-  this is the seed for the next strategy dispatch
-
-**Smoke-test gate before `done` — full `tests/smoke/`, not just
-the new one.** An experiment cannot flip to `done` until
-**every test in `tests/smoke/` passes**, including the prior
-experiments' tests. The new experiment's smoke test catches
-structural bugs in *its* pipeline shape; the prior experiments'
-smoke tests catch the reproducibility regression rule (Stop
-conditions, above) — if your change to `pipeline.py` /
-`features.py` / `data.py` silently changed what `build_learner()`
-returns for a caller that didn't opt in, *their* test will go
-red. Both failure modes route to `build-ml-pipeline`: pipeline-
-shape bugs to its X-marker rule, reproducibility regressions to
-its § "Reproducibility mechanics" (pick parametrize / new
-function / branch the module per the judgment ladder). Resolve;
-re-run; only then re-record the outcome. The CV report can land
-in the skore Project regardless (CV is independent of
-predict-time binding), but the experiment row in `JOURNAL.md`
-stays `approved` until the full smoke suite is green.
-**Abandonment** does not require passing smoke tests — an
-experiment can move from `approved` straight to `abandoned`
-with a one-line reason on State, exactly as before.
-
-And append the headline result to `JOURNAL.md`'s History row for
-that experiment.
-
-**Backlog hygiene at outcome time.** Scan the existing Backlog
-for items the just-finished experiment has answered, killed, or
-made irrelevant — items about a feature / splitter / transform
-no longer in the pipeline. Two treatments per item:
-
-- **Delete** the bullet outright if the rationale no longer
-  applies.
-- **Strikethrough with a brief reason** (`~~old item~~ —
-  resolved in 03_softer_transform`) if the breadcrumb is worth
-  preserving but should not be promoted to a future proposal.
-
-Diagnostic mining of the *new* report is **not** done here —
-that is `iterate-from-skore`'s job, triggered when the user
-picks `skore` from the sourcing menu in a later turn. § 4 only
-prunes existing items; it never appends new findings.
-
-**Refresh `overview/summary.md` — agent-authored, scratch-driven.**
-`summary.md` is *not* generated by a script. It is rewritten by
-hand at every outcome recording so the cross-experiment
-narrative stays curated rather than dump-pasted. Procedure,
-once the per-experiment Status block and `JOURNAL.md` are up to
-date:
-
-1. **Probe the data via a scratch script.** Write
-   `scratch/<YYYY-MM-DD>_<HHMMSS>_refresh_summary.py`. The
-   script's job is *extraction*, not formatting:
-   - Open the skore Project (consult `Skill(python-api)` for
-     `Project` / `summarize` signatures in this turn — don't
-     guess) and call `project.summarize()` for the
-     cross-experiment metrics table.
-   - List `journal/[0-9][0-9]_*.md` files and extract each one's
-     `## Status` block (State, Headline result, Implication).
-   - Print or pickle whatever the agent needs to read next.
-
-   `pixi run python scratch/<ts>_refresh_summary.py` — output
-   lands in the conversation; the file stays on disk per the
-   scratch convention (append-only after success).
-
-2. **Rewrite `overview/summary.md` by hand** from the probe
-   output. The structure is fixed by the placeholder; fill it:
-   - **Project narrative** — 1-2 paragraphs covering dataset,
-     goal, and the path so far (what was tried, where the
-     metric stands).
-   - **Cross-experiment metrics** — a curated table from
-     `project.summarize()`. Drop columns that aren't comparable
-     across the listed experiments (e.g. classification metrics
-     in a regression-only project, fit-time / predict-time
-     unless the user cares).
-   - **Per-experiment status** — one subsection per `done`
-     experiment with the curated Headline + Implication. Quote
-     the design note's Status text where it's already concise; rewrite
-     where it isn't. The point is a *narrative*, not a paste.
-
-   **Do not regenerate from a script.** If `overview/summary.py`
-   exists in a legacy workspace, delete it (after this rewrite
-   lands) — the per-version contract is "summary.md only".
-
-3. If the workspace has no `overview/summary.md` at all
-   (bootstrapped before this contract, or a fresh scaffold
-   where § 4 has never fired), drop the placeholder from
-   `organize-ml-workspace`'s `templates/summary.md` first, then
-   rewrite per steps 1-2.
-
-**Closing the loop with a GitHub issue (opt-in).** If the
-just-recorded experiment's `Source` is a GitHub issue (the
-`Sourcing strategy` was `user` and the `Source` field links
-to `github.com/<owner>/<repo>/issues/<N>`), **offer** to post
-the headline result back as an issue comment via
-`AskUserQuestion` with exactly two options:
-
-- **comment back** — run
-  `gh issue comment <N> --body "<headline + design-note link>"`
-  in this turn.
-- **skip** — move on, no outbound action.
-
-Never auto-post; the `gh issue comment` call only fires on
-explicit `AskUserQuestion` approval — a free-text "yes" is
-not enough, because this is the only outbound side effect
-this skill is allowed and consent for it should be
-structured rather than inferred.
-
-**Stop here.** Do not auto-launch the next strategy dispatch in
-the same turn. Surface the implication to the user as a one-
-liner ("the residual bias near boundaries points at a target-
-transform experiment") and ask via `AskUserQuestion` with
-exactly two options:
-
-- **draft it now** — re-enter § 1 with the implication as the
-  proposal seed; route via the sourcing menu (`skore` for the
-  full diagnostic walk into the Backlog, `user` if the user
-  already has a specific idea drawn from the implication).
-- **not yet** — record the implication in `JOURNAL.md` Backlog
-  as a one-liner and stop.
+- **draft it now** — re-enter § 1 with the implication as seed.
+- **not yet** — record the implication in Backlog, stop.
 
 The user controls cadence; this skill records, it doesn't
 propose-and-record in one breath.
 
-## Project overview / status requests
-
-When the user asks "where are we?", "give me a one-pager",
-"what's the status?", "what have we tried?" — that is a *read*
-of `journal/JOURNAL.md`, not a new artifact. **JOURNAL.md is the canonical
-project digest** (Status + History + Backlog, three sections by
-design). Do not generate a separate summary document.
-
-- For short asks ("status?"), surface the **Status block** verbatim
-  plus the last one or two History rows.
-- For "one-pager" / "where are we" framing, surface JOURNAL.md as-is
-  (or summarize it section-by-section if it has grown long), and
-  add a one-sentence "what's ripe next" line drawn from Backlog
-  + most recent Implication. Nothing else.
-- Do not write to `journal/` during these requests. Read-only.
-
-If `JOURNAL.md` has drifted (Status references an experiment that
-no longer matches History's last row, Backlog has stale items),
-flag the drift to the user — but **don't auto-edit** during a
-read-only request. Drift fixes belong to § 4 (next time an
-outcome is recorded) or to an explicit "tidy up JOURNAL.md" ask.
-
-## Goal pivots
-
-Sometimes the project goal itself changes mid-stream — the
-trader cares about typical error not squared error, so MSE → MAE;
-the downstream consumer changes from offline batch to online
-serving so latency joins the goal; the metric class changes
-(regression → ranking). This is **not** an experiment;
-it is a *strategic event* that affects how every future
-experiment is judged.
-
-When the user signals a goal pivot:
-
-1. **Update `JOURNAL.md` Status** with the new goal and the date,
-   keeping a one-line trace of what changed: `Goal pivoted
-   <date>: <old> → <new>. Reason: <one sentence>.`
-2. **Insert a horizontal-rule row in History** below the last
-   pre-pivot experiment, formatted as a clear divider:
-
-   ```
-   | --- | **Goal pivoted <date>: <old> → <new>** | --- | rows above evaluated against <old>; rows below against <new> | --- |
-   ```
-
-3. **Do not mass-edit prior `journal/NN_*.md` files.** Their
-   Success criteria are frozen at approval — that's the
-   contract. Their Headline result cells in History stay too
-   (they were valid against the old goal).
-4. **The first post-pivot experiment auto-flags incomparability**
-   in its **Risks** section: `"evaluating against new goal
-   (<new>); not directly comparable to {<pre-pivot stems>} which
-   used <old>."` This blocks silent cross-comparison across the
-   pivot.
-
-A goal pivot is user-only — the skill never auto-pivots.
-
-## Abandoned experiments
-
-The lifecycle states are `planned → approved → running → done |
-abandoned`. Abandonment is a real outcome and needs the same
-handling rigor as `done`:
-
-- **User-decided only.** The skill never auto-abandons. If an
-  experiment has been planned/approved for many sessions
-  without progress, *flag* it to the user via
-  `AskUserQuestion` with three options:
-  - **abandon** — flip status to `abandoned`; the skill then
-    prompts in a follow-up turn for the one-line reason that
-    lands in the Status block.
-  - **defer** — leave as `approved`; the skill will re-flag it
-    in a future session.
-  - **run now** — the script already exists; route to § 3's
-    post-smoke run prompt.
-
-  Do not change state without an explicit pick — free-text
-  ("eh, drop it") is ambiguous between abandon and defer.
-- **Status block requires a one-line reason.** "Dependency was
-  non-trivial to install; deferred to v2." "Method was
-  superseded by 06_softer_transform's success." "Direction
-  ruled out by skore finding in 04_monotonic_gbm." The reason
-  is the whole point — it's what makes the abandonment a useful
-  provenance signal rather than a gap.
-- **`Headline result` becomes** `n/a — abandoned: <reason>`.
-  The History row stays (provenance is the whole point); only
-  the Status field flips.
-- A subsequent re-run of an abandoned experiment is a normal
-  re-run (per § Re-runs); the abandoned row is not edited
-  beyond the optional `Implication` back-link.
-
-## Compare past experiments (read-only mode)
-
-When the user says "compare 01 and 02", "how does this run stack
-up against the baseline?", "what's the trend across runs?" — that
-is **not** a new-experiment request. Don't draft a design note.
-Don't add a row to History. This is a *read* of past work.
-
-**v1 scope: pairwise side-by-side, no programmatic
-multi-stem comparison.** This skill family does not expose a
-`ComparisonReport` / multi-key comparison entry point in v1 —
-deliberately. The handoff to `evaluate-ml-pipeline` is
-single-learner by its declared scope, and we do not stretch it.
-Procedure for "compare X and Y":
-
-- **Headline side-by-side.** Pull the Headline result cells for
-  each requested stem from `JOURNAL.md` History and surface them
-  side by side, with one-sentence intent for each (also from
-  History). This is usually enough to answer "is the new one
-  worth it?".
-- **Deeper read, one report at a time.** If the user wants more
-  than the headline (residuals, calibration, slice metrics),
-  route to `evaluate-ml-pipeline` **once per stem, separately**
-  — that skill is single-learner by scope. The user does the
-  cross-experiment synthesis from the two narratives; the skill
-  does not.
-- **Don't write to `journal/`** during a compare request. If the
-  side-by-side reading surfaces a finding the user wants to act
-  on, re-enter § 1 with the sourcing menu — typically `skore`
-  (mine one or both reports into Backlog rows) or `user` (the
-  user already has a concrete idea drawn from the comparison).
-
-**v2 gap, flagged.** Statistical comparison (significance tests,
-shared-fold paired comparisons, multi-key `ComparisonReport`)
-is out of scope for v1. If the user explicitly asks for a
-significance test or "stat-sig comparison", surface this gap:
-*"v1 doesn't expose programmatic multi-stem comparison; for
-significance, you'd need to run a paired re-run (see § Re-runs
-→ Batch re-run) and compare the per-fold metrics manually."*
-
-The design notes are the durable record of *experiments tried*;
-comparisons are derived views, not new entries.
-
-## Re-runs
-
-Sometimes the right next step is to *redo* a prior experiment
-under different conditions — paired seeds for a fair comparison,
-a corrected splitter, a fresh data snapshot. A re-run is a new
-file, **never** an in-place edit. Two shapes, dispatched by
-how many prior experiments are being redone:
-
-### Single re-run (one prior target)
-
-Use when the user (often after a `skore`-surfaced finding) asks
-to redo exactly one prior experiment under a controlled change.
-
-- New stem: `NN_<original_stem>_rerun.py` and the matching
-  `journal/NN_<original_stem>_rerun.md`. The numeric prefix is the
-  next free integer; `<original_stem>` preserves provenance.
-- `Sourcing strategy` line: typically `user re-run` (the user
-  asks for the redo, often after a `skore`-surfaced finding
-  pointed at the prior experiment's setup).
-- **Motivation** must quote the original experiment stem and
-  state precisely what changed (the fix being tested).
-- **Method** notes that the experiment is a re-run and what is
-  held constant from the original.
-
-### Batch re-run (N prior targets)
-
-Use when the user (often after a `skore`-surfaced finding flags
-a cross-experiment fairness gap, or after their own audit of
-past runs) calls for N≥2 prior experiments to be redone under a
-controlled condition — for example, "redo 01, 02, 03 with
-paired seeds and a fixed splitter so the comparisons are
-sound." This is **one** intervention, not N; it gets **one**
-design note.
-
-- New stem: `NN_paired_comparison.py` and
-  `journal/NN_paired_comparison.md` (or another descriptive name
-  reflecting the controlled condition: `NN_seeded_redo`,
-  `NN_aligned_splits`, …). One numeric prefix; one approval; one
-  History row.
-- `Sourcing strategy`: `user batch re-run` (or
-  `skore batch re-run` when the impetus came from a diagnostic
-  finding the user promoted from the Backlog).
-- **Motivation** quotes the comparability gap (skore-surfaced
-  or user-identified) and cites the affected stems.
-- **Method** lists the rerun targets explicitly (`{01, 02, 03}`)
-  and the controlled condition that's being applied uniformly
-  (paired seed, identical splitter, …). The script will produce
-  **multiple report keys** in the skore Project — one per
-  rerun target — under a shared prefix
-  (e.g., `paired:01`, `paired:02`, `paired:03`).
-- **Outcome shape** is a comparison, not a single metric: the
-  experiment produces multiple report keys (one per re-run
-  target) and the user reads them side-by-side to judge whether
-  the prior ranking holds or flips. The skill does not predefine
-  what counts as a "successful" comparison — the user owns the
-  call.
-
-### Both shapes
-
-A new row goes into `JOURNAL.md` History at approval; the
-original rows are **not** edited. The `Implication` block of
-each original may be updated post-re-run with a one-line link
-("see `NN_X_rerun` for the seeded comparison" or
-"see `NN_paired_comparison` for the paired-seed redo") — that
-is the only edit allowed to a frozen file.
-
-In-place edits to an approved design note are reserved for the
-Status block. Re-runs are not amendments — they're new
-experiments that happen to share most of the design.
-
 ## Dispatch table — which iterate-from-* skill
 
-Use the user's framing first; fall back to the sourcing menu
-otherwise.
+Use the user's framing first; fall back to the sourcing menu.
 
 | Situation | Action |
 |---|---|
-| **No prior experiment in `JOURNAL.md`** (bootstrap) | None — § 0 forces an auto-drafted baseline. The strategy skills only apply once at least one experiment is recorded. |
-| **The user names a Backlog row** ("go with B2", "let's do B5") | Promote directly: no strategy skill invoked. Frame the proposal from the row's `Item` + `Source`; remove the row from Backlog when the design note is approved. |
-| "mine the report", "what does skore see?", "fill the backlog from the diagnostic" | `iterate-from-skore` — enriches Backlog, summarizes, re-shows the menu. *No design note drafted on this turn.* |
-| "I want to try X", "let's add Y", a scientific article link, a GitHub issue link, a spec file path | `iterate-from-user` — opens its own three-branch AskUserQuestion (article / resource / free-text), confirms synthesis with the user, returns a Proposal. (If the user already typed a URL / issue / inline idea, pass it in pre-resolved.) |
-| "give me ideas", "what do you suggest", "you decide", "come up with something", "propose for me" | `my-pick` — handled inline. Synthesize 2-4 candidates from JOURNAL.md context, present via AskUserQuestion, user picks, design note drafted. |
-| Open-ended ("what's next?") with at least one recorded experiment | **Present the sourcing menu** (see § "The sourcing menu") — paired with the Backlog table — and let the user pick. No silent default. Free text resolves per § "Free-text handling". |
+| **No prior experiment** (bootstrap) | § 0 forces auto-drafted baseline. No strategy skill |
+| User names a Backlog row ("B2", "let's do B5") | Promote directly; no strategy skill |
+| "mine the report", "what does skore see?", "fill the backlog" | `iterate-from-skore` — enriches Backlog, re-shows the menu. *No design note this turn.* |
+| "I want to try X", "let's add Y", an article URL, a GitHub issue link, a spec path | `iterate-from-user` — opens its three-branch ask (article / resource / free-text). If free-text already resolved, pass pre-resolved branch |
+| "give me ideas", "what do you suggest", "you decide" | `my-pick` — handled inline. Synthesize 2-4 candidates, AskUserQuestion, draft on pick |
+| Open-ended "what's next?" with ≥1 recorded experiment | **Present the sourcing menu** verbatim + Backlog table. No silent default. Free text resolves per § "Free-text handling" |
 
-The strategy skills are intentionally shallow: each one knows
-how to *source* a proposal (or, for `skore`, a set of Backlog
-rows) and hand it back here. This skill is where the proposal
-becomes a design note. The `skore` strategy requires a prior
-experiment with an on-disk report — that's why bootstrap (§ 0)
-skips dispatch entirely.
+The strategy skills are intentionally shallow: they *source*, this
+skill *drafts*. The `skore` strategy requires a prior experiment
+with an on-disk report — bootstrap can't use it.
 
-**If `iterate-from-skore` returns zero candidate rows** — the
-report was clean (every diagnostic surface looks fine) or the
-report wasn't accessible (no skore Project store, key missing,
-skore not importable; see `iterate-from-skore`'s
-"empty-diagnosis outcome" and "inaccessible-report fallback")
-— append a one-liner under `JOURNAL.md` Status citing the date:
+**If `iterate-from-skore` returns zero candidates** — report was
+clean or inaccessible — append a one-liner to `JOURNAL.md` Status
+(`Skore diagnosis clean on <stem> as of <date>` or `Skore report
+inaccessible on <stem> as of <date>`). No History row. Re-present
+the sourcing menu.
 
-- `Skore diagnosis clean on <stem> as of <YYYY-MM-DD>`, or
-- `Skore report inaccessible on <stem> as of <YYYY-MM-DD>;
-  surfaced to user.`
+## Maintenance modes — pointers
 
-Do **not** add a History row — nothing was experimented on.
-Re-present the sourcing menu so the user can pick `user`
-instead.
+Each is read-only or rare. Full procedures in
+`references/maintenance_modes.md`:
+
+- **Project overview** ("status?", "where are we?", "what's been
+  tried?") — read-only summary from `JOURNAL.md` + Backlog. Don't
+  generate a separate document.
+- **Compare past experiments** ("compare X and Y", "how does Z
+  stack up?") — read-only. v1 is pairwise side-by-side; no
+  programmatic multi-stem `ComparisonReport`. Don't draft a design
+  note. Don't add JOURNAL rows.
+- **Goal pivots** ("we actually care about MAE now") — update
+  Status with date + reason, insert a horizontal divider in
+  History, flag incomparability in the next experiment's Risks.
+  Don't mass-edit prior notes.
+- **Abandoned experiments** — `AskUserQuestion`(`abandon` /
+  `defer` / `run now`). Status becomes `abandoned` with one-line
+  reason; Headline becomes `n/a — abandoned: <reason>`. History
+  row stays.
+- **Re-runs** — single (`NN_<original_stem>_rerun`) or batch
+  (`NN_paired_comparison`). New design note; original notes
+  unchanged. In-place edits reserved for the Status block.
+
+## Files this skill owns
+
+```
+journal/
+├── JOURNAL.md                # status + history + backlog (index)
+├── 01_baseline.md            # design note for experiments/01_baseline.py
+├── 02_<short_name>.md
+└── ...
+```
+
+Pairing rule (hard): `journal/NN_<short_name>.md` ↔
+`experiments/NN_<short_name>.py`, identical stems, 1:1.
+
+### `JOURNAL.md` shape
+
+1. **Status** — 2-3 lines: dataset, goal, last experiment + status.
+2. **History** (chronological) — one row per experiment: stem,
+   one-line intent, status (planned / running / done / abandoned),
+   headline result, link.
+3. **Backlog** (forward-looking) — indexed table; columns `#`,
+   `Item`, `Source`. `Source` is `skore:<stem>` / `my-pick:<stem>`
+   / `user`. Surface this table every time the sourcing menu fires.
+
+Use `templates/JOURNAL.md` as the skeleton. Don't invent sections.
+
+### Per-experiment design note shape
+
+Use `templates/experiment_design.md`. Sections:
+
+- **Question / hypothesis** — one sentence. Why X, what would it tell us.
+- **Motivation** — pulled from the sourcing strategy. Cite
+  concretely (issue link, paper, prior stem, diagnosis section).
+- **Method** — what changes vs. previous experiment, in prose.
+  Mechanics live in `build-ml-pipeline` / `evaluate-ml-pipeline`.
+- **Risks** — what would make the metric move for the wrong reason.
+- **Status block** — `planned` → `approved` → `done | abandoned`.
+
+**No "Success criteria" section.** The user judges whether the
+result is good enough, post-run, from Headline + Implication.
 
 ## What this skill does NOT do
 
-- Run experiments. The experiment script is created by
-  `organize-ml-workspace` and executed by the user / their
-  runner.
-- Open or query the skore Project. That's
-  `evaluate-ml-pipeline` and the `python-api` lookups.
-- Edit `pipeline.py` / `features.py` / `data.py`. Those are
-  owned by `build-ml-pipeline`.
-- Decide *whether* a workspace exists or where things go. That's
-  `organize-ml-workspace`.
-- Write commits or PRs describing what was done. The design notes
-  are the durable record; commit messages are out of scope here.
-- **Define what counts as a successful experiment.** No
-  "Success criteria" / "Acceptance criteria" / "target metric
-  delta" written ahead of the run. The skill proposes, the
-  experiment runs, the headline result is recorded; the user
-  judges whether it's good enough and what to try next.
-- **Pick a sourcing strategy on the user's behalf.** The
-  sourcing menu is the contract — § 2 always presents it and
-  waits for the user's pick.
+- Run experiments (user / runner does that).
+- Open or query the skore Project (`evaluate-ml-pipeline` +
+  `python-api`).
+- Edit `pipeline.py` / `features.py` / `data.py`
+  (`build-ml-pipeline`).
+- Decide whether a workspace exists or where things go
+  (`organize-ml-workspace`).
+- Write commits / PRs.
+- Define what counts as a successful experiment (no acceptance
+  criteria pre-run).
+- Pick a sourcing strategy on the user's behalf.
 
 ## Companion skills
 
-- **`organize-ml-workspace`** — scaffolds `journal/` (empty
-  `JOURNAL.md`) and `tests/smoke/` (placeholder
-  `test_01_baseline.py`); enforces the three-way stem-pairing
-  rule between `journal/NN_*.md`, `experiments/NN_*.py`, and
-  `tests/smoke/test_NN_*.py`.
-- **`iterate-from-user`** — sources the next experiment from
-  the user via three entry points (article URL, resource link,
-  free text); confirms its synthesis with the user before
-  returning a Proposal block.
-- **`iterate-from-skore`** — walks the prior experiment's skore
-  report via `report.diagnosis()`, enriches `JOURNAL.md` Backlog
-  with one row per actionable finding, summarizes for the user,
-  and hands back to the sourcing menu (where the user typically
-  picks a `B<N>` row next).
-- **`evaluate-ml-pipeline`** — read the skore report after a run
-  before recording the outcome.
-- **`build-ml-pipeline`** — implementation of the *method*
-  section once the design note is approved. Also where § 3 routes when
-  a smoke-test failure points at a graph-topology bug (typically
-  a late `mark_as_X`).
-- **`test-ml-pipeline`** — router for `tests/`. § 3 dispatches
-  here right after design-note approval to draft the matching smoke
-  test; § 4 refuses to flip an experiment to `done` until that
-  smoke test passes.
-- **`smoke-test-ml-pipeline`** — owns the smoke test contract
-  (fixture from real `data/`, hard row-count assertion, soft
-  metric-vs-CV gap). The `test-ml-pipeline` router dispatches
-  here for the body of each `tests/smoke/test_NN_*.py`.
+- `organize-ml-workspace` — scaffolds the layout + `tests/smoke/`
+  placeholder; owns the stem-pairing rule.
+- `iterate-from-user` — sources from the user (article URL /
+  resource link / free text); confirms synthesis; returns a
+  Proposal.
+- `iterate-from-skore` — walks `report.diagnosis()` on the prior
+  experiment; enriches Backlog; re-shows the sourcing menu.
+- `evaluate-ml-pipeline` — read the skore report after a run
+  before recording; owns the CV-strategy decision.
+- `build-ml-pipeline` — implements the *method* once approved.
+  Also where smoke-test failures route (X-marker bugs,
+  reproducibility regressions).
+- `test-ml-pipeline` → `smoke-test-ml-pipeline` — drafts the
+  matching smoke test after design-note approval; § 4 won't flip
+  to `done` until the smoke test passes.
+
+## References (load on demand)
+
+- `references/bootstrap.md` — full bootstrap procedure, config-gate
+  details, baseline-template substitution.
+- `references/record_outcome.md` — full § 4 procedure with backlog
+  hygiene examples, `summary.md` refresh extraction probe, GitHub
+  comment template.
+- `references/maintenance_modes.md` — overview / compare /
+  goal-pivot / abandoned / re-runs with full procedures.
+- `references/preflight_evidence.md` — Evidence-format spec
+  (read-set rows, gate rows, workflow rows).
 
 ## Templates
 
 - `templates/JOURNAL.md` — the three-section index skeleton.
-- `templates/experiment_design.md` — the per-experiment design
-  note skeleton with status block.
+- `templates/experiment_design.md` — per-experiment design note
+  with Status block.
 
-Copy, don't rewrite. The templates encode the contract — keep
-the section names stable so `JOURNAL.md` stays diffable across
-experiments and sessions.
+Copy, don't rewrite. Section names are the contract.

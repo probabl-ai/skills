@@ -1,707 +1,436 @@
 ---
 name: organize-ml-workspace
 description: >
-  Decide where files live in an ML experimentation project: where the
-  reusable code goes, where each experiment goes, where reports are
-  persisted. Owns the layout, the file-creation rules (one file per
-  experiment, ask before editing an existing one), and the
-  jupytext-style `# %%` script convention. Stops at "the file exists
-  in the right place with the right skeleton". Never imposes a
-  `data/` layout — the user owns that.
+  Decide where files live in an ML experimentation project: reusable
+  code in `src/<pkg>/`, one `# %%` script per experiment in
+  `experiments/`, design notes + index in `journal/`, reports in
+  `reports/`, agent-only probes in `scratch/`, narrative digest in
+  `overview/summary.md`. Owns the layout, the file-creation rules
+  (one file per experiment, ask before editing), and the jupytext
+  `# %%` script convention. Never imposes `data/` — the user owns
+  that.
 
-  TRIGGER when: starting a new ML project / scaffolding a workspace;
-  about to create the first experiment file in a project; about to
-  create `src/<pkg>/data.py`, `features.py`, `pipeline.py`, or
-  `evaluate.py` for the first time; about to write a Jupyter
-  notebook (`.ipynb`) for experimentation — redirect to a `# %%`
-  script under `experiments/`; user asks where something should
-  live, how to organize the project, or how to set up the workspace;
-  about to add a *new experiment iteration* (must decide: new file
-  vs. edit existing — ask the user).
+  TRIGGER — any of:
+  - Starting a new ML project / scaffolding a workspace.
+  - About to create the first experiment file in a project.
+  - About to create `src/<pkg>/data.py` / `features.py` /
+    `pipeline.py` / `evaluate.py` for the first time.
+  - About to write a `.ipynb` for experimentation — redirect to a
+    `# %%` script under `experiments/`.
+  - User asks where something should live, how to organize the
+    project, or how to set up the workspace.
+  - About to add a new experiment iteration — decide new file vs
+    edit existing (ask the user).
 
-  SKIP when: the file is clearly part of the package's existing
-  module (e.g., adding a function to an already-populated
-  `features.py`); pure refactor inside a single existing file;
-  pipeline declaration mechanics (`build-ml-pipeline`); evaluation
-  mechanics (`evaluate-ml-pipeline`); skore symbol lookup
-  (`python-api`).
+  SKIP when: the file is clearly part of an already-populated
+  module (e.g., adding a function to existing `features.py`); pure
+  refactor inside a single existing file; pipeline declaration
+  mechanics (`build-ml-pipeline`); evaluation mechanics
+  (`evaluate-ml-pipeline`); skore symbol lookup (`python-api`).
 
-  HOW TO USE: **first detect whether a workspace is already in
-  place**. If yes, glue to its conventions (do not rename or move
-  existing folders). If no, scaffold the default layout below
-  (omitting `data/`, `models/`, `tests/`). **Read the "Stop
-  conditions" block at the top of the body and emit the Pre-flight
-  checklist as visible text in your response — both are mandatory
-  before any file is created or edited.** Use the templates in
-  `templates/` as the starting content — copy and adapt; do not
-  rewrite from scratch. For each new experiment, default to a new
-  file in `experiments/`; when the user says "iterate on X", **ask**
-  whether to fork into a new file or edit in place.
+  HOW TO USE: **first run the Detection table** below — if any
+  signal matches, glue to existing conventions (do not rename or
+  move folders). If no signal matches, scaffold the default
+  layout. **Emit the Pre-flight checklist as visible text and read
+  the Stop conditions before any file is created or edited.** Use
+  templates in `templates/`; copy and adapt, do not rewrite from
+  scratch.
 ---
 
 # Organize ML Workspace
 
 Where things live, when to create a new file, what each file is
-allowed to contain. Pipeline mechanics, evaluation mechanics, and
-skore/skrub/sklearn symbols are out of scope and live in the
-sibling skills.
+allowed to contain.
+
+## First action — track sibling reads (not a blocking gate)
+
+Maintain this read-set as you work. Open each sibling SKILL.md
+**just-in-time** when a step in this skill calls for it (e.g. open
+`python-env-manager` before G-ENV-MGR; open `iterate-ml-experiment`
+before handing off the design-note write). Do not pre-read all nine
+at session start — that produces paralysis.
+
+Emit this tracker as visible text once per turn:
+
+```
+Sibling skills (open just-in-time when a step requires):
+  - data-science-python-stack, python-env-manager, python-api,
+    python-code-style, iterate-ml-experiment, build-ml-pipeline,
+    evaluate-ml-pipeline, test-ml-pipeline, smoke-test-ml-pipeline
+```
 
 ## Stop conditions — read before anything else
 
-- **Missing dependency.** If `import skore` raises in this project's
-  env, STOP. **Invoke `python-env-manager`** to detect the manager
-  and produce the right install command (the project may not use
-  pixi); surface the command to the user and wait for confirmation.
-  **Do not drop the `skore.Project` from the experiment script** in
-  favor of `mlflow`, ad-hoc pickles, or "just print the metrics" —
-  the workspace contract assumes a Project on disk. See
-  `data-science-python-stack` § "Missing dependency".
+- **Missing dependency.** If `import skore` raises, STOP. Invoke
+  `python-env-manager` for the install command. Do not drop
+  `skore.Project` in favor of `mlflow` / pickles / "just print
+  metrics" — the workspace contract assumes a Project on disk.
 - **Symbol from memory is forbidden.** Any `skore.Project` /
-  `project.put` / `skore.evaluate` signature you write must come
-  from a `Skill(python-api)` call **in this turn**. Don't infer
-  parameter names from memory.
-- **Existing layout wins — detect first.** Run the detection table
-  in § "Detection" before scaffolding. Do not rename, relocate, or
-  "tidy up" existing folders. Adding files in the wrong location is
-  worse than asking.
-- **Notebooks are not silent.** If existing `.ipynb` files are
-  present in the experiment folder, do not auto-convert to `# %%`
-  scripts. Surface the convention shift and ask.
-- **Scratch is read-only against the skore Project.** Probes
-  under `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` may call
-  `project.get(...)`, `project.summarize()`, and walk an
-  existing report. They MUST NOT call `skore.evaluate(...)` or
-  `project.put(...)` — those are experiment-script-only calls
-  (see `evaluate-ml-pipeline` § Stop conditions). When a lookup
-  raises (typically `project.get(key)` raising `KeyError`), the
-  fix is the lookup shape: `project.get(...)` resolves by
-  report **id**, not by the user-facing `key`. Use
-  `project.summarize()` to enumerate `(key, id)` pairs and
-  `get` by id. See `python-api` § "Lookup failure ≠ artifact
-  missing" for the general registry-lookup discipline. The
-  failure mode this rule blocks: a scratch probe that
-  rebuilds the learner and re-fires `evaluate` + `put`,
-  silently writing a duplicate row under the same `key` into
-  `project.summarize()` and polluting the cross-experiment
-  view that `overview/summary.md` reads from.
-- **Tabular library is asked, not assumed (G-TABULAR).** Even though
-  `pandas` is already pulled in by `skore`, do not silently target
-  it in scaffolded code. The tabular pick is a competing-library
-  job — invoke `data-science-python-stack` § "Competing libraries —
-  general rule" and § "Tier 2"; the structured `AskUserQuestion`
-  there is non-skippable. Free-text user phrasing ("quick", "you
-  pick", "no preference") does **not** resolve this gate; see
-  `data-science-python-stack` § "Free-text resolution" for what
-  does. The decision is then persisted in `journal/JOURNAL.md`
-  Status `Workspace decisions` (owned by `iterate-ml-experiment`'s
-  template) so future sessions read it instead of re-asking.
+  `project.put` / `skore.evaluate` signature must come from a
+  `python-api` call this turn.
+- **Existing layout wins — detect first.** Run the Detection table
+  before scaffolding. Don't rename, relocate, or "tidy up"
+  existing folders.
+- **Notebooks are not silent.** Existing `.ipynb` files in the
+  experiment folder → surface the convention shift and ask. Don't
+  auto-convert.
+- **Scratch is read-only against the skore Project.** Probes under
+  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` may call
+  `project.get(...)`, `project.summarize()`, and walk an existing
+  report. They **MUST NOT** call `skore.evaluate(...)` or
+  `project.put(...)` — those are experiment-script-only. **When
+  `project.get(key)` raises `KeyError`, the fix is the lookup
+  shape**: `get` is by **id**, not by user-facing `key`. Use
+  `project.summarize()` to enumerate `(key, id)` pairs, then
+  `project.get(id)`. Never substitute by re-running `evaluate` +
+  `put` from scratch — that lands a duplicate row under the same
+  `key`.
+- **Tabular library is asked, not assumed (G-TABULAR).** Pandas
+  being importable via skore is not a pick. Invoke
+  `data-science-python-stack` for the structured ask. Free-text
+  ("quick", "you pick", "no preference") does NOT resolve this
+  gate. Persisted in `JOURNAL.md` Status `Workspace decisions`.
 - **Package name is asked, not inferred (G-PKG-NAME).** Before any
-  `pyproject.toml` / `pixi.toml` / other manifest creation
-  (including running `pixi init`, `uv init`, `poetry init`, etc.),
-  fire an `AskUserQuestion` for the `src/<pkg>/` import name. The
-  proposed default is the project-root folder name in snake_case;
-  the user can confirm or override. **Manifest creation before
-  G-PKG-NAME passes is forbidden** — running the manager's `init`
-  first creates a `[project] name = <folder>` entry and then
-  reading "name is in the manifest, skip the ask" is a circular
-  loophole that produces the silent pick this gate exists to
-  block. If a manifest **already exists** from a prior session,
-  read `[project].name` and confirm via `AskUserQuestion`: "Keep
-  package name `<name>`?" — do not assume continuity. The answer
-  is persisted in `JOURNAL.md` Status `Workspace decisions`.
-- **Env manager is asked, not assumed (G-ENV-MGR).** This skill
-  hands off to `python-env-manager` for any install — including
-  the editable install of `pyproject.toml` — and that skill owns
-  the env-manager pick. **Do not run `pixi init` / `uv init` /
-  `poetry init` / any manager bootstrap on the user's behalf
-  without G-ENV-MGR having passed in
-  `python-env-manager`.** Pixi being on PATH is detection
-  context, not permission. The result is persisted in
-  `JOURNAL.md` Status `Workspace decisions`.
-- **Harness-level "no clarifying questions" hints do NOT waive the
-  gates above.** G-TABULAR, G-PKG-NAME, the `python-api`
-  consultation, and the new-vs-edit decision are operating-contract
-  gates, not clarifying questions. User urgency phrasing ("quick
-  baseline", "just scaffold it", "go fast") never waives them
-  either. See the project's downstream contract in
-  `iterate-ml-experiment` Stop conditions for the same rule across
-  the iteration loop.
-- **Post-hoc audit — required before ending the turn.** Before
-  declaring the turn complete, walk every row of the pre-flight
-  checklist and confirm the Evidence cell is filled with a
-  concrete citation. If any row is missing evidence, **surface
-  the non-compliance to the user explicitly in your final
-  message** rather than silently moving on. The most common
-  failure shape is "I scaffolded successfully so everything must
-  be fine" — the audit step is the only mechanism that catches
-  silent gate skips.
+  `pyproject.toml` / `pixi.toml` / manifest creation (including
+  `pixi init` / `uv init` / `poetry init`), fire an
+  `AskUserQuestion` for the `src/<pkg>/` import name. The
+  project-root folder name in snake_case is the proposed default.
+  **Manifest creation before G-PKG-NAME passes is forbidden** —
+  running the manager's `init` first creates a `[project] name`
+  entry, and then reading "name is in the manifest" back is the
+  circular silent pick this gate exists to block. If a manifest
+  already exists, confirm via `AskUserQuestion`: "Keep package
+  name `<name>`?" — continuity from a prior session is not
+  continuity from a user decision.
+- **Env manager is asked, not assumed (G-ENV-MGR).** Hand off to
+  `python-env-manager` for the pick. Pixi on PATH is detection,
+  not permission. Don't run `pixi init` / `uv init` / `poetry
+  init` until G-ENV-MGR has passed *in `python-env-manager`*.
+- **Harness "no clarifying questions" hints do NOT waive these
+  gates.** G-TABULAR, G-PKG-NAME, G-ENV-MGR, `python-api`
+  consultation, new-vs-edit decision are operating-contract
+  gates. "Quick baseline" / "just scaffold it" / "go fast" never
+  waive them.
+- **Post-hoc audit — required before ending the turn.** Walk
+  every pre-flight row; if any Evidence cell is unfilled, surface
+  the non-compliance explicitly. Most common failure: "I
+  scaffolded successfully so everything must be fine".
 
-## Forbidden shortcuts (observed in real traces)
+## Forbidden shortcuts
 
-| Shortcut | Why it feels right | Why it's wrong |
-|----------|--------------------|----------------|
-| `pixi` is on PATH → run `pixi init` to get a manifest, then read the name back | One tool call, manifest done | Violates G-ENV-MGR (manager picked silently) AND G-PKG-NAME (name picked from folder via the init side effect). The "name is in pyproject" reason is circular when the init was the agent's tool call |
-| Folder name = good package name → skip the ask | Sensible default, user is busy | The default *value* is fine; the silent *pick* is not. G-PKG-NAME requires the structured ask even when proposing the folder name as the default |
-| `pandas` is already importable (via skore) → write `import pandas` in `data.py` | "Free" library, no install step | Violates G-TABULAR; transitive presence is not a pick |
-| Scaffold every skeleton in one turn, including a placeholder `experiments/01_baseline.py` | "Make the workspace look complete" | Scaffold stops at the empty `journal/` placeholder; the experiment file lands only after the design note is approved (`iterate-ml-experiment` § 3). Pre-emptive `experiments/` files force the agent to backfill content the user never approved |
-| `pyproject.toml` already exists with `name = <something>` → reuse without confirming | Continuity is friendly | Continuity from a prior agent turn is not continuity from a user decision — the prior turn may itself have been a silent pick. Always re-confirm via G-PKG-NAME on the first session that touches this workspace |
-| User said "scaffold the workspace" → batch G-TABULAR + G-PKG-NAME + G-ENV-MGR into prose recommendations | One round-trip is faster | The gates take structured `AskUserQuestion` calls per § "Free-text resolution". Prose recommendations followed by "let me know what you think" do NOT resolve the gates |
-| `project.get(key)` raised `KeyError` → re-run `skore.evaluate` + `project.put` from a scratch probe to "recover" the report | The artifact looks missing; recreating it seems faster than digging into the API | The artifact is there; the lookup shape is wrong (`get` is by id, not by `key`). Recreating it puts a duplicate row in `project.summarize()` under the same `key` and silently breaks the "one report per experiment key" contract that `overview/summary.md` reads from. Use `project.summarize()` to enumerate `(key, id)` pairs and `project.get(id)` instead |
+| Shortcut | Why it's wrong |
+|---|---|
+| `pixi` on PATH → run `pixi init` to get a manifest, then read the name back | Violates G-ENV-MGR (manager silently picked) AND G-PKG-NAME (name from folder via the init side effect). "Name is in pyproject" is circular when the init was the agent's call |
+| Folder name = good package name → skip the ask | Default *value* is fine; silent *pick* is not. G-PKG-NAME requires the structured ask even with folder as default |
+| `pandas` already importable via skore → write `import pandas` in `data.py` | Transitive presence is not a pick. Violates G-TABULAR |
+| Scaffold every skeleton in one turn, including `experiments/01_baseline.py` content | Scaffold stops at empty `journal/` placeholder. Experiment script content lands after design-note approval (`iterate-ml-experiment` § 3) |
+| `pyproject.toml` exists with `name = <x>` → reuse without confirming | Continuity from a prior session is not continuity from a user decision. Always re-confirm via G-PKG-NAME |
+| User said "scaffold the workspace" → batch G-TABULAR + G-PKG-NAME + G-ENV-MGR into prose recommendations | The gates take structured `AskUserQuestion` per skill. Prose followed by "let me know" does NOT resolve them |
+| `project.get(key)` raised `KeyError` → re-run `evaluate` + `put` from scratch to "recover" | Lookup shape is wrong (`get` is by id). Recreating puts a duplicate row under same `key`. Use `summarize()` → `get(id)` |
 
-## Pre-flight — emit this checklist as visible text before any code
+## Pre-flight — emit before any code
 
-Before scaffolding or editing any file, output the following block
-verbatim in your response. **Each ticked box requires an
-`Evidence:` line** — a ticked box without evidence is a
-Stop-condition violation, indistinguishable from a skipped check.
-Evidence formats follow the same conventions as
-`iterate-ml-experiment` § "Pre-flight — evidence requirements":
-read-set rows cite the file-reading tool call this turn; gate
-rows cite an `AskUserQuestion id=...`, a user free-text quote, or
-a `JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)`
-reference; workflow rows cite the artifact produced.
+Each ticked box needs an Evidence line (formats follow
+`iterate-ml-experiment` § "Pre-flight — evidence requirements" —
+see `references/preflight_evidence.md` in that skill).
 
 ```
 Pre-flight (organize-ml-workspace):
-- [ ] Sibling SKILL.md files opened **this turn** (do NOT infer
-      sibling content from cross-reference text — open each file):
-      data-science-python-stack, python-env-manager, python-api,
-      python-code-style, iterate-ml-experiment, build-ml-pipeline,
-      evaluate-ml-pipeline, test-ml-pipeline, smoke-test-ml-pipeline.
-      Skipping any one of these is the most common failure mode for
-      this skill — they own the gates this skill cross-references
-      but does not itself enforce.
-      Evidence: Read .agents/skills/<each-listed-name>/SKILL.md (this turn)
-- [ ] `Workspace decisions` block in `journal/JOURNAL.md` Status checked
-      for pre-recorded gates (tabular, env_manager, package). Each
-      recorded decision skips its matching AskUserQuestion this turn.
-      Evidence: lists each <gate>: <value | not recorded> or
-                "n/a — JOURNAL.md does not exist yet (truly fresh project)"
-- [ ] Tier 1 mandatory libs importable in this env: sklearn, skrub, skore
-      (per `data-science-python-stack` § "Tier 1")
-      Evidence: tool output of `pixi run python -c "import sklearn, skrub, skore"` (or equivalent for the project's env manager)
-- [ ] Tabular library decided + installed (G-TABULAR): pandas | polars
-      Evidence: AskUserQuestion id=<id>, answer=<pandas|polars> |
-                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
-                user quote turn N: "..."
-- [ ] Env manager decided (G-ENV-MGR): pixi | uv | poetry | hatch | conda | pip+venv
-      Evidence: AskUserQuestion id=<id> via python-env-manager |
-                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
-                detection-table match cited from python-env-manager § "Detection"
+- [ ] `Workspace decisions` in `journal/JOURNAL.md` Status checked
+      for pre-recorded gates (tabular, env_manager, package)
+      Evidence: lists each <gate>: <value | not recorded>
+                | "n/a — JOURNAL.md does not exist yet (truly fresh)"
+- [ ] Tier 1 mandatory libs importable: sklearn, skrub, skore
+      Evidence: tool output of `pixi run python -c "import sklearn, skrub, skore"`
 - [ ] Layout detection done: <existing | fresh>
-      Evidence: tool output of `ls`/Glob on project root + matched signals from § "Detection"
+      Evidence: ls/Glob on project root + matched signal from Detection
+- [ ] Tabular library decided (G-TABULAR): pandas | polars
+      Evidence: AskUserQuestion id=<id> via data-science-python-stack |
+                JOURNAL.md Status (Workspace decisions) | user quote turn N
+- [ ] Env manager decided (G-ENV-MGR)
+      Evidence: AskUserQuestion id=<id> via python-env-manager |
+                JOURNAL.md Status (Workspace decisions)
 - [ ] Package name resolved (G-PKG-NAME): <name>
       Evidence: AskUserQuestion id=<id>, answer=<name> |
-                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
-                existing manifest's [project].name **confirmed via AskUserQuestion this turn**.
-                "Read from pyproject.toml" alone is NOT sufficient — must include the confirmation.
-- [ ] `pyproject.toml` present at the project root, declaring the
-      `src/<pkg>/` package; editable install wired via
-      `python-env-manager` § "Editable workspace package"
-      Evidence: Read pyproject.toml (this turn) + tool call to the manager's editable-install command (if not already wired)
-- [ ] Skill(python-api) consulted for: Project, put, evaluate
-      Evidence: Read scratch/api/skore/<version>/{project_local,evaluate}.md
-                (cache hit, this turn) | Write of the same files (this turn).
-                "Read python-api SKILL.md" alone is NOT evidence; a Shape 1
-                probe that did not produce a cache file is NOT evidence
-                either (see `python-api` § "Shape 1 — symbol card").
-- [ ] Decision recorded: new experiment file vs. edit existing
-      (asked the user if this is an iteration)
-      Evidence: AskUserQuestion id=<id> | user quote turn N: "..." | "n/a — first experiment in a fresh workspace"
-- [ ] `journal/` scaffolded: empty `JOURNAL.md` placed (content owned by
-      `iterate-ml-experiment`, not this skill)
+                JOURNAL.md Status (Workspace decisions) |
+                existing manifest's [project].name **confirmed via AskUserQuestion**
+                (reading the manifest alone is NOT sufficient)
+- [ ] `pyproject.toml` present at root declaring `src/<pkg>/`;
+      editable install wired via `python-env-manager` § "Editable workspace"
+      Evidence: Read pyproject.toml (this turn) + manager's editable-install call
+- [ ] python-api consulted for: Project, put, evaluate
+      Evidence: Read scratch/api/skore/<v>/{project_local,evaluate}.md
+                | Write of the same files (this turn)
+                | "n/a — symbols already in workspace cache"
+- [ ] Decision: new experiment file vs edit existing (asked the user
+      if this is an iteration)
+      Evidence: AskUserQuestion id=<id> | user quote turn N |
+                "n/a — first experiment in a fresh workspace"
+- [ ] `journal/` scaffolded with empty placeholder JOURNAL.md
       Evidence: Write journal/JOURNAL.md (this turn) | "already exists"
 ```
 
 ## Scope
 
-- **In scope:** detecting an existing layout, scaffolding a fresh
-  one, the `experiments/` script convention (`# %%`, one file per
-  experiment), the contract for what `evaluate.py` is allowed to
-  contain, the `reports/` location for the skore Project.
-- **Out of scope:** what to put inside `pipeline.py` (see
-  `build-ml-pipeline`), how to call `skore.evaluate` (see
-  `evaluate-ml-pipeline`), skore/skrub/sklearn symbols (see the
-  `python-api` skill), data ingestion paths (user-owned).
+- **In scope:** detection of existing layout, scaffolding of fresh
+  layout, the `experiments/` convention (`# %%`, one file per
+  experiment), `evaluate.py` contract, `reports/` location.
+- **Out of scope:** what to put inside `pipeline.py`
+  (`build-ml-pipeline`), how to call `skore.evaluate`
+  (`evaluate-ml-pipeline`), skore/skrub/sklearn symbols
+  (`python-api`), data ingestion paths (user-owned).
 
 ## Detection — existing workspace first
 
-Before scaffolding anything, look at the project root and infer
-whether a layout already exists:
+Before scaffolding, look at the project root:
 
 | Signal | Meaning |
 |---|---|
-| `pyproject.toml` with `[project] name = ...` and `[tool.setuptools.packages.find]` (or `[tool.poetry.packages]`, `[tool.hatch.build.targets.wheel]`) | the package is declared and installable — use this name; verify the editable install is wired (`python-env-manager` § "Editable workspace package") |
-| `pixi.toml` / `[tool.poetry]` / `[tool.uv]` carrying a project/package name with **no** `pyproject.toml` `[project]` table | the manager knows the project but the package isn't declared as installable — flag this and offer to add `pyproject.toml` |
-| `src/<pkg>/__init__.py` or `<pkg>/__init__.py` at root | package directory already chosen — keep it |
-| `<pkg>.egg-info/` at the project root or under `src/` | a stale or out-of-band `pip install -e .` ran at some point; if the manager's manifest does **not** carry the editable entry, surface this as drift and offer to clean up + wire it through the manager |
-| `experiments/`, `notebooks/`, `scripts/`, `analyses/` | experiment location already chosen — keep it |
-| `journal/`, `plans/`, `proposals/` | journal / iteration-log location already chosen — keep it |
-| `reports/`, `results/`, `runs/` | report location already chosen — keep it |
-| `tests/` | test location already chosen — keep it; per-test-category subfolders (`tests/smoke/`, `tests/regression/`, …) are owned by `test-ml-pipeline` |
-| `mlflow.db` / `mlruns/` at the project root | tracker artifacts from prior work — **leave them alone**; skore is the canonical tracker for this stack (see `data-science-python-stack`). Note their presence to the user once and move on. |
-| Existing `.ipynb` files in the experiment folder | user is on notebooks; **do not silently switch to scripts** — surface the convention shift and ask |
+| `pyproject.toml` with `[project] name = ...` and `[tool.setuptools.packages.find]` (or `[tool.poetry.packages]`, `[tool.hatch.build.targets.wheel]`) | Package declared and installable — use this name; verify editable install via `python-env-manager` |
+| `pixi.toml` / `[tool.poetry]` / `[tool.uv]` with a name but **no** `pyproject.toml` `[project]` table | Manager knows the project but the package isn't installable — flag, offer to add `pyproject.toml` |
+| `src/<pkg>/__init__.py` or `<pkg>/__init__.py` at root | Package dir already chosen — keep it |
+| `<pkg>.egg-info/` at root or under `src/` | Stale or out-of-band `pip install -e .` ran; flag drift, offer to wire through the manager |
+| `experiments/`, `notebooks/`, `scripts/`, `analyses/` | Experiment location chosen — keep it |
+| `journal/`, `plans/`, `proposals/` | Journal location chosen — keep it |
+| `reports/`, `results/`, `runs/` | Report location chosen — keep it |
+| `tests/` | Test location chosen — keep it; per-category subfolders owned by `test-ml-pipeline` |
+| `mlflow.db` / `mlruns/` at root | Tracker artifacts from prior work — leave alone, skore is canonical. Note once, move on. |
+| `.ipynb` files in the experiment folder | User is on notebooks — do not silently switch to scripts; surface the shift and ask |
 
-If any of these are present, **glue to the existing convention**.
-Do not rename or relocate. Add new files in the locations the
-project already uses, with names that match the existing pattern.
-
-If none of these are present, the project is fresh — scaffold the
-default layout below.
+**Any signal present → glue to the existing convention.** No renames, no relocates. **None present → fresh scaffold** per below.
 
 ## Default layout (fresh workspace)
 
 ```
 project/
-├── pyproject.toml          # declares src/<pkg>/ as the installable package
+├── pyproject.toml          # declares src/<pkg>/ as installable
 ├── <manager manifest>      # pixi.toml / poetry / uv / hatch / environment.yml
-│                           # (carries runtime deps; pyproject.toml does not)
+│                           # (runtime deps; pyproject.toml does not carry them)
 ├── src/<pkg>/
 │   ├── __init__.py         # exposes PROJECT_ROOT for CWD-independent paths
-│   ├── data.py             # data loading, splits, split_kwargs wiring
-│   ├── features.py         # transformers, encoders, feature functions
+│   ├── data.py             # data loading, splits, split_kwargs
+│   ├── features.py         # transformers, encoders, feature fns
 │   ├── pipeline.py         # the learner declaration (skrub DataOps)
-│   └── evaluate.py         # ONLY: CV strategy + (optional) metric overrides
-├── journal/                   # iteration log + per-experiment design notes
-│   ├── JOURNAL.md             # session-start log; index of experiments
+│   └── evaluate.py         # ONLY: CV strategy + optional metric overrides
+├── journal/                # iteration log + per-experiment design notes
+│   ├── JOURNAL.md          # session-start log; index of experiments
 │   └── 01_baseline.md      # one `.md` per planned experiment, same stem
 ├── experiments/            # one `# %%` script per experiment
 │   └── 01_baseline.py
-├── tests/                  # pytest tests; pairs 1:1 with experiments
-│   └── smoke/              # body owned by `smoke-test-ml-pipeline`;
-│                           # per-experiment files placed by
-│                           # `test-ml-pipeline` once each design note is approved
-├── overview/               # cross-experiment project digest
+├── tests/
+│   └── smoke/              # body owned by smoke-test-ml-pipeline;
+│                           # files placed by test-ml-pipeline once
+│                           # each design note is approved
+├── overview/
 │   └── summary.md          # agent-authored narrative; refreshed by
-│                           # `iterate-ml-experiment` § 4 via scratch probe
-├── scratch/                # agent-only scratch space (gitignored entirely;
-│                           # convention lives in `python-api` § "Scratch
-│                           # traceability", not in an on-disk README)
+│                           # iterate-ml-experiment § 4
+├── scratch/                # agent-only (gitignored entirely)
 └── reports/                # skore Project lives here
 ```
 
-**The package is installable.** `pyproject.toml` declares the
-`src/<pkg>/` directory as a Python package, and the project's env
-manager installs it in **editable** mode (so edits to source are
-picked up without reinstalling). This is what lets experiment
-scripts say `from <pkg>.pipeline import build_learner` from any CWD,
-no `PYTHONPATH=src` hack required. The wiring is per-manager — see
-`python-env-manager` § "Editable workspace package" for the exact
-command (e.g. `pixi add --pypi --editable .`).
+**The package is installable.** `pyproject.toml` declares
+`src/<pkg>/` as a Python package; the manager installs it in
+**editable** mode so `from <pkg>.pipeline import build_learner`
+works from any CWD. Wiring is per-manager — see
+`python-env-manager` § "Editable workspace".
 
-Runtime dependencies (sklearn, skrub, skore, the tabular library)
-live in the **manager's manifest** (`pixi.toml`,
-`[tool.poetry.dependencies]`, `[tool.uv]`, `environment.yml`, …),
-not in `pyproject.toml`'s `[project.dependencies]`. The
-`pyproject.toml` template ships with **no runtime deps** for that
-reason.
+**Runtime dependencies (sklearn, skrub, skore, tabular library)
+live in the manager's manifest**, not in
+`pyproject.toml`'s `[project.dependencies]`. The
+`pyproject.toml` template ships with **no runtime deps**.
 
-Notes on what is **deliberately absent**:
+**Deliberately absent:**
 
-- **No `data/` directory.** The user decides where data comes from
-  (local mount, remote bucket, fixture, fetched dataset). `data.py`
-  exposes a loader; the path is a parameter, not a folder we
-  invent.
-- **No `models/`.** Persistence is out of scope at this stage.
-
-`tests/smoke/` is part of the default scaffold (with one
-placeholder `tests/smoke/test_01_baseline.py`); the body of every
-test file is owned by `smoke-test-ml-pipeline`, the layout and
-the stem-pairing rule by `test-ml-pipeline`. This skill only
-places the empty subfolder + the placeholder file.
-
-`overview/` is part of the default scaffold too. It carries a
-single file — `summary.md` — that is the agent's read target
-for the project-level narrative (complementing `journal/JOURNAL.md`'s
-index role). The per-experiment `journal/NN_*.md` files remain the
-source of truth (frozen Method / Risks); `summary.md` is the
-*curated* view across them, plus the cross-experiment metrics
-table extracted from the skore Project.
-
-**`summary.md` is agent-authored prose, not script output.**
-`iterate-ml-experiment` § 4 rewrites it by hand after every
-outcome recording: the agent runs a one-off probe under
-`scratch/<ts>_refresh_summary.py` to extract `project.summarize()`
-and the `## Status` blocks from `journal/NN_*.md`, then writes a
-curated narrative to `summary.md` (not a verbatim dump). This
-skill places the `summary.md` placeholder from
-`templates/summary.md` at scaffold time; § 4 of
-`iterate-ml-experiment` rewrites it on first outcome and keeps
-it fresh.
-
-`scratch/` is the agent's traceability folder. The agent uses
-it for any *ad-hoc* multi-line Python that isn't a reusable
-artifact — inspecting a persisted skore report, walking
-`report.diagnosis()` to fill a Status block, extracting a
-metric. The convention — file naming, append-only-after-success,
-overwrite-on-error within the same loop, the ≤2-line inline
-cap — lives in **`python-api` § "Scratch traceability"** (the
-canonical source). Contents are gitignored in their entirety;
-there is no tracked `scratch/README.md` (rules of this
-importance must live in a skill that's loaded into context at
-use-time, not in a file on disk the agent might forget to
-read). This skill only owns the *location* of `scratch/` in
-the workspace layout; it does not re-document the convention.
+- **No `data/`** — user decides where data comes from. `data.py`
+  exposes a loader; the path is a parameter.
+- **No `models/`** — persistence is out of scope at this stage.
 
 If the user asks for `data/` or `models/` later, add them — don't
 pre-empt.
 
-## Files in `src/<pkg>/`
+## File-creation rules
 
-Each file has a narrow contract; respect it so experiments compose
-predictably.
+### Design note first, then code
 
-- **`__init__.py`** — exposes `PROJECT_ROOT`, the absolute path to
-  the project root, derived from `__file__` and not from the CWD.
-  Any module or experiment that needs to resolve a project-relative
-  path imports `PROJECT_ROOT` instead of hard-coding `"data"` /
-  `"./data"` / similar. Default body in `templates/src___init__.py`:
+Before creating `experiments/NN_<short_name>.py`, the matching
+`journal/NN_<short_name>.md` must exist and have been validated
+by the user. Design-note content is owned by
+`iterate-ml-experiment`; this skill only enforces the pairing —
+same stem, planned-before-coded.
 
-  ```python
-  from pathlib import Path
-  PROJECT_ROOT = Path(__file__).resolve().parents[2]
-  ```
+### Three-way stem pairing
 
-  This relies on the package being **editable-installed** (so
-  `__file__` lives under the source tree, not in `site-packages`).
-  Editable install is wired by `python-env-manager` § "Editable
-  workspace package".
-- **`data.py`** — loaders, the call to materialize `X`, `y`, and
-  any `split_kwargs` (groups, time, …) attached at the X marker.
-  Pipeline mechanics: see `build-ml-pipeline`.
-- **`features.py`** — feature functions and transformers. Pipeline
-  mechanics: see `build-ml-pipeline`.
-- **`pipeline.py`** — the learner declaration (typically a
-  `SkrubLearner`). Returns the unfit object. The `build_learner`
-  signature should expose the source-binding preview as an
-  **optional** keyword (e.g. `data_dir_preview: str | Path | None
-  = None`) — see `build-ml-pipeline` rule 2 — so the experiment
-  script can pass an absolute path resolved from `PROJECT_ROOT`.
-- **`evaluate.py`** — **only** the inputs to `skore.evaluate`:
-  - the cross-validator (`splitter = ...`),
-  - optional metric overrides if the user has explicitly asked for
-    them.
+Every experiment is identified by `NN_<short_name>` in three places:
 
-  `evaluate.py` does **not** call `skore.evaluate`, does **not**
-  open a `skore.Project`, does **not** persist anything. Those
-  steps belong in the experiment script. See
-  `evaluate-ml-pipeline` for cross-validator selection.
+```
+journal/NN_<short_name>.md            (design note)
+experiments/NN_<short_name>.py        (script)
+tests/smoke/test_NN_<short_name>.py   (smoke test)
+```
 
-## Experiments — one file per experiment
+By the time it can flip to `done` in `JOURNAL.md`, all three exist.
+The design note is written first (`iterate-ml-experiment`); the
+script lands on approval; the smoke test body is filled by
+`smoke-test-ml-pipeline`. The `test_` prefix is pytest convention;
+the `NN_<short_name>` portion matches exactly.
 
-Experiments live under `experiments/` as **`.py` scripts with
-`# %%` cell markers**, *not* `.ipynb` notebooks. The `# %%`
-convention is recognized by VS Code, PyCharm, and `jupytext`, so
-the file opens as a notebook in Jupyter while staying clean under
-version control.
+### New experiment → new file. Iterating → ask first.
 
-### File-creation rule
+Default: new file. `02_text_encoder.py`, `03_grouped_cv.py`. The
+numeric prefix preserves iteration order under `ls`.
 
-- **Design note first, then code.** Before creating
-  `experiments/NN_short_name.py`, the matching
-  `journal/NN_short_name.md` must exist and have been validated by the
-  user. Design-note content (sections, validation checklist) is owned by
-  `iterate-ml-experiment`; this skill only enforces the
-  pairing — same stem, planned-before-coded.
-- **Three-way stem pairing.** Every experiment is identified by a
-  single `NN_<short_name>` stem that appears in **three** places:
+When the user says "let's tweak experiment 02" or "iterate on the
+text encoder", **do not assume**. Fire `AskUserQuestion`:
 
-  ```
-  journal/NN_<short_name>.md                       (design note)
-  experiments/NN_<short_name>.py                (script)
-  tests/smoke/test_NN_<short_name>.py           (smoke test)
-  ```
+> Should this be a new experiment file (e.g.
+> `04_text_encoder_v2.py`) or an in-place edit of
+> `02_text_encoder.py`?
 
-  All three exist for every experiment by the time it can flip
-  to `done` in `JOURNAL.md`. The design note is written first
-  (`iterate-ml-experiment`); the script and the test are placed
-  by this skill on design-note approval; the smoke test body is filled
-  in by `smoke-test-ml-pipeline`. The `test_` prefix on the
-  test file is the pytest naming convention; the
-  `NN_<short_name>` portion matches the experiment exactly.
-- **New experiment → new file.** Default to creating a new file:
-  `NN_short_name.py` (e.g. `02_text_encoder.py`,
-  `03_grouped_cv.py`). The numeric prefix preserves the iteration
-  order in `ls`. The companion `journal/NN_short_name.md` and
-  `tests/smoke/test_NN_short_name.py` share the exact same stem.
-- **Iterating on an existing experiment → ask first.** When the
-  user says "let's tweak experiment 02" or "iterate on the text
-  encoder run", do not assume. Ask:
-  > Should this be a new experiment file (e.g.
-  > `04_text_encoder_v2.py`) or an in-place edit of
-  > `02_text_encoder.py`?
+In-place edits **overwrite the prior result in the skore Project**
+if the same key is reused — flag this if the user picks in-place.
+In-place also requires revisiting the matching smoke test (route to
+`smoke-test-ml-pipeline`).
 
-  In-place edits overwrite the prior result in the skore Project
-  if the same key is reused — flag this if the user picks
-  in-place. **In-place edits also require revisiting the matching
-  smoke test** (`tests/smoke/test_02_text_encoder.py`), since
-  the test asserts properties of the pipeline shape; route to
-  `smoke-test-ml-pipeline` to confirm the assertions still hold.
+## Decision flow (compact — full version in references/scaffold_steps.md)
 
-### What an experiment script does
-
-Every experiment script follows the same shape: open the
-`skore.Project`, build the learner, evaluate it, store the
-report. Use `templates/experiment.py` as the starting content —
-copy it, rename it, adapt the imports.
-
-The script is responsible for:
-
-1. opening (or attaching to) the `skore.Project` rooted at
-   `reports/` (see "Project parameters" below),
-2. importing the learner from `<pkg>.pipeline` and the CV from
-   `<pkg>.evaluate`,
-3. calling `skore.evaluate(...)`,
-4. calling `project.put("<experiment-key>", report)` to persist
-   the report under a stable key.
-
-Confirm exact signatures via `python-api` before writing the call;
-do not guess parameter names from memory. Cross-validator choice
-is in `evaluate-ml-pipeline`.
-
-**Experiment scripts stay clean of agent-only debug prints.**
-`print(report)` / `print(<intermediate>)` / `print("checking
-...")` added *for the agent's benefit* don't belong in
-`experiments/NN_*.py` — once the run is recorded they're noise
-to anyone reading the script later. When the agent needs to
-inspect what an experiment produced (metrics, residuals,
-calibration, anything from `report.diagnosis()`), it writes a
-`scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` script that opens
-the persisted skore Project and pulls what it needs. The
-experiment script's job is `build → evaluate → put`; everything
-downstream is the agent's scratch problem, not the script's.
-
-One exception where a bare expression is legitimate in scripts:
-a `report` line in jupytext context (Layer 4 of the `# %%`
-notebook idiom) renders the report inline when the script is
-opened as a notebook — that's not a debug print, it's a
-notebook-display side effect with no runtime cost as a CLI
-script.
-
-### Project parameters
-
-The `skore.Project` constructor takes — at minimum — three things
-the experiment script must set explicitly:
-
-| Parameter | Value to use |
-|---|---|
-| `workspace` | `"reports"` (the folder defined in the layout above; the Project writes its store inside it) |
-| `name` | a short, stable project name **inferred from context** — see below |
-| `mode` | `"local"` by default |
-
-**Picking `name`.** Do not leave it as a placeholder. Derive it
-from whatever is most identifying in the project, in this order:
-1. the project / package name from `pyproject.toml` or
-   `pixi.toml`;
-2. the dataset name if the loader makes it obvious (e.g.
-   `"adult-census"`, `"taxi-trips"`);
-3. the working-directory name as a last resort.
-
-Use kebab-case, keep it short, and **reuse the same `name` across
-all experiments in the workspace** — that's what lets every
-experiment's report land in the same Project for later comparison.
-If the user has already opened a Project earlier in the
-conversation with a different `name`, keep theirs.
-
-**`mode="local"` is the current default.** Don't switch to other
-modes (hub, mlflow) unless the user asks. Consult `python-api` for
-the supported values and the full constructor signature.
-
-### Experiment key convention
-
-Use the file's stem as the report key (e.g.
-`01_baseline.py` → `"01_baseline"`). One file → one key → one
-report. This is what makes `ComparisonReport` across experiments
-trivial later.
-
-## Decision flow
-
-1. Read the project root. Does an ML layout already exist
-   (signals above)?
-   - **Yes** → glue. Add new files in the existing folders with
-     names matching the existing pattern. Stop.
-   - **No** → scaffold the default layout. Continue.
-2. **Resolve the package name (G-PKG-NAME) before touching any
-   manifest.** Two sub-cases:
-   - **A manifest already exists** with `[project].name = <name>`:
-     fire an `AskUserQuestion` — *"Keep package name `<name>` for
-     `src/<pkg>/`?"* — with options `keep` / `rename to <other>`.
-     Reading the manifest alone is **not** sufficient; the
-     confirmation is the gate pass. Record the answer in
-     `journal/JOURNAL.md` Status `Workspace decisions`.
-   - **No manifest yet**: fire an `AskUserQuestion` with the
-     project-root folder name (snake_case) as the proposed
-     default and let the user confirm or override. Record the
-     answer in `Workspace decisions`. **Do not** run `pixi init`
-     / `uv init` / `poetry init` / any manager bootstrap before
-     this gate passes — the manager's `init` writes a name based
-     on the folder and then reading "name is in the manifest"
-     back is the circular silent pick this rule forbids.
-
-   Free-text resolution applies: a user message that names the
-   package directly ("call it `pricing_models`", "use `stock`")
-   resolves the gate; phrasing that doesn't name the package
-   ("you pick", "the obvious one", "go fast") does NOT — fall
-   through to the structured ask.
-
-3. **Drop `pyproject.toml`** at the project root from
-   `templates/pyproject.toml`, substituting `<pkg>` with the name
-   confirmed in step 2. Skip if a `pyproject.toml` already
-   declares the package via `[project]` + a build backend's
-   package-discovery section. Then **hand off to
-   `python-env-manager` § "Editable workspace package"** to wire
-   the editable install for the project's manager (e.g. `pixi add
-   --pypi --editable .`). Do not run the install command yourself
-   — that's the env-manager skill's job, and G-ENV-MGR (the
-   manager pick itself) must pass there before any install runs.
-4. Create `src/<pkg>/` with the skeletons. Use
-   `templates/src___init__.py` for `__init__.py` (carries
-   `PROJECT_ROOT`) and `templates/src_*.py` for `data.py`,
-   `features.py`, `pipeline.py`, `evaluate.py`.
-5. Create `experiments/` and seed it with `01_baseline.py` from
-   `templates/experiment.py`, **substituting `<pkg>`** with the
-   package name resolved in step 2 (same substitution as step 3
-   for `pyproject.toml`). This is load-bearing: the `<pkg>`
-   literals appear in `from <pkg> import ...` statements and are
-   Python syntax errors if left in place — `python-code-style`'s
-   ruff pass at step 12 will fail on them otherwise. The other
-   placeholders in the template (`<short title>`, `YYYY-MM-DD`,
-   `<project-name>`, `<experiment-key>`) sit inside markdown
-   comments or string literals and don't break syntax; leave
-   them for `iterate-ml-experiment` § 3 to fill in when the
-   experiment script is rewritten with real content after the
-   implementation chain.
-6. Create the **empty** `tests/smoke/` folder. Do **not** drop a
-   placeholder test file here — `test-ml-pipeline`'s Stop condition
-   forbids a test file before the matching design note is approved, and
-   no design note exists yet at scaffold time. Per-experiment placeholders
-   land later via `test-ml-pipeline` (called from
-   `iterate-ml-experiment` § 3 once a design note is approved). Verify
-   pytest is on the manifest (per `data-science-python-stack`
-   § Tier 1); if not, hand off to `python-env-manager` to add it.
+1. **Read project root.** Detection table matches → glue (stop).
+   No match → fresh scaffold (continue).
+2. **G-PKG-NAME** structured ask. Folder name in snake_case is the
+   proposed default; user confirms or overrides. Record in
+   `Workspace decisions`. **No manager `init` until this passes.**
+3. **Drop `pyproject.toml`** from `templates/pyproject.toml`,
+   substituting `<pkg>`. Hand off to `python-env-manager` for the
+   editable install — don't run install commands yourself
+   (G-ENV-MGR must pass there first).
+4. Create `src/<pkg>/` with skeletons from `templates/src_*.py`
+   and `templates/src___init__.py`.
+5. Create `experiments/` and seed `01_baseline.py` from
+   `templates/experiment.py`, substituting `<pkg>` (the
+   `from <pkg> import ...` literals are load-bearing; the other
+   placeholders sit in markdown / strings and are filled by
+   `iterate-ml-experiment` § 3 later).
+6. Create **empty** `tests/smoke/`. Do NOT drop placeholder test
+   files — `test-ml-pipeline`'s Stop condition forbids tests
+   before the matching design note is approved. Verify pytest is
+   on the manifest.
 7. Create `journal/` with a one-line **placeholder** `JOURNAL.md`
-   (literally `# PLAN\n\n<!-- placeholder; populated by iterate-ml-experiment on first invocation -->`).
-   This skill **does not** read `iterate-ml-experiment`'s
-   template — each skill owns its own template surface. Hand
-   off immediately; `iterate-ml-experiment` rewrites `JOURNAL.md`
-   from its own `templates/JOURNAL.md` and writes the matching
-   `journal/01_baseline.md`, validated **before** the experiment
-   script runs.
-8. Create `overview/` and drop the **placeholder `summary.md`**
-   from `templates/summary.md`. The placeholder documents the
-   expected structure (project narrative + cross-experiment
-   metrics table + per-experiment Status blocks) and carries a
-   `_No experiments recorded yet._` line so the file is
-   meaningful at scaffold time. `iterate-ml-experiment` § 4
-   rewrites it by hand on every outcome recording (the agent
-   runs a scratch probe to extract metrics + Status blocks,
-   then writes a curated narrative). **No Python script in
-   `overview/`** — `summary.md` is agent-authored prose, not
-   script output.
-9. Create `scratch/` (empty). Do **not** drop a `README.md`
-   inside — the scratch convention is owned by `python-api`
-   § "Scratch traceability" and lives in that skill, not in a
-   file on disk. The folder itself is the agent's ad-hoc
-   scratch space; its contents are gitignored entirely via
-   step 11's `.gitignore` step.
-10. Create `reports/` (empty — skore writes into it on first run).
-11. **Touch `.gitignore`.** If the project root has no
-   `.gitignore`, drop `templates/.gitignore` (with the
-   `reports/` and `scratch/` lines included by default). If a
-   `.gitignore` already exists, **do not overwrite it** —
-   instead, scan for the entries this stack expects
-   (`__pycache__/`, `.pixi/`, `*.egg-info/`, `mlruns/` +
-   `mlartifacts/`, `*.db` + `*.db-journal`, `*.ipynb`,
-   `scratch/`) and surface any missing ones to the user as a
-   suggested patch (don't auto-edit). The `reports/` line is
-   **always asked** — some teams commit their skore store
-   selectively, others gitignore it entirely; never default
-   without checking. The `scratch/` line is the **default**
-   (matches the agent-scratch traceability rule); ask before
-   omitting. There is no `!scratch/README.md` exception —
-   `scratch/` is gitignored in its entirety.
-12. **Drop `ruff.toml` and run the first ruff pass.** Hand off
-    to `python-code-style` § "Initial setup". That skill owns its
-    own `templates/ruff.toml`, writes it to the project root, and
-    runs `ruff format` + `ruff check` against the modules dropped
-    at step 4. **Do not copy `templates/ruff.toml` by hand and
-    run ruff yourself** — invoking the skill is what teaches the
-    agent the NumPyDoc docstring convention (parameter shape in
-    the type slot, `Parameters` / `Returns` / `Raises` sections,
-    blank line after the one-line summary); the config alone
-    only enforces ruff's `D`-rules, which a one-line docstring
-    silently satisfies. The skill is mandatory at this step;
-    skipping it is the most common way agents drop the NumPyDoc
-    contract on Day 1.
-13. Hand back to the relevant sibling skill: `build-ml-pipeline`
-    for what goes inside `pipeline.py`, `evaluate-ml-pipeline` for
-    what `splitter` should be in `evaluate.py`,
-    `iterate-ml-experiment` for the design-note content and the
-    conversational loop with the user, `test-ml-pipeline` /
-    `smoke-test-ml-pipeline` for the body of
-    `tests/smoke/test_*.py`.
+   (`# PLAN\n\n<!-- placeholder; populated by iterate-ml-experiment -->`).
+   `iterate-ml-experiment` rewrites it from its own template.
+8. Create `overview/` and drop the placeholder `summary.md` from
+   `templates/summary.md`. `iterate-ml-experiment` § 4 rewrites by
+   hand on every outcome recording. **No Python in `overview/`** —
+   `summary.md` is agent-authored prose, not script output.
+9. Create empty `scratch/`. **Do NOT** drop a README — the scratch
+   convention is owned by `python-api` § "Scratch traceability".
+10. Create empty `reports/` (skore writes into it on first run).
+11. **Touch `.gitignore`.** Drop `templates/.gitignore` if none.
+    If one exists, surface missing entries as a suggested patch;
+    don't auto-edit. **`reports/` is always asked.**
+12. **Hand off to `python-code-style` § "Initial setup"** to drop
+    `ruff.toml` and run the first ruff pass. Invoking the skill is
+    what teaches the NumPyDoc convention — copying the template by
+    hand silently drops it.
+13. Hand back to the relevant sibling: `iterate-ml-experiment` for
+    design-note content, etc.
 
-## Templates
+## Files in src/<pkg>/
 
-- `templates/experiment.py` — the recurring artifact. Copied for
-  every new experiment.
-- `templates/summary.md` — the placeholder `summary.md` dropped
-  at scaffold time under `overview/summary.md`. Documents the
-  expected structure (project narrative + cross-experiment
-  metrics + per-experiment Status blocks). Rewritten in full by
-  `iterate-ml-experiment` § 4 after the first outcome recording.
-- `templates/pyproject.toml` — declares the `src/<pkg>/` package as
-  installable; runtime deps stay in the manager's manifest. Dropped
-  once at scaffold time. Pair with `python-env-manager` § "Editable
-  workspace package" to wire the install.
-- `templates/src___init__.py` — the package's `__init__.py`,
-  carrying `PROJECT_ROOT` for CWD-independent path resolution.
-- `templates/src_data.py`, `templates/src_features.py`,
-  `templates/src_pipeline.py`, `templates/src_evaluate.py` — the
-  one-time skeletons for the package modules.
-- `templates/.gitignore` — the one-time `.gitignore` dropped at
-  scaffold time when the project root has none. If a
-  `.gitignore` already exists, **don't overwrite** — surface
-  missing entries as a suggested patch instead.
+Each has a narrow contract:
 
-Copy, don't rewrite. The templates encode the contracts above
-(especially the narrow scope of `evaluate.py`).
+- **`__init__.py`** — exposes `PROJECT_ROOT` (absolute, derived
+  from `__file__`, not CWD). Any module that needs a
+  project-relative path imports `PROJECT_ROOT` instead of
+  hard-coding `"data"` / `"./data"`. Requires editable install
+  (so `__file__` lives in the source tree).
+- **`data.py`** — loaders, materialization of `X`, `y`, and any
+  `split_kwargs` (groups, time, …) at the X marker. Pipeline
+  mechanics: `build-ml-pipeline`.
+- **`features.py`** — feature functions and transformers.
+- **`pipeline.py`** — the learner declaration (a `SkrubLearner`).
+  `build_learner` exposes the source-binding preview as an
+  optional keyword (`data_dir_preview=None`) so the experiment
+  script can pass an absolute path from `PROJECT_ROOT`.
+- **`evaluate.py`** — **only** the inputs to `skore.evaluate`:
+  the cross-validator (`splitter = ...`), optional metric
+  overrides. Does **not** call `skore.evaluate`, does **not**
+  open a `skore.Project`, does **not** persist anything. Those
+  belong in the experiment script.
+
+## Experiment scripts — `experiments/NN_*.py`
+
+`# %%` cell markers, not `.ipynb`. The convention is recognized by
+VS Code, PyCharm, and `jupytext`.
+
+**What the experiment script does** (template:
+`templates/experiment.py` — copy, rename, adapt):
+
+1. Open / attach to the `skore.Project` at `reports/`.
+2. Import the learner from `<pkg>.pipeline` and CV from
+   `<pkg>.evaluate`.
+3. Call `skore.evaluate(...)`.
+4. Call `project.put("<experiment-key>", report)`.
+
+Confirm signatures via `python-api`. Cross-validator choice is
+`evaluate-ml-pipeline`.
+
+**Experiment scripts stay clean of agent-only `print(...)`.**
+Inspection lives in `scratch/`. One exception: a bare `report`
+expression in jupytext context — that's a notebook-display side
+effect, not a debug print.
+
+**Experiment key convention** — the file's stem (e.g.
+`01_baseline.py` → `"01_baseline"`). One file → one key → one
+report.
+
+**Project parameters.** `skore.Project(workspace="reports",
+name=..., mode="local")`. Pick `name` from project / package name
+(`pyproject.toml`), then dataset name, then folder name. Use
+kebab-case, reuse across experiments. `mode="local"` by default;
+don't switch to other modes without explicit user ask.
 
 ## Companion skills
 
 - **`iterate-ml-experiment`** — owns `journal/JOURNAL.md` and the
-  per-experiment `journal/NN_*.md` design notes. This skill places
-  the empty `journal/` folder; that skill fills it. Hand off any time
-  a new experiment is being proposed, before the experiment
-  script is written.
+  per-experiment design notes. This skill places the empty
+  `journal/`; that skill fills it.
 - **`build-ml-pipeline`** — what goes inside `pipeline.py`,
-  `features.py`, `data.py` (declarative side).
+  `features.py`, `data.py`.
 - **`evaluate-ml-pipeline`** — what `splitter` should be in
   `evaluate.py`, and how the experiment script calls
   `skore.evaluate`.
-- **`test-ml-pipeline`** — owns `tests/<category>/` layout and
-  the stem-pairing rule between an experiment and its tests.
-  Lightweight router; dispatches to per-category subskills.
-- **`smoke-test-ml-pipeline`** — fills the placeholder smoke
-  test body once the matching design note is approved. The smoke test
-  is required for every experiment per
-  `iterate-ml-experiment` § 3 / § 4.
+- **`test-ml-pipeline`** — owns `tests/<category>/` layout +
+  stem-pairing rule.
+- **`smoke-test-ml-pipeline`** — fills the smoke-test body once
+  the matching design note is approved.
 - **`python-api`** — `skore.Project`, `skore.evaluate`,
-  `project.put` signatures. Don't guess from memory.
-- **`python-api`** / **`python-api`** — symbols used inside the
-  `src/<pkg>/` files.
-- **`python-env-manager`** — detection + install commands for the
-  project's environment manager (pixi / uv / poetry / hatch / conda
-  / pip+venv). **Invoke whenever** Tier 1 (sklearn / skrub / skore)
-  is missing, the tabular-library install needs to run, or a fresh
-  workspace needs bootstrapping (default recommendation: pixi).
-- **`data-science-python-stack`** — *what* to install (Tier 1
-  mandatory + Tier 2 user-choice + Tier 3 optional). Pair with
+  `project.put` signatures. Don't guess.
+- **`python-env-manager`** — detection + install commands. Invoke
+  whenever Tier 1 is missing, tabular install is needed, or fresh
+  scaffolding (default pixi).
+- **`data-science-python-stack`** — *what* to install. Pair with
   `python-env-manager` for the *how*.
-- **`python-code-style`** — drops `ruff.toml` at the project root
-  and runs the first ruff pass against the modules placed at
-  step 4 of the Decision flow. **Invoke at scaffold time** (per
-  Decision flow step 12); the ruff config alone is necessary
-  but not sufficient — only the skill body teaches the NumPyDoc
-  docstring convention this stack expects. Copying the template
-  by hand and running ruff directly is the failure mode.
+- **`python-code-style`** — drops `ruff.toml` and runs first
+  ruff pass (Decision flow step 12). **Invoke at scaffold time** —
+  copying the template by hand drops the NumPyDoc contract.
+
+## Templates
+
+- `templates/experiment.py` — recurring artifact, copied per new
+  experiment.
+- `templates/summary.md` — placeholder dropped at scaffold;
+  rewritten by `iterate-ml-experiment` § 4.
+- `templates/pyproject.toml` — declares `src/<pkg>/` as
+  installable; runtime deps in manager's manifest.
+- `templates/src___init__.py` — package init with
+  `PROJECT_ROOT`.
+- `templates/src_data.py` / `src_features.py` / `src_pipeline.py` /
+  `src_evaluate.py` — one-time skeletons.
+- `templates/.gitignore` — dropped at scaffold if none exists.
+
+**Copy, don't rewrite.** Section names and structure encode the
+contracts.
+
+## References (load on demand)
+
+- `references/scaffold_steps.md` — full prose elaboration of the
+  13-step Decision flow with examples and rationale.
