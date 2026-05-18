@@ -20,6 +20,10 @@ dist/
 # skore Project store — large/binary; commit selectively if at all
 reports/
 
+# agent scratch space — gitignored entirely; convention lives in the
+# `python-api` skill (§ "Scratch traceability"), not in an on-disk README
+scratch/
+
 # mlflow filesystem fallback (sqlite backend is .db; keep both ignored to be safe)
 mlruns/
 mlartifacts/

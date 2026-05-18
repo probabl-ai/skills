@@ -82,8 +82,8 @@ read the report. The pipeline declaration is out of scope (see
   `iterate-ml-experiment` § 4).
 - **Multi-line probes go to `scratch/`, not inline.** Any
   Python investigation longer than 2 lines lands in
-  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per the
-  workspace's `scratch/README.md`), not in
+  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per `python-api`
+  § "Scratch traceability"), not in
   `pixi run python -c "..."`. The 2-line cap is contract;
   ignoring it defeats the traceability the scratch folder
   exists for. Common shapes that trigger this rule during

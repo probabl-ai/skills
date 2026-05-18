@@ -200,8 +200,9 @@ Note the clean separation:
 - **`splitter`** is the project's chosen cross-validator (the
   walk-forward splitter in `src/load_forecast/evaluate.py`).
 - **No agent-only `print` calls** — inspection is the agent's
-  scratch problem (see `scratch/README.md`), not the script's. The
-  bare `report` line is jupytext display, not a debug print.
+  scratch problem (see `python-api` § "Scratch traceability"),
+  not the script's. The bare `report` line is jupytext display,
+  not a debug print.
 
 ## When `evaluate` is too coarse — escalate
 

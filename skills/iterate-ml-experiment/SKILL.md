@@ -849,12 +849,12 @@ script.** The experiment script's job ends at
 `project.put(...)`. To pull metrics, walk the diagnosis, or
 sanity-check any post-run state, write a
 `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and run it (see
-`scratch/README.md` for the full convention). Inline
-`pixi run python -c "..."` is reserved for ≤ 2 lines; anything
-longer goes to `scratch/`. Do **not** edit the experiment
-script to add agent-only `print` calls — the script is the
-durable record of what was run; the inspection trace lives
-in `scratch/`.
+`python-api` § "Scratch traceability" for the full
+convention). Inline `pixi run python -c "..."` is reserved
+for ≤ 2 lines; anything longer goes to `scratch/`. Do **not**
+edit the experiment script to add agent-only `print` calls —
+the script is the durable record of what was run; the
+inspection trace lives in `scratch/`.
 
 **If not accessible** (run was on a different machine, batch
 system, the script crashed before `project.put`, …): **do not

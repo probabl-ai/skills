@@ -274,8 +274,9 @@ project/
 ├── overview/               # cross-experiment project digest
 │   └── summary.md          # agent-authored narrative; refreshed by
 │                           # `iterate-ml-experiment` § 4 via scratch probe
-├── scratch/                # agent-only scratch space (gitignored except README)
-│   └── README.md           # documents the timestamped-filename convention
+├── scratch/                # agent-only scratch space (gitignored entirely;
+│                           # convention lives in `python-api` § "Scratch
+│                           # traceability", not in an on-disk README)
 └── reports/                # skore Project lives here
 ```
 
@@ -332,16 +333,15 @@ it fresh.
 it for any *ad-hoc* multi-line Python that isn't a reusable
 artifact — inspecting a persisted skore report, walking
 `report.diagnosis()` to fill a Status block, extracting a
-metric. The convention is **one file per probe**, named
-`scratch/<YYYY-MM-DD>_<HHMMSS>_<short-name>.py`. Files are
-**append-only after success** — once a script executes cleanly,
-the file is frozen; re-probes use a fresh timestamp.
-**Overwriting within the same loop is OK only when the prior
-run errored** (typo, wrong API) — the agent patches and re-runs
-until it succeeds, and only the working version is kept.
-Contents are gitignored; only the `scratch/README.md` is tracked
-(it documents the convention for human readers). This rule
-complements the experiment-script cleanliness rule below.
+metric. The convention — file naming, append-only-after-success,
+overwrite-on-error within the same loop, the ≤2-line inline
+cap — lives in **`python-api` § "Scratch traceability"** (the
+canonical source). Contents are gitignored in their entirety;
+there is no tracked `scratch/README.md` (rules of this
+importance must live in a skill that's loaded into context at
+use-time, not in a file on disk the agent might forget to
+read). This skill only owns the *location* of `scratch/` in
+the workspace layout; it does not re-document the convention.
 
 If the user asks for `data/` or `models/` later, add them — don't
 pre-empt.
@@ -598,28 +598,28 @@ trivial later.
    then writes a curated narrative). **No Python script in
    `overview/`** — `summary.md` is agent-authored prose, not
    script output.
-9. Create `scratch/` and drop `templates/scratch_README.md`
-   inside as `scratch/README.md`. The folder is the agent's
-   ad-hoc scratch space (one file per probe, timestamped, see
-   the README for the full convention); only the README is
-   tracked in git, the rest is ignored via step 11's
-   `.gitignore` step.
+9. Create `scratch/` (empty). Do **not** drop a `README.md`
+   inside — the scratch convention is owned by `python-api`
+   § "Scratch traceability" and lives in that skill, not in a
+   file on disk. The folder itself is the agent's ad-hoc
+   scratch space; its contents are gitignored entirely via
+   step 11's `.gitignore` step.
 10. Create `reports/` (empty — skore writes into it on first run).
 11. **Touch `.gitignore`.** If the project root has no
    `.gitignore`, drop `templates/.gitignore` (with the
-   `reports/` and `scratch/*` + `!scratch/README.md` lines
-   included by default). If a `.gitignore` already exists,
-   **do not overwrite it** — instead, scan for the entries
-   this stack expects (`__pycache__/`, `.pixi/`, `*.egg-info/`,
-   `mlruns/` + `mlartifacts/`, `*.db` + `*.db-journal`,
-   `*.ipynb`, `scratch/*` + `!scratch/README.md`) and surface
-   any missing ones to the user as a suggested patch (don't
-   auto-edit). The `reports/` line is **always asked** — some
-   teams commit their skore store selectively, others gitignore
-   it entirely; never default without checking. The
-   `scratch/*` + `!scratch/README.md` pair is the **default**
+   `reports/` and `scratch/` lines included by default). If a
+   `.gitignore` already exists, **do not overwrite it** —
+   instead, scan for the entries this stack expects
+   (`__pycache__/`, `.pixi/`, `*.egg-info/`, `mlruns/` +
+   `mlartifacts/`, `*.db` + `*.db-journal`, `*.ipynb`,
+   `scratch/`) and surface any missing ones to the user as a
+   suggested patch (don't auto-edit). The `reports/` line is
+   **always asked** — some teams commit their skore store
+   selectively, others gitignore it entirely; never default
+   without checking. The `scratch/` line is the **default**
    (matches the agent-scratch traceability rule); ask before
-   omitting.
+   omitting. There is no `!scratch/README.md` exception —
+   `scratch/` is gitignored in its entirety.
 12. **Drop `ruff.toml` and run the first ruff pass.** Hand off
     to `python-code-style` § "Initial setup". That skill owns its
     own `templates/ruff.toml`, writes it to the project root, and
@@ -650,10 +650,6 @@ trivial later.
   expected structure (project narrative + cross-experiment
   metrics + per-experiment Status blocks). Rewritten in full by
   `iterate-ml-experiment` § 4 after the first outcome recording.
-- `templates/scratch_README.md` — dropped once at scaffold time
-  as `scratch/README.md`. Documents the agent's scratch-folder
-  convention (timestamped filenames, gitignored contents,
-  append-only-after-success) for human readers of the repo.
 - `templates/pyproject.toml` — declares the `src/<pkg>/` package as
   installable; runtime deps stay in the manager's manifest. Dropped
   once at scaffold time. Pair with `python-env-manager` § "Editable

@@ -117,11 +117,10 @@ surface the gap to the user.
 - **Multi-line probes go to `scratch/`, not inline.** Walking
   `report.diagnosis()` and pulling its actionable rows grows
   multi-line fast. Any payload longer than 2 lines lands in
-  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per the
-  workspace's `scratch/README.md`), not in `pixi run python -c
+  `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` (per `python-api`
+  § "Scratch traceability"), not in `pixi run python -c
   "..."`. The 2-line cap is contract; ignoring it defeats the
-  traceability the scratch folder exists for. See `python-api`
-  § "Scratch traceability" for the file layout.
+  traceability the scratch folder exists for.
 
 ## The inspection loop
 

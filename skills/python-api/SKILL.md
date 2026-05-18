@@ -104,10 +104,16 @@ extracts in the cache.
   across turns.
 - **Multi-line probes go to `scratch/`, not inline.** Any Python
   investigation longer than 2 lines lands in `scratch/<ts>_<short>.py`
-  (per the workspace's `scratch/README.md`), not in `pixi run
+  (per § "Scratch traceability" below), not in `pixi run
   python -c "..."`. Applies to multi-symbol `inspect.signature`
   walks, long `dir(...)` listings, docstring extracts that span
-  several names. The 2-line cap is contract.
+  several names. The 2-line cap is contract. This skill — not a
+  `scratch/README.md` on disk — is the canonical source for the
+  ad-hoc-probe and API-cache conventions; the workspace's
+  `scratch/` directory exists but **carries no agent-facing
+  documentation**, because rules of this importance must live
+  in the skill that's loaded into context at use-time, not in
+  a gitignored file the agent has to remember to read.
 - **Never edit the experiment script to add agent-only `print`
   calls** as a way to "look at" what the pipeline produces.
   Inspection goes in `scratch/` per `organize-ml-workspace` §
@@ -670,18 +676,100 @@ API.
 
 ## Scratch traceability — ad-hoc probes vs. the API cache
 
-Two structured uses of `scratch/`:
+**This section is the canonical source for the `scratch/`
+convention.** Cross-refs in other skills (`build-ml-pipeline`,
+`evaluate-ml-pipeline`, `iterate-ml-experiment`,
+`iterate-from-skore`, `smoke-test-ml-pipeline`) point here. The
+workspace's `scratch/` directory does **not** carry a
+`README.md` — rules of this importance live in the skill that's
+loaded into context at use-time, not in a gitignored file on
+disk that the agent has to remember to read.
 
-- **`scratch/<ts>_<short>.py`** — ad-hoc, one-file-per-probe,
-  timestamped. Multi-line `inspect` walks, multi-symbol
-  dump-and-grep, sanity-checks of report state. Append-on-success
-  (per `scratch/README.md`).
-- **`scratch/api/<lib>/<version>/<topic>.md`** — structured cache
-  of API extracts. Topic-organized, version-keyed, NOT
-  timestamped. The first line is the source URL.
+Two structured uses of `scratch/`, both gitignored in their
+entirety:
 
-Both subtrees are gitignored. The README at `scratch/README.md`
-covers the convention.
+### Ad-hoc probes — `scratch/<YYYY-MM-DD>_<HHMMSS>_<short-name>.py`
+
+- **One file per probe.** Example:
+  `scratch/2026-05-14_143012_extract_02_metrics.py`. Multi-line
+  `inspect` walks, multi-symbol dump-and-grep, sanity-checks of
+  report state, data-schema inspection, metric extraction.
+- **Timestamped** so files sort chronologically and the user can
+  see what was probed when.
+- **Append-only after success.** Once a scratch script has
+  executed cleanly, the file is frozen. Re-probes start a new
+  file (new timestamp).
+- **Overwrite-on-error within the same loop is OK.** If a script
+  errors out (typo, wrong API), the agent edits the same file
+  and re-runs until it succeeds — only the working version is
+  kept.
+- **Inline `pixi run python -c "..."` is reserved for ≤ 2
+  lines.** Any longer → a scratch file. The 2-line cap is
+  contract; ignoring it defeats the traceability the scratch
+  folder exists for.
+
+### API doc cache — `scratch/api/<lib>/<version>/<topic>.md`
+
+- **Version subfolder == `<pkg>.__version__` exactly** (e.g.
+  `scratch/api/skrub/0.9.0/`, `scratch/api/skore/0.18.0/`).
+- **Topic file** mirrors the docs URL slug, snake_cased
+  (`data_ops.md`, `cross_validation.md`, `tabular_pipeline.md`).
+  One topic per file.
+- **First line is the source URL** (Shape 3) or `inspect:` ref
+  (Shape 1) — see § "Bootstrap API cache" → "File contract" for
+  the full four-section shape.
+- **Append-on-success.** Same as ad-hoc probes. Replace only on a
+  version bump (the version-subfolder convention handles this
+  for free).
+- **Not timestamped** — topic-organized, not chronological. This
+  is the one structured exception inside `scratch/`.
+
+### When the agent uses `scratch/`
+
+- **Yes** — multi-line Python that isn't a reusable artifact:
+  inspect a skore report, sanity-check a dataframe shape, walk
+  a diagnosis, pull metrics for a Status block.
+- **No** — reusable code (experiment / smoke test) goes to its
+  proper folder (`experiments/` / `tests/smoke/`).
+- **No** — re-fitting / re-evaluating / `project.put`-ing from
+  scratch. `experiments/NN_*.py` is the **sole producer** of
+  reports in the workspace's skore Project; scratch only
+  inspects existing ones via `project.summarize()` (enumerate
+  `(key, id)` pairs) and `project.get(id)` (retrieve by id).
+  The trap: `project.get(key)` raising `KeyError` looks like
+  "the report is missing" but actually means "the lookup shape
+  is wrong — `get` is by id, not by `key`". Never substitute by
+  calling `skore.evaluate(...)` + `project.put(...)` from a
+  scratch probe — that writes a duplicate row under the same
+  `key` into `project.summarize()` and breaks the cross-experiment
+  metrics view. See `organize-ml-workspace` § Stop conditions
+  ("Scratch is read-only against the skore Project") and
+  `evaluate-ml-pipeline` § Stop conditions for the
+  experiment-script-only producer rule that closes the loop.
+- **Special case:** the data-extraction probe behind
+  `overview/summary.md` lives here as
+  `scratch/<ts>_refresh_summary.py` (per
+  `iterate-ml-experiment` § 4). The probe is one-shot scratch;
+  the curated `summary.md` is what's durable.
+
+### Why not just `print(...)` in the experiment script?
+
+Experiment scripts (`experiments/NN_*.py`) are the durable record
+of *what was run*. Adding agent-only debug prints
+(`print(report)`, `print('checking ...')`) pollutes them with
+content that means nothing once the run is recorded. Keep
+experiment scripts clean of agent-only prints; use `scratch/`
+instead.
+
+### Git policy
+
+Contents of `scratch/` are **gitignored in their entirety**.
+There is no tracked `scratch/README.md` — this skill is the
+convention's home, not a file on disk. Scratch lives locally;
+a fresh clone gets an empty (or absent) `scratch/` folder. If
+you want to keep a specific script, copy it out (to
+`experiments/` or `overview/` if reusable, or to a notes file
+you maintain).
 
 Example Shape 1 probe — single symbol, signature +
 `pydoc.render_doc`, writes the cache file in one execution
