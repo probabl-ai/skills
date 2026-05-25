@@ -252,6 +252,7 @@ missing, the placeholder, or has 0 rows in History.
 | `G-PKG-NAME` | `src/<pkg>/` import name | `organize-ml-workspace` | before manifest creation |
 | `G-ENV-MGR` | Env manager + install scope | `python-env-manager` | before any install command |
 | `G-TABULAR` | Tabular library (pandas/polars) + other Tier 2 picks | `data-science-python-stack` | before `data.py` write |
+| `G-SKORE-MODE` | Skore Project mode (local / hub) + hub workspace name when hub | `organize-ml-workspace` | before `pyproject.toml` write — determines `<SKORE_PROJECT_INIT>` substitution AND the skore install variant (`skore` vs `skore[hub]`) |
 | `G-CV-SPLITTER` | Cross-validator family for `skore.evaluate` | `evaluate-ml-pipeline` | before `evaluate.py` write — mandatory even when `split_kwargs` is empty |
 | `G-DESIGN` | Explicit user approval of `journal/01_baseline.md` | this skill | before `experiments/01_baseline.py` write |
 | `G-RUN` | "run now" vs "leave for later" | this skill | before executing the experiment script |

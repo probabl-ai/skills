@@ -252,6 +252,8 @@ rule.
 | `ipykernel` is already pip-installed → skip `python -m ipykernel install --user --name <kernel>` | Looks like a duplicate install | `ipykernel` the package and a *registered kernelspec* are different things. nbconvert resolves `--ExecutePreprocessor.kernel_name` against `~/Library/Jupyter/kernels/<name>/` (or platform equivalent). Without the explicit register step, execution fails. |
 | Hallucinate a `report.diagnose()` / `report.diagnostic()` / `report.diagnostics` accessor because the right name "should be obvious" | Confident-sounding API guess | Symbol-from-memory failure. Real accessors come from `python-api` Shape 1 lookup against the installed skore version. Cache hits first (`scratch/api/skore/<version>/`). The bare-expression contract surfaces the failure at execution time as `AttributeError` — useful, but cheaper to look up than to execute and fix. |
 | Add a fix-up cell that mutates `data/` or `reports/` from inside the audit file | "While I'm in here…" | Audit files are **read-only against the workspace**. Writes outside `scratch/audit/<stem>/` are a contract violation. State mutations belong in a `scratch/<ts>_*.py` probe (per `python-api` § "`scratch/` conventions — probes vs. cache") or the experiment script. |
+| Substitute `<SKORE_PROJECT_INIT>` in `audit/<stem>.py` from the recorded `skore mode:` decision without reading `experiments/<stem>.py` first | "I know the form; the gate says hub/local" | The audit must open the **exact same Project** the experiment wrote to. A typo, formatting drift, or wrong workspace name silently opens a different store and `summarize()` returns "missing report". Always `Read experiments/<stem>.py` this turn and copy the literal Project init block (and any preceding `login` call) into the audit file. Byte-identical modulo formatting. See `organize-ml-workspace` § G-SKORE-MODE "Anatomy of substitution". |
+| Hub mode: put `skore.login(mode="hub")` after `skore.Project(...)` because the audit is "just inspecting" | Login looks like setup that "should happen first only when needed" | The Project constructor authenticates against the hub at init time; without a prior `login`, it fails. Order is fixed: `login` first, `Project` second. Same shape as the experiment's; copy it. |
 
 ## Pre-flight — emit before any audit-file write or execution
 
@@ -340,13 +342,19 @@ the per-experiment file:
 |---|---|
 | `<pkg>` | The project's importable package name (from `src/<pkg>/`) |
 | `<NN>_<short_name>` | The experiment stem (e.g. `02_target_transform`) |
-| `<project-name>` | The `name=` argument used in `skore.Project(...)` in `experiments/<stem>.py` — read it from there, do not invent it |
+| `<SKORE_PROJECT_INIT>` | The full Project init block (and, for hub mode, the preceding `skore.login(mode="hub")` call). The form depends on the workspace's `skore mode:` decision recorded in `JOURNAL.md` Status `Workspace decisions` (see `organize-ml-workspace` § "G-SKORE-MODE"). MUST match the form used in `experiments/<stem>.py` exactly |
+| `<project-name>` | The `name=` argument (local mode) or the part after `/` in `"<hub-workspace>/<project-name>"` (hub mode), as used in `skore.Project(...)` in `experiments/<stem>.py` — read it from there, do not invent it |
+| `<hub-workspace>` | Hub-mode only. The Skore Hub workspace identifier from `JOURNAL.md` Status `Workspace decisions` `skore hub workspace:` row — distinct from the local-mode `workspace=` kwarg |
 
-`<project-name>` is the most error-prone substitution: the audit
-file MUST open the same Project the experiment wrote to, so the
-`name` parameter has to match exactly. Always `Read
-experiments/<stem>.py` this turn to lift the literal — never type it
-from memory.
+`<SKORE_PROJECT_INIT>` and `<project-name>` are the most
+error-prone substitutions: the audit file MUST open the same
+Project the experiment wrote to, so the init block has to match
+exactly. **Always `Read experiments/<stem>.py` this turn to lift
+the literal Project init block** — never reconstruct it from
+memory of the `skore mode:` decision alone. The contract: copy the
+exact same `skore.Project(...)` call (and any preceding `login`
+call for hub mode) from the experiment script into the audit
+file.
 
 ### Cell structure — what each cell does
 
@@ -529,6 +537,28 @@ in a session reads the other three's presence as the precondition.
   data slice, or a non-deterministic step (RNG seed) shifted. Not
   a bug in this skill; surface to the user before assuming the
   audit changed.
+- **Hub mode: `skore.login(mode="hub")` fails with an
+  authentication error.** Token expired or the user hasn't logged
+  in on this machine yet. Surface the failure verbatim; do not
+  retry from a `scratch/` probe — `login` is interactive (browser
+  or API key prompt) and belongs in the audit file's own
+  execution. Re-run `pixi run -e dev jupyter nbconvert --execute
+  audit/<stem>.ipynb` after the user has refreshed credentials.
+- **Hub mode: `TypeError: Project.__init__() got an unexpected
+  keyword argument 'workspace'`.** The `<SKORE_PROJECT_INIT>`
+  substitution dropped the hub form but left a `workspace=` kwarg
+  in the call. `workspace=` is local-mode-only — hub mode rejects
+  it. Re-check the audit file's Project init block against the
+  experiment script's (they must match), or re-substitute the
+  marker from a clean template.
+- **Hub mode: report appears missing in `summarize()` but the
+  experiment script reported a successful `put()`.** Two
+  possibilities: (1) the audit is opening a different hub
+  workspace than the experiment wrote to (verify the
+  `<hub-workspace>` part of the name matches `Workspace
+  decisions`); (2) the user's credentials don't have read access
+  to the workspace they wrote to (rare; surface the access issue
+  to the user, do not silently fall back to local mode).
 
 ## Companion skills
 

@@ -102,6 +102,40 @@ Sibling skills (open just-in-time when a step requires):
   already exists, confirm via `AskUserQuestion`: "Keep package
   name `<name>`?" — continuity from a prior session is not
   continuity from a user decision.
+- **Skore Project mode is asked, not assumed (G-SKORE-MODE).**
+  Before any template instantiation that contains a
+  `skore.Project(...)` call (the experiment script and the audit
+  file), fire an `AskUserQuestion` for the project's storage
+  mode: **local** (artifacts on disk under `reports/`) or **hub**
+  (artifacts on Skore Hub at https://skore.probabl.ai, requires
+  account + `skore[hub]` install variant + `skore.login(mode="hub")`
+  before first use). Default proposal: `local`. When the user
+  picks `hub`, a follow-up asks for the Skore Hub workspace name
+  (the org/team identifier on the hub — distinct from the local
+  `workspace=` kwarg, which is local-only). MLflow mode is out of
+  scope for this gate; recommend it only on explicit user ask via
+  a separate clarifying question. The pick is persisted to
+  `JOURNAL.md` Status `Workspace decisions` as `skore mode:` (and
+  `skore hub workspace:` when hub). Sticky across sessions; see
+  Stop condition "Switching skore mode mid-project is forbidden by
+  default" below for the change procedure. Without this gate
+  resolving, the templates' `<SKORE_PROJECT_INIT>` substitution
+  marker has no shape to fill.
+- **Switching skore mode mid-project is forbidden by default.**
+  Once `skore mode:` is recorded in `Workspace decisions`, do not
+  silently change it. A switch (local → hub or hub → local)
+  orphans every existing report in the prior store — there is no
+  built-in migration tool from skore for moving artifacts between
+  modes. If the user asks to switch mid-project, fire an
+  `AskUserQuestion` surfacing the migration burden: "Existing
+  reports under <prior mode> will become inaccessible from this
+  workspace. Proceed anyway? (y / n / migrate manually first)".
+  Only on explicit user confirmation, update the `Workspace
+  decisions` row + rewrite all `<SKORE_PROJECT_INIT>` blocks
+  across `experiments/` and `audit/` files. Document the switch in
+  `journal/JOURNAL.md` History with a horizontal divider (same
+  shape as goal pivots — see `iterate-ml-experiment` §
+  "Maintenance modes").
 - **Env manager is asked, not assumed (G-ENV-MGR).** Hand off to
   `python-env-manager` for the pick. Pixi on PATH is detection,
   not permission. Don't run `pixi init` / `uv init` / `poetry
@@ -128,6 +162,15 @@ Sibling skills (open just-in-time when a step requires):
 | Forget `audit/` in the scaffold layout | Four-way stem pairing breaks. The audit folder is created empty alongside `tests/smoke/`, `journal/`, `experiments/` (step 6a) |
 | `pyproject.toml` exists with `name = <x>` → reuse without confirming | Continuity from a prior session is not continuity from a user decision. Always re-confirm via G-PKG-NAME |
 | User said "scaffold the workspace" → batch G-TABULAR + G-PKG-NAME + G-ENV-MGR into prose recommendations | The gates take structured `AskUserQuestion` per skill. Prose followed by "let me know" does NOT resolve them |
+| Skip G-SKORE-MODE because the existing templates already use `mode="local"` | The templates carry a `<SKORE_PROJECT_INIT>` substitution marker, not a literal. Reading the marker as "already local" is the silent-pick path this gate exists to close. Always fire G-SKORE-MODE before filling the marker |
+| Pick `mode="hub"` without checking the Skore Hub workspace exists / the user has access | The Project init fails at first `put()` with an authorization error and the experiment script wastes a fit cycle. Confirm hub workspace access during G-SKORE-MODE, not at execution time |
+| Substitute `pip install "skore[hub]"` for plain `skore` based on agent guess | The install variant comes from G-SKORE-MODE's recorded answer in `Workspace decisions`. python-env-manager reads that row, not the agent's intuition. Local-mode workspaces installing `skore[hub]` work but pull unused deps (drift) |
+| Silently change `skore mode:` in `Workspace decisions` mid-project to "fix" a broken Project init | Switching modes orphans existing reports in the prior store. The Stop condition above mandates an explicit `AskUserQuestion` surfacing the migration burden — never silent |
+| Substituting `<SKORE_PROJECT_INIT>` for hub mode but leaving `workspace=str(PROJECT_ROOT / "reports")` in the call | `workspace=` is local-mode-only. Hub mode rejects it with `TypeError: Project.__init__() got an unexpected keyword argument 'workspace'`. The side-by-side at § G-SKORE-MODE shows which lines disappear in each mode — substitute the **whole block**, not just the mode literal |
+| Using `workspace="reports"` (relative string) instead of `workspace=str(PROJECT_ROOT / "reports")` (absolute Path) in the local form | Relative path resolves against CWD at execution time. A run started from any directory other than the project root silently writes the Project store somewhere unexpected. Always absolute via `PROJECT_ROOT` |
+| Putting `skore.login(mode="hub")` after `skore.Project(...)` in the hub form | `Project(...)` initialization requires an authenticated session in hub mode. Login must come **before** the Project call. The skill's side-by-side keeps `login(...)` above `Project(...)` for exactly this reason |
+| Substituting `<SKORE_PROJECT_INIT>` in `audit/<stem>.py` independently of `experiments/<stem>.py` | The audit file MUST open the same Project the experiment wrote to. Different `name=` (or different `<hub-workspace>`) silently opens a different store, and `summarize()` returns "missing report" instead of the failure mode the user expects. Always `Read experiments/<stem>.py` this turn and copy the literal Project init block into the audit file — byte-identical (modulo formatting) |
+| Hub workspace name contains `/` (e.g., the user types `acme/datasci`) | The slash is reserved as the separator between `<hub-workspace>` and `<project-name>` in the hub-mode `name=` argument. A hub workspace name with `/` produces an unparseable Project name. Validate at G-SKORE-MODE follow-up: reject `/` in the workspace name, prompt the user to enter just the org/team identifier |
 | `project.get(key)` raised `KeyError` → re-run `evaluate` + `put` from scratch to "recover" | Lookup shape is wrong (`get` is by id). Recreating puts a duplicate row under same `key`. Use `summarize()` → `get(id)` |
 
 ## Pre-flight — emit before any code
@@ -161,6 +204,13 @@ Pre-flight (organize-ml-workspace):
                 JOURNAL.md Status (Workspace decisions) |
                 existing manifest's [project].name **confirmed via AskUserQuestion**
                 (reading the manifest alone is NOT sufficient)
+- [ ] Skore Project mode resolved (G-SKORE-MODE): local | hub
+      Evidence: AskUserQuestion id=<id>, answer=<local|hub> |
+                JOURNAL.md Status (Workspace decisions) `skore mode:` row
+      If hub: also captures `skore hub workspace:` row (e.g. `acme-corp`).
+      The pick determines what `<SKORE_PROJECT_INIT>` becomes in
+      experiments/ and audit/ templates AND what install variant
+      python-env-manager runs (`skore` vs `skore[hub]`).
 - [ ] `pyproject.toml` present at root declaring `src/<pkg>/`;
       editable install wired via `python-env-manager` § "Editable workspace"
       Evidence: Read pyproject.toml (this turn) + manager's editable-install call
@@ -185,6 +235,222 @@ Pre-flight (organize-ml-workspace):
   (`build-ml-pipeline`), how to call `skore.evaluate`
   (`evaluate-ml-pipeline`), skore/skrub/sklearn symbols
   (`python-api`), data ingestion paths (user-owned).
+
+## G-SKORE-MODE — Skore Project mode (local vs hub)
+
+The Skore Project mode is asked, never assumed. Owned here because
+it shapes the workspace's templates (`<SKORE_PROJECT_INIT>`
+substitution) and the install variant (`skore` vs `skore[hub]`).
+This section is the canonical anchor for the Stop condition above;
+cross-references from `python-env-manager`,
+`data-science-python-stack`, `audit-ml-pipeline`, and `python-api`
+point here.
+
+### Project init forms — concrete side-by-side
+
+Read this **before** any substitution. The two forms are not
+"swap one word" variants; the argument shape changes.
+
+**Local mode (default):**
+
+```python
+import skore
+
+from <pkg> import PROJECT_ROOT
+
+project = skore.Project(
+    name="<project-name>",
+    mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
+)
+```
+
+**Hub mode:**
+
+```python
+import skore
+from skore import login
+
+# Interactive on first run (browser or API key); cached after.
+login(mode="hub")
+
+project = skore.Project(
+    "<hub-workspace>/<project-name>",
+    mode="hub",
+)
+```
+
+**Diff at a glance:**
+
+| Concern | Local | Hub |
+|---|---|---|
+| `import` line for `login` | not needed | `from skore import login` |
+| `login(mode="hub")` call | not needed | **required, before `Project(...)`** |
+| `name=` argument | `name="<project-name>"` (bare) | `"<hub-workspace>/<project-name>"` (positional, slash-joined) |
+| `mode=` argument | `mode="local"` | `mode="hub"` |
+| `workspace=` argument | **required**: `workspace=str(PROJECT_ROOT / "reports")` | **MUST be absent** — passing it raises `TypeError` |
+| Install variant | `pixi add skore` | `pixi add "skore[hub]"` |
+| Pre-condition | none | Skore Hub account + access to `<hub-workspace>` |
+
+### The gate
+
+Fires at workspace scaffold, alongside G-PKG-NAME / G-TABULAR /
+G-ENV-MGR (see § "Decision flow" step 2a). Never silent — even if
+the user has used skore in `local` mode in prior projects.
+
+**AskUserQuestion shape — one structured pick with default and
+follow-up:**
+
+1. **Mode.** Options: `local` (artifacts on disk, no account
+   needed, recommended for solo work) | `hub` (artifacts on
+   https://skore.probabl.ai, requires account + workspace access,
+   recommended for team collaboration). Default proposal:
+   `local`.
+2. **Hub workspace name** (only when mode is `hub`). Free-form
+   string — the org/team identifier on Skore Hub. The agent
+   cannot infer this from the local environment; the user must
+   know it (it's the workspace they've been granted access to).
+   If the user picks `hub` without knowing the workspace name,
+   surface that they need to create or join one at
+   https://skore.probabl.ai first.
+
+   **Validation:** the workspace name MUST NOT contain `/` — the
+   slash is reserved as the separator between
+   `<hub-workspace>` and `<project-name>` in the hub-mode `name=`
+   argument (e.g., `"acme-corp/load-forecast"`). If the user types
+   `acme/datasci`, ask whether `acme` was the intended workspace
+   and `datasci` is part of the project name. Do not silently
+   accept slashes in the workspace name — that produces an
+   unparseable Project name at runtime.
+
+**Free-text resolution:** explicit naming of `local` / `hub`
+resolves; "use the cloud one" / "store remotely" → `hub`; "store
+locally" / "no account" → `local`. Urgency phrasing ("quick" /
+"you pick") does NOT resolve — falls through to the structured
+ask.
+
+### What the gate determines
+
+The recorded `skore mode:` decision drives three downstream
+artifacts:
+
+| Downstream artifact | local-mode shape | hub-mode shape |
+|---|---|---|
+| `<SKORE_PROJECT_INIT>` in `experiments/NN_*.py` and `audit/NN_*.py` | `skore.Project(name="<project-name>", mode="local", workspace=str(PROJECT_ROOT / "reports"))` | `from skore import login; login(mode="hub"); skore.Project("<hub-workspace>/<project-name>", mode="hub")` |
+| Tier 1 skore install variant (per `python-env-manager` § "Tier 1 install: skore variant per mode") | `pixi add skore` (or equivalent) | `pixi add "skore[hub]"` (or equivalent) |
+| `Workspace decisions` rows in `JOURNAL.md` | `skore mode: local` | `skore mode: hub` + `skore hub workspace: <name>` |
+
+The `name=` argument shape **changes between modes** — local mode
+uses a bare name; hub mode uses `<hub-workspace>/<project>`. The
+local-mode `workspace=` kwarg points to a directory and is
+rejected by hub mode (TypeError). These are not "swap one word"
+differences; the substitution marker exists precisely because the
+shape changes.
+
+### Persistence in `Workspace decisions`
+
+Two rows:
+
+```
+- skore mode: <local | hub> — recorded: <YYYY-MM-DD>
+- skore hub workspace: <hub-workspace-name | n/a> — recorded: <YYYY-MM-DD>
+```
+
+The hub-workspace row carries `n/a` when mode is local. On every
+later session, skills that need the mode read these rows first
+and skip re-asking — the standard `Workspace decisions` lookup
+pattern (see `iterate-ml-experiment` template § Status).
+
+### Switching mid-project
+
+See the Stop condition "Switching skore mode mid-project is
+forbidden by default" above. The short version: switching orphans
+reports in the prior store (no built-in migration in skore between
+modes). Requires an explicit `AskUserQuestion` confirmation
+surfacing the migration burden, followed by rewriting **every**
+`<SKORE_PROJECT_INIT>` block in `experiments/` and `audit/`, plus
+updating the install variant via `python-env-manager`. Document
+the switch in `JOURNAL.md` History as a horizontal divider.
+
+### Anatomy of substitution — what gets replaced and where
+
+The `<SKORE_PROJECT_INIT>` marker is a **comment line** inside the
+template that signals the start of the Project init block. The
+substitution replaces the comment AND the block that follows it
+(up to the next blank line) with the mode-appropriate code. The
+marker comment itself **is removed** in the substituted file — it's
+not a permanent anchor, it's a scaffold-time signal.
+
+**Before substitution** (verbatim from `templates/experiment.py`):
+
+```python
+# %%
+# <SKORE_PROJECT_INIT>
+project = skore.Project(
+    name="<project-name>",
+    mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
+)
+```
+
+**After substitution — local mode** (replacing `<project-name>`,
+keeping the rest):
+
+```python
+# %%
+project = skore.Project(
+    name="load-forecast",
+    mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
+)
+```
+
+**After substitution — hub mode** (the whole block including the
+`# %%` cell marker is rewritten to include the `login` call AND
+the new `Project` shape):
+
+```python
+# %%
+from skore import login
+
+login(mode="hub")
+project = skore.Project(
+    "acme-corp/load-forecast",
+    mode="hub",
+)
+```
+
+Note that in the hub form:
+
+- `workspace=` is **gone** (would raise TypeError).
+- `name=` becomes positional and uses the slash-joined
+  `<hub-workspace>/<project-name>` shape.
+- `login(...)` precedes `Project(...)` in the same cell so a
+  single execution of the cell does both.
+
+**For the audit file (`audit/<stem>.py`):** the same substitution
+rule applies, but with one extra constraint — the substituted
+block must match what `experiments/<stem>.py` actually contains,
+byte-for-byte (modulo formatting). Read the experiment file first,
+copy its Project init block, paste into the audit's substitution
+marker. **Do not re-derive from the `skore mode:` decision alone**
+— a typo or formatting drift would silently open a different
+Project. See the audit-ml-pipeline Forbidden shortcuts row
+"Substituting `<SKORE_PROJECT_INIT>` in audit independently of
+the experiment".
+
+### Out of scope
+
+- **MLflow mode** (`skore[mlflow]` + `tracking_uri=`). A third
+  Project mode documented at
+  https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html;
+  not included in this gate's options. If the user explicitly
+  asks for MLflow, surface it as a separate decision rather than
+  adding it to this gate's defaults.
+- **Skore Hub account creation.** The gate assumes the user has
+  an account when they pick `hub`. Sign-up is a probabl.ai
+  concern (https://probabl.ai/skore); this skill won't drive the
+  user through it.
 
 ## Detection — existing workspace first
 
@@ -320,17 +586,38 @@ In-place also requires revisiting the matching smoke test (route to
 2. **G-PKG-NAME** structured ask. Folder name in snake_case is the
    proposed default; user confirms or overrides. Record in
    `Workspace decisions`. **No manager `init` until this passes.**
+2a. **G-SKORE-MODE** structured ask: local | hub. Default proposal:
+    local. If hub, follow-up ask for the `<hub-workspace>` name
+    (the org/team identifier on Skore Hub). Record both in
+    `Workspace decisions` as `skore mode:` and (when hub) `skore
+    hub workspace:`. This determines (a) what the
+    `<SKORE_PROJECT_INIT>` substitution marker becomes in
+    experiments/ and audit/ templates, and (b) whether
+    `python-env-manager` installs `skore` or `skore[hub]`.
 3. **Drop `pyproject.toml`** from `templates/pyproject.toml`,
    substituting `<pkg>`. Hand off to `python-env-manager` for the
    editable install — don't run install commands yourself
-   (G-ENV-MGR must pass there first).
+   (G-ENV-MGR must pass there first). When the recorded `skore
+   mode:` is `hub`, ensure the python-env-manager install command
+   uses the `skore[hub]` variant (per `python-env-manager` § "Tier
+   1 install: skore variant per mode").
 4. Create `src/<pkg>/` with skeletons from `templates/src_*.py`
    and `templates/src___init__.py`.
 5. Create `experiments/` and seed `01_baseline.py` from
-   `templates/experiment.py`, substituting `<pkg>` (the
-   `from <pkg> import ...` literals are load-bearing; the other
-   placeholders sit in markdown / strings and are filled by
-   `iterate-ml-experiment` § 3 later).
+   `templates/experiment.py`, substituting:
+   - `<pkg>` (load-bearing in `from <pkg> import ...` literals).
+   - `<SKORE_PROJECT_INIT>` with the right form per the recorded
+     `skore mode:` decision (G-SKORE-MODE). Local: the four-line
+     `skore.Project(name=..., mode="local", workspace=...)` block.
+     Hub: the `from skore import login`, `login(mode="hub")`, then
+     `skore.Project("<hub-workspace>/<project-name>", mode="hub")`
+     block — and substitute `<hub-workspace>` from the
+     `skore hub workspace:` row.
+   - `<project-name>` from the package name (kebab-case) or the
+     user's explicit project-name preference.
+
+   Other placeholders sit in markdown / strings and are filled by
+   `iterate-ml-experiment` § 3 later.
 6. Create **empty** `tests/smoke/`. Do NOT drop placeholder test
    files — `test-ml-pipeline`'s Stop condition forbids tests
    before the matching design note is approved. Verify pytest is
@@ -409,11 +696,50 @@ effect, not a debug print.
 `01_baseline.py` → `"01_baseline"`). One file → one key → one
 report.
 
-**Project parameters.** `skore.Project(workspace="reports",
-name=..., mode="local")`. Pick `name` from project / package name
-(`pyproject.toml`), then dataset name, then folder name. Use
-kebab-case, reuse across experiments. `mode="local"` by default;
-don't switch to other modes without explicit user ask.
+**Project parameters.** Filled at template substitution time from
+the `Workspace decisions` `skore mode:` row (set by G-SKORE-MODE).
+The `<SKORE_PROJECT_INIT>` marker in `templates/experiment.py` is
+replaced with one of two forms:
+
+- **local mode** (default):
+  ```python
+  project = skore.Project(
+      name="<project-name>",
+      mode="local",
+      workspace=str(PROJECT_ROOT / "reports"),
+  )
+  ```
+  Pick `name` from project / package name (`pyproject.toml`), then
+  dataset name, then folder name. Use kebab-case, reuse across
+  experiments. `workspace=str(PROJECT_ROOT / "reports")` is the
+  load-bearing local-mode kwarg — it sets the on-disk directory
+  where artifacts persist.
+
+- **hub mode**:
+  ```python
+  from skore import login
+
+  # Interactive on first run (browser or API key); cached after.
+  login(mode="hub")
+
+  project = skore.Project(
+      "<hub-workspace>/<project-name>",
+      mode="hub",
+  )
+  ```
+  The `<hub-workspace>` is the Skore Hub workspace identifier
+  recorded in `Workspace decisions` as `skore hub workspace:` —
+  an org/team name on https://skore.probabl.ai, **NOT** the
+  local-mode `workspace=` kwarg (skore overloads the term). Hub
+  mode requires `pip install "skore[hub]"` (handled by
+  `python-env-manager`) and a logged-in account with workspace
+  access. `workspace=` is **not** a valid kwarg in hub mode —
+  passing it raises `TypeError`.
+
+MLflow mode (`skore[mlflow]` + `tracking_uri=`) is a third option
+documented at https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html
+but is out of scope for G-SKORE-MODE; bring it up only on explicit
+user ask.
 
 ## Companion skills
 

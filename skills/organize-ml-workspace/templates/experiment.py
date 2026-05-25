@@ -31,17 +31,31 @@ DATA_DIR = PROJECT_ROOT / "data"
 # ## Project
 #
 # One project per workspace; each experiment writes its report under a
-# stable key (the file stem). Parameters:
+# stable key (the file stem). The Project init block below is filled
+# at scaffold time per the workspace's `skore mode:` decision
+# (recorded in `journal/JOURNAL.md` Status `Workspace decisions`; see
+# `organize-ml-workspace` § "G-SKORE-MODE"). Two forms:
 #
-# - `workspace="reports"` — the folder that holds the Project store.
-# - `name=...` — a short, stable project name inferred from the
-#   package / dataset / working directory; reused across all
-#   experiments in this workspace.
-# - `mode="local"` — current default. See `skore-api` for the full
-#   constructor and other supported modes.
+# - **local mode**: `skore.Project(name=..., mode="local",
+#   workspace=str(PROJECT_ROOT / "reports"))`. Reports persist to disk
+#   under `reports/`. No account or login required.
+# - **hub mode**: `skore.login(mode="hub")` first (interactive on
+#   first run; cached after), then `skore.Project("<hub-workspace>/
+#   <project-name>", mode="hub")`. Reports persist on Skore Hub.
+#   Requires `pip install "skore[hub]"` (see `python-env-manager` §
+#   "Tier 1 install: skore variant per mode") and a Skore Hub
+#   account with access to the named hub workspace.
+#
+# `<SKORE_PROJECT_INIT>` is replaced by the right form at scaffold
+# time. Do NOT keep both forms in the same file — only one is valid.
 
 # %%
-project = skore.Project(workspace="reports", name="<project-name>", mode="local")
+# <SKORE_PROJECT_INIT>
+project = skore.Project(
+    name="<project-name>",
+    mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
+)
 
 # %% [markdown]
 # ## Data and learner

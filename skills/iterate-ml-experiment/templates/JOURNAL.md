@@ -46,6 +46,8 @@ Owning skills:
   - env manager: <pixi | uv | poetry | hatch | conda | pip+venv> — recorded: <YYYY-MM-DD>
   - env scope (feature/group/env): <default | named-feature> — recorded: <YYYY-MM-DD>
   - package name (`src/<pkg>/`): <pkg> — recorded: <YYYY-MM-DD>
+  - skore mode: <local | hub> — recorded: <YYYY-MM-DD>
+  - skore hub workspace: <hub-workspace-name | n/a> — recorded: <YYYY-MM-DD>
   - CV splitter family: <KFold | StratifiedKFold | GroupKFold | TimeSeriesSplit | other> — recorded: <YYYY-MM-DD>
 
 ## History

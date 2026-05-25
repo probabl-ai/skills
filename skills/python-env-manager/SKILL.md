@@ -829,6 +829,56 @@ All three must succeed before declaring `G-AGENT-FEATURE`
 resolved. If any fails, surface the failure to the user
 verbatim — do not paper over with a partial install.
 
+## Tier 1 install: skore variant per mode
+
+When installing `skore` for a workspace, the install variant
+depends on the `skore mode:` decision recorded in
+`journal/JOURNAL.md` Status `Workspace decisions` (set by
+`organize-ml-workspace` § "G-SKORE-MODE"). Two variants:
+
+| `skore mode:` | Install command (per manager) |
+|---|---|
+| `local` | Plain `skore` package — `pixi add skore`, `uv add skore`, `poetry add skore`, etc. |
+| `hub` | The `skore[hub]` extra — `pixi add "skore[hub]"`, `uv add "skore[hub]"`, `poetry add "skore[hub]"`, etc. Pulls hub-client deps (HTTPX, auth helpers). The `[hub]` extra is **additive over `skore`** — installing it gives you both local and hub functionality, but the extra deps are unused on a local-mode workspace, hence the split. |
+
+**Why the variant matters.** Hub mode calls `skore.login(mode="hub")`
+before instantiating `skore.Project(...)`. That `login` flow is
+implemented in the `[hub]` extra; on a plain `skore` install,
+`from skore import login` raises `ImportError`. Installing the
+wrong variant silently produces working CI for local-mode
+operations but breaks hub-mode operations at first `login()`.
+
+**Reading the recorded decision.** Before issuing the skore install
+command, read `journal/JOURNAL.md` Status `Workspace decisions` for
+the `skore mode:` row. If the row is absent (workspace not yet
+bootstrapped through `organize-ml-workspace`), route back to
+`organize-ml-workspace` § "G-SKORE-MODE" — do not guess. The
+default proposal at G-SKORE-MODE is `local`, but **the decision is
+the user's**, not the install layer's.
+
+**Forbidden:** silently picking `skore[hub]` "to be safe" or
+"because the user might want hub later". The `[hub]` extra costs
+~20 MB of network deps + authentication infrastructure the
+local-mode user did not ask for; the gate-based split exists to
+avoid that.
+
+**Switching modes.** If the user pivots `skore mode:` mid-project
+(per `organize-ml-workspace` § "Switching skore mode mid-project
+is forbidden by default" — requires explicit user confirmation):
+
+- `local` → `hub`: run the manager's `add` command for
+  `"skore[hub]"` over the existing install. The extra deps land
+  additively; existing local-mode reports under `reports/` stay
+  on disk but are no longer the active store.
+- `hub` → `local`: optionally remove the hub extra to slim the
+  env (`pixi remove skore` then `pixi add skore`, or the
+  equivalent). Existing hub-mode reports stay on Skore Hub but
+  are no longer the active store from this workspace.
+
+In both directions, surface to the user that the prior store's
+reports are orphaned from this workspace's perspective until a
+manual migration.
+
 ## Bootstrap — when no manager is detected
 
 If detection found nothing **and the user agrees to use pixi**:
@@ -849,11 +899,19 @@ If detection found nothing **and the user agrees to use pixi**:
    the user has to migrate later.
 5. Add the relevant Tier 1 deps for an ML project (per
    `data-science-python-stack` § "Tier 1") into the chosen
-   feature: `pixi add [--feature <name>] scikit-learn skrub skore
-   ruff`. Ruff is mandatory — it's the canonical lint+format tool,
-   owned downstream by the `python-code-style` skill — and goes
-   into the same feature as the rest of the Tier 1 stack so a
-   single `pixi run` activation has everything Claude needs.
+   feature. The skore install variant follows G-SKORE-MODE (see §
+   "Tier 1 install: skore variant per mode" above):
+   - `skore mode: local` →
+     `pixi add [--feature <name>] scikit-learn skrub skore ruff pytest`
+   - `skore mode: hub` →
+     `pixi add [--feature <name>] scikit-learn skrub "skore[hub]" ruff pytest`
+
+   If G-SKORE-MODE hasn't fired yet at bootstrap time (rare —
+   `organize-ml-workspace` fires it alongside G-PKG-NAME and
+   G-TABULAR), route back to that skill before issuing the install
+   command. Ruff and pytest are mandatory; both go into the same
+   feature as the rest of the Tier 1 stack so a single `pixi run`
+   activation has everything Claude needs.
 6. Ask the user about the tabular-library choice (per
    `organize-ml-workspace` § "Stop conditions" — pandas vs polars)
    and which feature it belongs in. Add accordingly:
@@ -884,7 +942,10 @@ whenever those skills surface a missing dependency or a new install:
 - **`build-ml-pipeline`** / **`evaluate-ml-pipeline`** — their Stop
   conditions on missing `skrub` / `skore` redirect here for the
   install command. Their Pre-flight checklists include "Tier 1
-  importable"; if a box fails, this skill is the next step.
+  importable"; if a box fails, this skill is the next step. When
+  installing skore, the variant (`skore` vs `skore[hub]`) follows
+  the workspace's recorded `skore mode:` decision (see § "Tier 1
+  install: skore variant per mode" below).
 - **`audit-ml-pipeline`** — when the audit skill fires and the
   agent feature isn't installed, it routes here for the install
   + kernel registration. The `G-AGENT-FEATURE` gate (above) is

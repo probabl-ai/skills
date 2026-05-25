@@ -27,15 +27,27 @@ from <pkg> import PROJECT_ROOT
 # %% [markdown]
 # ## Open the project
 #
-# Same `workspace` + `name` as `experiments/<NN>_<short_name>.py`.
-# Reading them from there (not retyping from memory) is the
-# audit-ml-pipeline pre-flight contract.
+# Same Project init form as `experiments/<NN>_<short_name>.py` — the
+# `<SKORE_PROJECT_INIT>` marker below is filled at scaffold time per
+# the workspace's `skore mode:` decision (see `organize-ml-workspace`
+# § "G-SKORE-MODE" and `audit-ml-pipeline` § "Audit file contract").
+# Two forms (only one is used per workspace):
+#
+# - **local mode**: `skore.Project(name=..., mode="local",
+#   workspace=str(PROJECT_ROOT / "reports"))`.
+# - **hub mode**: `skore.login(mode="hub")` first, then
+#   `skore.Project("<hub-workspace>/<project-name>", mode="hub")`.
+#
+# Read the form from `experiments/<NN>_<short_name>.py` — never retype
+# from memory; the audit must open the exact same Project the
+# experiment wrote to.
 
 # %%
+# <SKORE_PROJECT_INIT>
 project = skore.Project(
-    workspace=str(PROJECT_ROOT / "reports"),
     name="<project-name>",
     mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
 )
 project
 

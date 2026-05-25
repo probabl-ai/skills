@@ -245,6 +245,18 @@ changes.
   `seaborn`, `plotly`, `joblib`, and others transitively (see
   Tier 4) — so static *and* interactive plotting are available
   without any extra install.
+
+  **Install variant per mode.** `skore.Project(...)` supports three
+  mutually exclusive modes: `local` (artifacts on disk; no extra
+  deps), `hub` (artifacts on Skore Hub; requires `skore[hub]`
+  extra + `skore.login()` before first use), `mlflow` (artifacts
+  in an MLflow tracking server; requires `skore[mlflow]` extra).
+  The choice is a workspace-level decision owned by
+  `organize-ml-workspace` § "G-SKORE-MODE" — fired at scaffold
+  alongside G-PKG-NAME / G-TABULAR / G-ENV-MGR. `python-env-manager`
+  § "Tier 1 install: skore variant per mode" maps the recorded
+  decision to the right install command per env manager.
+  Default-on-no-preference: `local`.
 - [`ruff`](references/ruff.md) — single-tool lint + format,
   replaces `black` / `isort` / `flake8` / `pydocstyle`. Install in
   the **same feature/env as the rest of the Tier 1 stack** so
