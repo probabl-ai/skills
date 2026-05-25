@@ -191,7 +191,9 @@ Pre-flight (iterate-ml-experiment):
                 | "n/a outside § 3"
 - [ ] (§ 4 only) Smoke gate green; Status block filled
       (State, Headline, Implication); JOURNAL.md History updated;
-      Backlog hygiene done; `overview/summary.md` refreshed
+      Backlog hygiene done; `overview/summary.md` refreshed;
+      audit-ml-pipeline dispatched (audit/NN_*.py placed +
+      executed; scratch/audit/<stem>/audit.md present)
       Evidence: list each artifact written | "n/a outside § 4"
 - [ ] python-api consulted for any new external symbol used
       Evidence: Read/Write scratch/api/<lib>/<v>/<topic>.md (this turn)
@@ -229,7 +231,13 @@ missing, the placeholder, or has 0 rows in History.
 5. **The user's role in bootstrap is approve or amend** — not
    invent.
 6. **Exit bootstrap** once the baseline is approved and recorded.
-   Every session afterwards uses § 1.
+   Every session afterwards uses § 1. The audit file
+   (`audit/01_baseline.py`) is placed by `audit-ml-pipeline` at
+   the first § 4 record-outcome (after the baseline runs and
+   `project.put("01_baseline", report)` lands) — bootstrap itself
+   does not create audit files. If the agent feature isn't
+   installed yet at that point, § 4 routes through
+   `python-env-manager` § "Agent feature" first.
 
 ### Bootstrap skips the sourcing menu — NOT the config gates
 
@@ -421,6 +429,20 @@ When triggered:
    + curated cross-experiment metrics table from
    `project.summarize()` + per-experiment Headline + Implication.
    See `references/record_outcome.md` for the full procedure.
+8a. **Dispatch to `audit-ml-pipeline`** to place + execute the
+    matching `audit/NN_<short_name>.py`. The audit skill loads the
+    report read-only, executes the bare-expression cells via
+    jupytext + nbconvert, and lands the markdown digest at
+    `scratch/audit/<stem>/audit.md`. **The agent feature must be
+    installed first** — if `python -m ipykernel install` /
+    `jupytext` / `nbconvert` aren't available in the workspace,
+    `audit-ml-pipeline` routes to `python-env-manager` §
+    "Agent feature" (`G-AGENT-FEATURE` gate), returns here once
+    install + kernel registration are done. The audit digest then
+    feeds back into step 8's `overview/summary.md` refresh — read
+    the markdown when filling per-experiment Headline +
+    Implication so the narrative is grounded in actual report
+    contents, not memory of the run.
 9. **(Opt-in) GitHub issue close-the-loop** — if the experiment's
    `Source` is a GitHub issue, ask via `AskUserQuestion` whether
    to `gh issue comment <N>` back with the headline. Never
@@ -492,8 +514,15 @@ journal/
 └── ...
 ```
 
-Pairing rule (hard): `journal/NN_<short_name>.md` ↔
-`experiments/NN_<short_name>.py`, identical stems, 1:1.
+Pairing rule (hard, four-way): `journal/NN_<short_name>.md` ↔
+`experiments/NN_<short_name>.py` ↔
+`tests/smoke/test_NN_<short_name>.py` ↔
+`audit/NN_<short_name>.py`, identical stems, 1:1. The journal
+note is what this skill owns directly; the other three are owned
+by their respective skills (`organize-ml-workspace` for layout,
+`smoke-test-ml-pipeline` and `audit-ml-pipeline` for their
+respective bodies) but the pairing is enforced through dispatch
+in § 3 (smoke) and § 4 (audit).
 
 ### `JOURNAL.md` shape
 
@@ -553,6 +582,11 @@ result is good enough, post-run, from Headline + Implication.
 - `test-ml-pipeline` → `smoke-test-ml-pipeline` — drafts the
   matching smoke test after design-note approval; § 4 won't flip
   to `done` until the smoke test passes.
+- `audit-ml-pipeline` — at § 4 record-outcome, places +
+  executes the matching `audit/NN_*.py`. Read-only consumer of
+  the skore report; its markdown digest feeds the
+  `overview/summary.md` refresh. Requires the agent feature
+  (`python-env-manager` § "Agent feature").
 
 ## References (load on demand)
 

@@ -124,6 +124,8 @@ Sibling skills (open just-in-time when a step requires):
 | Folder name = good package name → skip the ask | Default *value* is fine; silent *pick* is not. G-PKG-NAME requires the structured ask even with folder as default |
 | `pandas` already importable via skore → write `import pandas` in `data.py` | Transitive presence is not a pick. Violates G-TABULAR |
 | Scaffold every skeleton in one turn, including `experiments/01_baseline.py` content | Scaffold stops at empty `journal/` placeholder. Experiment script content lands after design-note approval (`iterate-ml-experiment` § 3) |
+| Scaffold drops `audit/01_baseline.py` at workspace creation time | Audit files are placed by `audit-ml-pipeline` at § 4 record-outcome — after a report under that key exists. Empty `audit/` folder is correct at scaffold |
+| Forget `audit/` in the scaffold layout | Four-way stem pairing breaks. The audit folder is created empty alongside `tests/smoke/`, `journal/`, `experiments/` (step 6a) |
 | `pyproject.toml` exists with `name = <x>` → reuse without confirming | Continuity from a prior session is not continuity from a user decision. Always re-confirm via G-PKG-NAME |
 | User said "scaffold the workspace" → batch G-TABULAR + G-PKG-NAME + G-ENV-MGR into prose recommendations | The gates take structured `AskUserQuestion` per skill. Prose followed by "let me know" does NOT resolve them |
 | `project.get(key)` raised `KeyError` → re-run `evaluate` + `put` from scratch to "recover" | Lookup shape is wrong (`get` is by id). Recreating puts a duplicate row under same `key`. Use `summarize()` → `get(id)` |
@@ -195,6 +197,7 @@ Before scaffolding, look at the project root:
 | `src/<pkg>/__init__.py` or `<pkg>/__init__.py` at root | Package dir already chosen — keep it |
 | `<pkg>.egg-info/` at root or under `src/` | Stale or out-of-band `pip install -e .` ran; flag drift, offer to wire through the manager |
 | `experiments/`, `notebooks/`, `scripts/`, `analyses/` | Experiment location chosen — keep it |
+| `audit/` with `# %%` Python files | Audit location chosen — keep it; body owned by `audit-ml-pipeline` |
 | `journal/`, `plans/`, `proposals/` | Journal location chosen — keep it |
 | `reports/`, `results/`, `runs/` | Report location chosen — keep it |
 | `tests/` | Test location chosen — keep it; per-category subfolders owned by `test-ml-pipeline` |
@@ -221,6 +224,10 @@ project/
 │   └── 01_baseline.md      # one `.md` per planned experiment, same stem
 ├── experiments/            # one `# %%` script per experiment
 │   └── 01_baseline.py
+├── audit/                  # one `# %%` audit file per experiment;
+│   └── 01_baseline.py      # body owned by audit-ml-pipeline. Source
+│                           # of truth; executed outputs land under
+│                           # scratch/audit/<stem>/ (gitignored).
 ├── tests/
 │   └── smoke/              # body owned by smoke-test-ml-pipeline;
 │                           # files placed by test-ml-pipeline once
@@ -262,21 +269,32 @@ by the user. Design-note content is owned by
 `iterate-ml-experiment`; this skill only enforces the pairing —
 same stem, planned-before-coded.
 
-### Three-way stem pairing
+### Four-way stem pairing
 
-Every experiment is identified by `NN_<short_name>` in three places:
+Every experiment is identified by `NN_<short_name>` in four places:
 
 ```
 journal/NN_<short_name>.md            (design note)
 experiments/NN_<short_name>.py        (script)
 tests/smoke/test_NN_<short_name>.py   (smoke test)
+audit/NN_<short_name>.py              (audit file — read-only)
 ```
 
-By the time it can flip to `done` in `JOURNAL.md`, all three exist.
-The design note is written first (`iterate-ml-experiment`); the
-script lands on approval; the smoke test body is filled by
-`smoke-test-ml-pipeline`. The `test_` prefix is pytest convention;
-the `NN_<short_name>` portion matches exactly.
+By the time it can flip to `done` in `JOURNAL.md` AND its summary
+has been refreshed in `overview/summary.md`, all four exist. The
+design note is written first (`iterate-ml-experiment`); the script
+lands on approval; the smoke test body is filled by
+`smoke-test-ml-pipeline`; the audit file is placed and executed by
+`audit-ml-pipeline` at § 4 record-outcome (after the run produces
+a report under the matching key). The `test_` prefix is pytest
+convention; the `NN_<short_name>` portion matches exactly across
+all four paths.
+
+Note: the audit file is *paired* with the experiment but is
+**read-only against the workspace's skore Project and data** — see
+`audit-ml-pipeline` § "Read-only contract". The pairing rule
+guarantees the audit exists; it does not make the audit a
+producer of state.
 
 ### New experiment → new file. Iterating → ask first.
 
@@ -317,6 +335,10 @@ In-place also requires revisiting the matching smoke test (route to
    files — `test-ml-pipeline`'s Stop condition forbids tests
    before the matching design note is approved. Verify pytest is
    on the manifest.
+6a. Create **empty** `audit/`. Do NOT drop placeholder audit
+    files — `audit-ml-pipeline` writes them after § 4 record-
+    outcome (when a report is on disk). Empty folder at scaffold
+    time is correct.
 7. Create `journal/` with a one-line **placeholder** `JOURNAL.md`
    (`# PLAN\n\n<!-- placeholder; populated by iterate-ml-experiment -->`).
    `iterate-ml-experiment` rewrites it from its own template.
@@ -325,7 +347,8 @@ In-place also requires revisiting the matching smoke test (route to
    hand on every outcome recording. **No Python in `overview/`** —
    `summary.md` is agent-authored prose, not script output.
 9. Create empty `scratch/`. **Do NOT** drop a README — the scratch
-   convention is owned by `python-api` § "Scratch traceability".
+   convention is owned by `python-api` § "`scratch/` conventions
+   — probes vs. cache".
 10. Create empty `reports/` (skore writes into it on first run).
 11. **Touch `.gitignore`.** Drop `templates/.gitignore` if none.
     If one exists, surface missing entries as a suggested patch;
@@ -406,6 +429,11 @@ don't switch to other modes without explicit user ask.
   stem-pairing rule.
 - **`smoke-test-ml-pipeline`** — fills the smoke-test body once
   the matching design note is approved.
+- **`audit-ml-pipeline`** — owns `audit/`. Places one `# %%` file
+  per experiment after § 4 record-outcome, then executes it
+  (jupytext + nbconvert) to produce a markdown digest under
+  `scratch/audit/<stem>/audit.md`. Read-only against the
+  workspace.
 - **`python-api`** — `skore.Project`, `skore.evaluate`,
   `project.put` signatures. Don't guess.
 - **`python-env-manager`** — detection + install commands. Invoke

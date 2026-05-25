@@ -17,9 +17,13 @@ description: >
       missing import and an install is the next step;
   (3) a workflow skill's Stop condition fired on a missing
       dependency (`build-ml-pipeline`, `evaluate-ml-pipeline`,
-      `organize-ml-workspace`);
+      `organize-ml-workspace`, `audit-ml-pipeline`);
   (4) starting a new Python project and no manager is in place yet
-      (bootstrap with pixi unless the user picks otherwise).
+      (bootstrap with pixi unless the user picks otherwise);
+  (5) `audit-ml-pipeline` (or another agent-only consumer) needs the
+      **agent feature** (jupytext + ipykernel + nbconvert) and it
+      isn't yet present in the project's manifest — see § "Agent
+      feature".
 
   SKIP when: the project is non-Python; the install/add command is
   for a non-Python tool (npm, brew, apt, cargo, gem); the dependency
@@ -160,12 +164,56 @@ in the current conversation ("add it to the `tracing` feature",
 "put this in dev"); record the source as
 `user quote turn N: "..."` in the pre-flight evidence row.
 
+### `G-AGENT-FEATURE` — install the agent feature
+
+Fires when an agent-only consumer (currently `audit-ml-pipeline`,
+future skills may join) needs `jupytext` + `ipykernel` +
+`nbconvert` and the project's manifest doesn't yet expose them.
+The full per-manager composition pattern (and the kernel-
+registration step that's mandatory regardless of manager) lives
+in § "Agent feature" below; this gate is the structured ask that
+opens that section.
+
+The `AskUserQuestion` carries three coupled sub-picks:
+
+1. **Install scope.** Default proposal: a new
+   feature/group/env/extra named `agent` (manager-appropriate
+   keyword — see § "Agent feature" table), carrying the agent
+   deps. User may pick "merge into the default scope" instead,
+   or "into an existing feature/group/env" if the project's
+   convention already has a suitable bucket (e.g. an existing
+   `dev` group).
+2. **Composed env name.** Default proposal: `dev`. Only relevant
+   for managers that compose features into environments
+   (pixi). For uv / poetry / hatch / conda / pip the agent deps
+   land additively into the chosen scope and there is no
+   separate "compose into env" step — surface `n/a` in the
+   AskUserQuestion option description for those managers.
+3. **Kernel name.** Default proposal: the project's package
+   name from `pyproject.toml` `[project] name` (or
+   `pixi.toml`'s `[project]` table). Used in `python -m
+   ipykernel install --user --name <kernel>`. Must be unique
+   across kernelspecs on the machine; if a kernel of that name
+   already exists for another project, ask the user to pick a
+   different name (e.g. `<project>-py3`).
+
+Free-text resolution: "use a new agent feature named X, compose
+into env Y, kernel name Z" resolves all three; partial
+free-text falls through to the structured ask for the
+unresolved sub-picks.
+
+The answers persist in `journal/JOURNAL.md` Status under
+`Workspace decisions` as three new rows: `agent scope:`,
+`agent env:`, `agent kernel:`. Cross-session continuity follows
+the same lookup contract as the other gates.
+
 ### Persistence lookup — read `JOURNAL.md` Status before any gate fires
 
-Before issuing either `G-ENV-MGR` or `G-ENV-SCOPE`, read the
-`Workspace decisions` block in `journal/JOURNAL.md` Status. If
-the matching row is already recorded (`env manager: <pick> —
-recorded: <date>` or `env scope: <name> — recorded: <date>`),
+Before issuing `G-ENV-MGR`, `G-ENV-SCOPE`, or `G-AGENT-FEATURE`,
+read the `Workspace decisions` block in `journal/JOURNAL.md`
+Status. If the matching row is already recorded (`env manager:
+<pick> — recorded: <date>`, `env scope: <name> — recorded:
+<date>`, `agent scope: <name> — recorded: <date>`, etc.),
 **do not re-ask** — the gate is already resolved; cite
 `JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)`
 as the evidence for that row in the pre-flight.
@@ -199,7 +247,7 @@ violation, indistinguishable from a skipped check.
   the detection-table match: `Evidence: ls project_root | tool
   output (this turn) → matched signal "<signal>"` (e.g.
   `pixi.toml present → pixi`).
-- **Gate rows (G-ENV-MGR, G-ENV-SCOPE).** Evidence is one of:
+- **Gate rows (G-ENV-MGR, G-ENV-SCOPE, G-AGENT-FEATURE).** Evidence is one of:
   - `Evidence: AskUserQuestion id=<id>, answer=<option>` — the
     user picked via the structured tool this turn.
   - `Evidence: user quote turn N: "..."` — free-text from the
@@ -240,11 +288,25 @@ Pre-flight (python-env-manager):
       Evidence: AskUserQuestion id=<id>, answer=<scope> |
                 user quote turn N: "..." |
                 JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)
+- [ ] (Agent-feature installs only) G-AGENT-FEATURE resolved:
+      agent scope=<name> | agent env=<name | n/a> | agent kernel=<name>
+      Evidence: AskUserQuestion id=<id>, three-part answer |
+                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
+                "n/a — not an agent-feature install"
 - [ ] Install command syntax confirmed for that manager (see § "Install
-      commands")
-      Evidence: cite the matching § "Install commands" subsection
+      commands" or § "Agent feature" for jupytext/ipykernel/nbconvert)
+      Evidence: cite the matching subsection
 - [ ] Package list ready: <pkg-1, pkg-2, ...>
       Evidence: explicit list in this turn's response
+- [ ] (Agent-feature installs only) Kernel registration step queued:
+      `<activation> python -m ipykernel install --user --name <kernel>`
+      Evidence: command quoted in this turn's response |
+                "n/a — not an agent-feature install"
+- [ ] (Agent-feature installs only) Verification commands queued
+      (`jupytext --version`, `jupyter nbconvert --version`,
+      `jupyter kernelspec list | grep <kernel>`)
+      Evidence: commands quoted in this turn's response |
+                "n/a — not an agent-feature install"
 ```
 
 ## Detection — figure out the manager first
@@ -508,6 +570,265 @@ the editable entry, that is drift. Clean up the egg-info **after**
 wiring the install correctly through the manager — never before
 (the cleanup can break a working but unmanaged setup).
 
+## Agent feature — install jupytext + ipykernel + nbconvert
+
+The **agent feature** is a project-scoped install of the
+notebook-execution toolchain (`jupytext`, `ipykernel`,
+`nbconvert`) plus a one-time kernel registration. It is what
+makes `audit-ml-pipeline`'s two-step execution path work
+(jupytext converts `audit/<stem>.py` → `.ipynb`; nbconvert
+executes the notebook with a named kernel; nbconvert renders
+the executed notebook to markdown).
+
+The deps themselves live in `data-science-python-stack` (under
+the "agent feature" category — separate from Tier 1 mandatory,
+because not every workspace uses the audit flow). This section
+owns *where they get installed* and *how the kernel is
+registered*, per the project's env manager.
+
+### Composition model — pixi composes; others layer
+
+The agent feature is conceptually "deps that the agent runs but
+the production-shape runtime doesn't need". Two manager
+classes:
+
+- **Composable** (pixi only). The agent deps land in a
+  dedicated `[feature.agent]` block; a composed environment
+  `[environments.dev] = ["default", "agent"]` lets the agent
+  invoke `pixi run -e dev ...` to get both the data-science
+  deps *and* the agent deps in scope, while `pixi run ...`
+  (defaulting to the `default` env) stays lean.
+- **Additive** (uv / poetry / hatch / conda / pip+venv). The
+  agent deps land in a separate group / env / extra, and the
+  agent invokes them via a group-targeted command (e.g.
+  `uv run --group agent ...`, `poetry run ...` with the group
+  installed). No environment composition step.
+
+### Per-manager invocations
+
+Overview table — the kernel-registration step is **constant across
+managers** (`python -m ipykernel install --user --name <kernel>`,
+run inside the agent-scoped env). Only the install command and the
+agent's invocation prefix change.
+
+| Manager | Install command | Agent invocation prefix |
+|---|---|---|
+| **pixi** | `pixi add --feature agent jupytext ipykernel nbconvert` + compose `[environments.dev] = ["default", "agent"]` | `pixi run -e dev <cmd>` |
+| **uv** | `uv add --group agent jupytext ipykernel nbconvert` | `uv run --group agent <cmd>` |
+| **poetry** | `poetry add --group agent jupytext ipykernel nbconvert` | `poetry run <cmd>` (group is added to the single env on install) |
+| **hatch** | Edit `pyproject.toml` `[tool.hatch.envs.agent]` then run via the env | `hatch run agent:<cmd>` |
+| **conda / mamba** | `conda install -n <env> -c conda-forge jupytext ipykernel nbconvert` (or `mamba`) | `conda run -n <env> <cmd>` |
+| **pip + venv** | Activate venv, then `pip install jupytext ipykernel nbconvert` | (with venv active) `<cmd>` directly |
+
+**Manager-specific footguns** (caught here so the per-manager
+subsections don't have to repeat them):
+
+- **pixi:** running `pixi run <cmd>` without `-e dev` uses the
+  `default` env and misses the agent feature → the audit-execute
+  command fails with "command not found: jupytext". The `-e dev`
+  flag is load-bearing.
+- **uv:** running `uv run <cmd>` without `--group agent` works at
+  first (the group is installed) but only resolves the agent deps
+  if `uv.lock` includes them. Confirm `uv sync --group agent` ran
+  before the first audit execution.
+- **hatch:** the `agent` env is fully isolated from `default` →
+  the data-science Tier 1 deps must also be added to the agent env
+  manifest, or the audit cells will fail at `import skore`. This
+  duplication is the price of hatch's isolation model; flag it to
+  the user before recommending hatch for new agent-feature
+  workspaces.
+- **conda / mamba:** registering the kernel with `--name <kernel>`
+  from a conda env writes the kernelspec into the *user's* Jupyter
+  registry (not the env). If the user has multiple conda envs that
+  all want the agent feature, give each kernel a project-scoped
+  name (e.g. `<project>-py3`) to avoid collisions.
+- **pip + venv:** `jupyter kernelspec` and `jupytext` resolve
+  against the **active** venv; if the user opens a new shell
+  without activating, the commands "look like" they work (system
+  jupyter, if any, takes over) but execute with the wrong
+  interpreter. Always activate explicitly in the agent's command.
+
+#### pixi
+
+```bash
+# Install the agent feature
+pixi add --feature agent jupytext ipykernel nbconvert
+
+# Compose the dev env (one-time, via `pixi.toml` edit or this CLI form)
+# [environments]
+# default = ["default"]
+# dev = ["default", "agent"]
+pixi project environment add dev --feature default --feature agent
+
+# Register the project's kernel (run inside the dev env)
+pixi run -e dev python -m ipykernel install --user --name <kernel>
+
+# Agent invokes jupytext / nbconvert via:
+pixi run -e dev jupytext --to ipynb <src> -o <out>
+pixi run -e dev jupyter nbconvert --execute --to notebook \
+  --ExecutePreprocessor.kernel_name=<kernel> ...
+```
+
+#### uv
+
+```bash
+# Install the agent feature into a dependency group
+uv add --group agent jupytext ipykernel nbconvert
+
+# Register the project's kernel (run inside uv's env)
+uv run --group agent python -m ipykernel install --user --name <kernel>
+
+# Agent invokes jupytext / nbconvert via:
+uv run --group agent jupytext --to ipynb <src> -o <out>
+uv run --group agent jupyter nbconvert --execute --to notebook \
+  --ExecutePreprocessor.kernel_name=<kernel> ...
+```
+
+#### poetry
+
+```bash
+# Install the agent feature into a named group
+poetry add --group agent jupytext ipykernel nbconvert
+
+# Register the project's kernel
+poetry run python -m ipykernel install --user --name <kernel>
+
+# Agent invokes jupytext / nbconvert via:
+poetry run jupytext --to ipynb <src> -o <out>
+poetry run jupyter nbconvert --execute --to notebook \
+  --ExecutePreprocessor.kernel_name=<kernel> ...
+```
+
+Poetry's group-install puts deps in the single project env;
+there is no per-invocation group selection.
+
+#### hatch
+
+Edit `pyproject.toml`:
+
+```toml
+[tool.hatch.envs.agent]
+dependencies = ["jupytext", "ipykernel", "nbconvert"]
+```
+
+```bash
+# Hatch creates the env on first `hatch run agent:<cmd>`. Register
+# the kernel from inside the agent env:
+hatch run agent:python -m ipykernel install --user --name <kernel>
+
+# Agent invokes jupytext / nbconvert via:
+hatch run agent:jupytext --to ipynb <src> -o <out>
+hatch run agent:jupyter nbconvert --execute --to notebook \
+  --ExecutePreprocessor.kernel_name=<kernel> ...
+```
+
+Hatch envs are isolated (no composition with `default`), so the
+hatch path duplicates the data-science deps in the `agent` env
+when they're needed alongside. If that duplication is a problem,
+recommend the user switch to pixi or uv for new projects.
+
+#### conda / mamba
+
+```bash
+# Add to the active env (most common) or a named env
+conda install -n <env> -c conda-forge jupytext ipykernel nbconvert
+# or with mamba (faster):
+mamba install -n <env> -c conda-forge jupytext ipykernel nbconvert
+
+# Register the project's kernel from inside the env
+conda run -n <env> python -m ipykernel install --user --name <kernel>
+
+# Agent invokes jupytext / nbconvert via:
+conda run -n <env> jupytext --to ipynb <src> -o <out>
+conda run -n <env> jupyter nbconvert --execute --to notebook \
+  --ExecutePreprocessor.kernel_name=<kernel> ...
+```
+
+If the project pins deps in `environment.yml`, also add the
+three agent deps to the file so the env is reproducible.
+
+#### pip + venv
+
+```bash
+# Activate the venv first
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+
+# Install the agent feature
+pip install jupytext ipykernel nbconvert
+
+# Register the project's kernel
+python -m ipykernel install --user --name <kernel>
+
+# Agent invokes jupytext / nbconvert via (with the venv active):
+jupytext --to ipynb <src> -o <out>
+jupyter nbconvert --execute --to notebook \
+  --ExecutePreprocessor.kernel_name=<kernel> ...
+```
+
+There is no manifest entry; if `requirements.txt` is the
+project's source of truth, regenerate or hand-edit it to
+include the three agent deps.
+
+### Kernel registration — mandatory regardless of manager
+
+After the agent deps are installed, the project must register an
+IPython kernel for nbconvert's `--ExecutePreprocessor.kernel_name`
+to resolve against. The command is the same across managers
+(only the activation wrapper differs):
+
+```bash
+python -m ipykernel install --user --name <kernel>
+```
+
+Two requirements on `<kernel>`:
+
+- **Unique across the user's kernelspecs.** Run `jupyter
+  kernelspec list` first; if a kernel with that name already
+  exists for another project, pick a different name
+  (e.g. `<project>-py3`).
+- **Stable across sessions.** The audit skill's execution
+  command embeds the kernel name; renaming forces every audit
+  file to be re-edited. Pick a name and stick with it. Record
+  it in `JOURNAL.md` Status `Workspace decisions` as
+  `agent kernel:`.
+
+### Cleanup — when an agent feature is removed
+
+If the user wants to remove the agent feature (e.g. dropping the
+audit flow):
+
+```bash
+# Remove the deps (manager-specific; example for pixi)
+pixi remove --feature agent jupytext ipykernel nbconvert
+
+# Remove the kernel registration
+jupyter kernelspec remove <kernel> -y
+```
+
+Update `JOURNAL.md` Status to remove the `agent scope:`,
+`agent env:`, `agent kernel:` rows. Note in the History or
+Status block that the audit flow was disabled.
+
+### Verification — what should be true after install
+
+Before handing back to the calling skill (e.g.
+`audit-ml-pipeline`), confirm:
+
+```bash
+# jupytext is callable in the agent-scoped env
+<activation> jupytext --version
+
+# nbconvert is callable
+<activation> jupyter nbconvert --version
+
+# The project's kernel is registered
+jupyter kernelspec list | grep <kernel>
+```
+
+All three must succeed before declaring `G-AGENT-FEATURE`
+resolved. If any fails, surface the failure to the user
+verbatim — do not paper over with a partial install.
+
 ## Bootstrap — when no manager is detected
 
 If detection found nothing **and the user agrees to use pixi**:
@@ -564,6 +885,10 @@ whenever those skills surface a missing dependency or a new install:
   conditions on missing `skrub` / `skore` redirect here for the
   install command. Their Pre-flight checklists include "Tier 1
   importable"; if a box fails, this skill is the next step.
+- **`audit-ml-pipeline`** — when the audit skill fires and the
+  agent feature isn't installed, it routes here for the install
+  + kernel registration. The `G-AGENT-FEATURE` gate (above) is
+  the structured ask that opens § "Agent feature".
 
 ## Conventions
 

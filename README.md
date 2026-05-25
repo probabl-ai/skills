@@ -56,6 +56,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 | [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a single sklearn-compatible learner: pick the right entry point (`skore.evaluate` first), the right cross-validator, and consume report metadata. |
 | [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Router that owns the `tests/` folder of an ML workspace and the experiment ↔ test pairing rule. Dispatches to a per-category subskill. |
 | [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Diagnostic-by-construction pytest that catches the "load → featurize → split" anti-pattern by predicting on a disjoint, no-buffer slice of the real data source. |
+| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Owns the `audit/` folder: one `# %%` file per experiment that loads its skore report read-only and uses bare-last-expression cells. The agent executes via jupytext + nbconvert and reads the markdown digest. Read-only — never calls `evaluate` or `put`. |
 
 ## Iteration loop
 

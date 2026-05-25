@@ -195,3 +195,14 @@ Summary:
 - **`iterate-from-user`** — the only sibling strategy; sources from
   the user (article, resource, or free text) when the skore findings
   aren't the right starting point.
+- **`audit-ml-pipeline`** — sibling consumer of the same report,
+  different output shape. This skill returns **Backlog-candidate
+  rows** (for sourcing the *next* experiment); audit-ml-pipeline
+  produces a **markdown narrative** of an existing experiment (for
+  understanding the *current* one). Both go through
+  `project.summarize()` → `project.get(id)` → `report.diagnosis()`
+  / `report.*` accessors. Both are read-only — never call
+  `evaluate(...)` or `put(...)`. The two skills can fire in the
+  same § 4 turn: `audit-ml-pipeline` for the run that just
+  finished, then `iterate-from-skore` (later, on user request) to
+  source the *next* experiment from the same report.

@@ -463,6 +463,27 @@ Scratch is read-only against the skore Project (use
 duplicate row. See Stop conditions above + `organize-ml-workspace`
 § "Scratch is read-only".
 
+**The read-only rule extends to `audit/` files too.** The audit
+flow owned by `audit-ml-pipeline` places one `# %%` file per
+experiment under `audit/<NN>_<short_name>.py` and executes it via
+jupytext + nbconvert. The same `summarize()` → `get(id)` →
+`report.*` discipline applies — never call `skore.evaluate(...)`
+or `project.put(...)` from an audit file. The executed
+intermediates (`audit.ipynb`, `audit.executed.ipynb`, `audit.md`)
+land under `scratch/audit/<stem>/`, which is gitignored just like
+the rest of `scratch/`. The markdown digest is a legitimate
+narrative read for the agent (per `audit-ml-pipeline` §
+"Execution contract"); it is not a substitute for the
+`scratch/api/<lib>/<version>/<topic>.md` cache shape this skill
+owns. Two different artifacts, two different lifecycles:
+
+| | API doc cache | Audit executed digest |
+|---|---|---|
+| **Owner** | `python-api` | `audit-ml-pipeline` |
+| **Source** | `inspect.signature` / `pydoc.render_doc` / versioned-docs WebFetch | Executing `audit/<stem>.py` with jupytext + nbconvert |
+| **Lifecycle** | Append-on-success; replace on version bump | Overwritten on every audit re-execution |
+| **Read by** | Any skill needing a symbol's signature or contract | The agent during `iterate-ml-experiment` § 4 narrative work |
+
 This skill is the canonical home for these conventions. The
 workspace's `scratch/` folder does **not** carry a `README.md` —
 rules of this importance live in the skill that's loaded into

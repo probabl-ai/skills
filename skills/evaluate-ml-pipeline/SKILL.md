@@ -93,21 +93,23 @@ read the report. The pipeline declaration is out of scope (see
 - **`skore.evaluate(...)` and `project.put(...)` live only in
   `experiments/NN_*.py`.** The experiment script is the sole
   producer of a report in the workspace's skore Project.
-  Re-running `evaluate` from a `scratch/` probe (or a notebook,
-  or a one-off Python file in `src/`) duplicates the report
-  under the same `key` and pollutes `project.summarize()` —
-  the cross-experiment metrics view that `overview/summary.md`
-  reads from. If a scratch probe needs report contents, use
-  the read-only pattern owned by `organize-ml-workspace`
-  § "Scratch is read-only against the skore Project": call
-  `project.summarize()` to enumerate `(key, id)` pairs and
-  `project.get(id)` to retrieve a specific report. The trap
-  this rule blocks: `project.get(key)` raising `KeyError`
-  reads as "the report is missing" but actually means "the
-  lookup shape is wrong — `get` is by id, not by `key`". Never
-  substitute by re-running `evaluate` + `put`. See `python-api`
-  § "Lookup failure ≠ artifact missing" for the general
-  registry-lookup discipline.
+  Re-running `evaluate` from a `scratch/` probe, an `audit/` file,
+  a notebook, or a one-off Python file in `src/` duplicates the
+  report under the same `key` and pollutes `project.summarize()`
+  — the cross-experiment metrics view that `overview/summary.md`
+  reads from. **Three read-only consumers** of the Project share
+  the same `summarize()` → `get(id)` → `report.*` discipline:
+  `scratch/<ts>_*.py` probes (owned by `organize-ml-workspace`
+  § "Scratch is read-only"), `iterate-from-skore` (for Backlog
+  enrichment), and `audit/<stem>.py` files (owned by
+  `audit-ml-pipeline`, executed via jupytext + nbconvert into
+  `scratch/audit/<stem>/`). None of them call `evaluate(...)` or
+  `put(...)`. The trap all three share: `project.get(key)`
+  raising `KeyError` reads as "the report is missing" but
+  actually means "the lookup shape is wrong — `get` is by id, not
+  by `key`". Never substitute by re-running `evaluate` + `put`.
+  See `python-api` § "Lookup failure ≠ artifact missing" for the
+  general registry-lookup discipline.
 - **The time-ordered splitter AskUserQuestion is non-skippable,
   even under harness-level "no clarifying questions"
   instructions.** When the data is temporal, the four-option
@@ -353,6 +355,12 @@ Pre-flight (evaluate-ml-pipeline):
   pipeline with a history-dependent step. The CV report and the
   smoke test are independent artifacts — both must be in place
   before an experiment can flip to `done`.
+- **`audit-ml-pipeline`** — read-only consumer of the report
+  this skill's `skore.evaluate(...)` produced. The experiment
+  script puts the report; the audit file loads it via
+  `project.summarize()` → `project.get(id)` and renders a
+  markdown digest for the agent (no `evaluate`, no `put`).
+  Fires at `iterate-ml-experiment` § 4 record-outcome.
 - **`test-ml-pipeline`** — router for `tests/`. Owns layout and
   the stem pairing between an experiment and its smoke test.
 - **`python-env-manager`** — detection + install commands for the

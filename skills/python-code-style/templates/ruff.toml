@@ -3,13 +3,19 @@ target-version = "py312"
 
 [lint]
 select = ["E", "F", "W", "I", "B", "UP", "D"]
-ignore = [
-    # Imports do not have to live at the top of the file — `# %%` cells
-    # in `experiments/` interleave imports between code blocks.
-    "E402",
-    # Bare expressions are intentional in `# %%` notebook cells (display output).
-    "B018",
-]
+
+[lint.per-file-ignores]
+# `experiments/` and `audit/` carry jupytext-style `# %%` cell scripts.
+# The cell convention legitimately violates a few rules that are correct
+# for regular Python:
+#   E402  imports not at top of file — cells interleave imports + code
+#   B018  useless bare expression — bare expressions are the cell's output
+#   D100  missing module docstring — module-level docstring is the
+#         markdown cell at the top of the file
+#   D103  missing function docstring — # %% cell scripts rarely have
+#         named functions; when they do, the design-note is the doc
+"experiments/**" = ["E402", "B018", "D100", "D103"]
+"audit/**" = ["E402", "B018", "D100", "D103"]
 
 [lint.pydocstyle]
 convention = "numpy"
