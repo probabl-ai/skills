@@ -47,9 +47,13 @@ finds the right submodule.
   (`SkrubLearner`).
 - **Report types**: `EstimatorReport` (single train/test split),
   `CrossValidationReport` (CV), `ComparisonReport` (multi-key). All
-  expose `.metrics`, `.feature_importance` (where applicable),
-  `.diagnosis()` (the diagnostic surface used by
-  `iterate-from-skore`).
+  expose `.metrics` (with `.summarize().frame()` for the task-
+  appropriate headline metrics), `.checks` (with
+  `.summarize().frame()` for the automated `passed` / `issue` /
+  `tip` walk — the surface `audit-ml-pipeline` renders and
+  `iterate-from-skore` mines via the digest), and `.inspection`
+  (for feature importance / coefficients where the estimator
+  supports it).
 - **Project**: `skore.Project(name, *, mode='local', **kwargs)`.
   Three mutually exclusive modes — the constructor args **change
   shape per mode**:

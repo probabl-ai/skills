@@ -48,11 +48,12 @@ plus an orthogonal **agent feature**:
 3. **Optional** — install only when the project's task requires it.
 4. **Transitive** — already pulled in by the mandatory tier; do not
    install explicitly, but know they're available.
-5. **Agent feature (orthogonal)** — deps that the *agent* uses to
-   audit a workspace (`jupytext`, `ipykernel`, `nbconvert`), kept
-   out of the production-shape runtime via a manager-specific
-   scope. Install logistics owned by `python-env-manager` §
-   "Agent feature"; consumed by `audit-ml-pipeline`.
+5. **Agent feature (orthogonal)** — deps that the *agent* uses
+   to audit a workspace and to power the editor LSP integration
+   (`ipython`, `pyright`), kept out of the production-shape
+   runtime via a manager-specific scope. Install logistics owned
+   by `python-env-manager` § "Agent feature"; consumed by
+   `audit-ml-pipeline` and the opencode LSP integration.
 
 ## Stop conditions — read before naming any library
 
@@ -429,18 +430,17 @@ available without an extra install.
 
 ## Agent feature — orthogonal to the four tiers
 
-The audit flow owned by `audit-ml-pipeline` needs an executable
-notebook toolchain (`jupytext` + `ipykernel` + `nbconvert`) plus a
-one-time kernel registration. These deps don't fit cleanly into
-the four tiers above:
+The audit flow owned by `audit-ml-pipeline` and the editor LSP
+integration both need agent-only tooling (`ipython` + `pyright`).
+These deps don't fit cleanly into the four tiers above:
 
 - They are **not Tier 1 mandatory** — workspaces that don't run
-  audits never need them.
+  audits and don't use opencode's LSP never need them.
 - They are **not Tier 2 user-choice** — there is no competing-
-  library job; jupytext + nbconvert is the one toolchain that
-  supports the two-step execution contract.
+  library job; this is the one toolchain that powers the
+  in-process audit runner AND the LSP.
 - They are **not Tier 3 optional** in the same sense as
-  pytorch / mlflow — the audit flow is project-orthogonal
+  pytorch / mlflow — the agent feature is *agent-orthogonal*
   tooling, not a modelling library.
 - They are **not Tier 4 transitive** — nothing in Tier 1 pulls
   them in.
@@ -451,29 +451,27 @@ the data-science deps.
 
 | Library | Role |
 |---|---|
-| `jupytext` | Converts `audit/<stem>.py` (percent format) to `.ipynb` for execution. Step 1 of the two-step path. |
-| `nbconvert` | Executes the `.ipynb` against a named kernel and renders the result to markdown. Steps 2-3 of the two-step path. |
-| `ipykernel` | Provides the IPython kernel that `nbconvert --ExecutePreprocessor.kernel_name=<kernel>` resolves against. Registered once per project. |
+| `ipython` | Powers `audit-ml-pipeline/scripts/run_audit.py` via `IPython.core.interactiveshell.InteractiveShell.run_cell`. Executes the audit `# %%` cells in-process, captures plain-text repr per cell. |
+| `pyright` | Powers the opencode LSP integration for Python files. Surfaces import / type / undefined-symbol diagnostics in the editor. Configured via the bundled `pyrightconfig.json` template (shipped by `python-env-manager`). |
 
-**Install + register: owned by `python-env-manager` § "Agent
-feature".** That skill carries the per-manager composition table
+**Install + config drop: owned by `python-env-manager` § "Agent
+feature".** That skill carries the per-manager install table
 (pixi features / uv groups / poetry groups / hatch envs / conda
-envs / pip+venv extras) and the kernel-registration step (`python
--m ipykernel install --user --name <kernel>`).
+envs / pip+venv extras) and the `pyrightconfig.json` placement
+step.
 
-**Consumed by `audit-ml-pipeline`.** When the audit skill fires
-and the agent feature isn't present, it routes through
-`python-env-manager`'s `G-AGENT-FEATURE` gate before proceeding.
+**Consumed by `audit-ml-pipeline` and the LSP.** When either
+consumer fires and the agent feature isn't present, the calling
+skill routes through `python-env-manager`'s `G-AGENT-FEATURE`
+gate before proceeding.
+
+**No kernel registration.** The in-process runner doesn't need a
+Jupyter kernel.
 
 **Not Tier 3 notebooks (despite overlap).** `jupyterlab` /
-`jupytext` *can* be installed together when a user wants
-interactive notebook editing. But the agent feature's purpose is
-**non-interactive execution by the agent**, not interactive
-editing by the user. Same library family, different deployment
-shape: Tier 3 notebooks → user-facing JupyterLab + jupytext for
-`.ipynb`↔`.py` round-tripping; agent feature → headless jupytext
-+ nbconvert for the audit-execute pipeline. A workspace may have
-both, neither, or only one.
+`jupytext` *can* still be installed when a user wants interactive
+notebook editing — they're a separate Tier 3 concern, not the
+agent feature. A workspace may have both, neither, or only one.
 
 ## Conventions
 

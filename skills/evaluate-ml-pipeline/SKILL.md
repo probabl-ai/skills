@@ -97,16 +97,19 @@ read the report. The pipeline declaration is out of scope (see
   a notebook, or a one-off Python file in `src/` duplicates the
   report under the same `key` and pollutes `project.summarize()`
   — the cross-experiment metrics view that `overview/summary.md`
-  reads from. **Three read-only consumers** of the Project share
+  reads from. **Two read-only consumers** of the Project share
   the same `summarize()` → `get(id)` → `report.*` discipline:
   `scratch/<ts>_*.py` probes (owned by `organize-ml-workspace`
-  § "Scratch is read-only"), `iterate-from-skore` (for Backlog
-  enrichment), and `audit/<stem>.py` files (owned by
-  `audit-ml-pipeline`, executed via jupytext + nbconvert into
-  `scratch/audit/<stem>/`). None of them call `evaluate(...)` or
-  `put(...)`. The trap all three share: `project.get(key)`
-  raising `KeyError` reads as "the report is missing" but
-  actually means "the lookup shape is wrong — `get` is by id, not
+  § "Scratch is read-only") and `audit/<stem>.py` files (owned by
+  `audit-ml-pipeline`, executed via its bundled in-process IPython
+  runner; output digest at `scratch/audit/<stem>/audit.md`).
+  Neither calls `evaluate(...)` or `put(...)`. A third consumer,
+  `iterate-from-skore`, does not open the Project at all — it
+  reads the audit's digest as text and converts the surfaced
+  checks into Backlog candidates. The trap the two Project-side
+  consumers share: `project.get(key)` raising `KeyError` reads as
+  "the report is missing" but actually means "the lookup shape is
+  wrong — `get` is by id, not
   by `key`". Never substitute by re-running `evaluate` + `put`.
   See `python-api` § "Lookup failure ≠ artifact missing" for the
   general registry-lookup discipline.

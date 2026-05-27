@@ -11,7 +11,8 @@
 #
 # After this file is on disk, `python-env-manager` § "Editable
 # workspace package" wires the editable install for the project's
-# manager (pixi: `pixi add --pypi --editable .`; uv: `uv sync` is
+# manager (pixi: `pixi add --pypi "<pkg> @ ."` then edit
+# `[pypi-dependencies]` to set `editable = true`; uv: `uv sync` is
 # enough; poetry/hatch: declarative; pip+venv: `pip install -e .`).
 
 [build-system]

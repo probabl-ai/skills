@@ -11,55 +11,57 @@ no file-mtime watching, no background hook. The user says "the run
 finished, record it" (or similar), and only then does § 4 start. If
 you suspect a run finished but the user hasn't said so, ask.
 
-## Step 1 — Decide if the report is accessible
+## Step 1 — Run the audit and read its digest
 
-Is the skore Project store at the expected path (`reports/`) and does
-it contain the experiment's key?
+§ 4 is **audit-first**: dispatch to `audit-ml-pipeline` to place +
+execute `audit/NN_<short_name>.py` before doing anything else. The
+audit runner is the one path that opens the skore Project from
+this skill's flow; § 4 itself never calls `project.get(...)` or
+`report.*` accessors directly.
 
-### Accessible — read it programmatically
+The audit produces the **digest** at
+`scratch/audit/<stem>/audit.md` — the canonical programmatic entry
+point for the recording step. Read it as text and pull:
 
-Open the report via the skore Project. Route through
-`evaluate-ml-pipeline` for the call site, and **invoke
-`python-api` this turn** to confirm signatures — don't reach into
-report attributes from memory.
+- **Headline metric + uncertainty** from `## Metrics summary`.
+- **Actionable checks** from `## Checks summary` (each row with
+  `severity == issue` / `tip` carries a `documentation_url`; that
+  link is the recommended mitigation).
 
-The programmatic entry point is **`report.diagnosis()`** — for v1
-this is the only diagnostic entry point this skill relies on. For
-a richer diagnostic narrative for the user, hand off to
-`evaluate-ml-pipeline`.
+### Audit succeeded — proceed
 
-**`Project.get` is by id, not by user-facing `key`.** Enumerate
-with `project.summarize()` first; that returns a DataFrame indexed
-by id with a `key` column. Pass the id to `get()`. A failed
-`get(key)` does NOT mean the report is missing — it means the
-lookup shape is wrong.
+The digest carries everything needed for steps 2–8 below. Don't
+re-open the Project, don't write `scratch/<ts>_inspect_*.py` to
+extract metrics — the audit already did the walk.
 
-### Not accessible — ask the user
+### Audit cannot run / digest unreadable — ask the user
 
-Run on a different machine, batch system, script crashed before
-`project.put`, …: **do not fabricate report content from memory.**
-Ask the user for the headline metric (and a one-line note on
-anything that looked off). Mark the design note's "Implication"
-field as `deferred — report not accessible this session` and pick
-the diagnostic up next time.
+Agent feature missing, report not landed in the Project, hub
+auth expired, script crashed before `project.put`: **do not
+fabricate report content from memory.** Recovery is owned by
+`audit-ml-pipeline` (re-run the runner once the issue is fixed)
+or `python-env-manager` (G-AGENT-FEATURE). If the user wants to
+record the outcome anyway, ask them for the headline metric (and
+a one-line note on anything that looked off), set the design
+note's Implication to `deferred — audit not accessible this
+session`, and revisit on the next session.
 
-### Inspection lives in `scratch/`, not in the experiment script
+### Scratch is only for needs beyond the digest
 
-The experiment script's job ends at `project.put(...)`. To pull
-metrics, walk diagnosis, sanity-check any post-run state:
-
-```
-scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py
-```
+If a step downstream of the digest needs more (e.g. the
+`overview/summary.md` refresh in step 7 needs cross-experiment
+metrics from `project.summarize()`), the probe goes to
+`scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and runs via
+`pixi run python scratch/<ts>_<short>.py`.
 
 See `python-api` § "Scratch traceability" for the full
 convention. **Inline `pixi run python -c "..."` is forbidden
-regardless of length** (see `python-api` § Stop conditions). All
-Python execution goes to `scratch/<ts>_<short>.py`.
+regardless of length** (see `python-api` § Stop conditions).
 
 **Do NOT edit the experiment script to add agent-only `print`
 calls.** The script is the durable record of what was run; the
-inspection trace lives in `scratch/`.
+audit is the durable diagnostic walk; scratch is only for the
+gaps between them.
 
 ## Step 2 — Fill the four Status-block fields
 

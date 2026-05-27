@@ -99,7 +99,9 @@ installed skore version — the dispatch table can evolve.
 
 Every report goes under a **stable key** in the workspace's
 `skore.Project` so future runs can read it back (the
-`iterate-from-skore` skill mines these reports for diagnostics).
+`audit-ml-pipeline` skill renders each report to a markdown
+digest, and `iterate-from-skore` mines that digest for Backlog
+candidates).
 
 The Project init form depends on the workspace's `skore mode:`
 decision (recorded in `JOURNAL.md` Status `Workspace decisions`;
@@ -156,8 +158,8 @@ project = skore.Project(
 df = project.summarize().reset_index()
 id_ = df[df["key"] == "01_baseline"]["id"].iloc[0]
 report = project.get(id_)
-report.metrics.summarize().frame()  # mean ± std per CV metric
-report.diagnosis()                   # the structured diagnostic surface
+report.metrics.summarize().frame()  # task-appropriate headline metrics
+report.checks.summarize().frame()    # automated checks (passed / issue / tip)
 ```
 
 `project.summarize()` returns a pandas DataFrame indexed by id with
@@ -252,5 +254,8 @@ version — the kwargs differ between `EstimatorReport` (uses
   source-bound vars vs materialized `(X, y)` bindings.
 - `evaluate-ml-pipeline` — the methodology side: cross-validator
   choice, default metrics, structural metadata (`split_kwargs`).
-- `iterate-from-skore` — reads the persisted report's
-  `report.diagnosis()` to surface backlog candidates.
+- `iterate-from-skore` — reads the audit digest at
+  `scratch/audit/<stem>/audit.md` (produced by `audit-ml-pipeline`)
+  and converts each `issue` / `tip` row from the report's
+  `checks.summarize()` into a Backlog candidate, following the
+  check's `documentation_url` for the mitigation.

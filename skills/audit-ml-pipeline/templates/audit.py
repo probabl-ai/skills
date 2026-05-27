@@ -2,9 +2,9 @@
 # # Audit: experiments/<NN>_<short_name>.py
 #
 # Read-only narrative of this experiment's skore report. The agent
-# executes this file via the two-step jupytext + nbconvert path (see
+# executes this file via the bundled in-process runner (see
 # `audit-ml-pipeline` § "Execution contract") and reads the resulting
-# markdown digest from `scratch/audit/<NN>_<short_name>/audit.md`.
+# markdown digest from stdout.
 #
 # **Hard rule (audit-ml-pipeline § "Read-only against the skore
 # Project"):** this file MUST NOT call `skore.evaluate(...)` or
@@ -54,80 +54,88 @@ project
 # %% [markdown]
 # ## List the available reports
 #
-# `project.summarize()` returns a DataFrame indexed by report id,
-# with a `key` column. Used in two ways: (1) confirm this
-# experiment's report is on disk, (2) resolve the user-facing key
-# to the internal id (which is what `project.get(...)` consumes —
-# `get` is by id, not by key; see `python-api` § "Lookup failure ≠
-# artifact missing").
+# `project.summarize()` provides an overview of all reports in this
+# Project — useful to confirm the experiment's report landed and to
+# spot duplicate keys from accidental re-runs.
 
 # %%
 summary = project.summarize()
 summary
 
 # %% [markdown]
-# ## Resolve this experiment's report id
-#
-# Filter `summary` by the experiment stem; pull the (single) row's
-# id. If `.itertuples` raises `ValueError: too many values to
-# unpack` the project has multiple rows under the same key — flag
-# it; the experiment was re-run without overwriting.
-
-# %%
-KEY = "<NN>_<short_name>"
-((_, id_),) = summary.loc[summary["key"] == KEY, ["key", "id"]].itertuples(
-    index=False,
-)
-id_
-
-# %% [markdown]
 # ## Load the report
 #
-# Rich repr (HTML when available) renders in-notebook; the
-# executed markdown digest preserves it.
+# **Hub mode** — `project.put()` prints a URL of the form:
+#
+#   `https://skore.probabl.ai/<hub-workspace>/<project>/<type-plural>/<N>`
+#
+# The report id is `skore:report:<type-singular>:<N>`.  The URL path
+# segment is the plural; the id uses the singular (drop the trailing
+# `s`).  Examples:
+#
+#   `.../cross-validations/42`  →  `skore:report:cross-validation:42`
+#   `.../estimators/7`          →  `skore:report:estimator:7`
+#
+# Copy `<N>` and `<type-singular>` from the experiment's stdout and
+# set `REPORT_ID` below — no `summarize()` traversal needed.
+#
+# **Local mode** — `project.put()` does not print a URL.  Read the
+# `"id"` column value from the `summary` DataFrame above for the row
+# whose `"key"` matches this experiment's stem, and set `REPORT_ID` to
+# that value.
 
 # %%
-report = project.get(id_)
+REPORT_ID = "skore:report:<type-singular>:<N>"  # hub: from put() URL (plural→singular, e.g. cross-validations→cross-validation, estimators→estimator); local: from summary["id"]
+
+report = project.get(REPORT_ID)
 report
 
 # %% [markdown]
-# ## Diagnosis surface
+# ## Checks summary
 #
-# `report.diagnosis()` is the v1 programmatic diagnostic walk —
-# the same surface `iterate-from-skore` consumes. Reading it here
-# (in audit context) is for *understanding this experiment*; the
-# sourcing-strategy use of the same call lives in
-# `iterate-from-skore`.
+# `report.checks.summarize().frame()` returns a DataFrame whose rows
+# each carry a `code` (e.g. `SKD003`), a `severity` (`passed` /
+# `issue` / `tip`), and a `documentation_url`. The
+# `documentation_url` is the actionable mitigation — every check
+# that surfaces here is documented on the skore docs site, and the
+# linked page describes what the check tests **and what to try
+# next**. `iterate-from-skore` reads this section and follows the
+# URLs to draft Backlog rows.
+#
+# Available on `EstimatorReport` and `CrossValidationReport` in
+# skore ≥ 0.18. Mute a noisy check via
+# `report.checks.summarize(ignore=['<code>']).frame()`.
+#
+# Docs: https://docs.skore.probabl.ai/0.18/user_guide/automated_checks.html
 
 # %%
-report.diagnosis()
+report.checks.summarize().frame()
 
 # %% [markdown]
-# ## Metric accessors
+# ## Metrics summary
 #
-# Task-dependent. Replace this block with the accessors that
-# matter for this experiment per the design note's Method.
-# Reference shapes by task (confirm names via `python-api`
-# against the installed skore version):
+# `report.metrics.summarize().frame()` covers task-appropriate
+# defaults in one call:
 #
-# - regression: `report.metrics.rmse`, `report.metrics.mae`,
-#   `report.metrics.r2`
-# - binary classification: `report.metrics.roc_auc`,
-#   `report.metrics.brier_score`,
-#   `report.metrics.precision_recall`
-# - multiclass: `report.metrics.classification_report`
-# - calibration: `report.metrics.calibration`
+# - regression: RMSE / MAE / R² + fit/predict timings,
+# - binary classification: accuracy / precision / recall / F1 /
+#   ROC-AUC / log-loss + timings,
+# - multiclass: macro / micro averages of the above.
 #
-# One bare expression per cell so the markdown digest shows one
-# output per metric — easier for the agent to scan.
+# Same accessor on both `EstimatorReport` and
+# `CrossValidationReport`; the latter additionally reports mean ±
+# std across folds. This section is the headline reading; it does
+# not drive Backlog rows on its own — actionable findings come
+# from the checks section above.
 
 # %%
-report.metrics
+report.metrics.summarize().frame()
 
 # %% [markdown]
 # ## End of audit
 #
 # Re-running this audit file overwrites
-# `scratch/audit/<NN>_<short_name>/`. The source `audit/<NN>_<short_name>.py`
-# is the durable record; the executed `.ipynb` + rendered `.md` are
-# ephemeral.
+# `scratch/audit/<NN>_<short_name>/`. The source
+# `audit/<NN>_<short_name>.py` is the durable record; the digest
+# at `scratch/audit/<NN>_<short_name>/audit.md` is the canonical
+# input to `iterate-from-skore`.
