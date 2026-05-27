@@ -99,23 +99,45 @@ installed skore version — the dispatch table can evolve.
 
 Every report goes under a **stable key** in the workspace's
 `skore.Project` so future runs can read it back (the
-`iterate-from-skore` skill mines these reports for diagnostics).
+`audit-ml-pipeline` skill renders each report to a markdown
+digest, and `iterate-from-skore` mines that digest for Backlog
+candidates).
+
+The Project init form depends on the workspace's `skore mode:`
+decision (recorded in `JOURNAL.md` Status `Workspace decisions`;
+gate owned by `organize-ml-workspace` § "G-SKORE-MODE"). Two
+forms; pick the one matching the workspace:
 
 ```python
-project = skore.Project(workspace="reports", name="load-forecast", mode="local")
+# local mode
+project = skore.Project(
+    name="load-forecast",
+    mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
+)
+project.put("01_baseline", report)
+```
+
+```python
+# hub mode
+from skore import login
+login(mode="hub")  # interactive on first run; cached after
+project = skore.Project("<hub-workspace>/load-forecast", mode="hub")
 project.put("01_baseline", report)
 ```
 
 - **Key convention**: file stem of the experiment script. Re-using
   the key in a later run overwrites the previous report — fork into
   a new experiment file if you want both.
-- **`workspace="reports"`** — the relative path to the Project store
-  on disk. Created on first `put`.
-- **`name="<project-name>"`** — short, stable, per-workspace name.
-  Set once at project bootstrap inside each experiment script's
-  `skore.Project(..., name=...)` call (the agent reads the value
-  from `experiments/01_baseline.py` when needed; there is no
-  auto-discovery script).
+- **Local-mode `workspace=str(PROJECT_ROOT / "reports")`** — the
+  on-disk directory where the Project store lives. Created on
+  first `put`. **Not** a valid kwarg in hub mode.
+- **`name=`** — short, stable, per-workspace name. Local mode uses
+  it directly; hub mode uses it after `<hub-workspace>/` as in
+  `"<hub-workspace>/load-forecast"`. Set once at project
+  bootstrap inside each experiment script's `skore.Project(...)`
+  call (the agent reads the value from `experiments/01_baseline.py`
+  when needed; there is no auto-discovery script).
 
 ## Reading back later
 
@@ -126,12 +148,18 @@ the id:
 ```python
 import skore
 
-project = skore.Project(workspace="reports", name="load-forecast", mode="local")
+# Project init form follows the workspace's `skore mode:` decision.
+# Local-mode form shown here; for hub mode see the previous section.
+project = skore.Project(
+    name="load-forecast",
+    mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
+)
 df = project.summarize().reset_index()
 id_ = df[df["key"] == "01_baseline"]["id"].iloc[0]
 report = project.get(id_)
-report.metrics.summarize().frame()  # mean ± std per CV metric
-report.diagnosis()                   # the structured diagnostic surface
+report.metrics.summarize().frame()  # task-appropriate headline metrics
+report.checks.summarize().frame()    # automated checks (passed / issue / tip)
 ```
 
 `project.summarize()` returns a pandas DataFrame indexed by id with
@@ -164,7 +192,11 @@ DATA_DIR = PROJECT_ROOT / "data"
 # ## Project
 
 # %%
-project = skore.Project(workspace="reports", name="load-forecast", mode="local")
+project = skore.Project(
+    name="load-forecast",
+    mode="local",
+    workspace=str(PROJECT_ROOT / "reports"),
+)  # local-mode form; see `organize-ml-workspace` § "G-SKORE-MODE" for hub
 
 # %% [markdown]
 # ## Learner
@@ -222,5 +254,8 @@ version — the kwargs differ between `EstimatorReport` (uses
   source-bound vars vs materialized `(X, y)` bindings.
 - `evaluate-ml-pipeline` — the methodology side: cross-validator
   choice, default metrics, structural metadata (`split_kwargs`).
-- `iterate-from-skore` — reads the persisted report's
-  `report.diagnosis()` to surface backlog candidates.
+- `iterate-from-skore` — reads the audit digest at
+  `scratch/audit/<stem>/audit.md` (produced by `audit-ml-pipeline`)
+  and converts each `issue` / `tip` row from the report's
+  `checks.summarize()` into a Backlog candidate, following the
+  check's `documentation_url` for the mitigation.

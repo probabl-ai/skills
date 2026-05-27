@@ -38,7 +38,8 @@ description: >
 
 # Data Science Python Stack
 
-Opinionated stack — one library per job, organized into four tiers:
+Opinionated stack — one library per job, organized into four tiers
+plus an orthogonal **agent feature**:
 
 1. **Mandatory** — installed at project start, no exceptions.
 2. **User choice (competing-library jobs)** — multiple valid libraries
@@ -47,6 +48,12 @@ Opinionated stack — one library per job, organized into four tiers:
 3. **Optional** — install only when the project's task requires it.
 4. **Transitive** — already pulled in by the mandatory tier; do not
    install explicitly, but know they're available.
+5. **Agent feature (orthogonal)** — deps that the *agent* uses
+   to audit a workspace and to power the editor LSP integration
+   (`ipython`, `pyright`), kept out of the production-shape
+   runtime via a manager-specific scope. Install logistics owned
+   by `python-env-manager` § "Agent feature"; consumed by
+   `audit-ml-pipeline` and the opencode LSP integration.
 
 ## Stop conditions — read before naming any library
 
@@ -239,6 +246,18 @@ changes.
   `seaborn`, `plotly`, `joblib`, and others transitively (see
   Tier 4) — so static *and* interactive plotting are available
   without any extra install.
+
+  **Install variant per mode.** `skore.Project(...)` supports three
+  mutually exclusive modes: `local` (artifacts on disk; no extra
+  deps), `hub` (artifacts on Skore Hub; requires `skore[hub]`
+  extra + `skore.login()` before first use), `mlflow` (artifacts
+  in an MLflow tracking server; requires `skore[mlflow]` extra).
+  The choice is a workspace-level decision owned by
+  `organize-ml-workspace` § "G-SKORE-MODE" — fired at scaffold
+  alongside G-PKG-NAME / G-TABULAR / G-ENV-MGR. `python-env-manager`
+  § "Tier 1 install: skore variant per mode" maps the recorded
+  decision to the right install command per env manager.
+  Default-on-no-preference: `local`.
 - [`ruff`](references/ruff.md) — single-tool lint + format,
   replaces `black` / `isort` / `flake8` / `pydocstyle`. Install in
   the **same feature/env as the rest of the Tier 1 stack** so
@@ -408,6 +427,51 @@ available without an extra install.
 - [`ipykernel`](references/ipykernel.md) — Python kernel for
   Jupyter. Pulled in by `jupyterlab` when the notebooks tier is
   installed.
+
+## Agent feature — orthogonal to the four tiers
+
+The audit flow owned by `audit-ml-pipeline` and the editor LSP
+integration both need agent-only tooling (`ipython` + `pyright`).
+These deps don't fit cleanly into the four tiers above:
+
+- They are **not Tier 1 mandatory** — workspaces that don't run
+  audits and don't use opencode's LSP never need them.
+- They are **not Tier 2 user-choice** — there is no competing-
+  library job; this is the one toolchain that powers the
+  in-process audit runner AND the LSP.
+- They are **not Tier 3 optional** in the same sense as
+  pytorch / mlflow — the agent feature is *agent-orthogonal*
+  tooling, not a modelling library.
+- They are **not Tier 4 transitive** — nothing in Tier 1 pulls
+  them in.
+
+So they live in their own bucket: the **agent feature**, a
+manager-scoped install that composes alongside (not replaces)
+the data-science deps.
+
+| Library | Role |
+|---|---|
+| `ipython` | Powers `audit-ml-pipeline/scripts/run_audit.py` via `IPython.core.interactiveshell.InteractiveShell.run_cell`. Executes the audit `# %%` cells in-process, captures plain-text repr per cell. |
+| `pyright` | Powers the opencode LSP integration for Python files. Surfaces import / type / undefined-symbol diagnostics in the editor. Configured via the bundled `pyrightconfig.json` template (shipped by `python-env-manager`). |
+
+**Install + config drop: owned by `python-env-manager` § "Agent
+feature".** That skill carries the per-manager install table
+(pixi features / uv groups / poetry groups / hatch envs / conda
+envs / pip+venv extras) and the `pyrightconfig.json` placement
+step.
+
+**Consumed by `audit-ml-pipeline` and the LSP.** When either
+consumer fires and the agent feature isn't present, the calling
+skill routes through `python-env-manager`'s `G-AGENT-FEATURE`
+gate before proceeding.
+
+**No kernel registration.** The in-process runner doesn't need a
+Jupyter kernel.
+
+**Not Tier 3 notebooks (despite overlap).** `jupyterlab` /
+`jupytext` *can* still be installed when a user wants interactive
+notebook editing — they're a separate Tier 3 concern, not the
+agent feature. A workspace may have both, neither, or only one.
 
 ## Conventions
 

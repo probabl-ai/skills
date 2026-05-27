@@ -17,9 +17,12 @@ description: >
       missing import and an install is the next step;
   (3) a workflow skill's Stop condition fired on a missing
       dependency (`build-ml-pipeline`, `evaluate-ml-pipeline`,
-      `organize-ml-workspace`);
+      `organize-ml-workspace`, `audit-ml-pipeline`);
   (4) starting a new Python project and no manager is in place yet
-      (bootstrap with pixi unless the user picks otherwise).
+      (bootstrap with pixi unless the user picks otherwise);
+  (5) `audit-ml-pipeline` (or another agent-only consumer) needs the
+      **agent feature** (`ipython` + `pyright`) and it isn't yet
+      present in the project's manifest — see § "Agent feature".
 
   SKIP when: the project is non-Python; the install/add command is
   for a non-Python tool (npm, brew, apt, cargo, gem); the dependency
@@ -43,538 +46,435 @@ Detect the env manager, install with the right command. Single
 authority for `data-science-python-stack` and the workflow skills
 when they need a dependency added.
 
+## Next-step pointers — where you go after this skill
+
+| Came here from… | After install, next gate is… |
+|---|---|
+| `organize-ml-workspace` § scaffold | → `organize-ml-workspace` § Editable workspace package; continue scaffold |
+| `audit-ml-pipeline` § agent-feature-missing | → return to `audit-ml-pipeline`; place `audit/<stem>.py` |
+| `build-ml-pipeline` / `evaluate-ml-pipeline` § missing dep | → return to calling skill; continue at the failing pre-flight box |
+| `data-science-python-stack` § Missing dependency | → return to caller; the import that was missing should now succeed |
+
+Always re-emit the Pre-flight checklist with evidence before
+declaring the turn done.
+
 ## Stop conditions — read before anything else
 
 - **Wrong-manager install is forbidden.** If the project uses pixi,
-  do not `pip install`. If it uses poetry, do not `uv add`. If it
-  uses uv, do not `poetry add`. Mixing managers creates environment
-  state the project's manifest doesn't track, and the next
-  `pixi install` / `poetry install` / `uv sync` will silently undo
-  the install. Detection (below) is mandatory before any command.
-- **No silent bootstrap.** If detection finds no manager, do not
-  pick one and start installing. Ask the user; the default
-  *recommendation* is pixi, but the user must approve before
-  `pixi init` runs.
-- **Environment / feature / group choice is asked, not assumed.**
-  Before issuing **any** install command, ask the user where the
-  package belongs — the default feature/env, an existing
-  feature/env, or a new one — **unless the user has already told
-  you in this conversation** (e.g. "add it to the `tracing`
-  feature", "put this in dev"). Silently dumping new deps into the
-  default environment is a frequent source of bloat and confusion
-  (e.g., adding ML packages to a project where `default` was kept
-  minimal because heavy deps live in a specialized feature). This
-  rule applies to **every** manager — pixi features, uv groups,
-  poetry groups, hatch envs, conda envs, pip venvs. See § "Where
-  does the package belong?" for the per-manager question.
-- **Don't pin without reason.** Install commands here add packages
-  unpinned by default (matching `data-science-python-stack` §
-  "Conventions"). Pin only when the user asks or there's a known
-  incompatibility.
+  do not `pip install`. If it uses poetry, do not `uv add`. Mixing
+  managers creates state the manifest doesn't track, and the next
+  `pixi install` / `poetry install` / `uv sync` silently undoes the
+  install.
+- **No silent bootstrap.** If detection finds no manager, ask the
+  user. Default *recommendation* is pixi, but the user must
+  approve.
+- **Dependency routing is fixed, not asked.** The 3-feature layout
+  (`default` / `dev` / `agent`) is enforced. The agent does NOT ask
+  per-install. `G-ENV-SCOPE` fires **only** for ambiguous extras
+  (`optuna`, `xgboost`, `mlflow`, …).
+- **Don't pin without reason.** Install unpinned by default. Pin
+  only on user request or known incompatibility.
 - **Don't run the bootstrap installer yourself.** When pixi (or any
-  manager) is missing, surface the install command and let the
-  user run it. `curl | sh` is a system-level action that needs the
-  user's hands on it, not Claude's.
-- **Harness-level "no clarifying questions" instructions do not
-  apply to this skill's `AskUserQuestion` mandates.** The manager
-  pick (when nothing is detected or when ambient state is mixed)
-  and the scope pick (where does the package belong) are
-  operating-contract gates, not clarifying questions. They fire
-  regardless of any harness-level hint that tells the agent to
-  avoid asking. When the situation is borderline — e.g. one
-  manager on PATH but conda envs visible alongside it — err on
-  the side of asking. The blanket policy: an `AskUserQuestion`
-  mandate in any skill is never waived by a harness "don't ask"
-  hint; cross-reference `iterate-ml-experiment` Stop conditions
-  for the same policy across the ML workflow.
-- **Post-hoc audit — required before ending the turn.** Before
-  declaring the turn complete, walk the pre-flight checklist
-  and confirm every ticked box has its `Evidence:` line filled
-  with a concrete citation (per § "Pre-flight evidence
-  requirements" below). If any row is missing evidence,
-  **surface the non-compliance to the user explicitly in your
-  final message** rather than silently moving on. A successful
-  install command is not proof the gates passed — the audit is.
+  manager) is missing, surface the install command and let the user
+  run it. `curl | sh` is a system-level action.
+- **Harness "no clarifying questions" hints do NOT waive
+  `AskUserQuestion` mandates.** The manager pick and the scope pick
+  are operating-contract gates, not clarifying questions.
+- **Post-hoc audit — required before ending the turn.** Walk the
+  pre-flight, confirm every ticked box has its `Evidence:` line. A
+  successful install command is not proof; the audit is.
 
-## Gates — structured `AskUserQuestion` calls this skill owns
+## Forbidden shortcuts
 
-These are the two operating-contract gates this skill drives.
-Both must pass via `AskUserQuestion` (or be answered out of
-`JOURNAL.md` Status; see "Persistence lookup" below) before any
-install / bootstrap command runs. They are gates, not Stop
-conditions, because they have an explicit user-driven resolution
-mechanism — but they share the Stop conditions' non-skippable
-quality: no harness "don't ask" hint waives them.
+| Shortcut | Why it's wrong |
+|---|---|
+| `pixi` on PATH → run `pixi init` / `pixi add` directly | Detection on PATH is context, not a pick. G-ENV-MGR still fires when no `Workspace decisions` row exists |
+| User said "install ruff" → fire G-ENV-SCOPE | Routing is fixed: `ruff`/`pytest` → `dev`. Scope ask is forbidden for the three known buckets |
+| User asked for `xgboost` → silently drop into `default` | Ambiguous extras require the binary `default` vs new-named-feature ask |
+| Calling skill writes its own `pixi add --feature agent ...` | Install commands are owned by this skill. Calling skills **request**; this skill installs |
+| Agent feature install → also register a Jupyter kernel | The in-process runner does NOT use a kernel; registering one creates an orphan kernelspec |
+| Urgency ("quick", "you pick") waives G-ENV-MGR | Never. Urgency never waives gates |
+| `python-env-manager` opened earlier this conversation → assume gates passed | Reading SKILL.md ≠ the gate firing. The `AskUserQuestion` (or `JOURNAL.md` lookup) is the gate pass |
 
-### `G-ENV-MGR` — which manager and which scope
+## Pre-flight — emit before any command
 
-Fires when **either** of the following holds:
-
-- Detection (§ "Detection") returns `(nothing detected)` and the
-  project is fresh — the agent is about to bootstrap a manager.
-- Detection returns a single manager but no recorded
-  `Workspace decisions` row for `env manager` exists yet — the
-  agent is about to issue its first install against this
-  workspace.
-
-The `AskUserQuestion` carries two coupled sub-picks:
-
-1. **Manager.** Options come from the detection table (the
-   single match, or the full list of supported managers when
-   nothing was detected). The default *recommendation* when
-   nothing is detected is `pixi`; surface it as the proposed
-   default but require explicit confirmation.
-2. **Scope.** Once the manager is picked, enumerate the
-   existing environments / features / groups from the manifest
-   and present them as options, plus "create a new
-   feature/env/group `<name>`". The default-on-no-preference
-   for the scope sub-pick is the manager's default env
-   (`default` for pixi, the implicit env for uv/poetry, the
-   `base`/active env for conda) — but it still requires the
-   structured confirmation; never silent.
-
-Free-text resolution applies. A user message resolves the
-manager sub-pick only if it names one of the listed managers
-("use pixi", "let's go with uv"); urgency phrasing ("just go",
-"go fast", "you pick") does NOT resolve and falls through to
-the structured ask. The same rule applies to the scope sub-pick:
-"the dev feature" / "default env" resolves; "wherever" does not.
-
-The answer is persisted in `journal/JOURNAL.md` Status
-`Workspace decisions` (`env manager:` and `env scope:` rows)
-so future sessions skip the re-ask.
-
-### `G-ENV-SCOPE` — where each new install belongs
-
-After `G-ENV-MGR` has resolved the project's default scope,
-**every install command** still confirms the scope for *that
-install*. The default `Workspace decisions` scope is the
-fall-back when the user does not specify; it is not a license
-to dump every new dep into the same place. Fire a lightweight
-`AskUserQuestion` for non-trivial installs ("DL framework",
-"serving stack", "notebook tier" — any tier-shift), with the
-recorded default offered as the proposed answer.
-
-Skip the structured ask only when the user has already told you
-in the current conversation ("add it to the `tracing` feature",
-"put this in dev"); record the source as
-`user quote turn N: "..."` in the pre-flight evidence row.
-
-### Persistence lookup — read `JOURNAL.md` Status before any gate fires
-
-Before issuing either `G-ENV-MGR` or `G-ENV-SCOPE`, read the
-`Workspace decisions` block in `journal/JOURNAL.md` Status. If
-the matching row is already recorded (`env manager: <pick> —
-recorded: <date>` or `env scope: <name> — recorded: <date>`),
-**do not re-ask** — the gate is already resolved; cite
-`JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)`
-as the evidence for that row in the pre-flight.
-
-If the workspace has no `journal/JOURNAL.md` yet (truly fresh
-project before `organize-ml-workspace` has scaffolded), the
-gates fire fresh and their answers will land in the
-`Workspace decisions` block the moment `iterate-ml-experiment`
-writes the JOURNAL from its template.
-
-## Forbidden shortcuts (observed in real traces)
-
-| Shortcut | Why it feels right | Why it's wrong |
-|----------|--------------------|----------------|
-| `pixi` is on PATH → assume pixi and run `pixi init` / `pixi add` | "Manager is obvious" | Detection on PATH is context, not a pick. G-ENV-MGR still fires when no `Workspace decisions` row exists for `env manager` |
-| Detection returned exactly one manager (e.g. `pixi.toml` present) → skip G-ENV-MGR | The pick is already made | Detection skips re-asking *manager choice* because the manifest commits the project. But the *scope* sub-pick (G-ENV-SCOPE) and the per-install scope confirmation still apply on each new install |
-| Default env is the only env → skip the scope question | "Where else would it go?" | The default-only state is itself a defaultable answer that requires structured confirmation. Silently dumping into default is the bloat path this gate exists to block |
-| User said "quick baseline" / "just install the stack" → bundle all installs into one `pixi add` without asking scope | Task urgency, fewer round-trips | Urgency never waives G-ENV-MGR or G-ENV-SCOPE. Bundle the install commands once both gates have passed, not before |
-| `python-env-manager` was opened earlier this conversation → assume gates passed | Continuity from prior turn | Reading the SKILL.md is not the same as the gate firing. The `AskUserQuestion` (or the `JOURNAL.md` Status lookup) is the gate pass |
-
-## Pre-flight — emit this checklist as visible text before any command
-
-Before running an install / add / remove / upgrade command, output
-this block verbatim. **Each ticked box requires an `Evidence:`
-line** — a ticked box without evidence is a Stop-condition
-violation, indistinguishable from a skipped check.
-
-### Pre-flight evidence requirements
-
-- **Detection rows.** Evidence is the tool output that triggered
-  the detection-table match: `Evidence: ls project_root | tool
-  output (this turn) → matched signal "<signal>"` (e.g.
-  `pixi.toml present → pixi`).
-- **Gate rows (G-ENV-MGR, G-ENV-SCOPE).** Evidence is one of:
-  - `Evidence: AskUserQuestion id=<id>, answer=<option>` — the
-    user picked via the structured tool this turn.
-  - `Evidence: user quote turn N: "..."` — free-text from the
-    user named one of the listed options.
-  - `Evidence: JOURNAL.md Status (Workspace decisions, recorded
-    YYYY-MM-DD)` — the decision was made in a prior session.
-- **Workflow rows.** Evidence is the artifact produced or the
-  command that ran: `Evidence: Shell pixi add <pkgs> →
-  exit_code=0`.
-
-### The checklist
+Evidence format: see `references/preflight_evidence.md`.
 
 ```
 Pre-flight (python-env-manager):
-- [ ] Sibling SKILL.md files opened **this turn**:
-      data-science-python-stack (for the install context),
-      iterate-ml-experiment (for the JOURNAL.md persistence
-      contract), organize-ml-workspace (for the editable install
-      handoff).
+- [ ] Sibling SKILL.md files opened this turn:
+      data-science-python-stack, iterate-ml-experiment,
+      organize-ml-workspace
       Evidence: Read .agents/skills/<each>/SKILL.md (this turn)
 - [ ] `journal/JOURNAL.md` Status `Workspace decisions` block read
-      this turn for pre-recorded `env manager` and `env scope` rows.
+      this turn for `env manager:` and `agent feature:` rows.
       Evidence: lists each row's value or "not recorded yet" |
                 "n/a — JOURNAL.md does not exist yet"
 - [ ] Detection done; manager identified: <pixi | uv | poetry | hatch
       | conda | pip+venv | none>
-      Evidence: tool output of `ls` / Glob on project root +
-                matched signal from § "Detection"
+      Evidence: ls / Glob on project root + matched signal from § "Detection"
 - [ ] G-ENV-MGR resolved: <pixi | uv | poetry | hatch | conda | pip+venv>
-      Evidence: AskUserQuestion id=<id>, answer=<manager> |
-                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD) |
-                "detection returned a single manager; manifest commits the project — no AskUserQuestion needed"
-- [ ] Existing environments / features / groups enumerated from the
-      manifest (so the user has a real list to pick from)
-      Evidence: tool output of the manager's list command (e.g.
-                Read pixi.toml + grep for [feature.*])
-- [ ] G-ENV-SCOPE resolved: default | <existing feature/env/group> | <new feature/env/group>
-      Evidence: AskUserQuestion id=<id>, answer=<scope> |
-                user quote turn N: "..." |
-                JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)
-- [ ] Install command syntax confirmed for that manager (see § "Install
-      commands")
-      Evidence: cite the matching § "Install commands" subsection
+      Evidence: AskUserQuestion id=<id> | JOURNAL.md Status (recorded YYYY-MM-DD) |
+                "detection returned a single manager; manifest commits the project"
+- [ ] Dep category determined for each package:
+      runtime → default | dev → dev | agent → agent |
+      ambiguous → G-ENV-SCOPE binary ask
+      Evidence: explicit categorization in this turn's response
+- [ ] G-ENV-SCOPE resolved ONLY for ambiguous extras
+      Evidence: AskUserQuestion id=<id> | user quote turn N |
+                "n/a — package routes automatically"
+- [ ] (Agent-feature installs only) G-AGENT-FEATURE resolved: install | skipped
+      Evidence: AskUserQuestion id=<id> | JOURNAL.md Status (recorded YYYY-MM-DD) |
+                "n/a — not an agent-feature install"
+- [ ] Install command syntax confirmed for that manager (see § "Install commands")
+      Evidence: cite the matching subsection
 - [ ] Package list ready: <pkg-1, pkg-2, ...>
       Evidence: explicit list in this turn's response
+- [ ] (Agent-feature installs only) `pyrightconfig.json` drop step queued
+      Evidence: Read templates/pyrightconfig.json (this turn) + Write to project root
+                | "n/a — not an agent-feature install"
+                | "n/a — pyrightconfig.json already at project root"
+- [ ] (Agent-feature installs only) Verification commands queued
+      Evidence: commands quoted in this turn's response | "n/a"
+- [ ] Pre-flight re-emitted with evidence before final message.
+      Evidence: this same checklist appears in the end-of-turn summary.
 ```
 
-## Detection — figure out the manager first
-
-Run these checks at the project root in order. **The first signal
-that matches wins.** If multiple signals are present (a real
-possibility — e.g. `pyproject.toml` + `pixi.toml`), surface the
-ambiguity to the user before installing.
+## Detection — first signal wins
 
 | Signal at project root | Manager | Notes |
 |---|---|---|
-| `pixi.toml` or `pixi.lock` | **pixi** | Default for this stack. Likely multi-feature. |
-| `uv.lock`, or `pyproject.toml` with `[tool.uv]` | **uv** | Fast Rust-based manager. |
-| `poetry.lock`, or `pyproject.toml` with `[tool.poetry]` | **poetry** | Common in older Python projects. |
-| `hatch.toml`, or `pyproject.toml` with `[tool.hatch]` | **hatch** | Declarative; install flow varies — ask the user. |
-| `environment.yml` (and `conda` / `mamba` on PATH) | **conda / mamba** | Heavy but common in scientific stacks. |
-| `requirements.txt` + `.venv/` or `venv/` | **pip + venv** | Plain Python; least integrated. |
-| None of the above | **(nothing detected)** | Ask the user. Default *suggestion*: pixi. |
+| `pixi.toml` or `pixi.lock` | **pixi** | Default for this stack |
+| `uv.lock`, or `pyproject.toml` `[tool.uv]` | **uv** | Fast Rust-based |
+| `poetry.lock`, or `pyproject.toml` `[tool.poetry]` | **poetry** | Common in older projects |
+| `hatch.toml`, or `pyproject.toml` `[tool.hatch]` | **hatch** | Declarative; flow varies — ask |
+| `environment.yml` + `conda`/`mamba` on PATH | **conda / mamba** | Scientific stacks |
+| `requirements.txt` + `.venv/` or `venv/` | **pip + venv** | Least integrated |
+| None of the above | **(nothing detected)** | Ask the user; default *suggestion*: pixi |
 
 Notes:
-- A `pyproject.toml` with **only** `[build-system]` / `[project]` and
-  no `[tool.X]` table for any manager is ambiguous. Don't infer a
-  manager from `pyproject.toml` alone — ask.
-- `hatch` is declarative: dependencies live in `[project]
-  dependencies` or `[tool.hatch.envs.<env>.dependencies]` in
-  `pyproject.toml`, and `hatch` re-syncs on next `hatch run`. If
-  detected, ask the user how they prefer to add deps (edit
-  `pyproject.toml` vs. another flow) — there's no universal `hatch
-  add` command.
-- If both `pixi.toml` and a `pyproject.toml` with another manager's
-  `[tool.X]` are present, the project may be transitioning. Ask
-  before picking.
+- `pyproject.toml` with only `[build-system]` / `[project]` and no
+  `[tool.X]` is ambiguous — ask, don't infer.
+- Multiple signals (e.g. `pixi.toml` + `[tool.poetry]`): surface the
+  ambiguity before picking.
 
-### Ambient managers — check before recommending a fresh bootstrap
+For ambient-manager edge cases (2+ managers on PATH, existing conda
+envs that could be reused): → `references/ambient_detection.md`.
 
-When § "Detection" finds **no project-root signals**, do not silently
-default to "pixi is the recommendation". A bare project root often sits
-on top of a developer machine that already has one or more managers
-installed and existing envs the user might want to reuse. Before
-firing any `pixi init` (or equivalent), probe the *ambient* state:
+→ next: G-ENV-MGR (below).
 
-```bash
-command -v pixi uv poetry hatch conda mamba
-conda env list 2>/dev/null  # if conda/mamba is on PATH
+## Gates this skill owns
+
+### `G-ENV-MGR` — which manager
+
+**Fires when**: detection returned `(nothing detected)` AND project is
+fresh; OR detection returned a single manager but no
+`Workspace decisions` row for `env manager` exists yet.
+
+**AskUserQuestion**: single pick — the manager. Options from the
+detection table. Default *recommendation* on nothing-detected:
+`pixi`. Free-text resolves only when it names a listed manager.
+
+**Persists**: `env manager: <pick> — recorded: <date>` in
+`journal/JOURNAL.md` Status `Workspace decisions`.
+
+→ next: § "Install commands — by manager".
+
+### `G-ENV-SCOPE` — only for ambiguous extras
+
+**Fires when**: a requested dep doesn't match the § "Auto-routing
+table" below (e.g. `optuna`, `xgboost`, `mlflow`).
+
+**AskUserQuestion (binary)**:
+1. **`default`** — fold into runtime deps. Pick when the dep IS a
+   runtime concern.
+2. **New named feature `<X>`** — propose a name from the user's
+   wording (`tracing` for `mlflow`, `tuning` for `optuna`, `dl` for
+   `torch`). Pick when the dep is a tier-shift to feature-flag.
+
+Free-text resolution: explicit `default` or a feature name resolves;
+"you pick" / "doesn't matter" does NOT.
+
+#### When `default` is picked
+
+One step: `pixi add <pkg>` (no `--feature` flag → lands in
+`default`).
+
+→ next: return to caller skill.
+
+#### When a new named feature `<X>` is picked — 6 steps, all required
+
+**This is the load-bearing procedure smaller models forget.** Step
+3 specifically is the one that silently breaks LSP integration.
+
+1. **Install into the new feature**: `pixi add --feature <X> <pkg>`
+   (manager-equivalents: `uv add --group <X> <pkg>`,
+   `poetry add --group <X> <pkg>`).
+2. **Confirm the feature block exists** in the manifest.
+3. **APPEND `<X>` to the `lsp` env's features list** —
+   per-manager:
+   - **pixi**: edit `pixi.toml` `[environments]`,
+     `lsp = { features = [..., "<X>"], ... }`.
+   - **uv / poetry**: nothing extra (`--all-groups` / `--with` covers).
+   - **hatch / conda / pip+venv**: re-author the lsp env's dep list.
+4. **Re-sync the lsp env**: pixi → `pixi install -e lsp`; uv →
+   `uv sync --all-groups`; poetry → `poetry install --with <X>`;
+   others → re-create.
+5. **Update `JOURNAL.md`**: append `<X>` to the
+   `optional features:` row.
+6. **Verify**: `bash .agents/skills/python-env-manager/scripts/verify_layout.sh`.
+   Exit 0 = consistent. Exit 1 = drift, with remediation lines.
+
+Skipping step 3 or 4 → the package installs into `<X>` but pyright
+doesn't index it because `lsp` doesn't compose `<X>`. User sees
+"unresolved import" on legitimate code.
+
+→ next: return to caller skill.
+
+### `G-AGENT-FEATURE` — install ipython + pyright
+
+**Fires when**: an agent-only consumer (currently `audit-ml-pipeline`)
+needs `ipython` / `pyright` and the manifest doesn't expose them.
+
+**AskUserQuestion (binary)**: `install` | `skip`.
+- `install` → run the bundled per-manager script (see § "Agent
+  feature install"). Recommended default for any workspace using
+  the audit flow.
+- `skip` → block the calling skill; surface "audit step unavailable
+  until the agent feature is installed". No silent degradation.
+
+**Persists**: `agent feature: <installed | skipped> — recorded: <date>`.
+
+There is no kernel registration. The audit runner is in-process.
+The `agent kernel:` row in `Workspace decisions` is no longer
+collected for new workspaces; legacy rows are informational.
+
+→ next: § "Agent feature install" if `install`.
+
+### Persistence lookup — read JOURNAL.md before any gate fires
+
+Read `Workspace decisions` first:
+
+- `env manager: <pixi | uv | poetry | hatch | conda | pip+venv> — recorded: <date>`
+- `agent feature: <installed | skipped> — recorded: <date>`
+- `optional features: <name1, name2, ... | none> — recorded: <date>`
+
+If a row is recorded, **do not re-ask** — cite
+`JOURNAL.md Status (Workspace decisions, recorded YYYY-MM-DD)` as
+the evidence for that row in the pre-flight.
+
+If `journal/JOURNAL.md` doesn't exist yet (truly fresh project
+before `organize-ml-workspace`), the gates fire fresh and answers
+land in `Workspace decisions` once `iterate-ml-experiment` writes
+the JOURNAL.
+
+## Where does the package belong? — 3-feature layout
+
+### The fixed buckets
+
+| Bucket | Contents | Composes with | Purpose |
+|---|---|---|---|
+| `default` | `scikit-learn`, `skrub`, `skore`, tabular lib, editable `<pkg>` | (itself) | runtime |
+| `dev` | `ruff`, `pytest` | `default + dev` | lint / test |
+| `agent` | `ipython`, `pyright` | `default + agent` | audit runner + pyright CLI |
+| `lsp` | (no own deps) | `default + dev + agent + <all optional>` | LSP integration |
+
+Pixi composed-envs declaration:
+```toml
+[environments]
+default = { features = ["default"], solve-group = "default" }
+dev     = { features = ["default", "dev"],          solve-group = "default" }
+agent   = { features = ["default", "agent"],        solve-group = "default" }
+lsp     = { features = ["default", "dev", "agent"], solve-group = "default" }
 ```
 
-If **two or more** managers are on PATH, **or** there are existing
-conda envs that already carry parts of the stack (sklearn / skrub /
-skore), surface the situation to the user via `AskUserQuestion`. Offer
-at least these branches:
+### Auto-routing table — no ask
 
-- **Bootstrap a fresh pixi project** (the default *recommendation*
-  when nothing has to be reused).
-- **Reuse an existing env**: if `conda env list` shows an env with
-  the stack already installed (or close to it), reusing avoids a
-  duplicate install. Name the envs in the option description so the
-  user can see what's on offer.
-- **Bootstrap a different manager** (uv / poetry / hatch / conda):
-  pick this when the user's team standard differs from pixi.
+| Package | Routes to |
+|---|---|
+| `scikit-learn`, `skrub`, `skore` (or `skore[hub]`) | `default` |
+| `pandas` + `pyarrow` OR `polars` | `default` |
+| `ruff`, `pytest` | `dev` |
+| `ipython`, `pyright` | `agent` |
+| The editable workspace package (`<pkg> @ .`) | `default` |
 
-The contract: "no project-root signals" does not mean "no relevant
-state." Defaulting to pixi when an existing conda env could have
-served is a frequent ergonomic miss; the `AskUserQuestion` exists
-to surface that choice rather than presume it.
+Ambiguous → `G-ENV-SCOPE` fires.
 
-## Where does the package belong? — ask before installing
-
-Every manager in this skill supports **scoped** dependencies — pixi
-features, uv groups, poetry groups, hatch envs, conda envs, pip
-venvs. Picking the wrong scope is a real cost: ML deps dropped into
-a `default` feature that the project deliberately kept slim, dev
-tools polluting the runtime env, a heavy library installed into the
-wrong conda env. **The user owns this decision.**
-
-**Default rule:** before any install command, enumerate the
-existing scopes from the manifest and ask the user where the
-package(s) belong. Offer three branches: an existing scope, a new
-scope (and ask for a name), or the default. **Skip the question
-only when the user has already specified a scope in this
-conversation** (e.g. "add it to the `tracing` feature", "put this
-under dev"). When skipping, record the source in the Pre-flight
-checklist ("user said in turn N: ...").
-
-The exact question to ask, per manager:
-
-| Manager | Existing scopes to enumerate | Question template |
-|---|---|---|
-| **pixi** | features in `pixi.toml` `[feature.X]` and environments in `[environments]` | "I see features `<list>`. Should `<pkg>` go into the default feature, an existing one (`<list>`), or a new feature (and what should it be named)?" |
-| **uv** | groups in `[dependency-groups]` / `[tool.uv]` | "Should `<pkg>` be a runtime dep, a dev dep (`--dev`), or live in an optional group (existing: `<list>`, or a new one)?" |
-| **poetry** | groups in `[tool.poetry.group.X]` | "Should `<pkg>` be a runtime dep, in `--group dev`, or in another group (existing: `<list>`, or a new one)?" |
-| **hatch** | envs in `[tool.hatch.envs.X]` | "Should `<pkg>` go into the project's `[project] dependencies`, or into a hatch env (existing: `<list>`, or a new one)?" |
-| **conda / mamba** | envs from `conda env list` (or those declared in `environment.yml`) | "Which conda env should `<pkg>` go into — the active one (`<name>`), another existing env (`<list>`), or a new env (and what should it be named)?" |
-| **pip + venv** | venvs visible at the project root (`.venv/`, `venv/`, etc.) | "Should `<pkg>` go into the existing venv (`<path>`), or into a new venv (and where)?" |
-
-If the manifest lists no scopes (a fresh `pixi.toml` with only
-`[dependencies]`, a `pyproject.toml` with no groups), you can offer
-"default" + "create a new <feature/group/env>" and skip
-enumeration.
-
-**Why this matters.** The manifest is the project's contract. Every
-new dep nudges the contract; doing it without the user makes the
-contract drift in ways the user has to discover later. Asking is
-cheap; reverting is not (especially with `pixi remove --feature`,
-`poetry remove --group`, or undoing a conda env mutation).
+Rationale (why `lsp` is separate, optional-feature growth model):
+→ `references/composition_model.md`.
 
 ## Install commands — by manager
 
-Once detected, use *only* the matching commands. Do not mix.
+Once detected, use ONLY the matching commands. Per-manager
+extended prose (the "why" + caveats per row) lives in
+`references/install_commands_anatomy.md`.
 
 ### pixi
 
-Default for this stack. Pixi organizes deps per **feature**
-(e.g. `default`, `dev`, `tracing`). **Before running any
-`pixi add`, ask the user which feature the package belongs in** —
-see § "Where does the package belong?" for the question template.
-Enumerate the existing features from `pixi.toml` first so the user
-has a concrete list.
-
 | Action | Command |
 |---|---|
-| Add to default feature | `pixi add <pkg>` |
-| Add to a specific feature | `pixi add --feature <feature> <pkg>` |
-| Add to a specific environment | `pixi add -e <env> <pkg>` |
+| Add to default | `pixi add <pkg>` |
+| Add to a feature | `pixi add --feature <feature> <pkg>` |
+| Add to an env | `pixi add -e <env> <pkg>` |
 | Remove | `pixi remove <pkg>` (or `--feature <feature>`) |
 | Upgrade | `pixi upgrade <pkg>` |
-| Run inside an env | `pixi run -e <env> <command>` |
-| Sync env from manifest | `pixi install` |
-
-A real-world example: in some projects `mlflow` lives in a
-`tracing` feature, not `default` — silently dropping it into
-`default` would have been wrong. Always ask.
+| Run inside env | `pixi run -e <env> <command>` |
+| Sync from manifest | `pixi install` |
 
 ### uv
 
-**Before running any `uv add`, ask the user whether the package is
-a runtime dep, a dev dep (`--dev`), or belongs to an optional
-group** — see § "Where does the package belong?". Enumerate
-existing groups from `pyproject.toml` (`[dependency-groups]` or
-`[project.optional-dependencies]`) so the user has a real list.
+`default` → `[project] dependencies`; `dev` → `--group dev`;
+`agent` → `--group agent`; optional features → `--group <name>`.
 
 | Action | Command |
 |---|---|
-| Add a runtime dep | `uv add <pkg>` |
-| Add a dev dep | `uv add --dev <pkg>` |
-| Add to an optional group | `uv add --optional <group> <pkg>` |
+| Add runtime | `uv add <pkg>` |
+| Add dev | `uv add --dev <pkg>` |
+| Add to group | `uv add --optional <group> <pkg>` |
 | Remove | `uv remove <pkg>` |
-| Upgrade a single pkg | `uv lock --upgrade-package <pkg>` |
-| Run inside the env | `uv run <command>` |
-| Sync env from manifest | `uv sync` |
+| Upgrade | `uv lock --upgrade-package <pkg>` |
+| Run inside env | `uv run <command>` |
+| Sync | `uv sync` (use `--all-groups` to cover dev+agent+optional) |
 
 ### poetry
 
-**Before running any `poetry add`, ask the user whether the package
-is a runtime dep, in `--group dev`, or in another group** — see §
-"Where does the package belong?". Enumerate existing groups from
-`pyproject.toml` (`[tool.poetry.group.X]`) so the user has a real
-list.
+`default` → `[tool.poetry.dependencies]`; `dev` → `--group dev`;
+`agent` → `--group agent`; optional → `--group <name>`.
 
 | Action | Command |
 |---|---|
-| Add a runtime dep | `poetry add <pkg>` |
-| Add a dev dep | `poetry add --group dev <pkg>` |
-| Add to a named group | `poetry add --group <name> <pkg>` |
+| Add runtime | `poetry add <pkg>` |
+| Add dev | `poetry add --group dev <pkg>` |
+| Add to group | `poetry add --group <name> <pkg>` |
 | Remove | `poetry remove <pkg>` |
 | Upgrade | `poetry update <pkg>` |
-| Run inside the env | `poetry run <command>` |
-| Sync env from manifest | `poetry install` |
+| Run | `poetry run <command>` |
+| Sync | `poetry install` |
 
 ### hatch
 
-Hatch is declarative. There is no universal `hatch add`. **Before
-editing `pyproject.toml`, ask the user whether the package should
-go into project-level deps or an env-specific section** — see §
-"Where does the package belong?". Enumerate existing envs from
-`[tool.hatch.envs.X]` so the user has a real list.
-
-Standard flow:
-
-1. Edit `pyproject.toml`:
-   - Project-level dep → add to `[project] dependencies`.
-   - Env-specific dep → add to
-     `[tool.hatch.envs.<env>.dependencies]`.
-2. Re-sync the env: `hatch env prune` (optional, removes stale
-   envs), then any `hatch run -e <env> <command>` re-creates it.
+Declarative — no universal `hatch add`. Edit
+`pyproject.toml`:`[project] dependencies` or
+`[tool.hatch.envs.<env>.dependencies]`, then any
+`hatch run -e <env> <command>` re-creates the env. Caveat: hatch
+envs do not compose; each non-default env duplicates runtime deps.
 
 ### conda / mamba
 
-`mamba` is a faster drop-in replacement for `conda`. Prefer it if
-both are on PATH.
-
-**Before running any `conda install` / `mamba install`, ask the
-user which env the package belongs in** — see § "Where does the
-package belong?". Enumerate envs with `conda env list` (or read
-the `name:` field from `environment.yml`) so the user has a real
-list. Defaulting to the active env without asking can pollute a
-shared base environment.
+No native feature concept; map buckets to named envs
+(`<project>`, `<project>-dev`, `<project>-agent`).
 
 | Action | Command |
 |---|---|
-| Add a dep (conda-forge channel) | `conda install -n <env> -c conda-forge <pkg>` |
-| Same with mamba | `mamba install -n <env> -c conda-forge <pkg>` |
+| Add (conda-forge) | `conda install -n <env> -c conda-forge <pkg>` |
+| With mamba | `mamba install -n <env> -c conda-forge <pkg>` |
 | Remove | `conda remove -n <env> <pkg>` |
-| Sync from `environment.yml` | `conda env update -f environment.yml --prune` |
-
-If `environment.yml` is the source of truth for the project, edit
-it and run the `env update` rather than installing one-off; this
-keeps the manifest in sync.
+| Sync from yml | `conda env update -f environment.yml --prune` |
 
 ### pip + venv
 
-The least-integrated path. There is no manifest update — `pip
-install` mutates the live env without tracking.
+Least-integrated. No manifest update — `pip install` mutates the
+live env without tracking. Recommend migration to a managed
+alternative.
 
-**Before running any `pip install`, ask the user whether the
-package goes into the existing venv or a new one** — see § "Where
-does the package belong?". List visible venvs at the project root
-(`.venv/`, `venv/`, etc.) so the user can pick. Don't activate and
-install silently — even with pip, the choice of which venv to
-mutate is the user's.
+Editable workspace install (`src/<pkg>/`) per manager:
+→ `references/editable_workspace.md`.
 
-Steps:
+## Agent feature install
 
-1. Activate the venv: `source .venv/bin/activate` (Linux/macOS) or
-   `.venv\Scripts\activate` (Windows).
-2. Install: `pip install <pkg>`.
-3. If `requirements.txt` is the project's manifest, regenerate or
-   edit it — `pip freeze > requirements.txt` is one option, but
-   it captures all transitive pins; for a tighter diff, edit the
-   file by hand to add the new top-level dep.
+The agent feature = project-scoped install of `ipython` + `pyright`
++ the bundled `pyrightconfig.json` (substituting `<PYTHON_PATH>`
+for the lsp env's interpreter).
 
-Surface to the user that `pip install` alone leaves no audit trail.
-If the project is fresh, offer migration to a managed alternative
-(pixi by default).
+### Bundled scripts — one per manager
 
-## Editable workspace package — wire `src/<pkg>/` per manager
-
-When the project ships a local Python package under `src/<pkg>/`
-(declared by a `pyproject.toml` at the project root), it must be
-installed in **editable** mode so that `from <pkg>.X import Y` works
-from any CWD without `PYTHONPATH=src` hacks **and** so that edits to
-the source tree are picked up immediately. `organize-ml-workspace`
-hands off to this section after dropping `pyproject.toml`.
-
-The wiring differs per manager. Use the matching command — never
-fall back to `pip install -e .` inside a managed env (that produces
-the same out-of-manifest drift as any other wrong-manager install).
-
-| Manager | Wiring | Notes |
+| Manager | Invocation | Args |
 |---|---|---|
-| **pixi** | `pixi add --pypi --editable .` | Adds to `[pypi-dependencies]`. Pass `--feature <name>` to scope (e.g. the same feature where Tier 1 lives). On next `pixi install`, the package is editable in every env that includes that feature. |
-| **uv** | nothing extra — `uv sync` installs the `[project]` package editable by default | If the workspace has multiple packages, add `[tool.uv.sources]` entries; for the single-package case the default `uv sync` behavior is enough. |
-| **poetry** | nothing extra — `poetry install` is editable by default | Make sure `pyproject.toml` carries `[tool.poetry] packages = [{include = "<pkg>", from = "src"}]` (or that the build backend's package discovery picks up `src/<pkg>/`). |
-| **hatch** | nothing extra — `hatch run` envs install editable by default | Make sure `[tool.hatch.build.targets.wheel] packages = ["src/<pkg>"]` is declared in `pyproject.toml`. |
-| **conda / mamba** | after the env is in place: `pip install -e .` (run inside the conda env) | conda has no native concept of editable installs from a local `pyproject.toml`; pip is the right tool. The `pip install -e .` here is **inside a conda-managed env** — that's the supported hybrid, not a wrong-manager install. |
-| **pip + venv** | activate the venv, then `pip install -e .` | The standalone case. There is no manifest entry — surface this and offer migration to a managed alternative. |
+| **pixi** | `bash .agents/skills/python-env-manager/scripts/install_agent_feature_pixi.sh` | none |
+| **uv** | `bash .agents/skills/python-env-manager/scripts/install_agent_feature_uv.sh` | none |
+| **poetry** | `bash .agents/skills/python-env-manager/scripts/install_agent_feature_poetry.sh` | none |
+| **hatch** | `bash .agents/skills/python-env-manager/scripts/install_agent_feature_hatch.sh` | none (requires user-authored `[tool.hatch.envs.agent]` + `[tool.hatch.envs.lsp]`) |
+| **conda** | `bash .agents/skills/python-env-manager/scripts/install_agent_feature_conda.sh <project-name>` | project name |
+| **pip+venv** | `bash .agents/skills/python-env-manager/scripts/install_agent_feature_pip_venv.sh <requirements-file>` | requirements file |
 
-Detection cleanup: if you find a stale `<pkg>.egg-info/` at the
-project root or under `src/` (typically a relic of an out-of-band
-`pip install -e .`) **and** the manager's manifest does not carry
-the editable entry, that is drift. Clean up the egg-info **after**
-wiring the install correctly through the manager — never before
-(the cleanup can break a working but unmanaged setup).
+**Run the script, don't retype.** Each script encodes per-manager
+footguns (poetry's `virtualenvs.in-project`, hatch's no-composition,
+conda's machine-local paths). Re-typing by hand is the named
+forbidden shortcut.
+
+Per-script anatomy (the 4 actions inside, post-install runner
+invocation, cleanup, verification):
+→ `references/agent_feature_anatomy.md`.
+
+Per-manager footguns:
+→ `references/per_manager_footguns.md`.
+
+→ next: return to caller (typically `audit-ml-pipeline`).
+
+## Tier 1 install: skore variant per mode
+
+Read `skore mode:` from `journal/JOURNAL.md` Status
+`Workspace decisions` (set by `organize-ml-workspace` §
+G-SKORE-MODE):
+
+| `skore mode:` | Install command |
+|---|---|
+| `local` | Plain `skore` package (`pixi add skore` / `uv add skore` / `poetry add skore` / …) |
+| `hub` | `skore[hub]` extra (`pixi add "skore[hub]"` / `uv add "skore[hub]"` / `poetry add "skore[hub]"` / …) |
+
+If the row is absent (workspace not yet bootstrapped through
+`organize-ml-workspace`), route back to that skill's G-SKORE-MODE.
+Do not guess.
+
+**Forbidden**: silently picking `skore[hub]` "to be safe". The
+`[hub]` extra costs ~20 MB of network deps + auth infra the
+local-mode user didn't ask for.
+
+Why the variant matters, mode-switching procedure:
+→ `references/skore_variant.md`.
 
 ## Bootstrap — when no manager is detected
 
-If detection found nothing **and the user agrees to use pixi**:
+If detection found nothing AND the user picked `pixi` via G-ENV-MGR:
 
-1. Check whether pixi is on PATH: `command -v pixi`.
-2. If pixi is not installed, surface the install command and **ask
-   the user to run it** (do not run `curl | sh` yourself):
-   - Linux/macOS: `curl -fsSL https://pixi.sh/install.sh | sh`
-   - Windows: `iwr -useb https://pixi.sh/install.ps1 | iex`
-3. Once pixi is available, initialize: `pixi init` (creates
-   `pixi.toml` in the current directory).
-4. **Ask the user how to organize features** before adding any
-   deps: a single `default` feature for everything, or split (e.g.
-   `default` for runtime + `dev` for dev tools, or `core` +
-   `tracing` if mlflow / observability is in scope). The skill's §
-   "Where does the package belong?" rule applies even at bootstrap
-   — defaulting to a single feature without asking sets a layout
-   the user has to migrate later.
-5. Add the relevant Tier 1 deps for an ML project (per
-   `data-science-python-stack` § "Tier 1") into the chosen
-   feature: `pixi add [--feature <name>] scikit-learn skrub skore
-   ruff`. Ruff is mandatory — it's the canonical lint+format tool,
-   owned downstream by the `python-code-style` skill — and goes
-   into the same feature as the rest of the Tier 1 stack so a
-   single `pixi run` activation has everything Claude needs.
-6. Ask the user about the tabular-library choice (per
-   `organize-ml-workspace` § "Stop conditions" — pandas vs polars)
-   and which feature it belongs in. Add accordingly:
-   `pixi add [--feature <name>] pandas pyarrow` or
-   `pixi add [--feature <name>] polars`.
+1. Check `command -v pixi`; surface install URL if missing.
+2. `pixi init`.
+3. Edit `pixi.toml`: declare 3 features (`default` / `dev` /
+   `agent`) + 4 envs (`default` / `dev` / `agent` / `lsp`).
+4. Add Tier 1 deps to `default` (per G-SKORE-MODE: plain `skore`
+   for local, `"skore[hub]"` for hub).
+5. Add tabular lib (per G-TABULAR: `pandas pyarrow` or `polars`).
+6. Wire editable workspace package
+   (`pixi add --pypi "<pkg> @ ."` then edit to
+   `<pkg> = { path = ".", editable = true }`; then `pixi install`).
+7. Drop `pyrightconfig.json` via `sed`-substitution of
+   `<PYTHON_PATH>` for `.pixi/envs/lsp/bin/python`.
+8. Sync all 4 envs: `pixi install` then `pixi install -e dev` /
+   `-e agent` / `-e lsp`.
 
-If the user wants a different manager (uv / poetry / hatch / conda),
-mirror the same flow with that manager's init command (`uv init`,
-`poetry init`, `conda env create -f environment.yml`, etc.) — and
-apply § "Where does the package belong?" at every install step.
+Full step-by-step with exact pixi.toml block, manager-equivalent
+flows, pixi-version compatibility notes:
+→ `references/bootstrap.md`.
 
-## Cross-references
+→ next: return to `organize-ml-workspace` § scaffold.
 
-This skill is the install layer for the rest of the stack. Invoke it
-whenever those skills surface a missing dependency or a new install:
+## Companion skills
 
-- **`data-science-python-stack`** — owns *what* to install (Tier 1
-  mandatory, Tier 2 user choice, Tier 3 optional). When that skill
-  decides a package is needed, this skill turns the decision into
-  the right shell command.
-- **`organize-ml-workspace`** — its Stop condition "Tabular library
-  is asked, not assumed" produces a pandas-vs-polars decision; this
-  skill executes the install. It also hands off to § "Editable
-  workspace package" once `pyproject.toml` is on disk so the local
-  `src/<pkg>/` package gets installed editable through the project's
-  manager (no `PYTHONPATH=src` workaround, no out-of-band
-  `pip install -e .`).
-- **`build-ml-pipeline`** / **`evaluate-ml-pipeline`** — their Stop
-  conditions on missing `skrub` / `skore` redirect here for the
-  install command. Their Pre-flight checklists include "Tier 1
-  importable"; if a box fails, this skill is the next step.
+| Skill | Relationship |
+|---|---|
+| `data-science-python-stack` | Owns *what* to install; this skill turns it into a command |
+| `organize-ml-workspace` | Scaffold hands off here for editable install; G-TABULAR / G-SKORE-MODE feed this skill's bootstrap |
+| `audit-ml-pipeline` | G-AGENT-FEATURE fires from there |
+| `build-ml-pipeline` / `evaluate-ml-pipeline` | Missing-dep Stop conditions redirect here |
+| `iterate-ml-experiment` | Owns the `Workspace decisions` block this skill reads / writes |
 
 ## Conventions
 
 - **One install operation per response.** Don't batch unrelated
-  packages into one command. Group related packages (Tier 1
-  bootstrap, or a single feature's deps) and confirm before
-  continuing.
-- **No `--no-deps` or version pins by default.** Match
-  `data-science-python-stack` § "Conventions". Pin only on user
-  request or known incompatibility.
-- **Surface, don't bypass.** If an install fails (network, version
-  conflict, missing channel), surface the error and the command —
-  don't try alternative managers as a workaround. Wrong-manager
-  workarounds are a Stop-condition violation.
+  packages. Group related (Tier 1 bootstrap, or a single feature's
+  deps) and confirm before continuing.
+- **No `--no-deps` or version pins by default.** Pin only on
+  user request or known incompatibility.
+- **Surface, don't bypass.** If an install fails, surface the error
+  + command. Don't try alternative managers as a workaround —
+  that's a Stop-condition violation.

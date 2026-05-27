@@ -1,0 +1,14 @@
+{
+  "include": ["src", "tests", "experiments", "audit"],
+  "exclude": [
+    "**/__pycache__",
+    "**/.pixi",
+    "**/scratch",
+    "**/reports"
+  ],
+  "pythonPath": "<PYTHON_PATH>",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": false,
+  "pythonVersion": "3.11"
+}

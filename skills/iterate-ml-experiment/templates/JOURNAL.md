@@ -36,16 +36,26 @@ mid-project (e.g. DL is added), the matching skill fires its
 
 Owning skills:
   - tabular library     → data-science-python-stack § Tier 2
-  - env manager + scope → python-env-manager
+  - env manager         → python-env-manager
+  - agent feature       → python-env-manager § "Agent feature"
+  - optional features   → python-env-manager § "Where does the package belong?"
   - package name        → organize-ml-workspace
   - CV splitter family  → evaluate-ml-pipeline
+
+The 3-feature env layout (default / dev / agent) is enforced by
+python-env-manager; no row is collected for it. The `agent feature`
+row only records whether the user opted into the agent feature
+install (ipython + pyright + pyrightconfig.json) or skipped it.
 -->
 
 - **Workspace decisions** (immutable unless the user pivots):
   - tabular library: <pandas | polars> — recorded: <YYYY-MM-DD>
   - env manager: <pixi | uv | poetry | hatch | conda | pip+venv> — recorded: <YYYY-MM-DD>
-  - env scope (feature/group/env): <default | named-feature> — recorded: <YYYY-MM-DD>
+  - agent feature: <installed | skipped> — recorded: <YYYY-MM-DD>
+  - optional features: <name1, name2 | none> — recorded: <YYYY-MM-DD>
   - package name (`src/<pkg>/`): <pkg> — recorded: <YYYY-MM-DD>
+  - skore mode: <local | hub> — recorded: <YYYY-MM-DD>
+  - skore hub workspace: <hub-workspace-name | n/a> — recorded: <YYYY-MM-DD>
   - CV splitter family: <KFold | StratifiedKFold | GroupKFold | TimeSeriesSplit | other> — recorded: <YYYY-MM-DD>
 
 ## History

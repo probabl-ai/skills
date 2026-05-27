@@ -39,9 +39,9 @@ Why now. Cite the source concretely:
   - my-pick             → which JOURNAL.md / prior-design-note fields fed
                           the synthesis (Status, last Implication,
                           last Risks, current Backlog state)
-  - skore               → `report.diagnosis()` section / metric /
-                          slice / plot from the prior experiment's
-                          report
+  - skore               → audit-digest section + check code (e.g.
+                          `audit:<prev_stem>:checks.<SKD-code>`) +
+                          the check's documentation_url
   - backlog (B<N>)      → the index promoted + the row's original
                           Source carried forward
 -->
@@ -55,7 +55,7 @@ Why now. Cite the source concretely:
   makes the result interpretable later.
   -->
   - <e.g. issue #42 / "Paper Title" (year) URL — "exact claim" /
-    `report.diagnosis().residuals.by_target_bin` on `01_baseline` /
+    `audit:01_baseline:checks.SKD003` + its documentation_url /
     B2 (originally skore:01_baseline)>
 - **Why this matters:** <one or two sentences>
 

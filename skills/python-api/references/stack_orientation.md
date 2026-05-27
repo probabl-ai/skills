@@ -47,15 +47,44 @@ finds the right submodule.
   (`SkrubLearner`).
 - **Report types**: `EstimatorReport` (single train/test split),
   `CrossValidationReport` (CV), `ComparisonReport` (multi-key). All
-  expose `.metrics`, `.feature_importance` (where applicable),
-  `.diagnosis()` (the diagnostic surface used by
-  `iterate-from-skore`).
-- **Project**: `skore.Project(workspace="reports", name="...",
-  mode="local"|"hub"|"mlflow")`. Methods: `put(key, report)`,
+  expose `.metrics` (with `.summarize().frame()` for the task-
+  appropriate headline metrics), `.checks` (with
+  `.summarize().frame()` for the automated `passed` / `issue` /
+  `tip` walk — the surface `audit-ml-pipeline` renders and
+  `iterate-from-skore` mines via the digest), and `.inspection`
+  (for feature importance / coefficients where the estimator
+  supports it).
+- **Project**: `skore.Project(name, *, mode='local', **kwargs)`.
+  Three mutually exclusive modes — the constructor args **change
+  shape per mode**:
+  - **local** (default): `skore.Project(name="<project>",
+    mode="local", workspace=str(PROJECT_ROOT / "reports"))`.
+    `workspace=` is a **local-only** kwarg pointing to the on-disk
+    directory; defaults to OS cache dir if omitted. Reports persist
+    locally; no account / login.
+  - **hub**: `skore.login(mode="hub")` (interactive, first run only)
+    then `skore.Project("<hub-workspace>/<project>", mode="hub")`.
+    `name=` carries the **`<hub-workspace>/<project>`** form where
+    `<hub-workspace>` is a Skore Hub org/team identifier (NOT the
+    local-mode `workspace=` kwarg — skore overloads the term).
+    `workspace=` is rejected (`TypeError`). Requires
+    `pip install "skore[hub]"` and an account on
+    https://skore.probabl.ai with access to the workspace.
+  - **mlflow**: `skore.Project(name="<experiment>", mode="mlflow",
+    tracking_uri="<uri>")`. `name=` is the MLflow experiment name.
+    Requires `pip install "skore[mlflow]"`.
+
+  Methods (same surface across modes): `put(key, report)`,
   `get(id)` (**by id, not by `key`** — get the id from
   `summarize()`), `summarize()` (returns a pandas DataFrame indexed
   by id with columns including `key`, `learner`, `ml_task`,
   `report_type`, mean metrics, …), `delete(id)`.
+
+  Source: https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html
+  (skore 0.18.0). The mode choice for this stack's workspaces is
+  owned by `organize-ml-workspace` § "G-SKORE-MODE"; the install
+  variant per mode is owned by `python-env-manager` § "Tier 1
+  install: skore variant per mode".
 
 `dir(skore)` for top-level; `dir(report)` and
 `dir(report.metrics)` for the report accessor surface.
