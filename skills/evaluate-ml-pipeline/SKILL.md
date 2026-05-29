@@ -90,6 +90,9 @@ read the report. The pipeline declaration is out of scope (see
   `pixi run python -c "..."` is forbidden regardless of length**
   (see `python-api` § Stop conditions). The previous "2-line
   inline cap" is removed.
+- **Don't filter warnings.** No `warnings.filterwarnings(...)`
+  around `skore.evaluate(...)` or the CV splitter unless the user
+  explicitly asks. See `python-code-style` § Stop conditions.
 - **`skore.evaluate(...)` and `project.put(...)` live only in
   `experiments/NN_*.py`.** The experiment script is the sole
   producer of a report in the workspace's skore Project.
