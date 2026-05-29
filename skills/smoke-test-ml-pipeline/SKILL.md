@@ -85,6 +85,12 @@ anti-pattern at iteration time, before it reaches production.
   from the design note's Status.headline** with a comment pointing to
   the design note; update by hand when the experiment's headline number
   changes.
+- **Don't filter warnings.** No
+  `@pytest.mark.filterwarnings(...)`, no
+  `warnings.filterwarnings(...)` in the test body, no
+  `filterwarnings = [...]` in `pytest.ini` /
+  `pyproject.toml` — unless the user explicitly asks. See
+  `python-code-style` § Stop conditions.
 
 ## Pre-flight — emit this checklist as visible text before any test code
 

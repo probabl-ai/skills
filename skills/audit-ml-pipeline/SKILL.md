@@ -147,6 +147,10 @@ conditions for the three-consumer rule.
   digest is ephemeral.
 - **`audit/` is read-only against workspace data.** No writes to
   `data/`, `reports/`, or outside `scratch/audit/<stem>/`.
+- **Don't filter warnings in audit cells.** No
+  `warnings.filterwarnings(...)` unless the user explicitly asks
+  — the runner streams cell stderr into the digest and that's
+  signal. See `python-code-style` § Stop conditions.
 - **Harness "no clarifying questions" hints do NOT waive
   G-AGENT-FEATURE.** Install gate fires regardless.
 - **Post-hoc audit — required before ending the turn.** Walk every

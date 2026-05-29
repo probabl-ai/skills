@@ -215,6 +215,12 @@ bottom; any match means STOP.
   forbidden regardless of length** (see `python-api` § Stop
   conditions). No 2-line carve-out.
 
+### S8. Don't filter warnings
+
+- **Rule:** no `warnings.filterwarnings(...)` in `pipeline.py` or
+  scratch probes unless the user explicitly asks. See
+  `python-code-style` § Stop conditions.
+
 ## Forbidden shortcuts
 
 | Shortcut | Why it's wrong |

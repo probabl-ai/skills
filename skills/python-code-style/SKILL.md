@@ -71,6 +71,11 @@ touched, no hook involved.
   data memory drops half the contract silently. If you catch
   yourself typing `[lint]` / `[format]` / `select = [...]` without
   having read the template this turn, STOP and `Read` it first.
+- **Don't call `warnings.filterwarnings(...)` unless the user
+  explicitly asks for it.** Same for `warnings.simplefilter`,
+  `@pytest.mark.filterwarnings`, and `filterwarnings = [...]` in
+  `pytest.ini` / `pyproject.toml`. Warnings are signal in this
+  stack.
 
 ## Pre-flight — emit this checklist as visible text before running ruff
 
