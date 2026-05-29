@@ -56,14 +56,14 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 | [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a single sklearn-compatible learner: pick the right entry point (`skore.evaluate` first), the right cross-validator, and consume report metadata. |
 | [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Router that owns the `tests/` folder of an ML workspace and the experiment ↔ test pairing rule. Dispatches to a per-category subskill. |
 | [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Diagnostic-by-construction pytest that catches the "load → featurize → split" anti-pattern by predicting on a disjoint, no-buffer slice of the real data source. |
-| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Owns the `audit/` folder: one `# %%` file per experiment that loads its skore report read-only and uses bare-last-expression cells. The agent executes via jupytext + nbconvert and reads the markdown digest. Read-only — never calls `evaluate` or `put`. |
+| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Owns the `audit/` folder: one `# %%` file per experiment that loads its skore report read-only and uses bare-last-expression cells. The agent executes via an in-process IPython runner (`scripts/run_audit.py`) that streams a markdown digest. Read-only — never calls `evaluate` or `put`. |
 
 ## Iteration loop
 
 | Skill | Description |
 | --- | --- |
 | [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Drives the iteration loop on top of an ML workspace — owns `journal/JOURNAL.md` and per-experiment design notes, and dispatches to a sourcing strategy below. |
-| [iterate-from-skore](skills/iterate-from-skore/SKILL.md) | Source the next experiment by walking `report.diagnosis()` on the previous skore report and turning every actionable finding into a Backlog row. |
+| [iterate-from-skore](skills/iterate-from-skore/SKILL.md) | Source the next experiment by reading the audit digest at `scratch/audit/<stem>/audit.md` — every `issue` / `tip` row drives a Backlog item, following the row's `documentation_url` for the mitigation. |
 | [iterate-from-user](skills/iterate-from-user/SKILL.md) | Source the next experiment from the user directly — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo). |
 
 ## Workspace and tooling
