@@ -12,7 +12,7 @@
     {
       "name": "probabl-skills",
       "source": ".",
-      "description": "Workflow skills for ML experimentation with skrub, scikit-learn, and skore: pipeline build / evaluate / test, iteration loop, workspace + tooling.",
+      "description": "Workflow skills for ML experimentation with skrub, scikit-learn, and skore: pipeline build / evaluate / test / audit, iteration loop, workspace + tooling.",
       "version": "0.1.0",
       "author": {
         "name": "Probabl",

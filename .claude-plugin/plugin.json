@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "probabl-skills",
   "version": "0.1.0",
-  "description": "Skills for ML experimentation in Python, organized around skrub, scikit-learn, and skore. Covers the full pipeline lifecycle (build / evaluate / test), the iteration loop on top of a `journal/`, and workspace + tooling skills (env manager, library stack, code style, API discovery).",
+  "description": "Skills for ML experimentation in Python, organized around skrub, scikit-learn, and skore. Covers the full pipeline lifecycle (build / evaluate / test / audit), the iteration loop on top of a `journal/`, and workspace + tooling skills (env manager, library stack, code style, API discovery).",
   "author": {
     "name": "Probabl",
     "url": "https://probabl.ai"
