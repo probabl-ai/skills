@@ -83,6 +83,11 @@ declaration); `ipython` / `pyright` are added by step 3 (the
 `[feature.agent]` declaration). No per-install ask needed — the
 layout dictates the routing.
 
+**macOS post-install:** because skrub just landed, run
+`pixi run dot -c` (or the manager-equivalent env-run) once on macOS
+to rebuild graphviz's plugin cache — see SKILL.md § "skrub install
+— macOS post-install". Linux + Windows: skip.
+
 ### 5. Add the tabular library
 
 Per G-TABULAR (`organize-ml-workspace`):
