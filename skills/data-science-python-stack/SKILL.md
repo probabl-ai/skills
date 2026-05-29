@@ -397,12 +397,15 @@ markers (jupytext percent format) over `.ipynb` files. Python
 files are diffable and version-control friendly; jupytext handles
 the conversion to/from notebook format when needed.
 
-- [`jupyterlab`](references/jupyterlab.md) — browser-based
-  notebook IDE; edits and runs notebooks (or jupytext-paired
-  `.py` files). Brings `ipykernel` transitively.
-- [`jupytext`](references/jupytext.md) — sync `.ipynb` ↔ `.py`
-  (`# %%` markers) so the notebook source-of-truth stays
-  version-control friendly.
+- [`jupyterlab`](references/jupyterlab.md) + [`ipykernel`](references/ipykernel.md)
+  — **ambient in the `dev` feature** (alongside `ruff` + `pytest`,
+  per `python-env-manager` § "Where does the package belong?").
+  Always installed; no per-project ask. The reference pages
+  describe the tools' role, not an opt-in install.
+- [`jupytext`](references/jupytext.md) — **Tier 3 opt-in**: sync
+  `.ipynb` ↔ `.py` (`# %%` markers) so the notebook source-of-
+  truth stays version-control friendly. Install only when the
+  project wants `.ipynb` interop with the `# %%` scripts.
 
 ## Tier 4 — Transitive (already pulled in; do not install explicitly)
 
@@ -424,9 +427,6 @@ available without an extra install.
   zoom, pan); browser-based, suited for dashboards and exploratory
   notebooks. Pulled in by `skore` — **interactive viz is free, no
   extra install needed**.
-- [`ipykernel`](references/ipykernel.md) — Python kernel for
-  Jupyter. Pulled in by `jupyterlab` when the notebooks tier is
-  installed.
 
 ## Agent feature — orthogonal to the four tiers
 
@@ -468,10 +468,12 @@ gate before proceeding.
 **No kernel registration.** The in-process runner doesn't need a
 Jupyter kernel.
 
-**Not Tier 3 notebooks (despite overlap).** `jupyterlab` /
-`jupytext` *can* still be installed when a user wants interactive
-notebook editing — they're a separate Tier 3 concern, not the
-agent feature. A workspace may have both, neither, or only one.
+**Distinct from the `dev` feature's notebook tooling.** `jupyterlab`
++ `ipykernel` are ambient in `dev` for interactive notebook
+editing; `jupytext` stays Tier 3 opt-in. The agent feature
+(`ipython` + `pyright`) is its own bucket — `ipython` powers the
+in-process audit runner (no kernel), not user-facing notebook work.
+A workspace may have any combination of the three concerns.
 
 ## Conventions
 

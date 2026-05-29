@@ -9,7 +9,8 @@
 # IMPORTANT: pip+venv has no manifest integrity. The user must
 # maintain dep lists by hand. This script creates two venvs:
 #   .venv-agent  — runtime + ipython + pyright
-#   .venv-lsp    — runtime + ruff + pytest + ipython + pyright + optional
+#   .venv-lsp    — runtime + ruff + pytest + jupyterlab + ipykernel
+#                  + ipython + pyright + optional
 # Both source their runtime deps from <requirements-file>. Optional
 # deps for the lsp venv must be added by the user after the script
 # runs.
@@ -17,7 +18,8 @@
 # Steps:
 #   1. Verify the requirements file exists.
 #   2. Create .venv-agent with runtime + ipython + pyright.
-#   3. Create .venv-lsp with runtime + ruff + pytest + ipython + pyright.
+#   3. Create .venv-lsp with runtime + dev (ruff, pytest, jupyterlab,
+#      ipykernel) + agent (ipython, pyright).
 #   4. Substitute the bundled `pyrightconfig.json` template
 #      (<PYTHON_PATH> → .venv-lsp/bin/python) and write to project root.
 #   5. Verify ipython and pyright are callable.
@@ -64,7 +66,7 @@ python3 -m venv .venv-lsp
 source .venv-lsp/bin/activate
 pip install --upgrade pip
 # shellcheck disable=SC2086
-pip install $RUNTIME ruff pytest ipython pyright
+pip install $RUNTIME ruff pytest jupyterlab ipykernel ipython pyright
 deactivate
 
 echo "[4/5] Substituting pyrightconfig.json template..."
