@@ -10,7 +10,8 @@
 # the runtime deps. This script REQUIRES the user to maintain
 # manifest files declaring the deps:
 #   environment-agent.yml — runtime + ipython + pyright
-#   environment-lsp.yml   — runtime + ruff + pytest + ipython + pyright
+#   environment-lsp.yml   — runtime + ruff + pytest + jupyterlab
+#                           + ipykernel + ipython + pyright
 #                           + every optional-feature dep
 # If only `environment.yml` exists, the script appends ipython + pyright
 # for the agent env, but cannot derive the lsp env's full dep list
@@ -60,7 +61,7 @@ if [ ! -f environment-lsp.yml ]; then
     echo "ERROR: environment-lsp.yml not at cwd." >&2
     echo "       Author it with: name: ${LSP_ENV}" >&2
     echo "                       channels: [conda-forge]" >&2
-    echo "                       dependencies: [<runtime>, ruff, pytest, ipython, pyright, <optional>]" >&2
+    echo "                       dependencies: [<runtime>, ruff, pytest, jupyterlab, ipykernel, ipython, pyright, <optional>]" >&2
     exit 1
 fi
 

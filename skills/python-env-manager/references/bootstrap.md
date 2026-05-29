@@ -52,6 +52,8 @@ the package belong?"). Edit `pixi.toml`:
 [feature.dev.dependencies]
 ruff = "*"
 pytest = "*"
+jupyterlab = "*"
+ipykernel = "*"
 
 [feature.agent.dependencies]
 ipython = "*"
@@ -70,18 +72,25 @@ pyright sees every import path the user could write across `src/`
 
 ### 4. Add Tier 1 runtime deps to `default`
 
-The skore install variant follows G-SKORE-MODE:
+The skore install variant follows G-SKORE-MODE. Pixi pulls from
+conda-forge by default, so the `[jupyter]` extra is **not** needed
+(it ships with the conda-forge package):
 
 - `skore mode: local` → `pixi add scikit-learn skrub skore`
 - `skore mode: hub`   → `pixi add scikit-learn skrub "skore[hub]"`
 
+For PyPI-based managers running the analogous bootstrap (uv /
+poetry / hatch / pip+venv), substitute `skore[jupyter]` (local) or
+`skore[hub,jupyter]` (hub) — see SKILL.md § "Tier 1 install: skore
+variant per mode" for the full source-aware table.
+
 If G-SKORE-MODE hasn't fired yet at bootstrap time (rare —
 `organize-ml-workspace` fires it alongside G-PKG-NAME and
 G-TABULAR), route back to that skill before issuing the install
-command. `ruff` / `pytest` are added by step 3 (the `[feature.dev]`
-declaration); `ipython` / `pyright` are added by step 3 (the
-`[feature.agent]` declaration). No per-install ask needed — the
-layout dictates the routing.
+command. `ruff` / `pytest` / `jupyterlab` / `ipykernel` are added
+by step 3 (the `[feature.dev]` declaration); `ipython` / `pyright`
+are added by step 3 (the `[feature.agent]` declaration). No
+per-install ask needed — the layout dictates the routing.
 
 **macOS post-install:** because skrub just landed, run
 `pixi run dot -c` (or the manager-equivalent env-run) once on macOS

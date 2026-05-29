@@ -141,11 +141,12 @@ works on Linux/macOS), copy to project root.
 
 The LSP must resolve EVERY import the user could write across
 `src/` / `tests/` / `experiments/` / `audit/`. That set spans
-runtime deps (in `default`), test deps (in `dev`), agent deps (in
-`agent`), and every optional-feature dep. The `lsp` env is the
-only env that composes all of them. Pointing pyright at any
-narrower env produces false "unresolved import" warnings on
-legitimate code.
+runtime deps (in `default`), dev tooling — test + notebook deps
+(in `dev`: `ruff` / `pytest` / `jupyterlab` / `ipykernel`), agent
+deps (in `agent`: `ipython` / `pyright`), and every optional-feature
+dep. The `lsp` env is the only env that composes all of them.
+Pointing pyright at any narrower env produces false "unresolved
+import" warnings on legitimate code.
 
 ## Cleanup — when the agent feature is removed
 

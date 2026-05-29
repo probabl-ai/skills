@@ -89,7 +89,7 @@ declaring the turn done.
 | Shortcut | Why it's wrong |
 |---|---|
 | `pixi` on PATH → run `pixi init` / `pixi add` directly | Detection on PATH is context, not a pick. G-ENV-MGR still fires when no `Workspace decisions` row exists |
-| User said "install ruff" → fire G-ENV-SCOPE | Routing is fixed: `ruff`/`pytest` → `dev`. Scope ask is forbidden for the three known buckets |
+| User said "install ruff" → fire G-ENV-SCOPE | Routing is fixed: `ruff` / `pytest` / `ipykernel` / `jupyterlab` → `dev`. Scope ask is forbidden for the three known buckets |
 | User asked for `xgboost` → silently drop into `default` | Ambiguous extras require the binary `default` vs new-named-feature ask |
 | Calling skill writes its own `pixi add --feature agent ...` | Install commands are owned by this skill. Calling skills **request**; this skill installs |
 | Agent feature install → also register a Jupyter kernel | The in-process runner does NOT use a kernel; registering one creates an orphan kernelspec |
@@ -275,7 +275,7 @@ the JOURNAL.
 | Bucket | Contents | Composes with | Purpose |
 |---|---|---|---|
 | `default` | `scikit-learn`, `skrub`, `skore`, tabular lib, editable `<pkg>` | (itself) | runtime |
-| `dev` | `ruff`, `pytest` | `default + dev` | lint / test |
+| `dev` | `ruff`, `pytest`, `jupyterlab`, `ipykernel` | `default + dev` | lint / test / interactive notebooks |
 | `agent` | `ipython`, `pyright` | `default + agent` | audit runner + pyright CLI |
 | `lsp` | (no own deps) | `default + dev + agent + <all optional>` | LSP integration |
 
@@ -294,7 +294,7 @@ lsp     = { features = ["default", "dev", "agent"], solve-group = "default" }
 |---|---|
 | `scikit-learn`, `skrub`, `skore` (or `skore[hub]`) | `default` |
 | `pandas` + `pyarrow` OR `polars` | `default` |
-| `ruff`, `pytest` | `dev` |
+| `ruff`, `pytest`, `jupyterlab`, `ipykernel` | `dev` |
 | `ipython`, `pyright` | `agent` |
 | The editable workspace package (`<pkg> @ .`) | `default` |
 
@@ -415,22 +415,34 @@ Per-manager footguns:
 
 Read `skore mode:` from `journal/JOURNAL.md` Status
 `Workspace decisions` (set by `organize-ml-workspace` §
-G-SKORE-MODE):
+G-SKORE-MODE). The variant pulls in **two orthogonal axes**: mode
+(`local` vs `hub`) and package source (**conda-forge** for pixi /
+conda+mamba, **PyPI** for uv / poetry / hatch / pip+venv). PyPI
+installs need an extra `jupyter` extra; conda-forge installs
+already ship the jupyter integration.
 
-| `skore mode:` | Install command |
-|---|---|
-| `local` | Plain `skore` package (`pixi add skore` / `uv add skore` / `poetry add skore` / …) |
-| `hub` | `skore[hub]` extra (`pixi add "skore[hub]"` / `uv add "skore[hub]"` / `poetry add "skore[hub]"` / …) |
+| `skore mode:` | conda-forge managers (pixi, conda / mamba) | PyPI managers (uv, poetry, hatch, pip+venv) |
+|---|---|---|
+| `local` | `pixi add skore` / `conda install -c conda-forge skore` | `uv add "skore[jupyter]"` / `poetry add "skore[jupyter]"` / `pip install "skore[jupyter]"` |
+| `hub` | `pixi add "skore[hub]"` / `conda install -c conda-forge "skore[hub]"` | `uv add "skore[hub,jupyter]"` / `poetry add "skore[hub,jupyter]"` / `pip install "skore[hub,jupyter]"` |
 
 If the row is absent (workspace not yet bootstrapped through
 `organize-ml-workspace`), route back to that skill's G-SKORE-MODE.
 Do not guess.
 
-**Forbidden**: silently picking `skore[hub]` "to be safe". The
-`[hub]` extra costs ~20 MB of network deps + auth infra the
-local-mode user didn't ask for.
+**Forbidden:**
+- Silently picking `skore[hub]` "to be safe". The `[hub]` extra
+  costs ~20 MB of network deps + auth infra the local-mode user
+  didn't ask for.
+- Dropping the `jupyter` extra on PyPI installs because the
+  install line "looks shorter". The TableReport / `report.*`
+  widgets that the audit flow and `evaluate-ml-pipeline` rely on
+  fail to render without it on uv / poetry / hatch / pip+venv.
+- Adding the `jupyter` extra on pixi / conda installs. Redundant
+  — conda-forge skore already pulls the jupyter integration in.
 
-Why the variant matters, mode-switching procedure:
+Why the variant matters, mode-switching procedure, the `[jupyter]`
+extra rationale:
 → `references/skore_variant.md`.
 
 ## skrub install — macOS post-install
@@ -460,9 +472,12 @@ If detection found nothing AND the user picked `pixi` via G-ENV-MGR:
 1. Check `command -v pixi`; surface install URL if missing.
 2. `pixi init`.
 3. Edit `pixi.toml`: declare 3 features (`default` / `dev` /
-   `agent`) + 4 envs (`default` / `dev` / `agent` / `lsp`).
-4. Add Tier 1 deps to `default` (per G-SKORE-MODE: plain `skore`
-   for local, `"skore[hub]"` for hub).
+   `agent`) + 4 envs (`default` / `dev` / `agent` / `lsp`). `dev`
+   carries `ruff`, `pytest`, `jupyterlab`, `ipykernel`; `agent`
+   carries `ipython`, `pyright`.
+4. Add Tier 1 deps to `default` (per G-SKORE-MODE table above —
+   pixi is conda-forge, so `pixi add skore` or `pixi add
+   "skore[hub]"`; **no `[jupyter]` extra** on pixi).
 5. Add tabular lib (per G-TABULAR: `pandas pyarrow` or `polars`).
 6. Wire editable workspace package
    (`pixi add --pypi "<pkg> @ ."` then edit to

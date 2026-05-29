@@ -11,6 +11,7 @@
 #       dependencies = [ <all runtime deps>, "ipython", "pyright" ]
 #   [tool.hatch.envs.lsp]
 #       dependencies = [ <all runtime deps>, "ruff", "pytest",
+#                        "jupyterlab", "ipykernel",
 #                        "ipython", "pyright", <all optional deps> ]
 # This script verifies those sections exist before creating the envs.
 #
@@ -47,7 +48,7 @@ if ! grep -q '^\[tool\.hatch\.envs\.agent\]' pyproject.toml; then
 fi
 if ! grep -q '^\[tool\.hatch\.envs\.lsp\]' pyproject.toml; then
     echo "ERROR: [tool.hatch.envs.lsp] not declared in pyproject.toml." >&2
-    echo "       Add it manually with dependencies = [<runtime>, ruff, pytest, ipython, pyright, <optional>]." >&2
+    echo "       Add it manually with dependencies = [<runtime>, ruff, pytest, jupyterlab, ipykernel, ipython, pyright, <optional>]." >&2
     exit 1
 fi
 echo "       both envs declared"
