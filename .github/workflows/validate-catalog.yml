@@ -5,99 +5,35 @@ on:
     paths:
       - "catalog.json"
       - "skills/**"
+      - "tools/**"
+      - "pixi.toml"
+      - "pixi.lock"
       - ".github/workflows/validate-catalog.yml"
   push:
     branches: [main]
     paths:
       - "catalog.json"
       - "skills/**"
+      - "tools/**"
+      - "pixi.toml"
+      - "pixi.lock"
       - ".github/workflows/validate-catalog.yml"
 
 jobs:
   validate:
+    name: Catalog hashes + structure
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Check catalog.json ↔ skills/ consistency
-        run: |
-          python3 <<'EOF'
-          import json
-          import pathlib
-          import sys
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11 # v0.9.6
+        with:
+          locked: true
+          cache: true
+          # Only write the cache from pushes to main, to keep the
+          # repository's cache footprint below GitHub's 10 GB cap.
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
-          # Allow-list: category -> set of permitted subcategories.
-          # An empty set means the category does not take a subcategory
-          # (entries under it must have "subcategory": null).
-          CATEGORIES = {
-              "methodology": set(),
-              "orchestration": {"dispatchers", "experiment-sourcing", "test-strategies"},
-              "tooling": {"project-setup", "code-quality"},
-              "reference": set(),
-          }
-
-          root = pathlib.Path(".")
-          catalog = json.loads((root / "catalog.json").read_text())
-
-          catalog_ids = {s["id"] for s in catalog["skills"]}
-          folder_ids = {p.name for p in (root / "skills").iterdir() if p.is_dir()}
-
-          errors = []
-
-          missing_in_catalog = folder_ids - catalog_ids
-          if missing_in_catalog:
-              errors.append(
-                  f"skill folders without a catalog.json entry: {sorted(missing_in_catalog)}"
-              )
-
-          missing_folders = catalog_ids - folder_ids
-          if missing_folders:
-              errors.append(
-                  f"catalog.json entries without a matching skills/ folder: {sorted(missing_folders)}"
-              )
-
-          for skill_id in catalog_ids & folder_ids:
-              if not (root / "skills" / skill_id / "SKILL.md").is_file():
-                  errors.append(f"skills/{skill_id}/SKILL.md is missing")
-
-          for skill in catalog["skills"]:
-              sid = skill["id"]
-              cat = skill.get("category")
-              sub = skill.get("subcategory")
-              if cat not in CATEGORIES:
-                  errors.append(
-                      f"skill {sid!r} has unknown category {cat!r} "
-                      f"(allowed: {sorted(CATEGORIES)})"
-                  )
-                  continue
-              allowed_subs = CATEGORIES[cat]
-              if allowed_subs:
-                  if sub not in allowed_subs:
-                      errors.append(
-                          f"skill {sid!r}: subcategory {sub!r} not allowed under "
-                          f"category {cat!r} (allowed: {sorted(allowed_subs)})"
-                      )
-              elif sub is not None:
-                  errors.append(
-                      f"skill {sid!r}: category {cat!r} takes no subcategory, "
-                      f"got {sub!r}"
-                  )
-
-          for meta in catalog.get("meta_skills", []):
-              unknown = [s for s in meta.get("includes", []) if s not in catalog_ids]
-              if unknown:
-                  errors.append(
-                      f"meta-skill {meta['id']!r} references unknown skill ids: {unknown}"
-                  )
-
-          if errors:
-              for e in errors:
-                  print(f"::error::{e}")
-              sys.exit(1)
-
-          print(
-              f"OK — catalog.json matches {len(folder_ids)} skill folders, "
-              f"{len(catalog.get('meta_skills', []))} meta-skills valid, "
-              f"all categories in allow-list"
-          )
-          EOF
+      - name: Run all catalog checks
+        run: pixi run check

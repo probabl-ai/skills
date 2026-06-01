@@ -1,0 +1,19 @@
+[workspace]
+name = "probabl-skills"
+version = "0.1.0"
+description = "Skills for ML experimentation in Python, organized around skrub, scikit-learn, and skore."
+authors = ["Probabl <contact@probabl.ai>"]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[dependencies]
+# The maintenance scripts in tools/ only need the standard library;
+# pin a recent Python so behaviour is consistent across contributors
+# and CI.
+python = ">=3.11,<3.14"
+
+[tasks]
+hash = { cmd = "python tools/hash_skills.py", description = "Refresh per-skill and aggregate SHA-256 hashes in catalog.json." }
+hash-check = { cmd = "python tools/hash_skills.py --check", description = "Verify catalog.json hashes match the on-disk skills (non-zero exit on drift)." }
+validate = { cmd = "python tools/validate_catalog.py", description = "Validate catalog.json structure: skill/folder symmetry, categories, workflow references." }
+check = { depends-on = ["hash-check", "validate"], description = "Run every CI check: hash verification + catalog structure validation." }

@@ -1,0 +1,26 @@
+version: 2
+
+updates:
+  # Keep GitHub Actions up to date. Actions are pinned to commit SHAs
+  # in the workflow files (with a trailing `# vX.Y.Z` comment);
+  # Dependabot updates both the SHA and the comment in lockstep.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # Roll all action bumps for a given week into a single PR to
+      # minimise CI churn. Security fixes still ship outside the group.
+      github-actions:
+        patterns:
+          - "*"
+    cooldown:
+      # Wait a week before proposing brand-new releases, to avoid
+      # immediate-yank scenarios.
+      default-days: 7
+    commit-message:
+      prefix: "ci"
+      include: scope
+    labels:
+      - "dependencies"
+      - "github-actions"
