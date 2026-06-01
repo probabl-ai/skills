@@ -1,1 +1,4 @@
 .DS_Store
+.pixi/
+__pycache__/
+.pytest_cache/
