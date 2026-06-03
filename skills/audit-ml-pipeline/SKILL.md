@@ -10,8 +10,8 @@ description: >
   (`audit-ml-pipeline/scripts/run_audit.py` — IPython
   `InteractiveShell.run_cell`), which streams a markdown digest of
   each cell's stdout + last-expression repr to stdout (optionally also
-  to a file). The digest fuels narrative work (the
-  `overview/summary.md` refresh, follow-up questions about a past
+  to a file). The digest fuels narrative work (the `JOURNAL.md`
+  Status + History update, follow-up questions about a past
   experiment, cross-experiment comparison). Stops at "audit/NN_*.py
   is placed, executed, and the digest is available." Never calls
   `skore.evaluate(...)` or `project.put(...)`.
@@ -55,7 +55,7 @@ reading the digest. Read-only against the skore Project.
 
 | Came here from… | After audit, next is… |
 |---|---|
-| `iterate-ml-experiment` § 4 record-outcome | → Read audit digest, fill Status block + JOURNAL row + overview/summary.md |
+| `iterate-ml-experiment` § 4 record-outcome | → Read audit digest, fill Status block + JOURNAL row |
 | User free-text ("audit 02", "re-audit 04") | → Surface metrics to the user; no further dispatch |
 | Re-run of an existing experiment | → Re-execute the existing audit file; surface diff if metrics changed |
 
@@ -327,8 +327,7 @@ audit/NN_<short_name>.py             — audit  ← this skill
 ```
 
 Identical stems, 1:1. By the time the experiment shows `done` in
-`JOURNAL.md` AND its summary is refreshed in
-`overview/summary.md`, all four exist.
+`JOURNAL.md`, all four exist.
 
 ## Dispatching in and out
 
@@ -380,7 +379,7 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 
 | Skill | Relationship |
 |---|---|
-| `iterate-ml-experiment` | Caller. § 4 dispatches here FIRST; the digest feeds `summary.md` refresh |
+| `iterate-ml-experiment` | Caller. § 4 dispatches here FIRST; the digest feeds the `JOURNAL.md` Status + History update |
 | `iterate-from-skore` | Downstream consumer of this skill's digest. `audit-ml-pipeline` opens the Project and renders the digest; `iterate-from-skore` parses the digest as text and drafts Backlog rows from each surfaced check. Never opens the Project itself |
 | `evaluate-ml-pipeline` | Producer side. `skore.evaluate` + `project.put` live only in `experiments/NN_*.py` |
 | `organize-ml-workspace` | Workspace layout; four-way stem pairing |

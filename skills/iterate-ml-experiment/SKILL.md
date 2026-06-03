@@ -55,7 +55,6 @@ session open
    │
    ├── "run finished" ─────────────────────► § 4 record outcome
    │                                          │
-   │                                          ├─► refresh overview/summary.md
    │                                          └─► dispatch audit-ml-pipeline
    │
    └── "status?" / "compare X Y" ──────────► references/maintenance_modes.md
@@ -81,12 +80,12 @@ Sibling skills (just-in-time):
 Then before answering:
 
 1. **Read `journal/JOURNAL.md`.** Missing/placeholder → bootstrap (§ 0).
-2. **Read `overview/summary.md` if it exists.** Index vs. narrative.
-3. **Check `Workspace decisions` block** for pre-recorded gates
+   This is the canonical project digest (Status + History + Backlog).
+2. **Check `Workspace decisions` block** for pre-recorded gates
    (tabular, env_manager, package, skore_mode, cv_splitter) — a
    recorded decision skips its `AskUserQuestion`.
-4. **Emit the Pre-flight checklist** with each box filled.
-5. **Use the Mode picker** to find which section to read.
+3. **Emit the Pre-flight checklist** with each box filled.
+4. **Use the Mode picker** to find which section to read.
 
 ## Mode picker — read this before navigating the body
 
@@ -157,7 +156,7 @@ the **read** mode first, stop. Re-entering § 1 is a separate turn.
 | Bootstrap mode → skip ALL questions, not just the sourcing menu | Bootstrap forbids the sourcing menu only. G-PKG-NAME / G-ENV-MGR / G-TABULAR / G-SKORE-MODE / G-CV-SPLITTER / G-DESIGN / G-RUN still fire |
 | Ambiguous "hmm interesting" / "I guess" read as approval | Approval is explicit. Ambiguity → re-ask, never silent yes |
 | Auto-detect run finished via `reports/` mtime | § 4 is user-triggered (v1). The skill never auto-records |
-| § 4 finishes recording → declare done, skip audit dispatch | § 4 step 8a (audit) is part of record-outcome, not optional. The audit digest feeds the summary.md refresh |
+| § 4 finishes recording → declare done, skip audit dispatch | § 4 audit dispatch is part of record-outcome, not optional. The audit digest carries the headline metrics for the JOURNAL row |
 | Run experiment in same turn as G-RUN → declare done without § 4 | § 4 follows G-RUN in the same turn when the run completes successfully. Don't stop at "I ran it" — record the outcome |
 | Pre-read all nine sibling SKILL.md files at session start | Read-set tracker is not a blocking gate. Open siblings just-in-time; emit pending list but proceed |
 
@@ -198,7 +197,7 @@ Pre-flight (iterate-ml-experiment):
 - [ ] (§ 3 only) G-RUN resolved: run now | leave for later
       Evidence: AskUserQuestion id=<id> | "n/a outside § 3"
 - [ ] (§ 4 only) All artifacts written: Status block + JOURNAL row +
-      Backlog hygiene + overview/summary.md + audit dispatch
+      Backlog hygiene + audit dispatch
       Evidence: list each artifact written | "n/a outside § 4"
 - [ ] python-api consulted for any new external symbol
       Evidence: Read/Write scratch/api/<lib>/<v>/<topic>.md (this turn)
@@ -403,11 +402,7 @@ or polling for runs the user kicked off themselves.**
    killed. Delete or strikethrough (`~~old~~ — resolved in NN_X`).
    Diagnostic mining of the *new* report is `iterate-from-skore`'s
    job, not § 4's.
-7. **Refresh `overview/summary.md`** — agent-authored, hand-written
-   from the audit digest + a `scratch/<ts>_refresh_summary.py`
-   probe (if needed). NOT script-generated. Procedure:
-   `references/record_outcome.md` § "Refresh summary".
-8. **(Opt-in) GitHub issue close-the-loop** — if the experiment's
+7. **(Opt-in) GitHub issue close-the-loop** — if the experiment's
    `Source` is a GitHub issue, ask via `AskUserQuestion` whether to
    `gh issue comment <N>` with the headline. Never auto-post.
 
@@ -520,7 +515,7 @@ Template: `templates/experiment_design.md`. Sections:
 | `build-ml-pipeline` | `pipeline.py` / `features.py` / `data.py` body; reproducibility mechanics |
 | `evaluate-ml-pipeline` | `evaluate.py` body; CV-strategy decision; report inspection |
 | `test-ml-pipeline` → `smoke-test-ml-pipeline` | Smoke-test body; § 4 won't flip `done` until smoke is green |
-| `audit-ml-pipeline` | § 4 dispatch; audit digest feeds `summary.md` refresh |
+| `audit-ml-pipeline` | § 4 dispatch; audit digest carries the headline metrics for the JOURNAL row |
 | `python-api` | Signature lookups |
 | `python-env-manager` | G-AGENT-FEATURE for audit prerequisites |
 
@@ -529,8 +524,7 @@ Template: `templates/experiment_design.md`. Sections:
 - `references/bootstrap.md` — full bootstrap procedure, config-gate
   details, baseline-template substitution.
 - `references/record_outcome.md` — full § 4 procedure with Backlog
-  hygiene examples, `summary.md` refresh extraction probe, GitHub
-  comment template.
+  hygiene examples, GitHub comment template.
 - `references/maintenance_modes.md` — overview / compare /
   goal-pivot / abandoned / re-runs with full procedures.
 - `references/preflight_evidence.md` — Evidence-format spec.
