@@ -56,7 +56,9 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 ## Soon to come
 
-`skore` will provide a CLI to help you with the following:
+`skore` will provide a CLI
+(cf. [skore CLI](https://github.com/probabl-ai/skore/pull/2976)) to help you with the
+following:
 
 ```bash
 uvx skore skills install
