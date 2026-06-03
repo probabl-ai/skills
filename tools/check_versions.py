@@ -11,6 +11,7 @@ Sources checked
 2. ``pixi.toml``                    -> ``[workspace] version``.
 3. ``.claude-plugin/plugin.json``   -> ``version``.
 4. ``.claude-plugin/marketplace.json`` -> each ``plugins[].version``.
+5. ``.cursor-plugin/plugin.json``   -> ``version``.
 
 Usage
 -----
@@ -69,6 +70,13 @@ def collect_versions(repo_root: Path) -> tuple[dict[str, str], list[str]]:
         versions[".claude-plugin/plugin.json"] = plugin["version"]
     except (OSError, json.JSONDecodeError, KeyError) as exc:
         errors.append(f".claude-plugin/plugin.json: could not read version ({exc})")
+
+    cursor_plugin_path = repo_root / ".cursor-plugin" / "plugin.json"
+    try:
+        cursor_plugin = json.loads(cursor_plugin_path.read_text(encoding="utf-8"))
+        versions[".cursor-plugin/plugin.json"] = cursor_plugin["version"]
+    except (OSError, json.JSONDecodeError, KeyError) as exc:
+        errors.append(f".cursor-plugin/plugin.json: could not read version ({exc})")
 
     marketplace_path = repo_root / ".claude-plugin" / "marketplace.json"
     try:

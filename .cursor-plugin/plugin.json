@@ -1,0 +1,20 @@
+{
+  "name": "probabl-skills",
+  "version": "0.2.0",
+  "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
+  "author": {
+    "name": "Probabl"
+  },
+  "homepage": "https://probabl.ai",
+  "repository": "https://github.com/probabl-ai/skills",
+  "license": "BSD-3-Clause",
+  "logo": "assets/logo.png",
+  "keywords": [
+    "machine-learning",
+    "data-science",
+    "scikit-learn",
+    "skrub",
+    "skore",
+    "ml-experimentation"
+  ]
+}

@@ -56,6 +56,7 @@ it by hand, so a release bump can't leave one file lagging behind:
 2. `pixi.toml` — `[workspace] version`.
 3. `.claude-plugin/plugin.json` — `version`.
 4. `.claude-plugin/marketplace.json` — each `plugins[].version`.
+5. `.cursor-plugin/plugin.json` — `version`.
 
 Run directly with `python tools/check_versions.py` or via
 `pixi run check-versions`.
@@ -69,6 +70,7 @@ the new version consistently to every source that declares it:
 2. `pixi.toml` — `[workspace] version`.
 3. `.claude-plugin/plugin.json` — `version`.
 4. `.claude-plugin/marketplace.json` — each `plugins[].version`.
+5. `.cursor-plugin/plugin.json` — `version`.
 
 The script refuses to run when those sources disagree. Use `--dry-run`
 to preview the bump without writing files. It does not create git commits
