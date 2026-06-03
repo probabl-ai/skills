@@ -4,8 +4,8 @@ description: >
   Decide where files live in an ML experimentation project: reusable
   code in `src/<pkg>/`, one `# %%` script per experiment in
   `experiments/`, design notes + index in `journal/`, reports in
-  `reports/`, agent-only probes in `scratch/`, narrative digest in
-  `overview/summary.md`. Owns the layout, the file-creation rules
+  `reports/`, agent-only probes in `scratch/`. Owns the layout, the
+  file-creation rules
   (one file per experiment, ask before editing), and the jupytext
   `# %%` script convention. Never imposes `data/` — the user owns
   that.
@@ -249,8 +249,6 @@ project/
 │   └── 01_baseline.py      # body owned by audit-ml-pipeline (read-only)
 ├── tests/
 │   └── smoke/              # body owned by smoke-test-ml-pipeline
-├── overview/
-│   └── summary.md          # agent-authored narrative (iterate-ml-experiment § 4)
 ├── scratch/                # agent-only (gitignored entirely)
 └── reports/                # skore Project lives here
 ```
@@ -286,9 +284,8 @@ tests/smoke/test_NN_<short_name>.py   (smoke test)
 audit/NN_<short_name>.py              (audit file — read-only)
 ```
 
-By the time the experiment flips to `done` in JOURNAL.md AND its
-summary is refreshed in `overview/summary.md`, all four exist.
-The design note is written first; the script lands on approval;
+By the time the experiment flips to `done` in JOURNAL.md, all four
+exist. The design note is written first; the script lands on approval;
 the smoke test body is filled by `smoke-test-ml-pipeline`; the
 audit file is placed and executed by `audit-ml-pipeline` at § 4
 record-outcome.
@@ -313,7 +310,7 @@ if the same key is reused — flag this. In-place also requires
 revisiting the matching smoke test
 (→ `smoke-test-ml-pipeline`).
 
-## Decision flow (13 steps — full version in `references/scaffold_steps.md`)
+## Decision flow (12 steps — full version in `references/scaffold_steps.md`)
 
 | # | Step | Owner |
 |---|---|---|
@@ -326,12 +323,11 @@ revisiting the matching smoke test
 | 6 | Create empty `tests/smoke/`. Verify pytest on manifest | this skill |
 | 6a | Create empty `audit/` | this skill |
 | 7 | Create `journal/JOURNAL.md` one-line placeholder; `iterate-ml-experiment` rewrites it | this skill |
-| 8 | Create `overview/summary.md` from `templates/summary.md` | this skill |
-| 9 | Create empty `scratch/` (no README — owned by `python-api`) | this skill |
-| 10 | Create empty `reports/` | this skill |
-| 11 | Touch `.gitignore` — drop template if none; else suggest patch (always ask about `reports/`) | this skill |
-| 12 | **Hand off to `python-code-style`** § Initial setup for `ruff.toml` + first pass — invoking the skill teaches NumPyDoc | this skill → python-code-style |
-| 13 | Hand back to the relevant sibling (`iterate-ml-experiment` for design note, etc.) | this skill → next caller |
+| 8 | Create empty `scratch/` (no README — owned by `python-api`) | this skill |
+| 9 | Create empty `reports/` | this skill |
+| 10 | Touch `.gitignore` — drop template if none; else suggest patch (always ask about `reports/`) | this skill |
+| 11 | **Hand off to `python-code-style`** § Initial setup for `ruff.toml` + first pass — invoking the skill teaches NumPyDoc | this skill → python-code-style |
+| 12 | Hand back to the relevant sibling (`iterate-ml-experiment` for design note, etc.) | this skill → next caller |
 
 → next: `iterate-ml-experiment` § 0 (bootstrap) for the first
 design note.
@@ -396,13 +392,11 @@ report.
 | `python-api` | skore / skrub / sklearn signatures |
 | `python-env-manager` | Detection + install commands + bootstrap |
 | `data-science-python-stack` | What to install (Tier 1/2/3) |
-| `python-code-style` | `ruff.toml` drop + NumPyDoc convention (step 12) |
+| `python-code-style` | `ruff.toml` drop + NumPyDoc convention (step 11) |
 
 ## Templates
 
 - `templates/experiment.py` — copied per new experiment
-- `templates/summary.md` — placeholder at scaffold; rewritten by
-  `iterate-ml-experiment` § 4
 - `templates/pyproject.toml` — declares `src/<pkg>/` as installable
 - `templates/src___init__.py` — package init with `PROJECT_ROOT`
 - `templates/src_data.py` / `src_features.py` / `src_pipeline.py` /

@@ -2,7 +2,7 @@
   "name": "probabl-skills",
   "version": "0.3.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "773c16cefae4fd6212212e7a349acf4f56a063a37c61dbfa51eb7cb62e71dbb2",
+  "catalog_hash": "7e67e8cb8df673740fb9300e002d9a7cd641dd7e22d20eef240fba2a902c378a",
   "skills": [
     {
       "id": "build-ml-pipeline",
@@ -20,7 +20,7 @@
       "summary": "Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "74c6f0df2e4d63edc3955dbe0f44b526bcf1dbd40e2ee01dbd42deb55af7abe6"
+      "hash": "729ee97bf5d4eb4548ec316cfe7294f46acbf4e4aa5f33682fff00657c3c1f3a"
     },
     {
       "id": "test-ml-pipeline",
@@ -47,7 +47,7 @@
       "summary": "Once testing .",
       "category": "methodology",
       "subcategory": null,
-      "hash": "47a4cfcd87043b61205db5eda2d3cd1ed2df4316e72470919bbee35587447e63"
+      "hash": "9b57aa8cc91050b747a9fd56ffda3835c982f0b2b3f17f9599eac40447a2e076"
     },
     {
       "id": "iterate-ml-experiment",
@@ -56,7 +56,7 @@
       "summary": "Design, keep track of experiments and iterate on them.",
       "category": "orchestration",
       "subcategory": "dispatchers",
-      "hash": "85f0f7883b3a26d84fc68010dc74474195dc806ea327951ad557e90c05c84504"
+      "hash": "058c9bc3062651efd9a7adfb584f7b45dd7768cec7462a381edf8e8ce6da4d2c"
     },
     {
       "id": "iterate-from-skore",
@@ -83,7 +83,7 @@
       "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "9da8010a13f87228925378e0f7f5a3e6b318df64b714712bbda1879379d5a363"
+      "hash": "bb0122de1d37ca42d31f60f8f374854fe77fad5bab5da4b075e7be47145c08dc"
     },
     {
       "id": "python-code-style",

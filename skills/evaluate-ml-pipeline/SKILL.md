@@ -99,8 +99,8 @@ read the report. The pipeline declaration is out of scope (see
   Re-running `evaluate` from a `scratch/` probe, an `audit/` file,
   a notebook, or a one-off Python file in `src/` duplicates the
   report under the same `key` and pollutes `project.summarize()`
-  — the cross-experiment metrics view that `overview/summary.md`
-  reads from. **Two read-only consumers** of the Project share
+  — the cross-experiment metrics view the audit digest draws
+  from. **Two read-only consumers** of the Project share
   the same `summarize()` → `get(id)` → `report.*` discipline:
   `scratch/<ts>_*.py` probes (owned by `organize-ml-workspace`
   § "Scratch is read-only") and `audit/<stem>.py` files (owned by
