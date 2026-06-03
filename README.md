@@ -54,7 +54,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 `/plugin update` pulls new releases.
 
-## Soon to come
+### Coming soon
 
 `skore` will provide a CLI
 (cf. [skore CLI](https://github.com/probabl-ai/skore/pull/2976)) to help you with the
