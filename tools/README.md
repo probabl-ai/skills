@@ -7,10 +7,11 @@ standard-library Python; the recommended entry point is the
 ## Pixi tasks
 
 ```bash
-pixi run hash         # refresh per-skill + aggregate hashes in catalog.json
-pixi run hash-check   # verify hashes match the on-disk skills (no writes)
-pixi run validate     # validate catalog.json structure (skills, categories, workflows)
-pixi run check        # composite: hash-check + validate (the CI entry point)
+pixi run hash           # refresh per-skill + aggregate hashes in catalog.json
+pixi run hash-check     # verify hashes match the on-disk skills (no writes)
+pixi run validate       # validate catalog.json structure (skills, categories, workflows)
+pixi run check-versions # verify the version matches across all declaring sources
+pixi run check          # composite: hash-check + validate + check-versions (the CI entry point)
 ```
 
 `pixi run check` is what CI invokes via `prefix-dev/setup-pixi` — see
@@ -42,3 +43,16 @@ Checks four invariants:
 
 Run directly with `python tools/validate_catalog.py` or via
 `pixi run validate`.
+
+## check_versions.py
+
+Checks that the package version agrees across every source that declares
+it by hand, so a release bump can't leave one file lagging behind:
+
+1. `catalog.json` — top-level `version`.
+2. `pixi.toml` — `[workspace] version`.
+3. `.claude-plugin/plugin.json` — `version`.
+4. `.claude-plugin/marketplace.json` — each `plugins[].version`.
+
+Run directly with `python tools/check_versions.py` or via
+`pixi run check-versions`.

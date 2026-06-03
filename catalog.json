@@ -1,14 +1,14 @@
 {
   "name": "probabl-skills",
   "version": "0.1.0",
-  "description": "Skills for ML experimentation in Python, organized around skrub, scikit-learn, and skore, and more broadly the PyData ecosystem.",
+  "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
   "catalog_hash": "773c16cefae4fd6212212e7a349acf4f56a063a37c61dbfa51eb7cb62e71dbb2",
   "skills": [
     {
       "id": "build-ml-pipeline",
       "path": "skills/build-ml-pipeline",
       "title": "Build ML Pipeline",
-      "summary": "Declare the pipeline from data source to predictor as a skrub DataOps graph. Stops at the declared object — no fit, split, tuning, or persistence.",
+      "summary": "Build a machine learning pipeline from the data source to the learner, including multi-tables engineering.",
       "category": "methodology",
       "subcategory": null,
       "hash": "6343975810344278267d3a8a27b8c27723f840c070dab730765f8c249e4eec45"
@@ -17,7 +17,7 @@
       "id": "evaluate-ml-pipeline",
       "path": "skills/evaluate-ml-pipeline",
       "title": "Evaluate ML Pipeline",
-      "summary": "Evaluate a single sklearn-compatible learner: pick the right entry point (skore.evaluate first), the right cross-validator, and consume report metadata.",
+      "summary": "Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics.",
       "category": "methodology",
       "subcategory": null,
       "hash": "74c6f0df2e4d63edc3955dbe0f44b526bcf1dbd40e2ee01dbd42deb55af7abe6"
@@ -26,7 +26,7 @@
       "id": "test-ml-pipeline",
       "path": "skills/test-ml-pipeline",
       "title": "Test ML Pipeline",
-      "summary": "Router that owns the tests/ folder of an ML workspace and the experiment ↔ test pairing rule. Dispatches to a per-category subskill.",
+      "summary": "Make sure that your machine learning pipeline is production-ready statistically and functionally.",
       "category": "orchestration",
       "subcategory": "dispatchers",
       "hash": "5fae1274168536eb9781ea26de2f43ee24c3ff83081505cc1c5f20389dcfbb99"
@@ -35,7 +35,7 @@
       "id": "smoke-test-ml-pipeline",
       "path": "skills/smoke-test-ml-pipeline",
       "title": "Smoke Test ML Pipeline",
-      "summary": "Diagnostic-by-construction pytest that catches the 'load → featurize → split' anti-pattern by predicting on a disjoint, no-buffer slice of the real data source.",
+      "summary": "Stress test your machine learning pipeline on future data to make sure it works.",
       "category": "orchestration",
       "subcategory": "test-strategies",
       "hash": "c6a29ab2268d2e74264457a6f60584ee2c8b72ac42752eb6fc6faf39d5442a2f"
@@ -44,7 +44,7 @@
       "id": "audit-ml-pipeline",
       "path": "skills/audit-ml-pipeline",
       "title": "Audit ML Pipeline",
-      "summary": "Owns the audit/ folder: one # %% Python file per experiment that loads its skore report read-only and uses bare-last-expression cells. The agent executes via an in-process IPython runner (scripts/run_audit.py) that streams a markdown digest of each cell's stdout + last-expression repr. Read-only — never calls evaluate or put.",
+      "summary": "Once testing .",
       "category": "methodology",
       "subcategory": null,
       "hash": "47a4cfcd87043b61205db5eda2d3cd1ed2df4316e72470919bbee35587447e63"
@@ -53,7 +53,7 @@
       "id": "iterate-ml-experiment",
       "path": "skills/iterate-ml-experiment",
       "title": "Iterate ML Experiment",
-      "summary": "Drives the iteration loop on top of an ML workspace — owns journal/JOURNAL.md and per-experiment design notes, and dispatches to a sourcing strategy.",
+      "summary": "Design, keep track of experiments and iterate on them.",
       "category": "orchestration",
       "subcategory": "dispatchers",
       "hash": "85f0f7883b3a26d84fc68010dc74474195dc806ea327951ad557e90c05c84504"
@@ -62,7 +62,7 @@
       "id": "iterate-from-skore",
       "path": "skills/iterate-from-skore",
       "title": "Iterate from Skore",
-      "summary": "Source the next experiment by reading the audit digest at scratch/audit/<stem>/audit.md — every 'issue' / 'tip' row drives a Backlog item, following the row's documentation_url for the mitigation.",
+      "summary": "Use skore to run diagnostics and checks that can be reported and addressed in the next experiment.",
       "category": "orchestration",
       "subcategory": "experiment-sourcing",
       "hash": "9acae3404b0e4bbc5928aa910ce285f76040eeae8fb0446351bf55c7d1b19917"
@@ -71,7 +71,7 @@
       "id": "iterate-from-user",
       "path": "skills/iterate-from-user",
       "title": "Iterate from User",
-      "summary": "Source the next experiment from the user directly — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo).",
+      "summary": "As a user be in the loop and propose new experiments — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo).",
       "category": "orchestration",
       "subcategory": "experiment-sourcing",
       "hash": "7bb7c0c9468ed4f417cd268714333d7122fa30ae4935dcc803c0f7d603db9168"
@@ -80,7 +80,7 @@
       "id": "organize-ml-workspace",
       "path": "skills/organize-ml-workspace",
       "title": "Organize ML Workspace",
-      "summary": "Decide where files live: reusable code, per-experiment scripts (jupytext-style # %%), reports. One file per experiment.",
+      "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
       "hash": "9da8010a13f87228925378e0f7f5a3e6b318df64b714712bbda1879379d5a363"
@@ -89,7 +89,7 @@
       "id": "python-code-style",
       "path": "skills/python-code-style",
       "title": "Python Code Style",
-      "summary": "Place the project's ruff.toml template and run ruff (lint + format) on touched files. numpydoc for docstrings.",
+      "summary": "Enforce good practices out-of-the-box for the Python ecosystem for your code.",
       "category": "tooling",
       "subcategory": "code-quality",
       "hash": "8a4f701b03f20c246de3606149f70180095ad245660fb181cf716ab274585293"
@@ -98,7 +98,7 @@
       "id": "python-env-manager",
       "path": "skills/python-env-manager",
       "title": "Python Environment Manager",
-      "summary": "Detect the project's env manager (pixi / uv / poetry / hatch / conda / pip+venv) and issue the right install command. Defaults to pixi when bootstrapping.",
+      "summary": "Bootstrapping the experiment setup based on your favorite Python environment manager.",
       "category": "tooling",
       "subcategory": "project-setup",
       "hash": "36d5990583d33d51c20224b073654b6e1ec7498fc86681182b6c8036c69f1074"
@@ -116,7 +116,7 @@
       "id": "python-api",
       "path": "skills/python-api",
       "title": "Python API Discovery",
-      "summary": "Discover the public API of any installed Python package — inspect.signature + pydoc.render_doc for a symbol, dir / pkgutil.iter_modules for a module, versioned-docs WebSearch + cache for narrative.",
+      "summary": "Discover the public API of any installed Python package to make agent find their way without bothering your workspace.",
       "category": "reference",
       "subcategory": null,
       "hash": "a884eebc7fc3bb7ad8488b5a18b2305fc586c2db86daaf6276dd101092575877"
@@ -126,7 +126,7 @@
     {
       "id": "ml-experimentation",
       "title": "ML Experimentation Companion",
-      "summary": "Companion workflow for the experimentation phase of an ML project: lay out the workspace, build the pipeline as a skrub DataOps graph, evaluate with skore, smoke-test the pipeline topology, audit each experiment's report, and drive a journaled iteration loop. Stops at the experimentation boundary — packaging, serving, and monitoring are out of scope.",
+      "summary": "A machine learning experiment companion. Focus on the science, the companion organizes the rest with organized workspaces and reporting, auditable results where you are still the owner.",
       "includes": [
         "organize-ml-workspace",
         "python-env-manager",
