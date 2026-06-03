@@ -13,6 +13,20 @@ So we aim at allowing you to focus on the science, letting AI agents to take car
 the implementation but guided by two important ingredients: great libraries for the
 maintainability and good methodologies to make experiments right.
 
+In practice, from a prompt such as:
+
+```bash
+Given the context in the file `data/README.md` and the data located in `data/`,
+let's build a first machine learning pipeline that will serve as baseline for the
+next experiments that we are going to run together.
+```
+
+you can expect your agent to start experimenting with you. The skills are working pretty
+well with models such as Claude Opus and Sonnet and gives really good results with
+smaller models such as Qwen 3.6 30B or DeepSeek v4 Flash. In terms of agent's
+harnessing, we tested them with Claude Code, OpenCode, Cursor, GitHub Copilot and
+do not witness any significant difference in terms of skills invocation.
+
 ## Install
 
 One command, 55+ agents — including **Claude Code, Codex, Cursor, OpenCode, Gemini CLI, and Mistral Vibe**:
