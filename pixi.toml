@@ -16,4 +16,5 @@ python = ">=3.11,<3.14"
 hash = { cmd = "python tools/hash_skills.py", description = "Refresh per-skill and aggregate SHA-256 hashes in catalog.json." }
 hash-check = { cmd = "python tools/hash_skills.py --check", description = "Verify catalog.json hashes match the on-disk skills (non-zero exit on drift)." }
 validate = { cmd = "python tools/validate_catalog.py", description = "Validate catalog.json structure: skill/folder symmetry, categories, workflow references." }
-check = { depends-on = ["hash-check", "validate"], description = "Run every CI check: hash verification + catalog structure validation." }
+check-versions = { cmd = "python tools/check_versions.py", description = "Verify the version matches across catalog.json, pixi.toml, and the Claude plugin/marketplace manifests." }
+check = { depends-on = ["hash-check", "validate", "check-versions"], description = "Run every CI check: hash verification + catalog structure validation + version consistency." }

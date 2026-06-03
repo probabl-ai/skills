@@ -52,31 +52,31 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 | Skill | Description |
 | --- | --- |
-| [build-ml-pipeline](skills/build-ml-pipeline/SKILL.md) | Declare the pipeline from data source to predictor as a skrub DataOps graph. Stops at the declared object — no fit, split, tuning, or persistence. |
-| [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a single sklearn-compatible learner: pick the right entry point (`skore.evaluate` first), the right cross-validator, and consume report metadata. |
-| [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Router that owns the `tests/` folder of an ML workspace and the experiment ↔ test pairing rule. Dispatches to a per-category subskill. |
-| [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Diagnostic-by-construction pytest that catches the "load → featurize → split" anti-pattern by predicting on a disjoint, no-buffer slice of the real data source. |
-| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Owns the `audit/` folder: one `# %%` file per experiment that loads its skore report read-only and uses bare-last-expression cells. The agent executes via an in-process IPython runner (`scripts/run_audit.py`) that streams a markdown digest. Read-only — never calls `evaluate` or `put`. |
+| [build-ml-pipeline](skills/build-ml-pipeline/SKILL.md) | Build a machine learning pipeline from the data source to the learner, including multi-tables engineering. |
+| [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics. |
+| [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Make sure that your machine learning pipeline is production-ready statistically and functionally. |
+| [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Stress test your machine learning pipeline on future data to make sure it works. |
+| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Once testing . |
 
 ## Iteration loop
 
 | Skill | Description |
 | --- | --- |
-| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Drives the iteration loop on top of an ML workspace — owns `journal/JOURNAL.md` and per-experiment design notes, and dispatches to a sourcing strategy below. |
-| [iterate-from-skore](skills/iterate-from-skore/SKILL.md) | Source the next experiment by reading the audit digest at `scratch/audit/<stem>/audit.md` — every `issue` / `tip` row drives a Backlog item, following the row's `documentation_url` for the mitigation. |
-| [iterate-from-user](skills/iterate-from-user/SKILL.md) | Source the next experiment from the user directly — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo). |
+| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Design, keep track of experiments and iterate on them. |
+| [iterate-from-skore](skills/iterate-from-skore/SKILL.md) | Use skore to run diagnostics and checks that can be reported and addressed in the next experiment. |
+| [iterate-from-user](skills/iterate-from-user/SKILL.md) | As a user be in the loop and propose new experiments — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo). |
 
 ## Workspace and tooling
 
 | Skill | Description |
 | --- | --- |
-| [organize-ml-workspace](skills/organize-ml-workspace/SKILL.md) | Decide where files live: reusable code, per-experiment scripts (jupytext-style `# %%`), reports. One file per experiment. |
-| [python-code-style](skills/python-code-style/SKILL.md) | Place the project's `ruff.toml` template and run ruff (lint + format) on touched files. numpydoc for docstrings. |
-| [python-env-manager](skills/python-env-manager/SKILL.md) | Detect the project's env manager (pixi / uv / poetry / hatch / conda / pip+venv) and issue the right install command. Defaults to pixi when bootstrapping. |
+| [organize-ml-workspace](skills/organize-ml-workspace/SKILL.md) | An organized workspace to keep track of your experiments. |
+| [python-code-style](skills/python-code-style/SKILL.md) | Enforce good practices out-of-the-box for the Python ecosystem for your code. |
+| [python-env-manager](skills/python-env-manager/SKILL.md) | Bootstrapping the experiment setup based on your favorite Python environment manager. |
 | [data-science-python-stack](skills/data-science-python-stack/SKILL.md) | Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers. |
 
 ## API references
 
 | Skill | Description |
 | --- | --- |
-| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package — `inspect.signature` + `pydoc.render_doc` for a symbol, `dir` / `pkgutil.iter_modules` for a module, versioned-docs WebSearch + cache for narrative. Carries conceptual orientation for sklearn / skrub / skore. |
+| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package to make agent find their way without bothering your workspace. |
