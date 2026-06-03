@@ -3,7 +3,8 @@
 
 Increments the semver ``major``, ``minor``, or ``patch`` component and
 writes the new version consistently to ``catalog.json``, ``pixi.toml``,
-``.claude-plugin/plugin.json``, and ``.claude-plugin/marketplace.json``.
+``.claude-plugin/plugin.json``, ``.claude-plugin/marketplace.json``, and
+``.cursor-plugin/plugin.json``.
 
 The script refuses to run when those sources disagree; run
 ``check_versions.py`` first to diagnose drift.
@@ -35,6 +36,7 @@ VERSION_FILES: tuple[str, ...] = (
     "pixi.toml",
     ".claude-plugin/plugin.json",
     ".claude-plugin/marketplace.json",
+    ".cursor-plugin/plugin.json",
 )
 
 
