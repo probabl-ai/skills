@@ -54,8 +54,9 @@ install (ipython + pyright + pyrightconfig.json) or skipped it.
   - agent feature: <installed | skipped> — recorded: <YYYY-MM-DD>
   - optional features: <name1, name2 | none> — recorded: <YYYY-MM-DD>
   - package name (`src/<pkg>/`): <pkg> — recorded: <YYYY-MM-DD>
-  - skore mode: <local | hub> — recorded: <YYYY-MM-DD>
+  - skore mode: <local | hub | mlflow> — recorded: <YYYY-MM-DD>
   - skore hub workspace: <hub-workspace-name | n/a> — recorded: <YYYY-MM-DD>
+  - skore mlflow tracking uri: <mlflow-tracking-uri | n/a> — recorded: <YYYY-MM-DD>
   - CV splitter family: <KFold | StratifiedKFold | GroupKFold | TimeSeriesSplit | other> — recorded: <YYYY-MM-DD>
 
 ## History

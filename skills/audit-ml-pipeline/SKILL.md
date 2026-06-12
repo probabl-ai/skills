@@ -255,8 +255,8 @@ Brief outline; full anatomy with concrete examples →
 5. **Load the report** — set `REPORT_ID` from the URL printed by
    `project.put()` (hub: `"skore:report:<type-singular>:<N>"` — URL
    path segment is plural, id uses singular, e.g. `cross-validations`
-   → `cross-validation`, `estimators` → `estimator`; local: read
-   `summary["id"]` for the matching key row), then
+   → `cross-validation`, `estimators` → `estimator`; local **and
+   mlflow**: read `summary["id"]` for the matching key row), then
    `report = project.get(REPORT_ID)`; then `report`.
 6. **Checks summary** — `report.checks.summarize().frame()`. Each row
    carries `documentation_url` — the actionable mitigation for an

@@ -110,12 +110,14 @@ Sibling skills (just-in-time):
 - **Skore Project mode is asked, not assumed (G-SKORE-MODE).**
   Before any template instantiation containing
   `skore.Project(...)`, fire an `AskUserQuestion` for `local` |
-  `hub`. Default proposal: `local`. Hub triggers a follow-up for
-  the workspace name (org/team on the hub — distinct from
-  local-mode `workspace=`). Persists as `skore mode:` (+
-  `skore hub workspace:` when hub). Without it the
-  `<SKORE_PROJECT_INIT>` substitution has no shape to fill.
-  Details: → `references/g_skore_mode.md`.
+  `hub` | `mlflow`. Default proposal: `local`. Hub triggers a
+  follow-up for the workspace name (org/team on the hub — distinct
+  from local-mode `workspace=`); mlflow triggers a follow-up for
+  the **MLflow tracking server URI** (`tracking_uri=`) — the agent
+  cannot infer it. Persists as `skore mode:` (+ `skore hub
+  workspace:` when hub, + `skore mlflow tracking uri:` when
+  mlflow). Without it the `<SKORE_PROJECT_INIT>` substitution has
+  no shape to fill. Details: → `references/g_skore_mode.md`.
 - **Switching skore mode mid-project is forbidden by default.**
   Once recorded, do not silently change. A switch orphans every
   existing report in the prior store — skore has no built-in
@@ -150,9 +152,11 @@ Sibling skills (just-in-time):
 | Batch G-TABULAR + G-PKG-NAME + G-ENV-MGR + G-SKORE-MODE into prose recommendations | The gates take structured `AskUserQuestion`. Prose followed by "let me know" does NOT resolve them |
 | Skip G-SKORE-MODE because templates use `mode="local"` | Templates carry the `<SKORE_PROJECT_INIT>` marker, not a literal. The gate must fire |
 | Pick `mode="hub"` without checking the workspace exists / user has access | Project init fails at first `put()` with an authorization error. Confirm during G-SKORE-MODE, not at execution time |
-| Substitute `pip install "skore[hub]"` based on agent guess | Install variant comes from G-SKORE-MODE's recorded answer. `python-env-manager` reads that row, not agent intuition |
+| Pick `mode="mlflow"` and invent / default the `tracking_uri=` | The tracking URI is server-specific; the agent cannot infer it. Ask the user at the G-SKORE-MODE follow-up. No silent `http://localhost:5000` |
+| Substitute `pip install "skore[hub]"` / `"skore[mlflow]"` based on agent guess | Install variant comes from G-SKORE-MODE's recorded answer. `python-env-manager` reads that row, not agent intuition |
 | Silently change `skore mode:` mid-project to "fix" a broken init | Switching orphans existing reports. Always explicit `AskUserQuestion` first |
-| Hub substitution but leaving `workspace=` kwarg | `workspace=` is local-only; hub raises `TypeError`. Substitute the whole block, not just the mode literal |
+| Hub / mlflow substitution but leaving `workspace=` kwarg | `workspace=` is local-only; hub and mlflow reject it (hub raises `TypeError`; mlflow uses `tracking_uri=`). Substitute the whole block, not just the mode literal |
+| mlflow substitution that keeps a `login(mode=...)` call | mlflow mode needs no skore login — auth is the MLflow server's concern. `login` belongs only to hub mode |
 | Local `workspace="reports"` (relative) instead of `str(PROJECT_ROOT / "reports")` (absolute) | Relative resolves against CWD; runs from other dirs write the store somewhere unexpected. Always absolute via `PROJECT_ROOT` |
 | Putting `skore.login(mode="hub")` after `skore.Project(...)` | `Project(...)` requires authenticated session in hub mode. `login` first |
 | Substituting `<SKORE_PROJECT_INIT>` in `audit/<stem>.py` independently of `experiments/<stem>.py` | Audit must open the same Project. Byte-identical copy from the experiment file is the rule |
@@ -187,10 +191,11 @@ Pre-flight (organize-ml-workspace):
                 JOURNAL.md Status (Workspace decisions) |
                 existing manifest's [project].name **confirmed via AskUserQuestion**
                 (reading the manifest alone is NOT sufficient)
-- [ ] G-SKORE-MODE resolved: local | hub
-      Evidence: AskUserQuestion id=<id>, answer=<local|hub> |
+- [ ] G-SKORE-MODE resolved: local | hub | mlflow
+      Evidence: AskUserQuestion id=<id>, answer=<local|hub|mlflow> |
                 JOURNAL.md Status (Workspace decisions) `skore mode:` row
       If hub: also captures `skore hub workspace:` row.
+      If mlflow: also captures `skore mlflow tracking uri:` row.
 - [ ] `pyproject.toml` present at root declaring `src/<pkg>/`;
       editable install wired via `python-env-manager` § Editable workspace
       Evidence: Read pyproject.toml (this turn) + manager's editable-install call
@@ -316,7 +321,7 @@ revisiting the matching smoke test
 |---|---|---|
 | 1 | Read project root; Detection table matches → glue (stop). No match → continue | this skill |
 | 2 | **G-PKG-NAME** structured ask. Record in `Workspace decisions`. No manager `init` until this passes | this skill |
-| 2a | **G-SKORE-MODE** ask: local | hub (+ hub workspace name if hub). Determines `<SKORE_PROJECT_INIT>` form + skore install variant. → `references/g_skore_mode.md` | this skill |
+| 2a | **G-SKORE-MODE** ask: local | hub | mlflow (+ hub workspace name if hub; + MLflow tracking URI if mlflow). Determines `<SKORE_PROJECT_INIT>` form + skore install variant. → `references/g_skore_mode.md` | this skill |
 | 3 | Drop `pyproject.toml` from `templates/pyproject.toml` (substitute `<pkg>`). Hand off to `python-env-manager` for editable install | this skill → env-manager |
 | 4 | Create `src/<pkg>/` with skeletons from `templates/src_*.py` | this skill |
 | 5 | Create `experiments/01_baseline.py` from `templates/experiment.py` (substitute `<pkg>`, `<SKORE_PROJECT_INIT>` per G-SKORE-MODE, `<project-name>`) | this skill |
@@ -356,7 +361,8 @@ Each has a narrow contract:
 `# %%` cell markers, not `.ipynb`. Template:
 `templates/experiment.py`. What the script does:
 
-1. Open / attach to the `skore.Project` at `reports/` (or hub).
+1. Open / attach to the `skore.Project` at `reports/` (or hub /
+   mlflow server, per `skore mode:`).
 2. Import the learner from `<pkg>.pipeline` and CV from
    `<pkg>.evaluate`.
 3. Call `skore.evaluate(...)`.
@@ -367,7 +373,7 @@ Confirm signatures via `python-api`. Cross-validator choice is
 
 **Project init substitution** — the `<SKORE_PROJECT_INIT>` marker
 in `templates/experiment.py` is replaced at scaffold time per the
-recorded `skore mode:` decision. Two forms (local vs hub),
+recorded `skore mode:` decision. Three forms (local / hub / mlflow),
 side-by-side anatomy, audit-file copy rule:
 → `references/g_skore_mode.md`.
 
@@ -410,6 +416,7 @@ report.
 - `references/scaffold_steps.md` — full prose elaboration of the
   13-step Decision flow with examples and rationale.
 - `references/g_skore_mode.md` — the G-SKORE-MODE gate in detail:
-  project init forms side-by-side, anatomy of the
-  `<SKORE_PROJECT_INIT>` substitution, switching mid-project,
-  out-of-scope notes (MLflow mode, Skore Hub account creation).
+  the three project init forms (local / hub / mlflow) side-by-side,
+  anatomy of the `<SKORE_PROJECT_INIT>` substitution, switching
+  mid-project, out-of-scope notes (running the MLflow server, Skore
+  Hub account creation).

@@ -1,8 +1,8 @@
 # Python Env Manager — skore variant per mode
 
-Why `skore` vs `skore[hub]` matters, and the procedure for switching
-modes mid-project. Cross-referenced from SKILL.md § "Tier 1 install:
-skore variant per mode".
+Why `skore` vs `skore[hub]` vs `skore[mlflow]` matters, and the
+procedure for switching modes mid-project. Cross-referenced from
+SKILL.md § "Tier 1 install: skore variant per mode".
 
 ## Why the variant matters
 
@@ -11,9 +11,15 @@ Hub mode calls `skore.login(mode="hub")` before instantiating
 `[hub]` extra; on a plain `skore` install,
 `from skore import login` raises `ImportError`.
 
+MLflow mode instantiates `skore.Project(mode="mlflow",
+tracking_uri=...)`, which drives an MLflow client under the hood;
+that client lives in the `[mlflow]` extra. On a plain `skore`
+install, constructing an mlflow-mode Project raises `ImportError` /
+`ModuleNotFoundError` for `mlflow`.
+
 Installing the wrong variant silently produces working CI for
 local-mode operations but breaks hub-mode operations at first
-`login()`.
+`login()`, or mlflow-mode operations at first `Project(...)`.
 
 ## The `[jupyter]` extra — PyPI only
 
@@ -35,19 +41,21 @@ Combined matrix:
 |---|---|---|
 | `local` | `skore` | `skore[jupyter]` |
 | `hub` | `skore[hub]` | `skore[hub,jupyter]` |
+| `mlflow` | `skore[mlflow]` | `skore[mlflow,jupyter]` |
 
-Why a single combined extra string for PyPI hub mode: PEP 508 allows
-comma-separated extras (`skore[hub,jupyter]`) and that's the form
-all four PyPI-based managers accept. Splitting into two install
-calls works too but produces two manifest rows, which is noisier
-than necessary.
+Why a single combined extra string for PyPI hub / mlflow mode: PEP
+508 allows comma-separated extras (`skore[hub,jupyter]`,
+`skore[mlflow,jupyter]`) and that's the form all four PyPI-based
+managers accept. Splitting into two install calls works too but
+produces two manifest rows, which is noisier than necessary.
 
 ## Forbidden
 
-- Silently picking `skore[hub]` "to be safe" or "because the user
-  might want hub later". The `[hub]` extra costs ~20 MB of network
-  deps + authentication infrastructure the local-mode user did not
-  ask for; the gate-based split exists to avoid that.
+- Silently picking `skore[hub]` / `skore[mlflow]` "to be safe" or
+  "because the user might want it later". The `[hub]` / `[mlflow]`
+  extras cost network deps + infrastructure (auth for hub, the
+  mlflow client for mlflow) the local-mode user did not ask for;
+  the gate-based split exists to avoid that.
 - Dropping `[jupyter]` on PyPI installs. The audit flow's report
   widgets and the TableReport viz silently degrade.
 - Adding `[jupyter]` on conda-forge installs. Redundant — the
@@ -76,13 +84,18 @@ forbidden by default" — requires explicit user confirmation):
   (conda-forge) or `"skore[hub,jupyter]"` (PyPI). The extra deps
   land additively; existing local-mode reports under `reports/`
   stay on disk but are no longer the active store.
-- **`hub` → `local`**: optionally remove the hub extra to slim the
-  env. Per-manager: `pixi remove skore && pixi add skore` (conda-
-  forge) or `uv remove skore && uv add "skore[jupyter]"` (PyPI),
-  and the equivalents for poetry / hatch / pip+venv. Existing
-  hub-mode reports stay on Skore Hub but are no longer the active
-  store from this workspace.
+- **`local` → `mlflow`** (or **`hub` → `mlflow`**): add the mlflow
+  variant — `"skore[mlflow]"` (conda-forge) or
+  `"skore[mlflow,jupyter]"` (PyPI). The prior store's reports stay
+  where they were (disk / Skore Hub) but are no longer the active
+  store.
+- **`hub` / `mlflow` → `local`**: optionally remove the extra to
+  slim the env. Per-manager: `pixi remove skore && pixi add skore`
+  (conda-forge) or `uv remove skore && uv add "skore[jupyter]"`
+  (PyPI), and the equivalents for poetry / hatch / pip+venv.
+  Existing hub-/mlflow-mode reports stay on their backend but are
+  no longer the active store from this workspace.
 
-In both directions, surface to the user that the prior store's
+In all directions, surface to the user that the prior store's
 reports are orphaned from this workspace's perspective until a
 manual migration.

@@ -105,7 +105,7 @@ candidates).
 
 The Project init form depends on the workspace's `skore mode:`
 decision (recorded in `JOURNAL.md` Status `Workspace decisions`;
-gate owned by `organize-ml-workspace` § "G-SKORE-MODE"). Two
+gate owned by `organize-ml-workspace` § "G-SKORE-MODE"). Three
 forms; pick the one matching the workspace:
 
 ```python
@@ -126,18 +126,35 @@ project = skore.Project("<hub-workspace>/load-forecast", mode="hub")
 project.put("01_baseline", report)
 ```
 
+```python
+# mlflow mode  (no login — auth is the MLflow server's concern)
+project = skore.Project(
+    name="load-forecast",            # MLflow experiment name
+    mode="mlflow",
+    tracking_uri="http://127.0.0.1:5000",  # recorded at G-SKORE-MODE
+)
+project.put("01_baseline", report)   # key = MLflow run name
+```
+
 - **Key convention**: file stem of the experiment script. Re-using
   the key in a later run overwrites the previous report — fork into
-  a new experiment file if you want both.
+  a new experiment file if you want both. (In mlflow mode the key
+  is the run name under the experiment.)
 - **Local-mode `workspace=str(PROJECT_ROOT / "reports")`** — the
   on-disk directory where the Project store lives. Created on
-  first `put`. **Not** a valid kwarg in hub mode.
+  first `put`. **Not** a valid kwarg in hub or mlflow mode.
+- **mlflow-mode `tracking_uri=`** — the MLflow tracking server URI
+  (HTTP(S) server, `sqlite:///…`, or `file:./mlruns` backend).
+  mlflow-only kwarg; no `login()`. `skore[mlflow]` extra required.
+  Note: `project.delete(...)` is not implemented for mlflow-mode
+  projects.
 - **`name=`** — short, stable, per-workspace name. Local mode uses
   it directly; hub mode uses it after `<hub-workspace>/` as in
-  `"<hub-workspace>/load-forecast"`. Set once at project
-  bootstrap inside each experiment script's `skore.Project(...)`
-  call (the agent reads the value from `experiments/01_baseline.py`
-  when needed; there is no auto-discovery script).
+  `"<hub-workspace>/load-forecast"`; mlflow mode uses it as the
+  experiment name. Set once at project bootstrap inside each
+  experiment script's `skore.Project(...)` call (the agent reads
+  the value from `experiments/01_baseline.py` when needed; there is
+  no auto-discovery script).
 
 ## Reading back later
 
