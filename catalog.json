@@ -44,7 +44,7 @@
       "id": "audit-ml-pipeline",
       "path": "skills/audit-ml-pipeline",
       "title": "Audit ML Pipeline",
-      "summary": "Once testing .",
+      "summary": "Once testing and the experiment is done, audit by loading a skore report and investigate.",
       "category": "methodology",
       "subcategory": null,
       "hash": "9b57aa8cc91050b747a9fd56ffda3835c982f0b2b3f17f9599eac40447a2e076"
