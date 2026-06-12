@@ -416,24 +416,26 @@ Per-manager footguns:
 Read `skore mode:` from `journal/JOURNAL.md` Status
 `Workspace decisions` (set by `organize-ml-workspace` §
 G-SKORE-MODE). The variant pulls in **two orthogonal axes**: mode
-(`local` vs `hub`) and package source (**conda-forge** for pixi /
-conda+mamba, **PyPI** for uv / poetry / hatch / pip+venv). PyPI
-installs need an extra `jupyter` extra; conda-forge installs
+(`local` / `hub` / `mlflow`) and package source (**conda-forge** for
+pixi / conda+mamba, **PyPI** for uv / poetry / hatch / pip+venv).
+PyPI installs need an extra `jupyter` extra; conda-forge installs
 already ship the jupyter integration.
 
 | `skore mode:` | conda-forge managers (pixi, conda / mamba) | PyPI managers (uv, poetry, hatch, pip+venv) |
 |---|---|---|
 | `local` | `pixi add skore` / `conda install -c conda-forge skore` | `uv add "skore[jupyter]"` / `poetry add "skore[jupyter]"` / `pip install "skore[jupyter]"` |
 | `hub` | `pixi add "skore[hub]"` / `conda install -c conda-forge "skore[hub]"` | `uv add "skore[hub,jupyter]"` / `poetry add "skore[hub,jupyter]"` / `pip install "skore[hub,jupyter]"` |
+| `mlflow` | `pixi add "skore[mlflow]"` / `conda install -c conda-forge "skore[mlflow]"` | `uv add "skore[mlflow,jupyter]"` / `poetry add "skore[mlflow,jupyter]"` / `pip install "skore[mlflow,jupyter]"` |
 
 If the row is absent (workspace not yet bootstrapped through
 `organize-ml-workspace`), route back to that skill's G-SKORE-MODE.
 Do not guess.
 
 **Forbidden:**
-- Silently picking `skore[hub]` "to be safe". The `[hub]` extra
-  costs ~20 MB of network deps + auth infra the local-mode user
-  didn't ask for.
+- Silently picking `skore[hub]` / `skore[mlflow]` "to be safe". The
+  `[hub]` / `[mlflow]` extras cost network deps + infra the
+  local-mode user didn't ask for; the variant follows the recorded
+  `skore mode:`, not a guess.
 - Dropping the `jupyter` extra on PyPI installs because the
   install line "looks shorter". The TableReport / `report.*`
   widgets that the audit flow and `evaluate-ml-pipeline` rely on
@@ -476,8 +478,9 @@ If detection found nothing AND the user picked `pixi` via G-ENV-MGR:
    carries `ruff`, `pytest`, `jupyterlab`, `ipykernel`; `agent`
    carries `ipython`, `pyright`.
 4. Add Tier 1 deps to `default` (per G-SKORE-MODE table above —
-   pixi is conda-forge, so `pixi add skore` or `pixi add
-   "skore[hub]"`; **no `[jupyter]` extra** on pixi).
+   pixi is conda-forge, so `pixi add skore`, `pixi add
+   "skore[hub]"`, or `pixi add "skore[mlflow]"`; **no `[jupyter]`
+   extra** on pixi).
 5. Add tabular lib (per G-TABULAR: `pandas pyarrow` or `polars`).
 6. Wire editable workspace package
    (`pixi add --pypi "<pkg> @ ."` then edit to

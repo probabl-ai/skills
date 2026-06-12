@@ -11,8 +11,8 @@ flow step 2a, and from `python-env-manager` § Tier 1 install
 
 ## Project init forms — concrete side-by-side
 
-The two forms are not "swap one word" variants; the argument shape
-changes.
+The three forms are not "swap one word" variants; the argument shape
+changes per mode.
 
 ### Local mode (default)
 
@@ -43,17 +43,39 @@ project = skore.Project(
 )
 ```
 
+### MLflow mode
+
+```python
+import skore
+
+# No login() — auth (if any) is the MLflow server's concern.
+project = skore.Project(
+    name="<experiment-name>",
+    mode="mlflow",
+    tracking_uri="<mlflow-tracking-uri>",
+)
+```
+
+`name=` is the **MLflow experiment name**; reports persist as MLflow
+model artifacts in runs created under that experiment. `tracking_uri=`
+is an **mlflow-only** kwarg — the URI of the MLflow tracking server
+(e.g. `http://127.0.0.1:5000`, `https://mlflow.acme.internal`, or a
+`file:./mlruns` / `sqlite:///mlflow.db` local backend). The
+`project.put("<key>", report)` `key` becomes the **run name**.
+Source: https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html
+
 ### Diff at a glance
 
-| Concern | Local | Hub |
-|---|---|---|
-| `import` line for `login` | not needed | `from skore import login` |
-| `login(mode="hub")` call | not needed | **required, before `Project(...)`** |
-| `name=` argument | `name="<project-name>"` (bare) | `"<hub-workspace>/<project-name>"` (positional, slash-joined) |
-| `mode=` argument | `mode="local"` | `mode="hub"` |
-| `workspace=` argument | **required**: `workspace=str(PROJECT_ROOT / "reports")` | **MUST be absent** — passing it raises `TypeError` |
-| Install variant | `pixi add skore` | `pixi add "skore[hub]"` |
-| Pre-condition | none | Skore Hub account + access to `<hub-workspace>` |
+| Concern | Local | Hub | MLflow |
+|---|---|---|---|
+| `import` line for `login` | not needed | `from skore import login` | not needed |
+| `login(mode="hub")` call | not needed | **required, before `Project(...)`** | not needed |
+| `name=` argument | `name="<project-name>"` (bare) | `"<hub-workspace>/<project-name>"` (positional, slash-joined) | `name="<experiment-name>"` (MLflow experiment name) |
+| `mode=` argument | `mode="local"` | `mode="hub"` | `mode="mlflow"` |
+| `workspace=` argument | **required**: `workspace=str(PROJECT_ROOT / "reports")` | **MUST be absent** — passing it raises `TypeError` | **MUST be absent** — `tracking_uri=` is used instead |
+| `tracking_uri=` argument | not used | not used | **required**: the MLflow tracking server URI |
+| Install variant | `pixi add skore` | `pixi add "skore[hub]"` | `pixi add "skore[mlflow]"` |
+| Pre-condition | none | Skore Hub account + access to `<hub-workspace>` | reachable MLflow tracking server at `<uri>` |
 
 ## The gate — AskUserQuestion shape
 
@@ -69,6 +91,10 @@ even if the user has used skore in `local` mode in prior projects.
    - `hub` — artifacts on https://skore.probabl.ai, requires
      account + workspace access, recommended for team
      collaboration.
+   - `mlflow` — artifacts pushed to an MLflow tracking server (the
+     skore `skore[mlflow]` backend integration), recommended when
+     the team already runs MLflow or standardizes on it for
+     experiment storage.
 
    Default proposal: `local`.
 
@@ -88,11 +114,32 @@ even if the user has used skore in `local` mode in prior projects.
    part of the project name. Do not silently accept slashes — that
    produces an unparseable Project name at runtime.
 
+3. **MLflow tracking URI** (only when mode is `mlflow`). Free-form
+   string — the `tracking_uri=` passed to `skore.Project(...)`.
+   The agent **cannot** infer the server address; the user must
+   supply it. Accept the forms MLflow itself accepts:
+   - an HTTP(S) tracking server — `http://127.0.0.1:5000`,
+     `https://mlflow.acme.internal`;
+   - a database backend — `sqlite:///mlflow.db`,
+     `postgresql://…`;
+   - a local file store — `file:./mlruns` or an absolute `file:`
+     path.
+
+   If the user picks `mlflow` without knowing the URI, surface that
+   they need a running tracking server (or a local backend path)
+   before reports can be pushed — do NOT default the URI silently.
+   A bare host:port without a scheme (e.g. `localhost:5000`) should
+   be confirmed as `http://localhost:5000` rather than passed
+   verbatim.
+
 ### Free-text resolution
 
-- Explicit naming of `local` / `hub` resolves immediately.
+- Explicit naming of `local` / `hub` / `mlflow` resolves
+  immediately.
 - "use the cloud one" / "store remotely" → `hub`.
 - "store locally" / "no account" → `local`.
+- "push to mlflow" / "our mlflow server" / "track in mlflow" →
+  `mlflow` (then ask for the tracking URI).
 - Urgency phrasing ("quick" / "you pick") does NOT resolve — falls
   through to the structured ask.
 
@@ -101,31 +148,35 @@ even if the user has used skore in `local` mode in prior projects.
 The recorded `skore mode:` decision drives three downstream
 artifacts:
 
-| Downstream artifact | local-mode shape | hub-mode shape |
-|---|---|---|
-| `<SKORE_PROJECT_INIT>` in `experiments/NN_*.py` and `audit/NN_*.py` | `skore.Project(name="<project-name>", mode="local", workspace=str(PROJECT_ROOT / "reports"))` | `from skore import login; login(mode="hub"); skore.Project("<hub-workspace>/<project-name>", mode="hub")` |
-| Tier 1 skore install variant (per `python-env-manager` § Tier 1 install) | `pixi add skore` (or equivalent) | `pixi add "skore[hub]"` (or equivalent) |
-| `Workspace decisions` rows in `JOURNAL.md` | `skore mode: local` | `skore mode: hub` + `skore hub workspace: <name>` |
+| Downstream artifact | local-mode shape | hub-mode shape | mlflow-mode shape |
+|---|---|---|---|
+| `<SKORE_PROJECT_INIT>` in `experiments/NN_*.py` and `audit/NN_*.py` | `skore.Project(name="<project-name>", mode="local", workspace=str(PROJECT_ROOT / "reports"))` | `from skore import login; login(mode="hub"); skore.Project("<hub-workspace>/<project-name>", mode="hub")` | `skore.Project(name="<experiment-name>", mode="mlflow", tracking_uri="<mlflow-tracking-uri>")` |
+| Tier 1 skore install variant (per `python-env-manager` § Tier 1 install) | `pixi add skore` (or equivalent) | `pixi add "skore[hub]"` (or equivalent) | `pixi add "skore[mlflow]"` (or equivalent) |
+| `Workspace decisions` rows in `JOURNAL.md` | `skore mode: local` | `skore mode: hub` + `skore hub workspace: <name>` | `skore mode: mlflow` + `skore mlflow tracking uri: <uri>` |
 
 The `name=` argument shape **changes between modes** — local uses a
-bare name; hub uses `<hub-workspace>/<project>`. The local-mode
-`workspace=` kwarg points to a directory and is rejected by hub
-mode (`TypeError`). These are not "swap one word" differences; the
-substitution marker exists precisely because the shape changes.
+bare name; hub uses `<hub-workspace>/<project>`; mlflow uses the
+MLflow experiment name. The local-mode `workspace=` kwarg points to a
+directory and is rejected by both hub and mlflow modes; mlflow takes
+`tracking_uri=` instead. These are not "swap one word" differences;
+the substitution marker exists precisely because the shape changes.
 
 ## Persistence in `Workspace decisions`
 
-Two rows:
+Three rows (only the one matching the chosen mode carries a value;
+the other follow-up row is `n/a`):
 
 ```
-- skore mode: <local | hub> — recorded: <YYYY-MM-DD>
+- skore mode: <local | hub | mlflow> — recorded: <YYYY-MM-DD>
 - skore hub workspace: <hub-workspace-name | n/a> — recorded: <YYYY-MM-DD>
+- skore mlflow tracking uri: <mlflow-tracking-uri | n/a> — recorded: <YYYY-MM-DD>
 ```
 
-The hub-workspace row carries `n/a` when mode is local. On every
-later session, skills that need the mode read these rows first and
-skip re-asking — the standard `Workspace decisions` lookup pattern
-(see `iterate-ml-experiment` template § Status).
+The hub-workspace row carries `n/a` unless mode is `hub`; the
+mlflow-tracking-uri row carries `n/a` unless mode is `mlflow`. On
+every later session, skills that need the mode read these rows first
+and skip re-asking — the standard `Workspace decisions` lookup
+pattern (see `iterate-ml-experiment` template § Status).
 
 ## Switching mid-project
 
@@ -145,7 +196,7 @@ Procedure:
 3. Rewrite **every** `<SKORE_PROJECT_INIT>` block in `experiments/`
    AND `audit/`.
 4. Update the install variant via `python-env-manager` (plain
-   `skore` ↔ `skore[hub]`).
+   `skore` ↔ `skore[hub]` ↔ `skore[mlflow]`).
 5. Document the switch in `JOURNAL.md` History as a horizontal
    divider (same shape as goal pivots — see `iterate-ml-experiment`
    § Maintenance modes).
@@ -208,6 +259,30 @@ Note that in the hub form:
 - `login(...)` precedes `Project(...)` in the same cell so a
   single execution does both.
 
+### After substitution — mlflow mode
+
+The block is rewritten to drop `workspace=` and add the
+`tracking_uri=` recorded at G-SKORE-MODE. No `login(...)`:
+
+```python
+# %%
+project = skore.Project(
+    name="load-forecast",
+    mode="mlflow",
+    tracking_uri="http://127.0.0.1:5000",
+)
+```
+
+Note that in the mlflow form:
+
+- `workspace=` is **gone** — `tracking_uri=` replaces it.
+- `name=` is the **MLflow experiment name** (bare, no slash join).
+- no `login(...)` — authentication, if any, is the MLflow server's
+  concern, handled out-of-band (env vars / server config), not by
+  skore.
+- `project.put("<stem>", report)` creates a run named `<stem>`
+  under the experiment.
+
 ### Audit-file copy rule
 
 For `audit/<stem>.py`: the same substitution rule applies, but with
@@ -223,12 +298,18 @@ the `audit-ml-pipeline` Forbidden shortcuts row "Substituting
 
 ## Out of scope
 
-- **MLflow mode** (`skore[mlflow]` + `tracking_uri=`). A third
-  Project mode documented at
-  https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html;
-  not included in this gate's options. If the user explicitly asks
-  for MLflow, surface it as a separate decision rather than adding
-  it to this gate's defaults.
+- **Running / provisioning the MLflow server.** When the user picks
+  `mlflow`, the gate captures the `tracking_uri=` but does NOT
+  stand up the tracking server, create the backing database, or
+  configure object storage. A reachable server (or a local
+  `file:`/`sqlite:` backend) at the supplied URI is the user's
+  responsibility — surface that pre-condition rather than spinning
+  one up.
+
+- **MLflow `delete`.** `skore.Project.delete(...)` is not
+  implemented for mlflow-mode projects. The read-back contract
+  (`summarize()` → `get(id)`) still holds; deletions must be done
+  through MLflow's own tooling.
 
 - **Skore Hub account creation.** The gate assumes the user has an
   account when they pick `hub`. Sign-up is a probabl.ai concern

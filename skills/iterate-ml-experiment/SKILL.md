@@ -238,7 +238,7 @@ placeholder, or has 0 History rows.
 | `G-PKG-NAME` | `src/<pkg>/` import name | `organize-ml-workspace` | before manifest creation |
 | `G-ENV-MGR` | Env manager | `python-env-manager` | before any install command |
 | `G-TABULAR` | Tabular library (pandas / polars) | `data-science-python-stack` | before `data.py` write |
-| `G-SKORE-MODE` | Skore Project mode (local / hub) + hub workspace name | `organize-ml-workspace` | before `pyproject.toml` write |
+| `G-SKORE-MODE` | Skore Project mode (local / hub / mlflow) + hub workspace name or MLflow tracking URI | `organize-ml-workspace` | before `pyproject.toml` write |
 | `G-CV-SPLITTER` | CV family for `skore.evaluate` | `evaluate-ml-pipeline` | before `evaluate.py` write — mandatory even with empty `split_kwargs` |
 | `G-DESIGN` | User approval of `journal/01_baseline.md` | this skill | before `experiments/01_baseline.py` write |
 | `G-RUN` | "run now" vs "leave for later" | this skill | before executing the experiment script |

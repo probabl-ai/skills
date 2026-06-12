@@ -115,6 +115,10 @@ user asks for a deeper accessor.
      the put() stdout; hardcode as `REPORT_ID`; no `summarize()` needed.
    - **Local mode**: read `summary["id"]` from the `summarize()` cell
      above, filtering to the row where `key == "<NN>_<short_name>"`.
+   - **MLflow mode**: same as local — read `summary["id"]` from the
+     `summarize()` cell above, filtering to the row where
+     `key == "<NN>_<short_name>"`. (No URL is printed at `put()`;
+     the report lives as a run under the MLflow experiment.)
 
    ```python
    REPORT_ID = "skore:report:<type-singular>:<N>"  # hub: from put() URL

@@ -34,7 +34,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 # stable key (the file stem). The Project init block below is filled
 # at scaffold time per the workspace's `skore mode:` decision
 # (recorded in `journal/JOURNAL.md` Status `Workspace decisions`; see
-# `organize-ml-workspace` § "G-SKORE-MODE"). Two forms:
+# `organize-ml-workspace` § "G-SKORE-MODE"). Three forms:
 #
 # - **local mode**: `skore.Project(name=..., mode="local",
 #   workspace=str(PROJECT_ROOT / "reports"))`. Reports persist to disk
@@ -45,9 +45,15 @@ DATA_DIR = PROJECT_ROOT / "data"
 #   Requires `pip install "skore[hub]"` (see `python-env-manager` §
 #   "Tier 1 install: skore variant per mode") and a Skore Hub
 #   account with access to the named hub workspace.
+# - **mlflow mode**: `skore.Project(name="<experiment-name>",
+#   mode="mlflow", tracking_uri="<mlflow-tracking-uri>")`. Reports are
+#   pushed to an MLflow tracking server as runs under the named
+#   experiment. No `login()`. Requires `pip install "skore[mlflow]"`
+#   and a reachable tracking server (or local `file:`/`sqlite:`
+#   backend) at the recorded URI.
 #
 # `<SKORE_PROJECT_INIT>` is replaced by the right form at scaffold
-# time. Do NOT keep both forms in the same file — only one is valid.
+# time. Do NOT keep multiple forms in the same file — only one is valid.
 
 # %%
 # <SKORE_PROJECT_INIT>

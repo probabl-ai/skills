@@ -83,21 +83,32 @@ project.get("baseline")
 ```
 
 Use the Project API as the durable home for everything you produce:
-fitted estimators, reports, params, metrics, plots. The project is a
-directory on disk; commits naturally with the code.
+fitted estimators, reports, params, metrics, plots. In the default
+`local` mode the project is a directory on disk; commits naturally
+with the code.
+
+The Project supports **three mutually exclusive backends**, picked
+once per workspace at `organize-ml-workspace` § "G-SKORE-MODE":
+`local` (folder on disk), `hub` (Skore Hub, `skore[hub]`), and
+`mlflow` (push reports to an MLflow tracking server via
+`skore.Project(mode="mlflow", tracking_uri=...)`, `skore[mlflow]`).
+The `put` / `get` / `summarize` surface is identical across all
+three — only the constructor changes shape.
 
 **Pick skore Project API when:**
 - You want tracking that doesn't require a server, a UI, or any
-  network setup — just a folder.
+  network setup — just a folder (`local` mode).
+- You want a shared remote home for reports — `hub` (Skore Hub) or
+  `mlflow` (an existing MLflow tracking server) without leaving the
+  skore Project API.
 - You want to keep the artifact and its evaluation report in the same
   place, retrievable by key.
-- The project is single-user or small-team; the trade-off is no
-  multi-user web UI like mlflow's.
 
 **Pick something else when:**
 - You need a multi-user remote tracking server with a shared web UI
-  across collaborators — that's not skore's target. Surface the gap to
-  the user before substituting.
+  and neither Skore Hub (`hub` mode) nor an MLflow server
+  (`mlflow` mode) fits — surface the gap to the user before
+  substituting.
 
 ## Pair with
 

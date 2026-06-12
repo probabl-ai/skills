@@ -2,7 +2,7 @@
   "name": "probabl-skills",
   "version": "0.3.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "7e67e8cb8df673740fb9300e002d9a7cd641dd7e22d20eef240fba2a902c378a",
+  "catalog_hash": "88f51d552ffec83de7afa0e7b31a324c00e2708d3445108e9d137ec4c2ef5c12",
   "skills": [
     {
       "id": "build-ml-pipeline",
@@ -47,7 +47,7 @@
       "summary": "Once testing and the experiment is done, audit by loading a skore report and investigate.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "9b57aa8cc91050b747a9fd56ffda3835c982f0b2b3f17f9599eac40447a2e076"
+      "hash": "472b58ba5ea84a335e7cfd15bb36a060a35d069ef37724eba35315cfb82fee2e"
     },
     {
       "id": "iterate-ml-experiment",
@@ -56,7 +56,7 @@
       "summary": "Design, keep track of experiments and iterate on them.",
       "category": "orchestration",
       "subcategory": "dispatchers",
-      "hash": "058c9bc3062651efd9a7adfb584f7b45dd7768cec7462a381edf8e8ce6da4d2c"
+      "hash": "d1a2e0e05b522df3969f97e87d8a8b43ab894f6b46aabb9958045094b9004371"
     },
     {
       "id": "iterate-from-skore",
@@ -83,7 +83,7 @@
       "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "bb0122de1d37ca42d31f60f8f374854fe77fad5bab5da4b075e7be47145c08dc"
+      "hash": "8d78277795a4db48d2315e7ebeabb44a4b720d060b0770f5545c064cee0b1831"
     },
     {
       "id": "python-code-style",
@@ -101,7 +101,7 @@
       "summary": "Bootstrapping the experiment setup based on your favorite Python environment manager.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "36d5990583d33d51c20224b073654b6e1ec7498fc86681182b6c8036c69f1074"
+      "hash": "5a90b93d78b4d3d06be4c80277f520fcd5d644722dade7813584c3d5fa8567f1"
     },
     {
       "id": "data-science-python-stack",
@@ -110,7 +110,7 @@
       "summary": "Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers.",
       "category": "reference",
       "subcategory": null,
-      "hash": "726b39e920ab92d59354758eac4d9e4625c7af66fa678f113a5c36ae64752fa9"
+      "hash": "48885acffcb9fe722e715aae472f719a6009de78021cf258bdd8d9b110ee2304"
     },
     {
       "id": "python-api",
@@ -119,7 +119,7 @@
       "summary": "Discover the public API of any installed Python package to make agent find their way without bothering your workspace.",
       "category": "reference",
       "subcategory": null,
-      "hash": "a884eebc7fc3bb7ad8488b5a18b2305fc586c2db86daaf6276dd101092575877"
+      "hash": "8f82b9c88f898657a833f683340da63ec152a4ef3b538b0c7253ba5fdf67df99"
     }
   ],
   "workflows": [
