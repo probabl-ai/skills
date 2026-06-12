@@ -15,10 +15,13 @@ maintainability and good methodologies to make experiments right.
 
 In practice, from a prompt such as:
 
-```bash
-Given the context in the file `data/README.md` and the data located in `data/`,
-let's build a first machine learning pipeline that will serve as baseline for the
-next experiments that we are going to run together.
+```text
+╭────────────────────────────────────────────────────────────────────────╮
+│ > Given the context in the file `data/README.md` and the data located  │
+│   in `data/`, let's build a first machine learning pipeline that will  │
+│   serve as baseline for the next experiments that we are going to run  │
+│   together.                                                            │
+╰────────────────────────────────────────────────────────────────────────╯
 ```
 
 you can expect your agent to start experimenting with you. The skills are working pretty
@@ -29,29 +32,31 @@ do not witness any significant difference in terms of skills invocation.
 
 ## Install
 
-One command, 55+ agents — including **Claude Code, Codex, Cursor, OpenCode, Gemini CLI, and Mistral Vibe**:
+You can install the skills using the `skore` CLI that you can install from PyPI or from
+conda-forge and run the following command:
+
+```bash
+skore skills install
+```
+
+You can use `uvx` or `pixi exec` to install the `skore` CLI and directly run the
+command in an isolated environment:
+
+```bash
+uvx --from skore-cli skills install
+```
+
+or
+
+```bash
+pixi exec --spec skore-cli skore skills install
+```
+
+If you prefer `npx`, then you can use:
 
 ```bash
 npx skills add probabl-ai/skills
 ```
-
-That's the [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel
-Labs. It auto-detects which coding agents you have installed and drops the
-skills into each one's skills directory — no per-agent configuration.
-
-Install the **full bundle**. The skills cross-reference each other.
-
-Useful flags once you have it:
-
-```bash
-npx skills add probabl-ai/skills --list                  # preview the catalog
-npx skills add probabl-ai/skills -g                      # global install (~/<agent>/skills/)
-npx skills add probabl-ai/skills -a claude-code -a codex # target specific agents
-npx skills update                                        # pull the latest
-```
-
-See the full agent list and command reference in the
-[`skills` CLI docs](https://github.com/vercel-labs/skills#supported-agents).
 
 ### Alternative — Claude Code plugin marketplace
 
@@ -68,37 +73,6 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 `/plugin update` pulls new releases.
 
-### Coming soon
-
-`skore` will provide a CLI
-(cf. [skore CLI](https://github.com/probabl-ai/skore/pull/2976)) to help you with the
-following:
-
-```bash
-uvx skore skills install
-```
-
-or
-
-```bash
-pixi exec skore skills install
-```
-
-or assuming that `skore` is already installed:
-
-```bash
-skore skills install
-```
-
-Skore comes with the following commands to deal with the skills:
-
-```bash
-skore skills find    # discover the list of skills
-skore skills list    # list the installed skills
-skore skills update  # update the skills to the latest version
-skore skills remove  # remove the skills
-```
-
 ## Skills in details
 
 ### ML pipeline lifecycle
@@ -109,7 +83,7 @@ skore skills remove  # remove the skills
 | [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics. |
 | [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Make sure that your machine learning pipeline is production-ready statistically and functionally. |
 | [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Stress test your machine learning pipeline on future data to make sure it works. |
-| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Once testing . |
+| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Once testing and the experiment is done, audit by loading a skore report and investigate. |
 
 ### Iteration loop
 
