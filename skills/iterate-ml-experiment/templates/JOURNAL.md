@@ -2,12 +2,15 @@
 
 <!--
 This file is the durable index of every experiment in this workspace.
-Three sections, in order: Status, History, Backlog. Don't add new
-top-level sections; they break the contract that lets future sessions
-read this file in two seconds.
+Four sections, in order: Status, Data understanding (EDA), History,
+Backlog. Don't add OTHER top-level sections; they break the contract
+that lets future sessions read this file in two seconds.
 
-Owner: `iterate-ml-experiment` skill. Pair each `journal/NN_short_name.md`
-with `experiments/NN_short_name.py` (identical stems).
+Owner: `iterate-ml-experiment` skill (Status / History / Backlog).
+The `## Data understanding (EDA)` section is owned by `explore-ml-data`
+(written at the G-EDA bootstrap step). Pair each
+`journal/NN_short_name.md` with `experiments/NN_short_name.py`
+(identical stems).
 -->
 
 ## Status
@@ -58,6 +61,21 @@ install (ipython + pyright + pyrightconfig.json) or skipped it.
   - skore hub workspace: <hub-workspace-name | n/a> — recorded: <YYYY-MM-DD>
   - skore mlflow tracking uri: <mlflow-tracking-uri | n/a> — recorded: <YYYY-MM-DD>
   - CV splitter family: <KFold | StratifiedKFold | GroupKFold | TimeSeriesSplit | other> — recorded: <YYYY-MM-DD>
+
+## Data understanding (EDA)
+
+<!--
+Owned by `explore-ml-data`. Written at the G-EDA bootstrap step
+(before the baseline design note). Short index entry only — the full
+narrative lives in `data/eda.md`. On the skip path, keep just the
+`Status: skipped` line.
+-->
+
+- **Status:** <done | skipped> — <YYYY-MM-DD>
+- **Summary:** <2–4 lines — dataset shape, target balance/skew, and the
+  one or two findings that most shape the modelling choices. "n/a" until
+  the G-EDA gate fires.>
+- **Report:** [data/eda.md](../data/eda.md)
 
 ## History
 

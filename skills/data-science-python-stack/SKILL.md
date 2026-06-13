@@ -451,7 +451,7 @@ the data-science deps.
 
 | Library | Role |
 |---|---|
-| `ipython` | Powers `audit-ml-pipeline/scripts/run_audit.py` via `IPython.core.interactiveshell.InteractiveShell.run_cell`. Executes the audit `# %%` cells in-process, captures plain-text repr per cell. |
+| `ipython` | Powers the shared cell runner `audit-ml-pipeline/scripts/run_cells.py` via `IPython.core.interactiveshell.InteractiveShell.run_cell`. Executes `# %%` cells in-process (audit files AND `explore-ml-data`'s `data/eda.py`), captures plain-text repr per cell. |
 | `pyright` | Powers the opencode LSP integration for Python files. Surfaces import / type / undefined-symbol diagnostics in the editor. Configured via the bundled `pyrightconfig.json` template (shipped by `python-env-manager`). |
 
 **Install + config drop: owned by `python-env-manager` § "Agent

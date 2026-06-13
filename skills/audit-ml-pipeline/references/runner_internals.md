@@ -1,8 +1,15 @@
 # Audit ML Pipeline — Runner internals
 
-What `scripts/run_audit.py` does internally — parsing, shell setup,
+What `scripts/run_cells.py` does internally — parsing, shell setup,
 environment fixes, per-cell capture. Cross-referenced from SKILL.md
 § "Execution contract".
+
+`run_cells.py` is a **generic** jupytext cell runner: it is owned by
+this skill but shared with `explore-ml-data` (which executes
+`data/eda.py` the same way). It is content-agnostic — it knows
+nothing about skore reports or TableReports. Keep it that way: any
+change here must serve both callers, never hard-code audit-specific
+behaviour.
 
 Load when:
 
@@ -10,12 +17,12 @@ Load when:
   ANSI escape come from? why is `Out[0]:` in the digest?).
 - The runner errors and you need to know which subsystem is at
   fault.
-- You're considering modifying `run_audit.py` — read this first.
+- You're considering modifying `run_cells.py` — read this first.
 
 ## CLI shape
 
 ```
-python run_audit.py <src.py> [<dst.md>]
+python run_cells.py <src.py> [<dst.md>]
 ```
 
 Always streams the digest to **stdout**. When `<dst.md>` is given,
@@ -151,7 +158,7 @@ cell.
   unexpected `summarize()` rows), but the runner doesn't reject
   them statically.
 
-## When you'd modify `run_audit.py`
+## When you'd modify `run_cells.py`
 
 - Adding another environment-prep step (new library that needs
   config before import).
@@ -159,4 +166,6 @@ cell.
 - Changing the output target (stdout, file, both, neither).
 
 **Always update the SKILL.md § Execution contract and this
-reference together** — they're paired documentation.
+reference together** — they're paired documentation. Because
+`explore-ml-data` shares this runner, also re-check that skill's
+§ "Execution contract" when the CLI shape or digest format changes.

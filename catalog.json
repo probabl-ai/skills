@@ -2,8 +2,17 @@
   "name": "probabl-skills",
   "version": "0.3.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "88f51d552ffec83de7afa0e7b31a324c00e2708d3445108e9d137ec4c2ef5c12",
+  "catalog_hash": "9ed418853c2b09a1dec2792948af46caf6d089e7548d790617240dcead3f57a1",
   "skills": [
+    {
+      "id": "explore-ml-data",
+      "path": "skills/explore-ml-data",
+      "title": "Explore ML Data",
+      "summary": "Explore the dataset before designing any model.",
+      "category": "methodology",
+      "subcategory": null,
+      "hash": "a2f714b3ceb8203f3949500aea36b99729ba422e024d979d69d0656cf303a2e4"
+    },
     {
       "id": "build-ml-pipeline",
       "path": "skills/build-ml-pipeline",
@@ -47,7 +56,7 @@
       "summary": "Once testing and the experiment is done, audit by loading a skore report and investigate.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "472b58ba5ea84a335e7cfd15bb36a060a35d069ef37724eba35315cfb82fee2e"
+      "hash": "f37c8e70fbeda01ef0e476f5622d782e5941202d3639989ae6d3daa48449dbef"
     },
     {
       "id": "iterate-ml-experiment",
@@ -56,7 +65,7 @@
       "summary": "Design, keep track of experiments and iterate on them.",
       "category": "orchestration",
       "subcategory": "dispatchers",
-      "hash": "d1a2e0e05b522df3969f97e87d8a8b43ab894f6b46aabb9958045094b9004371"
+      "hash": "1b6202dd9e434c90454ff309e005ac8549c9e48bce29185c9e9955a65e8c0b18"
     },
     {
       "id": "iterate-from-skore",
@@ -83,7 +92,7 @@
       "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "8d78277795a4db48d2315e7ebeabb44a4b720d060b0770f5545c064cee0b1831"
+      "hash": "cfb545e0b48729181bfb76e52a5ec29dba9f0c5cd03f5f9095caf03c12459502"
     },
     {
       "id": "python-code-style",
@@ -92,7 +101,7 @@
       "summary": "Enforce good practices out-of-the-box for the Python ecosystem for your code.",
       "category": "tooling",
       "subcategory": "code-quality",
-      "hash": "8a4f701b03f20c246de3606149f70180095ad245660fb181cf716ab274585293"
+      "hash": "6f70c06e9ca3fb4062aedb1e878dc8c388ee9a29afa6d63bb1aa1d9e1fb33b80"
     },
     {
       "id": "python-env-manager",
@@ -101,7 +110,7 @@
       "summary": "Bootstrapping the experiment setup based on your favorite Python environment manager.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "5a90b93d78b4d3d06be4c80277f520fcd5d644722dade7813584c3d5fa8567f1"
+      "hash": "9bd4bc4b773478a6359eaac0b2fc8b5db615fb34da282b5aceb4a08ac0d3b6bd"
     },
     {
       "id": "data-science-python-stack",
@@ -110,7 +119,7 @@
       "summary": "Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers.",
       "category": "reference",
       "subcategory": null,
-      "hash": "48885acffcb9fe722e715aae472f719a6009de78021cf258bdd8d9b110ee2304"
+      "hash": "9ca1072b5643403c0174134a97c5fc1ac9af1729c0ef2d954c745f12c069e5c5"
     },
     {
       "id": "python-api",
@@ -133,6 +142,7 @@
         "data-science-python-stack",
         "python-code-style",
         "python-api",
+        "explore-ml-data",
         "build-ml-pipeline",
         "evaluate-ml-pipeline",
         "test-ml-pipeline",

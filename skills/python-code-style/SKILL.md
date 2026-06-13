@@ -57,10 +57,11 @@ touched, no hook involved.
   This is the anti-infinite-loop guardrail — do not enter a third
   cycle on the same warning.
 - **Don't lint files outside the user's code.** The hook scope is
-  `src/<pkg>/`, `experiments/`, `audit/`, top-level `*.py` scripts,
-  and any package directory the user owns. Skip vendored paths,
-  generated files, and anything under `.pixi/`, `.venv/`,
-  `node_modules/`, etc.
+  `src/<pkg>/`, `experiments/`, `audit/`, `data/eda.py` (the
+  explore-ml-data EDA script), top-level `*.py` scripts, and any
+  package directory the user owns. Skip vendored paths, generated
+  files, the rest of user-owned `data/`, and anything under `.pixi/`,
+  `.venv/`, `node_modules/`, etc.
 - **Never write `ruff.toml` from memory.** The bundled
   `templates/ruff.toml` is the single source of truth — it encodes
   the per-file ignores (`experiments/**`), the numpydoc convention,
@@ -135,19 +136,20 @@ Three steps, in order:
    re-run the trio. Apply the **one-fix-per-file rule** from Stop
    conditions.
 
-If a file under `experiments/` or `audit/` has a `D100` ("missing
-module docstring") or `D103` ("missing function docstring")
-warning, that's expected for `# %%` cells; the bundled
-`ruff.toml` per-file-ignores `D100` + `D103` (and `E402`, `B018`)
-for both `experiments/**` and `audit/**`. If you're seeing them,
-the `ruff.toml` isn't loaded — check that it lives at the project
-root.
+If a file under `experiments/` or `audit/`, or the `data/eda.py`
+EDA script, has a `D100` ("missing module docstring") or `D103`
+("missing function docstring") warning, that's expected for `# %%`
+cells; the bundled `ruff.toml` per-file-ignores `D100` + `D103`
+(and `E402`, `B018`) for `experiments/**`, `audit/**`, and
+`data/eda.py`. If you're seeing them, the `ruff.toml` isn't loaded
+— check that it lives at the project root.
 
 Audit files (`audit/<NN>_<short_name>.py`, owned by
-`audit-ml-pipeline`) lint the same way as experiment files: same
+`audit-ml-pipeline`) and the EDA script (`data/eda.py`, owned by
+`explore-ml-data`) lint the same way as experiment files: same
 `# %%` cell convention, same per-file ignores, same NumPyDoc
-convention for any helper functions. After writing or editing an
-audit file, run the same trio (`ruff format` → `ruff check --fix`
+convention for any helper functions. After writing or editing one of
+these files, run the same trio (`ruff format` → `ruff check --fix`
 → `ruff check`).
 
 ## Numpydoc — the docstring convention
@@ -265,6 +267,10 @@ that the user didn't ask for.
 - **`audit-ml-pipeline`** — generates audit files at
   `audit/<NN>_<short_name>.py`. This skill's per-file ignores
   cover the audit/ path the same way they cover experiments/.
+- **`explore-ml-data`** — generates the EDA script `data/eda.py`
+  (same `# %%` cell convention). The bundled `ruff.toml`
+  per-file-ignores `data/eda.py` exactly like `audit/**`; lint it
+  with the same trio after writing it.
 - **`update-config`** — only relevant if the user explicitly asks
   for an automated lint hook later. Default is no hook.
 

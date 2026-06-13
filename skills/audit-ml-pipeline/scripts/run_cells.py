@@ -1,11 +1,20 @@
-"""Execute a jupytext ``# %%`` audit file and stream per-cell text to stdout.
+"""Execute a jupytext ``# %%`` file and stream per-cell text to stdout.
 
-Skill asset for ``audit-ml-pipeline``. Uses
+Generic in-process cell runner. Owned by ``audit-ml-pipeline`` and
+shared by ``explore-ml-data`` (and any future skill that executes a
+jupytext percent-format ``.py`` file cell by cell). Uses
 ``IPython.core.interactiveshell.InteractiveShell.run_cell`` to execute
 each cell in-process and streams a plain-text markdown digest to
 **stdout** (and optionally to a file when a second path argument is
 given). The agent reads the digest from the bash tool's output — no
 separate ``Read`` step required.
+
+The runner is deliberately content-agnostic: it knows nothing about
+skore reports, TableReports, or what the cells do. It parses cells,
+executes them in one shared namespace, and renders each cell's source
++ stdout + last-expression ``repr`` + errors. Callers decide what the
+cells contain (see ``audit-ml-pipeline`` § "Audit file contract" and
+``explore-ml-data`` § "EDA file contract").
 
 Why IPython, not plain Python
 -----------------------------
@@ -17,14 +26,14 @@ context).
 
 CLI
 ---
-``python run_audit.py <src.py> [<dst.md>]``
+``python run_cells.py <src.py> [<dst.md>]``
 
 Always streams the digest to stdout. When ``<dst.md>`` is supplied the
 digest is also written to that file (parent created if missing).
 
 Output shape::
 
-    # Audit: `<src.py>`
+    # Cells: `<src.py>`
 
     ## Cell 0: `# %% [markdown]`
 
@@ -224,7 +233,7 @@ def run(src_path: Path, out_path: Path | None = None) -> None:
     """
     cells = parse_cells(src_path.read_text(encoding="utf-8"))
     shell = make_shell()
-    md: list[str] = [f"# Audit: `{src_path}`\n"]
+    md: list[str] = [f"# Cells: `{src_path}`\n"]
     for i, (marker, body) in enumerate(cells):
         md.append(f"\n## Cell {i}: `{marker}`\n")
         if "[markdown]" in marker:
@@ -256,7 +265,7 @@ def run(src_path: Path, out_path: Path | None = None) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry point: ``python run_audit.py <src.py> [<dst.md>]``.
+    """CLI entry point: ``python run_cells.py <src.py> [<dst.md>]``.
 
     Always streams the digest to stdout.  The optional second argument
     ``<dst.md>`` causes the digest to also be written to that file.

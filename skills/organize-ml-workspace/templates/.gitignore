@@ -14,8 +14,14 @@ dist/
 .ruff_cache/
 .mypy_cache/
 
-# data artifacts — user owns the data/ layout; uncomment if data is local-only
-# data/
+# data artifacts — user owns the data/ layout.
+# NEVER ignore the whole data/ folder: the EDA deliverables
+# (data/eda.py, data/eda.md, data/eda_*.html, owned by explore-ml-data)
+# live there and must stay committable. To keep large/local-only raw
+# INPUTS out of git, ignore specific input paths only, e.g.:
+# data/raw/
+# data/*.parquet
+# data/*.csv
 
 # skore Project store — large/binary; commit selectively if at all
 reports/

@@ -9,8 +9,9 @@ procedures.
 When the user asks "where are we?", "give me a one-pager", "what's the
 status?", "what have we tried?" — that is a **read** of
 `journal/JOURNAL.md`, not a new artifact. **`JOURNAL.md` is the
-canonical project digest** (Status + History + Backlog, three sections
-by design). Do not generate a separate summary document.
+canonical project digest** (Status, Data understanding (EDA), History,
+Backlog — four sections by design). Do not generate a separate summary
+document.
 
 - For short asks ("status?") — surface the **Status block** verbatim
   plus the last one or two History rows.

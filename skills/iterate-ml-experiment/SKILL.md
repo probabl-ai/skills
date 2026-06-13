@@ -31,7 +31,7 @@ description: >
   HOW TO USE: read `journal/JOURNAL.md` first, classify the turn via
   the **Mode picker** (table near the top), then read only the
   matching section. Sibling skills open *just-in-time* when a step
-  requires them — do not pre-read all nine at session start.
+  requires them — do not pre-read all sibling skills at session start.
   Design notes are the only artifact this skill writes; read,
   compare, and overview modes don't write.
 ---
@@ -48,6 +48,8 @@ mechanics live in sibling skills.
 session open
    │
    ├── JOURNAL.md missing / placeholder ──► § 0 Bootstrap
+   │                                          │
+   │                                          ├─► G-EDA (explore-ml-data: run | skip)
    │                                          │
    │                                          └─► design note → G-DESIGN → § 3 implement
    │
@@ -73,14 +75,16 @@ step). Do not pre-read all at session start.
 Sibling skills (just-in-time):
   - organize-ml-workspace, data-science-python-stack,
     python-env-manager, python-api, python-code-style,
-    build-ml-pipeline, evaluate-ml-pipeline, test-ml-pipeline,
-    smoke-test-ml-pipeline, iterate-from-skore / iterate-from-user
+    explore-ml-data, build-ml-pipeline, evaluate-ml-pipeline,
+    test-ml-pipeline, smoke-test-ml-pipeline,
+    iterate-from-skore / iterate-from-user
 ```
 
 Then before answering:
 
 1. **Read `journal/JOURNAL.md`.** Missing/placeholder → bootstrap (§ 0).
-   This is the canonical project digest (Status + History + Backlog).
+   This is the canonical project digest (Status, Data understanding
+   (EDA), History, Backlog).
 2. **Check `Workspace decisions` block** for pre-recorded gates
    (tabular, env_manager, package, skore_mode, cv_splitter) — a
    recorded decision skips its `AskUserQuestion`.
@@ -158,7 +162,7 @@ the **read** mode first, stop. Re-entering § 1 is a separate turn.
 | Auto-detect run finished via `reports/` mtime | § 4 is user-triggered (v1). The skill never auto-records |
 | § 4 finishes recording → declare done, skip audit dispatch | § 4 audit dispatch is part of record-outcome, not optional. The audit digest carries the headline metrics for the JOURNAL row |
 | Run experiment in same turn as G-RUN → declare done without § 4 | § 4 follows G-RUN in the same turn when the run completes successfully. Don't stop at "I ran it" — record the outcome |
-| Pre-read all nine sibling SKILL.md files at session start | Read-set tracker is not a blocking gate. Open siblings just-in-time; emit pending list but proceed |
+| Pre-read every sibling SKILL.md file at session start | Read-set tracker is not a blocking gate. Open siblings just-in-time; emit pending list but proceed |
 
 ## Pre-flight — emit before any design-note write
 
@@ -183,6 +187,10 @@ Pre-flight (iterate-ml-experiment):
 - [ ] (Bootstrap only) Config gates fired (G-PKG-NAME, G-ENV-MGR,
       G-TABULAR, G-SKORE-MODE, G-CV-SPLITTER)
       Evidence: per-gate ask id OR JOURNAL.md Status reference
+                | "n/a — iterate mode"
+- [ ] (Bootstrap only) G-EDA fired BEFORE the baseline draft
+      Evidence: explore-ml-data dispatched; answer=<run|skip>;
+                JOURNAL.md `## Data understanding (EDA)` section present
                 | "n/a — iterate mode"
 - [ ] Design note drafted (or Backlog enriched, for `skore`)
       Evidence: Write journal/<NN>_<name>.md (this turn) | "Backlog
@@ -219,12 +227,23 @@ placeholder, or has 0 History rows.
 2. **Rewrite `JOURNAL.md` from `templates/JOURNAL.md`**.
 3. **Derive the goal default from `data/README.md`** *before*
    asking. Propose one sentence; user confirms or amends.
-4. **Auto-draft `journal/01_baseline.md`** via the consultation
-   chain: learner default (`build-ml-pipeline`), splitter default
-   (`evaluate-ml-pipeline`), metric default (`python-api` on
-   skore.evaluate). Conflicts → flag in **Risks**, don't override.
-5. **User's role in bootstrap is approve or amend** — not invent.
-6. **Exit bootstrap** once the baseline is approved and recorded.
+4. **Explore the data BEFORE designing the model (G-EDA).** Dispatch
+   to `explore-ml-data`. The gate is binary (**run** / **skip**); on
+   run it executes `data/eda.py`, writes `data/eda.md` + HTML, and
+   fills the `## Data understanding (EDA)` JOURNAL section. The
+   findings (target balance / skew, datetime / group columns,
+   missingness, cardinality) feed the next step's learner / splitter /
+   metric defaults. The run path needs the agent feature (`ipython`)
+   and may trigger `G-AGENT-FEATURE` here, before the baseline; if the
+   user declines it, EDA falls back to **skip**. On skip, the JOURNAL
+   section records `Status: skipped`.
+5. **Auto-draft `journal/01_baseline.md`** via the consultation
+   chain, **informed by the EDA findings**: learner default
+   (`build-ml-pipeline`), splitter default (`evaluate-ml-pipeline`),
+   metric default (`python-api` on skore.evaluate). Conflicts with the
+   EDA findings or the goal → flag in **Risks**, don't override.
+6. **User's role in bootstrap is approve or amend** — not invent.
+7. **Exit bootstrap** once the baseline is approved and recorded.
    Audit file lands at first § 4 record-outcome.
 
 ### Bootstrap skips the sourcing menu — NOT the config gates
@@ -239,6 +258,8 @@ placeholder, or has 0 History rows.
 | `G-ENV-MGR` | Env manager | `python-env-manager` | before any install command |
 | `G-TABULAR` | Tabular library (pandas / polars) | `data-science-python-stack` | before `data.py` write |
 | `G-SKORE-MODE` | Skore Project mode (local / hub / mlflow) + hub workspace name or MLflow tracking URI | `organize-ml-workspace` | before `pyproject.toml` write |
+| `G-EDA` | Explore the data (run / skip) before the baseline is designed | `explore-ml-data` | before the `journal/01_baseline.md` draft |
+| `G-AGENT-FEATURE` | Install ipython + pyright (install / skip) | `python-env-manager` | **conditional** — when G-EDA = run and the agent feature isn't present (else first audit at § 4) |
 | `G-CV-SPLITTER` | CV family for `skore.evaluate` | `evaluate-ml-pipeline` | before `evaluate.py` write — mandatory even with empty `split_kwargs` |
 | `G-DESIGN` | User approval of `journal/01_baseline.md` | this skill | before `experiments/01_baseline.py` write |
 | `G-RUN` | "run now" vs "leave for later" | this skill | before executing the experiment script |
@@ -471,12 +492,16 @@ Pairing rule (hard, four-way): `journal/NN_<short_name>.md` ↔
 ### `JOURNAL.md` shape
 
 1. **Status** — 2-3 lines: dataset, goal, last experiment + status.
-2. **History** (chronological) — one row per experiment: stem,
+2. **Data understanding (EDA)** — short summary + link to
+   `data/eda.md`. Owned by `explore-ml-data` (written at the G-EDA
+   bootstrap step); this skill only reserves the section.
+3. **History** (chronological) — one row per experiment: stem,
    intent, status, headline, design-note link.
-3. **Backlog** (forward-looking) — indexed table; columns `#`,
+4. **Backlog** (forward-looking) — indexed table; columns `#`,
    `Item`, `Source` (`skore:<stem>` / `my-pick:<stem>` / `user`).
 
-Template: `templates/JOURNAL.md`. Don't invent sections.
+Template: `templates/JOURNAL.md`. These four are the only sanctioned
+sections — don't invent others.
 
 ### Per-experiment design-note shape
 
@@ -495,6 +520,8 @@ Template: `templates/experiment_design.md`. Sections:
 ## What this skill does NOT do
 
 - Run experiments (user / runner does that).
+- Explore / profile the dataset (`explore-ml-data` owns the G-EDA
+  step and the `## Data understanding (EDA)` section).
 - Open or query the skore Project (`evaluate-ml-pipeline` +
   `python-api`).
 - Edit `pipeline.py` / `features.py` / `data.py`
@@ -510,6 +537,7 @@ Template: `templates/experiment_design.md`. Sections:
 | Skill | Relationship |
 |---|---|
 | `organize-ml-workspace` | Scaffold + stem-pairing rule |
+| `explore-ml-data` | § 0 fires G-EDA before the baseline; the EDA findings seed the baseline note's Method / Risks and the `## Data understanding (EDA)` JOURNAL section |
 | `iterate-from-user` | User-sourced proposals (article / resource / free text) |
 | `iterate-from-skore` | Report-sourced Backlog enrichment |
 | `build-ml-pipeline` | `pipeline.py` / `features.py` / `data.py` body; reproducibility mechanics |
@@ -517,7 +545,7 @@ Template: `templates/experiment_design.md`. Sections:
 | `test-ml-pipeline` → `smoke-test-ml-pipeline` | Smoke-test body; § 4 won't flip `done` until smoke is green |
 | `audit-ml-pipeline` | § 4 dispatch; audit digest carries the headline metrics for the JOURNAL row |
 | `python-api` | Signature lookups |
-| `python-env-manager` | G-AGENT-FEATURE for audit prerequisites |
+| `python-env-manager` | G-AGENT-FEATURE for audit AND explore-ml-data (EDA) prerequisites |
 
 ## References (load on demand)
 
@@ -531,7 +559,7 @@ Template: `templates/experiment_design.md`. Sections:
 
 ## Templates
 
-- `templates/JOURNAL.md` — three-section index skeleton.
+- `templates/JOURNAL.md` — four-section index skeleton.
 - `templates/experiment_design.md` — design note with Status block.
 
 Copy, don't rewrite.

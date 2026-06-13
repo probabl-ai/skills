@@ -233,15 +233,20 @@ doesn't index it because `lsp` doesn't compose `<X>`. User sees
 
 ### `G-AGENT-FEATURE` — install ipython + pyright
 
-**Fires when**: an agent-only consumer (currently `audit-ml-pipeline`)
-needs `ipython` / `pyright` and the manifest doesn't expose them.
+**Fires when**: an agent-only consumer (`audit-ml-pipeline` for audit
+files, or `explore-ml-data` for `data/eda.py`) needs `ipython` /
+`pyright` and the manifest doesn't expose them. With `explore-ml-data`
+this can fire as early as **bootstrap** (the G-EDA run path, before
+the baseline), not only at the first audit.
 
 **AskUserQuestion (binary)**: `install` | `skip`.
 - `install` → run the bundled per-manager script (see § "Agent
-  feature install"). Recommended default for any workspace using
-  the audit flow.
-- `skip` → block the calling skill; surface "audit step unavailable
-  until the agent feature is installed". No silent degradation.
+  feature install"). Recommended default for any workspace using the
+  audit or EDA flow.
+- `skip` → block the calling skill; surface "audit / EDA step
+  unavailable until the agent feature is installed". No silent
+  degradation. (`explore-ml-data` then falls back to its EDA-skip
+  path; `audit-ml-pipeline` blocks.)
 
 **Persists**: `agent feature: <installed | skipped> — recorded: <date>`.
 
@@ -502,7 +507,7 @@ flows, pixi-version compatibility notes:
 |---|---|
 | `data-science-python-stack` | Owns *what* to install; this skill turns it into a command |
 | `organize-ml-workspace` | Scaffold hands off here for editable install; G-TABULAR / G-SKORE-MODE feed this skill's bootstrap |
-| `audit-ml-pipeline` | G-AGENT-FEATURE fires from there |
+| `audit-ml-pipeline` / `explore-ml-data` | G-AGENT-FEATURE fires from there (audit files; `data/eda.py`) |
 | `build-ml-pipeline` / `evaluate-ml-pipeline` | Missing-dep Stop conditions redirect here |
 | `iterate-ml-experiment` | Owns the `Workspace decisions` block this skill reads / writes |
 

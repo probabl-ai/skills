@@ -5,9 +5,9 @@ target-version = "py312"
 select = ["E", "F", "W", "I", "B", "UP", "D"]
 
 [lint.per-file-ignores]
-# `experiments/` and `audit/` carry jupytext-style `# %%` cell scripts.
-# The cell convention legitimately violates a few rules that are correct
-# for regular Python:
+# `experiments/`, `audit/`, and the EDA script `data/eda.py` carry
+# jupytext-style `# %%` cell scripts. The cell convention legitimately
+# violates a few rules that are correct for regular Python:
 #   E402  imports not at top of file — cells interleave imports + code
 #   B018  useless bare expression — bare expressions are the cell's output
 #   D100  missing module docstring — module-level docstring is the
@@ -16,6 +16,10 @@ select = ["E", "F", "W", "I", "B", "UP", "D"]
 #         named functions; when they do, the design-note is the doc
 "experiments/**" = ["E402", "B018", "D100", "D103"]
 "audit/**" = ["E402", "B018", "D100", "D103"]
+# `data/eda.py` is the explore-ml-data EDA cell script (one per workspace);
+# same convention, same ignores. The rest of data/ is user-owned and not
+# linted by this stack.
+"data/eda.py" = ["E402", "B018", "D100", "D103"]
 
 [lint.pydocstyle]
 convention = "numpy"

@@ -142,6 +142,19 @@ the default; ask before omitting. There is no
 `!scratch/README.md` exception — `scratch/` is gitignored in its
 entirety.
 
+**Never ignore the whole `data/` folder.** The EDA deliverables
+(`data/eda.py`, `data/eda.md`, `data/eda_*.html`, owned by
+`explore-ml-data`) live under `data/` and must stay committable; a
+`data/` (whole-folder) ignore makes them silently untracked, and a
+naive `!data/eda.md` negation does NOT re-include them when the
+parent directory is ignored. If raw **inputs** must be kept out of
+git (large / local-only), ignore specific input paths instead
+(`data/raw/`, `data/*.parquet`, …) and ask the user first. If an
+existing `.gitignore` already ignores the whole `data/`, surface the
+fix (switch to specific input patterns) rather than silently editing.
+`explore-ml-data` re-checks this at EDA time
+(`git check-ignore data/eda.md`).
+
 ## Step 11 — `ruff.toml` + first ruff pass
 
 **Hand off to `python-code-style` § "Initial setup".** That skill
