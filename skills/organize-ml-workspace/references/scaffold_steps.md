@@ -109,8 +109,8 @@ script runs.
 ## Step 8 — Empty `scratch/`
 
 Just `mkdir scratch`. **Do NOT drop a README inside** — the
-scratch convention is owned by `python-api` § "Scratch
-traceability" and lives in that skill, not in a file on disk.
+scratch convention is owned by `python-api` § "`scratch/`
+conventions" and lives in that skill, not in a file on disk.
 The folder is the agent's ad-hoc workspace; its contents are
 gitignored entirely via step 10.
 

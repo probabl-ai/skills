@@ -71,7 +71,7 @@ Read these once; they're referenced throughout.
 
 | You came here for… | → next |
 |---|---|
-| Declared pipeline → CV strategy | → `evaluate-ml-pipeline` § G-CV-SPLITTER |
+| Declared pipeline → CV strategy | → `evaluate-ml-pipeline` (the `G-CV-SPLITTER` gate, rule 3) |
 | Declared pipeline → smoke test | → `test-ml-pipeline` → `smoke-test-ml-pipeline` |
 | Symbol lookup mid-declaration | → `python-api` (Shape 1 / 1b / 3) |
 | Missing skrub/sklearn import | → `python-env-manager` § install |

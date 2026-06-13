@@ -430,7 +430,13 @@ already ship the jupyter integration.
 |---|---|---|
 | `local` | `pixi add skore` / `conda install -c conda-forge skore` | `uv add "skore[jupyter]"` / `poetry add "skore[jupyter]"` / `pip install "skore[jupyter]"` |
 | `hub` | `pixi add "skore[hub]"` / `conda install -c conda-forge "skore[hub]"` | `uv add "skore[hub,jupyter]"` / `poetry add "skore[hub,jupyter]"` / `pip install "skore[hub,jupyter]"` |
-| `mlflow` | `pixi add "skore[mlflow]"` / `conda install -c conda-forge "skore[mlflow]"` | `uv add "skore[mlflow,jupyter]"` / `poetry add "skore[mlflow,jupyter]"` / `pip install "skore[mlflow,jupyter]"` |
+| `mlflow` | `pixi add "skore[mlflow]" "mlflow>=3"` / `conda install -c conda-forge "skore[mlflow]" "mlflow>=3"` | `uv add "skore[mlflow,jupyter]" "mlflow>=3"` / `poetry add "skore[mlflow,jupyter]" "mlflow>=3"` / `pip install "skore[mlflow,jupyter]" "mlflow>=3"` |
+
+The `mlflow` variant **must pin `mlflow>=3` explicitly** (shown in the
+commands above). The `skore[mlflow]` extra's mlflow lower bound is
+loose, so the solver can otherwise resolve an old mlflow (2.x) that
+the skore MLflow backend does not support — add `mlflow>=3` to the
+install command on conda-forge and PyPI alike.
 
 If the row is absent (workspace not yet bootstrapped through
 `organize-ml-workspace`), route back to that skill's G-SKORE-MODE.
@@ -441,6 +447,9 @@ Do not guess.
   `[hub]` / `[mlflow]` extras cost network deps + infra the
   local-mode user didn't ask for; the variant follows the recorded
   `skore mode:`, not a guess.
+- Installing the `mlflow` variant without the explicit `mlflow>=3`
+  pin. `skore[mlflow]` alone can resolve mlflow 2.x; the skore MLflow
+  backend needs mlflow 3+. Always co-install `mlflow>=3`.
 - Dropping the `jupyter` extra on PyPI installs because the
   install line "looks shorter". The TableReport / `report.*`
   widgets that the audit flow and `evaluate-ml-pipeline` rely on
@@ -484,8 +493,8 @@ If detection found nothing AND the user picked `pixi` via G-ENV-MGR:
    carries `ipython`, `pyright`.
 4. Add Tier 1 deps to `default` (per G-SKORE-MODE table above —
    pixi is conda-forge, so `pixi add skore`, `pixi add
-   "skore[hub]"`, or `pixi add "skore[mlflow]"`; **no `[jupyter]`
-   extra** on pixi).
+   "skore[hub]"`, or `pixi add "skore[mlflow]" "mlflow>=3"`; **no
+   `[jupyter]` extra** on pixi).
 5. Add tabular lib (per G-TABULAR: `pandas pyarrow` or `polars`).
 6. Wire editable workspace package
    (`pixi add --pypi "<pkg> @ ."` then edit to

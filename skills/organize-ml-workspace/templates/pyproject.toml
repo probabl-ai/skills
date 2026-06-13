@@ -9,11 +9,9 @@
 # Replace `<pkg>` with the actual package name (kebab-case for
 # `project.name`, snake_case for the `src/<pkg>/` directory).
 #
-# After this file is on disk, `python-env-manager` § "Editable
-# workspace package" wires the editable install for the project's
-# manager (pixi: `pixi add --pypi "<pkg> @ ."` then edit
-# `[pypi-dependencies]` to set `editable = true`; uv: `uv sync` is
-# enough; poetry/hatch: declarative; pip+venv: `pip install -e .`).
+# Install the package in editable mode with the project's environment
+# manager (e.g. `pip install -e .`, or the manager's equivalent) so
+# `from <pkg>.X import Y` resolves from any working directory.
 
 [build-system]
 requires = ["setuptools>=64"]

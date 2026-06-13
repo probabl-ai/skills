@@ -251,7 +251,9 @@ changes.
   mutually exclusive modes: `local` (artifacts on disk; no extra
   deps), `hub` (artifacts on Skore Hub; requires `skore[hub]`
   extra + `skore.login()` before first use), `mlflow` (artifacts
-  in an MLflow tracking server; requires `skore[mlflow]` extra).
+  in an MLflow tracking server; requires the `skore[mlflow]` extra
+  **plus an explicit `mlflow>=3` pin** — `skore[mlflow]` alone can
+  resolve an unsupported mlflow 2.x).
   The choice is a workspace-level decision owned by
   `organize-ml-workspace` § "G-SKORE-MODE" — fired at scaffold
   alongside G-PKG-NAME / G-TABULAR / G-ENV-MGR. `python-env-manager`
