@@ -1,6 +1,6 @@
 {
   "name": "probabl-skills",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
   "author": {
     "name": "Probabl"

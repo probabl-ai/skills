@@ -1,6 +1,6 @@
 {
   "name": "probabl-skills",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
   "catalog_hash": "9ed418853c2b09a1dec2792948af46caf6d089e7548d790617240dcead3f57a1",
   "skills": [
