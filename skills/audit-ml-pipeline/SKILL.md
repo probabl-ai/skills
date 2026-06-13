@@ -348,7 +348,7 @@ Identical stems, 1:1. By the time the experiment shows `done` in
 |---|---|
 | `python-api` | Every skore symbol (`Project`, `project.summarize`, `project.get`, `report.checks.summarize`, `report.metrics.summarize`, `.frame()`). Cache hits first |
 | `python-env-manager` § Agent feature | When `ipython` / `pyright` are missing — G-AGENT-FEATURE gate |
-| `python-code-style` | After writing / editing `audit/<stem>.py` — bundled `ruff.toml` carries `audit/**` per-file ignores |
+| `python-code-style` | After writing / editing `audit/<stem>.py` — bundled `ruff.toml` carries `audit/**` per-file ignores; also contextualizes the header to name the audited experiment and strips workflow/process prose |
 
 ## Failure modes and recovery
 

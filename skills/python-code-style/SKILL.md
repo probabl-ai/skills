@@ -2,16 +2,22 @@
 name: python-code-style
 description: >
   Owns Python code style for this stack: ruff for lint + format, numpydoc
-  for docstrings. Two responsibilities — (1) place the project's
+  for docstrings. Three responsibilities — (1) place the project's
   `ruff.toml` from the bundled template once the stack and workspace
-  are in place, and (2) run ruff against any Python files Claude has
-  just generated or edited. Stops at "the touched files pass `ruff
-  check`."
+  are in place, (2) run ruff against any Python files Claude has
+  just generated or edited, and (3) contextualize each touched file's
+  comments to the data-science problem — rewriting any leftover
+  template / workflow prose (skill names, gates, runner, digest,
+  guard-rails) into concise, problem-specific docs so the user's
+  committed files read like a colleague wrote them, not like a
+  generated scaffold. Stops at "the touched files pass `ruff check`
+  and document the problem, not the process."
 
   TRIGGER when (any of these):
   (1) a Python file was just created or edited via Write / Edit /
       MultiEdit — invoke this skill before declaring the task done so
-      ruff is run on the touched files;
+      ruff is run AND the file's comments are contextualized to the
+      problem;
   (2) a fresh ML workspace was just scaffolded by
       `organize-ml-workspace` and the project has no `ruff.toml` at
       its root yet — drop the bundled template;
@@ -77,6 +83,20 @@ touched, no hook involved.
   `@pytest.mark.filterwarnings`, and `filterwarnings = [...]` in
   `pytest.ini` / `pyproject.toml`. Warnings are signal in this
   stack.
+- **Documentation describes the problem, not the workflow.** A
+  committed file's module docstring, header, and comments must
+  describe the **data-science problem** and the file's role in it —
+  never the skills, the gates (`G-*`), the cell runner, the run
+  digest, the journal / backlog / design-note machinery, or "the
+  process we are following". That guidance is agent-facing and lives
+  in the skills, not in the user's files. When you touch a file that
+  now carries **real content**, rewrite any leftover generic template
+  or workflow prose into concise, problem-specific docs grounded in
+  the current context (the project goal, the experiment's hypothesis,
+  the dataset). If the file is still an empty skeleton (no content /
+  no context yet), leave its placeholder — the contextualization
+  happens when the content lands. Details: § "Contextualize the
+  comments".
 
 ## Pre-flight — emit this checklist as visible text before running ruff
 
@@ -98,6 +118,12 @@ Pre-flight (python-code-style):
       issues) | third pass on same warning (STOP, surface to user)
 - [ ] One-fix-per-file rule acknowledged: max two passes per warning,
       then surface remaining diagnostics + diff to the user.
+- [ ] Comments contextualized: each touched file with real content has
+      problem-specific docs and NO workflow/skill/gate/runner/digest
+      meta (§ "Contextualize the comments")
+      Evidence: per file, "rewrote header to <problem context>" |
+                "no leftover template/workflow prose" |
+                "n/a — empty skeleton, no context yet"
 ```
 
 ## Scope
@@ -105,7 +131,9 @@ Pre-flight (python-code-style):
 - **In scope:** running `ruff format` + `ruff check --fix` + `ruff
   check` on Python files Claude has just generated or edited;
   authoring numpydoc docstrings on public functions and classes;
-  dropping the `ruff.toml` template into a fresh project.
+  contextualizing each touched file's comments to the data-science
+  problem and stripping workflow/process meta (§ "Contextualize the
+  comments"); dropping the `ruff.toml` template into a fresh project.
 - **Out of scope:** type hints (mypy / pyright are not in the
   stack); naming conventions ruff doesn't enforce; setting up
   PostToolUse / PreToolUse hooks; linting non-Python files.
@@ -151,6 +179,48 @@ Audit files (`audit/<NN>_<short_name>.py`, owned by
 convention for any helper functions. After writing or editing one of
 these files, run the same trio (`ruff format` → `ruff check --fix`
 → `ruff check`).
+
+## Contextualize the comments
+
+ruff makes a file *well-formed*; this pass makes it *well-documented
+for the problem*. Templates ship with neutral placeholders and a
+little authoring scaffolding so the generating skill knows what each
+cell / module is for. None of that should survive into the user's
+committed file — the user's files document the **data-science
+problem**, not the process that produced them.
+
+After the ruff trio, for every touched file that now carries **real
+content**, do a quick documentation pass:
+
+1. **Fill the header for this problem.** Replace any `<placeholder>`
+   or generic header with a one- or two-line description of what this
+   file does *here*: the experiment's hypothesis (`experiment.py`),
+   what this module contributes to the pipeline (`src/<pkg>/*.py`),
+   which report this file reviews and what it tests
+   (`audit/<stem>.py`), what the dataset is and what the analysis
+   looks at (`data/eda.py`). Pull the wording from the live context —
+   the project goal, the approved design note, the dataset.
+2. **Strip the workflow meta.** Delete leftover process commentary:
+   skill names, gate IDs (`G-*`), `§` cross-references, "the agent",
+   "the (cell) runner", "the digest", "run cell by cell", journal /
+   backlog / sourcing jargon, and inline guard-rails like "MUST NOT
+   call `put` / bare expressions, don't `print`". Those guard-rails
+   stay enforced — they live in the owning skill's SKILL.md, which is
+   where the agent reads them, not in the user's file.
+3. **Keep the substance.** Genuinely useful problem / engineering
+   context and the numpydoc docstrings stay. Cell markers (`# %%`)
+   and any remaining `<...>` placeholders the agent still has to fill
+   stay until they are filled.
+
+The result should read like a colleague wrote the file for this
+project — not like a generated scaffold. Skip a file that is still an
+empty skeleton (e.g. a freshly scaffolded `src/<pkg>/*.py` with no
+body yet): there is no context to write about until the content
+lands, and the contextualization happens on the edit that fills it.
+
+This pass is **owned here** so the rule is enforced uniformly. Every
+file-writing skill already hands off to this skill after a write;
+that hand-off now also covers contextualizing the comments.
 
 ## Numpydoc — the docstring convention
 

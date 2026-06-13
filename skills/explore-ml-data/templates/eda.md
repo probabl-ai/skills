@@ -1,14 +1,9 @@
 <!--
-data/eda.md — persisted EDA narrative for this workspace.
-
-Owner: `explore-ml-data`. Authored from the `data/eda.py` run digest;
-every claim must be grounded in that digest — do not invent facts.
-The `journal/JOURNAL.md` § "Data understanding (EDA)" section links
-here; the baseline design note cites the "Modelling implications".
-
-Keep "implications" as *candidate* picks, not decisions — the picks
-are owned by their gates (G-CV-SPLITTER, the metric default, the
-learner default in the baseline note).
+Exploratory data analysis summary for this workspace, written from
+the data/eda.py run. Ground every claim in what the run actually
+showed — do not invent facts. Keep "Modelling implications" as
+candidate suggestions to weigh when designing the model, not final
+decisions.
 -->
 
 # EDA — <project / dataset name>
@@ -48,7 +43,7 @@ a possible leakage risk** and name the column.>
 ## Modelling implications
 
 <the payoff: translate the findings into candidate modelling choices
-the baseline note will weigh. Examples:>
+to weigh when designing the model. Examples:>
 
 - <imbalanced target (X% positive) → prefer `StratifiedKFold`; report
   ROC-AUC / PR-AUC rather than accuracy.>
@@ -58,11 +53,11 @@ the baseline note will weigh. Examples:>
   `TimeSeriesSplit`.>
 - <high-cardinality categoricals (`<cols>`) → skrub's default
   encoders handle these; flag if any need text encoding.>
-- <heavy target skew → consider a target transform; flag in the
-  baseline note's Risks.>
+- <heavy target skew → consider a target transform; note it as a
+  modelling risk.>
 
 ## Open questions
 
-<domain ambiguities for the user to confirm before / during the
-baseline: column meanings, sentinel values, whether a column is a
-leak, the true target definition, etc.>
+<domain ambiguities for the user to confirm before modelling: column
+meanings, sentinel values, whether a column is a leak, the true target
+definition, etc.>

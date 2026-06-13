@@ -1,26 +1,19 @@
 # <NN>_<short_name>
 
 <!--
-Design note for `experiments/<NN>_<short_name>.py`. Same stem,
-one-to-one with the script. Owner: `iterate-ml-experiment`.
+Design note for experiments/<NN>_<short_name>.py (same stem, one to
+one with the script). Write and agree on it before creating the
+script.
 
 Lifecycle:
-  planned   → draft, not yet shown to the user / not approved
-  approved  → user said "go"; safe to create the matching .py
-  done      → result recorded; status block + JOURNAL.md row updated
-  abandoned → discarded; record one-line reason on State
+  planned   → draft, not yet approved
+  approved  → agreed; safe to create the matching .py
+  done      → result recorded; Status block + JOURNAL.md row updated
+  abandoned → discarded; record a one-line reason on State
 
-This skill is user-triggered (no polling, no auto-detection),
-so there is no observable "running" state — the experiment
-sits in `approved` from the moment the script is created until
-the user reports the outcome via § 4 ("the run finished, record
-it"), at which point it flips to `done` (or `abandoned`).
-
-Freeze rule: the four content sections (Question, Motivation,
-Method, Risks) are frozen at `approved`. Only the Status block
-is updated after that. **No "Success criteria" section** — the
-skill's job is to propose and run; the user judges whether the
-result is good enough.
+The four content sections (Question, Motivation, Method, Risks) are
+fixed once approved; only the Status block changes afterwards. There
+is no "Success criteria" section — judge the result once it is in.
 -->
 
 ## Question / hypothesis
@@ -30,45 +23,33 @@ result is good enough.
 ## Motivation
 
 <!--
-Why now. Cite the source concretely:
-  - user (free-text)    → quote the request the user typed
-  - user (article-link) → article title + year + URL + the exact
-                          claim to build on
-  - user (resource)     → GitHub issue link, or spec file:line,
-                          or reference-repo path
-  - my-pick             → which JOURNAL.md / prior-design-note fields fed
-                          the synthesis (Status, last Implication,
-                          last Risks, current Backlog state)
-  - skore               → audit-digest section + check code (e.g.
-                          `audit:<prev_stem>:checks.<SKD-code>`) +
-                          the check's documentation_url
-  - backlog (B<N>)      → the index promoted + the row's original
-                          Source carried forward
+Why now. Cite the source concretely — the request or article claim to
+build on, the finding from a prior experiment's report that prompted
+this, or the backlog item being promoted.
 -->
 
 - **Sourcing strategy:** <user | my-pick | skore:<stem> | backlog:B<N>>
 - **Source(s):**
   <!--
-  Single line is the right shape for most strategies. For an
-  article-link, paste the exact claim verbatim — the design
-  note becomes the postmortem and the original claim is what
-  makes the result interpretable later.
+  One line is enough for most cases. For an article, paste the exact
+  claim verbatim — it is what makes the result interpretable later.
   -->
   - <e.g. issue #42 / "Paper Title" (year) URL — "exact claim" /
-    `audit:01_baseline:checks.SKD003` + its documentation_url /
-    B2 (originally skore:01_baseline)>
+    a check from the 01_baseline report + its documentation_url /
+    B2 (originally from the 01_baseline report)>
 - **Why this matters:** <one or two sentences>
 
 ## Method
 
 <!--
-What changes versus the previous experiment, in prose. Which file
-in `src/<pkg>/` is touched? State intent, not code. Mechanics live
-in `build-ml-pipeline` / `evaluate-ml-pipeline`.
+What changes versus the previous experiment, in prose. Which file in
+src/<pkg>/ is touched? State intent, not code.
 -->
 
 - **Files touched:** <e.g., `src/<pkg>/features.py`, `src/<pkg>/evaluate.py`>
 - **Change versus baseline (or previous experiment):** <prose>
+- **Cross-validation:** decided at the evaluation step, data-driven
+  from the data's structure (groups / time ordering) — not fixed here.
 - **Out of scope for this experiment:** <what we are deliberately not changing>
 
 ## Risks / things that could invalidate the result
@@ -89,13 +70,12 @@ run (to interpret the headline result honestly).
 - **State:** planned
   <!--
   Lifecycle: planned → approved → running → done | abandoned.
-  - `done`: Headline result + Implication required (filled by § 4).
-  - `abandoned`: requires a one-line reason on this line itself
+  - `done`: fill Headline result + Implication.
+  - `abandoned`: add a one-line reason on this line itself
     (e.g., `abandoned — paper's required dep was non-trivial; deferred to v2`).
     Headline result becomes `n/a — abandoned: <reason>`.
     The row stays in JOURNAL.md History; only the State field flips.
-  - User-decided only: the skill never auto-abandons.
   -->
 - **Approved by user on:** <date or n/a>
 - **Headline result:** <fill in after run, or `n/a — abandoned: <reason>`>
-- **Implication for next iteration:** <fill in after run — feeds the next strategy dispatch. For abandonment: one line on what the abandonment teaches (e.g., "rules out monotonic-NN direction without paid GPU env")>
+- **Implication for next iteration:** <fill in after run — what it suggests to try next. For abandonment: one line on what the abandonment teaches (e.g., "rules out monotonic-NN direction without paid GPU env")>

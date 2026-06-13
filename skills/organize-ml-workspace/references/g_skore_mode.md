@@ -74,7 +74,7 @@ Source: https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html
 | `mode=` argument | `mode="local"` | `mode="hub"` | `mode="mlflow"` |
 | `workspace=` argument | **required**: `workspace=str(PROJECT_ROOT / "reports")` | **MUST be absent** — passing it raises `TypeError` | **MUST be absent** — `tracking_uri=` is used instead |
 | `tracking_uri=` argument | not used | not used | **required**: the MLflow tracking server URI |
-| Install variant | `pixi add skore` | `pixi add "skore[hub]"` | `pixi add "skore[mlflow]"` |
+| Install variant | `pixi add skore` | `pixi add "skore[hub]"` | `pixi add "skore[mlflow]" "mlflow>=3"` (pin required) |
 | Pre-condition | none | Skore Hub account + access to `<hub-workspace>` | reachable MLflow tracking server at `<uri>` |
 
 ## The gate — AskUserQuestion shape
@@ -151,7 +151,7 @@ artifacts:
 | Downstream artifact | local-mode shape | hub-mode shape | mlflow-mode shape |
 |---|---|---|---|
 | `<SKORE_PROJECT_INIT>` in `experiments/NN_*.py` and `audit/NN_*.py` | `skore.Project(name="<project-name>", mode="local", workspace=str(PROJECT_ROOT / "reports"))` | `from skore import login; login(mode="hub"); skore.Project("<hub-workspace>/<project-name>", mode="hub")` | `skore.Project(name="<experiment-name>", mode="mlflow", tracking_uri="<mlflow-tracking-uri>")` |
-| Tier 1 skore install variant (per `python-env-manager` § Tier 1 install) | `pixi add skore` (or equivalent) | `pixi add "skore[hub]"` (or equivalent) | `pixi add "skore[mlflow]"` (or equivalent) |
+| Tier 1 skore install variant (per `python-env-manager` § Tier 1 install) | `pixi add skore` (or equivalent) | `pixi add "skore[hub]"` (or equivalent) | `pixi add "skore[mlflow]" "mlflow>=3"` (or equivalent — the `mlflow>=3` pin is required) |
 | `Workspace decisions` rows in `JOURNAL.md` | `skore mode: local` | `skore mode: hub` + `skore hub workspace: <name>` | `skore mode: mlflow` + `skore mlflow tracking uri: <uri>` |
 
 The `name=` argument shape **changes between modes** — local uses a
@@ -196,7 +196,7 @@ Procedure:
 3. Rewrite **every** `<SKORE_PROJECT_INIT>` block in `experiments/`
    AND `audit/`.
 4. Update the install variant via `python-env-manager` (plain
-   `skore` ↔ `skore[hub]` ↔ `skore[mlflow]`).
+   `skore` ↔ `skore[hub]` ↔ `skore[mlflow]` + `mlflow>=3`).
 5. Document the switch in `JOURNAL.md` History as a horizontal
    divider (same shape as goal pivots — see `iterate-ml-experiment`
    § Maintenance modes).

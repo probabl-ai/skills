@@ -53,7 +53,7 @@ digest doesn't carry), the probe goes to
 `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and runs via
 `pixi run python scratch/<ts>_<short>.py`.
 
-See `python-api` § "Scratch traceability" for the full
+See `python-api` § "`scratch/` conventions" for the full
 convention. **Inline `pixi run python -c "..."` is forbidden
 regardless of length** (see `python-api` § Stop conditions).
 

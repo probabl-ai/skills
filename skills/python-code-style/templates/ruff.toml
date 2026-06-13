@@ -16,9 +16,9 @@ select = ["E", "F", "W", "I", "B", "UP", "D"]
 #         named functions; when they do, the design-note is the doc
 "experiments/**" = ["E402", "B018", "D100", "D103"]
 "audit/**" = ["E402", "B018", "D100", "D103"]
-# `data/eda.py` is the explore-ml-data EDA cell script (one per workspace);
-# same convention, same ignores. The rest of data/ is user-owned and not
-# linted by this stack.
+# `data/eda.py` is the exploratory-data-analysis cell script (one per
+# workspace); same convention, same ignores. The rest of data/ is
+# user-owned and not linted by this stack.
 "data/eda.py" = ["E402", "B018", "D100", "D103"]
 
 [lint.pydocstyle]

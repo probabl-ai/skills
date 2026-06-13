@@ -2,9 +2,8 @@
 
 Owns: how raw data is materialized into `(X, y)`, and how structural
 metadata (groups, time ordering, ...) is attached at the X marker via
-`split_kwargs`. Pipeline mechanics live in `build-ml-pipeline`; data
-paths are decided by the caller — this module does not invent a
-`data/` directory.
+`split_kwargs`. Data paths are decided by the caller — this module
+does not invent a `data/` directory.
 """
 
 from __future__ import annotations

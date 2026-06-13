@@ -417,7 +417,7 @@ detail lives in `data/eda.md`. On the **skip** path, only the
 | `python-env-manager` § Agent feature | When `ipython` is missing on the run path — G-AGENT-FEATURE |
 | `python-api` | Every skrub / pandas / polars symbol. Cache hits first |
 | `data-science-python-stack` | G-TABULAR (pandas / polars) if not yet recorded; skrub `TableReport` reference |
-| `python-code-style` | After writing `data/eda.py` — ruff format / check |
+| `python-code-style` | After writing `data/eda.py` — ruff format / check + contextualize the comments to this dataset (strip any leftover workflow/process prose) |
 
 ## What this skill does NOT do
 

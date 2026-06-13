@@ -57,9 +57,14 @@ read the report. The pipeline declaration is out of scope (see
   `ComparisonReport`) and any sklearn splitter name must come from a
   `Skill(python-api)` or `Skill(python-api)` call **in this turn**.
   "I remember `KFold(n_splits=5)`" is not acceptable.
-- **Splitter choice is data-driven, not default-driven.** Pick from
-  the `split_kwargs` content at the X marker via the table in rule 3
-  — never reach for `KFold(5)` or `StratifiedKFold` out of habit. If
+- **Splitter choice is data-driven, not default-driven
+  (`G-CV-SPLITTER`).** This is the **G-CV-SPLITTER** gate — owned by
+  this skill, fired during `iterate-ml-experiment` § 3 (the build →
+  evaluate → test chain, **after** the design note is approved at
+  G-DESIGN), before `src/<pkg>/evaluate.py` is written. The splitter
+  is NOT pre-committed in the design note. Pick from the
+  `split_kwargs` content at the X marker via the table in rule 3 —
+  never reach for `KFold(5)` or `StratifiedKFold` out of habit. If
   `split_kwargs` is empty *and* you cannot rule out group / temporal
   structure, return to `build-ml-pipeline` and ask before defaulting.
 - **No `Stratified*` for class imbalance.** It compresses across-fold
@@ -127,7 +132,7 @@ read the report. The pipeline declaration is out of scope (see
   mandatory `AskUserQuestion` in this stack —
   `python-env-manager` § "Where does the package belong?",
   `data-science-python-stack` § Tier 2 (pandas vs polars),
-  `iterate-ml-experiment` § 1 (sourcing menu), `iterate-from-user`
+  `iterate-ml-experiment` § 2 (sourcing menu), `iterate-from-user`
   § "The entry-point AskUserQuestion". When in doubt: the user's
   approval is the gate, not the harness's instruction text.
 
@@ -235,7 +240,8 @@ Pre-flight (evaluate-ml-pipeline):
    API details to `python-api`.
 
 3. **Pick the cross-validator from the structural facts of the data
-   — not by default.** The data tells you what splitter is correct.
+   — not by default (the `G-CV-SPLITTER` gate).** The data tells you
+   what splitter is correct.
    The structural facts arrive at the X marker through
    `split_kwargs` (set by `build-ml-pipeline` at declaration time).
    Mapping rules:

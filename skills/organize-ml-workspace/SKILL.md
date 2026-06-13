@@ -335,7 +335,7 @@ revisiting the matching smoke test
 | 8 | Create empty `scratch/` (no README — owned by `python-api`) | this skill |
 | 9 | Create empty `reports/` | this skill |
 | 10 | Touch `.gitignore` — drop template if none; else suggest patch (always ask about `reports/`). **Never ignore the whole `data/`** (EDA deliverables live there); to keep raw inputs out of git, ignore specific input paths only and ask | this skill |
-| 11 | **Hand off to `python-code-style`** § Initial setup for `ruff.toml` + first pass — invoking the skill teaches NumPyDoc | this skill → python-code-style |
+| 11 | **Hand off to `python-code-style`** § Initial setup for `ruff.toml` + first pass — invoking the skill teaches NumPyDoc and (once files carry real content) contextualizes their comments to the problem | this skill → python-code-style |
 | 12 | Hand back to the relevant sibling (`iterate-ml-experiment` for design note, etc.) | this skill → next caller |
 
 → next: `iterate-ml-experiment` § 0 (bootstrap) for the first
