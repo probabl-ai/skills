@@ -1,16 +1,11 @@
 # JOURNAL
 
 <!--
-This file is the durable index of every experiment in this workspace.
-Four sections, in order: Status, Data understanding (EDA), History,
-Backlog. Don't add OTHER top-level sections; they break the contract
-that lets future sessions read this file in two seconds.
-
-Owner: `iterate-ml-experiment` skill (Status / History / Backlog).
-The `## Data understanding (EDA)` section is owned by `explore-ml-data`
-(written at the G-EDA bootstrap step). Pair each
-`journal/NN_short_name.md` with `experiments/NN_short_name.py`
-(identical stems).
+Durable index of every experiment in this workspace. Four sections,
+in order: Status, Data understanding (EDA), History, Backlog — keep
+them so the file stays quick to scan. Each journal/NN_short_name.md
+design note pairs one-to-one with experiments/NN_short_name.py (same
+stem).
 -->
 
 ## Status
@@ -21,34 +16,10 @@ The `## Data understanding (EDA)` section is owned by `explore-ml-data`
 - **Last result:** <one-line headline metric, or "n/a" if not yet run>
 
 <!--
-Workspace decisions: persistent picks for the config gates that fire in
-bootstrap (see `iterate-ml-experiment` § 0 "Bootstrap skips sourcing
-menu — NOT the config gates"). Each row records a one-time pick the
-user made via `AskUserQuestion`; on every later session, skills read
-this block first and skip the matching question.
-
-Immutability rule: rows are immutable unless the user explicitly pivots
-("let's switch to polars", "move env to uv"). Do NOT silently update
-a row because a newer tool would obviously fit better; surface the
-proposal and wait for the user. The `recorded:` date is the date the
-row was last user-confirmed.
-
-Adding rows: when a new competing-library job comes into scope
-mid-project (e.g. DL is added), the matching skill fires its
-`AskUserQuestion`, then this block gets a new row.
-
-Owning skills:
-  - tabular library     → data-science-python-stack § Tier 2
-  - env manager         → python-env-manager
-  - agent feature       → python-env-manager § "Agent feature"
-  - optional features   → python-env-manager § "Where does the package belong?"
-  - package name        → organize-ml-workspace
-  - CV splitter family  → evaluate-ml-pipeline
-
-The 3-feature env layout (default / dev / agent) is enforced by
-python-env-manager; no row is collected for it. The `agent feature`
-row only records whether the user opted into the agent feature
-install (ipython + pyright + pyrightconfig.json) or skipped it.
+Workspace decisions: one-time project-setup choices. Record each when
+it is made and treat it as fixed unless you deliberately change one
+(e.g. switch pandas → polars), updating the recorded date. Reading
+this block on later sessions avoids re-deciding what's already settled.
 -->
 
 - **Workspace decisions** (immutable unless the user pivots):
@@ -65,16 +36,14 @@ install (ipython + pyright + pyrightconfig.json) or skipped it.
 ## Data understanding (EDA)
 
 <!--
-Owned by `explore-ml-data`. Written at the G-EDA bootstrap step
-(before the baseline design note). Short index entry only — the full
-narrative lives in `data/eda.md`. On the skip path, keep just the
-`Status: skipped` line.
+Short index entry — the full analysis lives in data/eda.md. If the
+data exploration was skipped, keep just the Status: skipped line.
 -->
 
 - **Status:** <done | skipped> — <YYYY-MM-DD>
 - **Summary:** <2–4 lines — dataset shape, target balance/skew, and the
-  one or two findings that most shape the modelling choices. "n/a" until
-  the G-EDA gate fires.>
+  one or two findings that most shape the modelling choices. "n/a"
+  until the data has been explored.>
 - **Report:** [data/eda.md](../data/eda.md)
 
 ## History
@@ -91,32 +60,18 @@ Status values: planned | approved | running | done | abandoned.
 ## Backlog
 
 <!--
-Indexed table of ideas not yet committed to a `journal/NN_*.md` file.
-Each row carries a stable `B<N>` index so the user can pick by
-number when picking the next experiment ("go with B2"). The skill
-surfaces this table to the user every time it presents the
-sourcing menu.
+Ideas not yet committed to a journal/NN_*.md design note. Each row
+has a stable B<N> index so it can be picked by number ("go with B2").
 
 Columns:
-  - `#`      — stable index (B1, B2, ...). Don't renumber on
-               removal; new rows take the next free B<N>.
-  - `Item`   — one-line description of the idea.
-  - `Source` — where the idea came from. Use one of:
-                 `skore:<stem>`    — written by `iterate-from-skore`
-                                     from the report of `<stem>`
-                 `my-pick:<stem>`  — agent-synthesized; <stem> is
-                                     the experiment whose context
-                                     (Implication, Risks, …) fed
-                                     the synthesis. Written by § 4
-                                     when implications seed future
-                                     leads, or by § 2's my-pick
-                                     branch when unpicked
-                                     candidates are saved
-                 `user`            — the user added the row
-                                     directly (in conversation)
+  - #      — stable index (B1, B2, ...); don't renumber on removal.
+  - Item   — one-line description of the idea.
+  - Source — where it came from, e.g. a finding from a prior
+             experiment's report (`skore:<stem>`), a synthesized idea
+             (`my-pick:<stem>`), or a user request (`user`).
 
-When an item graduates into a design note, remove the row from this
-table and add the new experiment to History above.
+When an item becomes a design note, remove its row here and add the
+experiment to History above.
 -->
 
 | # | Item | Source |

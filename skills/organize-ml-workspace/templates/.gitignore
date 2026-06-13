@@ -14,11 +14,11 @@ dist/
 .ruff_cache/
 .mypy_cache/
 
-# data artifacts — user owns the data/ layout.
-# NEVER ignore the whole data/ folder: the EDA deliverables
-# (data/eda.py, data/eda.md, data/eda_*.html, owned by explore-ml-data)
-# live there and must stay committable. To keep large/local-only raw
-# INPUTS out of git, ignore specific input paths only, e.g.:
+# data artifacts — you own the data/ layout.
+# Do NOT ignore the whole data/ folder: the EDA outputs
+# (data/eda.py, data/eda.md, data/eda_*.html) live there and should
+# stay committed. To keep large/local-only raw INPUTS out of git,
+# ignore specific input paths only, e.g.:
 # data/raw/
 # data/*.parquet
 # data/*.csv
@@ -26,8 +26,7 @@ dist/
 # skore Project store — large/binary; commit selectively if at all
 reports/
 
-# agent scratch space — gitignored entirely; convention lives in the
-# `python-api` skill (§ "Scratch traceability"), not in an on-disk README
+# agent scratch space — gitignored entirely
 scratch/
 
 # mlflow filesystem fallback (sqlite backend is .db; keep both ignored to be safe)

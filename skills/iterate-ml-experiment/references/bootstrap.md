@@ -60,9 +60,10 @@ the **G-EDA** gate — binary **run** / **skip**:
 
 Why before the baseline: the dataset facts EDA surfaces (target
 balance / skew, datetime / group structure, missingness,
-cardinality, leakage flags) are exactly what justifies the learner /
-splitter / metric defaults in Step 4. Designing first and exploring
-later defeats the purpose and is the named anti-pattern.
+cardinality, leakage flags) are exactly what justifies the learner
+and metric defaults in Step 4 and informs the CV strategy chosen
+later at the evaluation step. Designing first and exploring later
+defeats the purpose and is the named anti-pattern.
 
 Free-text "go fast" / "quick baseline" does NOT resolve G-EDA — fire
 the `AskUserQuestion` (run / skip).
@@ -77,19 +78,24 @@ when EDA ran):
   "baseline" means for the data shape (tabular regression /
   classification → `skrub.tabular_pipeline`; other shapes have
   their own defaults).
-- **Splitter default**: consult `evaluate-ml-pipeline` for the
-  cross-validator default (typically `KFold` for IID tabular, but
-  the skill picks based on data structure).
+- **Cross-validation strategy**: NOT fixed in the design note. The
+  splitter is data-driven and chosen at the evaluation step
+  (`G-CV-SPLITTER`, owned by `evaluate-ml-pipeline`) once the
+  pipeline's X-marker / `split_kwargs` exist — so the design note only
+  records that the CV strategy is decided then, it does not commit a
+  specific splitter. (EDA's structure signals still *inform* that
+  later choice; they don't pre-empt it.)
 - **Metric default**: consult `python-api` for what
   `skore.evaluate` reports by default for the task type.
 
 ### Mismatch handling
 
-If any default conflicts with the project goal — e.g., the README
-requires Squared Error but skore's default is RMSE; the dataset
-has 1M rows and 5-fold KFold may be slow / OOM — **flag it in the
+If a default conflicts with the project goal — e.g., the README
+requires Squared Error but skore's default is RMSE — **flag it in the
 Risks section** of `01_baseline.md`. Don't silently override the
-default; surface the tension to the user.
+default; surface the tension to the user. Splitter concerns (group /
+temporal structure, fold cost) are surfaced and resolved at the
+evaluation step, not pre-committed here.
 
 ## Step 5 — The user's role: approve or amend, not invent
 
@@ -126,20 +132,24 @@ gate the workflow normally fires still fires.
 | `G-PKG-NAME` | `src/<pkg>/` import name | `organize-ml-workspace` | **Before** any `pyproject.toml` / `pixi.toml` creation |
 | `G-ENV-MGR` | Python env manager (`pixi`, `uv`, `poetry`, `hatch`, `conda`, `pip+venv`). The 3-feature layout (`default` / `dev` / `agent`) is enforced automatically — no scope sub-pick. | `python-env-manager` | **Before** any `pixi init` / `pixi add` / equivalent |
 | `G-TABULAR` | Tabular library (`pandas` / `polars`) + other Tier 2 contested-library picks | `data-science-python-stack` | **Before** any `Write` of `data.py` / experiment script importing the contested library |
-| `G-EDA` | Explore the data (run / skip) | `explore-ml-data` | **Before** the `journal/01_baseline.md` draft — so EDA findings can inform the learner / splitter / metric defaults |
+| `G-SKORE-MODE` | Skore Project mode (`local` / `hub` / `mlflow`) + hub workspace name or MLflow tracking URI | `organize-ml-workspace` | **Before** any `pyproject.toml` write / the skore install variant |
+| `G-EDA` | Explore the data (run / skip) | `explore-ml-data` | **Before** the `journal/01_baseline.md` draft — so EDA findings can inform the learner / metric defaults and the later CV-strategy choice |
 | `G-AGENT-FEATURE` | Install `ipython` + `pyright` (install / skip) | `python-env-manager` | **Conditional** — fires when G-EDA = run and the agent feature isn't present (the EDA cell runner needs `ipython`). Otherwise deferred to the first audit at § 4. Decline → EDA falls back to skip |
-| `G-CV-SPLITTER` | Cross-validator family for `skore.evaluate` (`KFold`, `StratifiedKFold`, `GroupKFold`, `TimeSeriesSplit`, ...) | `evaluate-ml-pipeline` | **Before** any `Write` of `src/<pkg>/evaluate.py`; mandatory even when `split_kwargs` is empty (the empty case is itself a justified pick) |
 | `G-DESIGN` | Explicit user approval of `journal/01_baseline.md` | `iterate-ml-experiment` § 3 | **Before** any `Write` of `experiments/01_baseline.py` / `src/<pkg>/*.py` content authored from the design note |
+| `G-CV-SPLITTER` | Cross-validator family for `skore.evaluate` (`KFold`, `GroupKFold`, `TimeSeriesSplit`, ...) | `evaluate-ml-pipeline` | **Inside the § 3 chain, AFTER G-DESIGN** — at the evaluate step, before any `Write` of `src/<pkg>/evaluate.py`; mandatory even when `split_kwargs` is empty (the empty case is itself a justified pick). NOT an upfront config gate |
 | `G-RUN` | "Run now" vs "leave for later" once smoke tests pass | `iterate-ml-experiment` § 3 | **Before** the shell call that executes `experiments/01_baseline.py` |
 
 Each gate's owning skill is responsible for the actual
 `AskUserQuestion` mechanics; this table is the **bootstrap
 contract** that says they all still fire even though the sourcing
-menu doesn't. Every persistent gate's answer is recorded in
-`JOURNAL.md` Status `Workspace decisions` (the first four) so a
-later session can read the decision instead of re-asking.
-`G-DESIGN` and `G-RUN` are per-experiment, not persistent — they
-fire fresh on every experiment.
+menu doesn't. The persistent gates (`G-PKG-NAME`, `G-ENV-MGR`,
+`G-TABULAR`, `G-SKORE-MODE`, and the post-build `G-CV-SPLITTER`) are
+recorded in `JOURNAL.md` Status `Workspace decisions` so a later
+session reads the decision instead of re-asking; `G-EDA` is recorded
+in the `Data understanding (EDA)` section. `G-DESIGN`, `G-RUN`, and
+`G-AGENT-FEATURE` are not `Workspace decisions` rows — `G-DESIGN` /
+`G-RUN` are per-experiment, and the agent-feature status has its own
+row owned by `python-env-manager`.
 
 ### Free-text doesn't resolve config gates
 

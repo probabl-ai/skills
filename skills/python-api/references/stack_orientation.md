@@ -72,7 +72,9 @@ finds the right submodule.
     https://skore.probabl.ai with access to the workspace.
   - **mlflow**: `skore.Project(name="<experiment>", mode="mlflow",
     tracking_uri="<uri>")`. `name=` is the MLflow experiment name.
-    Requires `pip install "skore[mlflow]"`.
+    Requires `pip install "skore[mlflow]" "mlflow>=3"` (the explicit
+    `mlflow>=3` pin is required — `skore[mlflow]` alone can resolve an
+    unsupported mlflow 2.x).
 
   Methods (same surface across modes): `put(key, report)`,
   `get(id)` (**by id, not by `key`** — get the id from

@@ -2,7 +2,7 @@
   "name": "probabl-skills",
   "version": "0.4.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "9ed418853c2b09a1dec2792948af46caf6d089e7548d790617240dcead3f57a1",
+  "catalog_hash": "eb1518487b30caf646ae5eee771e2362a4fe059848fc9723e2a717c3340e39f4",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -11,7 +11,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "a2f714b3ceb8203f3949500aea36b99729ba422e024d979d69d0656cf303a2e4"
+      "hash": "60fa149bf056699ec7f7608dd9ee95cce30c2c6689b579a3da58d857fa900064"
     },
     {
       "id": "build-ml-pipeline",
@@ -20,7 +20,7 @@
       "summary": "Build a machine learning pipeline from the data source to the learner, including multi-tables engineering.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "6343975810344278267d3a8a27b8c27723f840c070dab730765f8c249e4eec45"
+      "hash": "64f90108710685767ddc0a515903ca6efa909e621070f8a74452a5e014a8ae77"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -29,7 +29,7 @@
       "summary": "Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "729ee97bf5d4eb4548ec316cfe7294f46acbf4e4aa5f33682fff00657c3c1f3a"
+      "hash": "ee32d9289b92505e2c345042074d8b685cfeb35af606c1097ce4ff8a6b65bd28"
     },
     {
       "id": "test-ml-pipeline",
@@ -56,7 +56,7 @@
       "summary": "Once testing and the experiment is done, audit by loading a skore report and investigate.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "f37c8e70fbeda01ef0e476f5622d782e5941202d3639989ae6d3daa48449dbef"
+      "hash": "d48c089c0c5b77c667ffc989c3989c01c82f7e51667fad895e31b0a045e16a87"
     },
     {
       "id": "iterate-ml-experiment",
@@ -65,7 +65,7 @@
       "summary": "Design, keep track of experiments and iterate on them.",
       "category": "orchestration",
       "subcategory": "dispatchers",
-      "hash": "1b6202dd9e434c90454ff309e005ac8549c9e48bce29185c9e9955a65e8c0b18"
+      "hash": "bc85d4588d98347687bb0a10f7d785a5896808cf3d66143cb0689a5c730501e5"
     },
     {
       "id": "iterate-from-skore",
@@ -92,7 +92,7 @@
       "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "cfb545e0b48729181bfb76e52a5ec29dba9f0c5cd03f5f9095caf03c12459502"
+      "hash": "de5c6509da7b076aae74249c2685b6be22e1a33b98965f1d8c41f2c6f07fa7c4"
     },
     {
       "id": "python-code-style",
@@ -101,7 +101,7 @@
       "summary": "Enforce good practices out-of-the-box for the Python ecosystem for your code.",
       "category": "tooling",
       "subcategory": "code-quality",
-      "hash": "6f70c06e9ca3fb4062aedb1e878dc8c388ee9a29afa6d63bb1aa1d9e1fb33b80"
+      "hash": "203f9d9a5858be0eaaed6df0f7247d52d715758011acf827aa134516572b440a"
     },
     {
       "id": "python-env-manager",
@@ -110,7 +110,7 @@
       "summary": "Bootstrapping the experiment setup based on your favorite Python environment manager.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "9bd4bc4b773478a6359eaac0b2fc8b5db615fb34da282b5aceb4a08ac0d3b6bd"
+      "hash": "bf03a8c6fa4d5920d64e03678e62cda74dd3c20198b804402a814bbc4c77c645"
     },
     {
       "id": "data-science-python-stack",
@@ -119,7 +119,7 @@
       "summary": "Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers.",
       "category": "reference",
       "subcategory": null,
-      "hash": "9ca1072b5643403c0174134a97c5fc1ac9af1729c0ef2d954c745f12c069e5c5"
+      "hash": "c98079d37ccec0a69bba4105673d2da6017c48e460b843fa8faca31928ccec24"
     },
     {
       "id": "python-api",
@@ -128,7 +128,7 @@
       "summary": "Discover the public API of any installed Python package to make agent find their way without bothering your workspace.",
       "category": "reference",
       "subcategory": null,
-      "hash": "8f82b9c88f898657a833f683340da63ec152a4ef3b538b0c7253ba5fdf67df99"
+      "hash": "811ffe54214f2e524efa5cb71f01adefaef01d95be916762969c0d62a2a80ea4"
     }
   ],
   "workflows": [

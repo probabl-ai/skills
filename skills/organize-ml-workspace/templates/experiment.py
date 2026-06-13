@@ -30,30 +30,9 @@ DATA_DIR = PROJECT_ROOT / "data"
 # %% [markdown]
 # ## Project
 #
-# One project per workspace; each experiment writes its report under a
-# stable key (the file stem). The Project init block below is filled
-# at scaffold time per the workspace's `skore mode:` decision
-# (recorded in `journal/JOURNAL.md` Status `Workspace decisions`; see
-# `organize-ml-workspace` § "G-SKORE-MODE"). Three forms:
-#
-# - **local mode**: `skore.Project(name=..., mode="local",
-#   workspace=str(PROJECT_ROOT / "reports"))`. Reports persist to disk
-#   under `reports/`. No account or login required.
-# - **hub mode**: `skore.login(mode="hub")` first (interactive on
-#   first run; cached after), then `skore.Project("<hub-workspace>/
-#   <project-name>", mode="hub")`. Reports persist on Skore Hub.
-#   Requires `pip install "skore[hub]"` (see `python-env-manager` §
-#   "Tier 1 install: skore variant per mode") and a Skore Hub
-#   account with access to the named hub workspace.
-# - **mlflow mode**: `skore.Project(name="<experiment-name>",
-#   mode="mlflow", tracking_uri="<mlflow-tracking-uri>")`. Reports are
-#   pushed to an MLflow tracking server as runs under the named
-#   experiment. No `login()`. Requires `pip install "skore[mlflow]"`
-#   and a reachable tracking server (or local `file:`/`sqlite:`
-#   backend) at the recorded URI.
-#
-# `<SKORE_PROJECT_INIT>` is replaced by the right form at scaffold
-# time. Do NOT keep multiple forms in the same file — only one is valid.
+# Open the project that stores this experiment's report under a stable
+# key (the file stem). All reports for this workspace live together so
+# they can be compared across experiments.
 
 # %%
 # <SKORE_PROJECT_INIT>
@@ -78,9 +57,9 @@ learner = build_learner(data_dir_preview=DATA_DIR)
 # ## Evaluate
 #
 # Cross-validator and any metric overrides are imported from
-# `<pkg>.evaluate`. The experiment script does not redefine them.
-# `SkrubLearner.fit` takes a single environment dict (it does *not*
-# implement `fit(X, y)`), so we pass the bindings via `data=`. Use
+# `<pkg>.evaluate`. `SkrubLearner.fit` takes a single environment dict
+# (it does *not* implement `fit(X, y)`), so we pass the bindings via
+# `data=`. Use
 # the source-bound form (`data={"data_dir": str(DATA_DIR)}`) when the
 # pipeline binds a source identifier; use `data={"X": X, "y": y}` for
 # materialized bindings.

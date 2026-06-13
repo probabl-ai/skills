@@ -4,7 +4,6 @@ Owns: the function that builds and returns the (unfit) learner —
 typically a `SkrubLearner` produced from a skrub DataOps graph that
 composes the steps in `data.py` and `features.py` with the chosen
 estimator. Fitting, evaluation, and persistence happen elsewhere.
-See `build-ml-pipeline` for the declarative mechanics.
 
 Note on the source-binding preview. When the graph roots a
 `skrub.var(name, value=...)` on a source identifier (path, URL,
@@ -15,7 +14,7 @@ is intentionally exposed as an **optional** keyword on
 pass an absolute path resolved from the package root, instead of a
 CWD-relative literal baked into this file. Without a preview, the
 graph still fits and evaluates — only `.skb.preview()` is
-unavailable. See `build-ml-pipeline` rule 2.
+unavailable.
 """
 
 from __future__ import annotations

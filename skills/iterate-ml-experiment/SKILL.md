@@ -102,10 +102,10 @@ then jump.
 | `journal/` not scaffolded (no `src/`, no `experiments/`) | **Bootstrap → handoff first** | → `organize-ml-workspace`, then § 0 |
 | "what's next?" / "let's iterate" / "propose next" — with ≥1 done row | **Iterate (propose)** | §§ 1–3 + Dispatch table |
 | "the run finished" / "log the result" / "we got X = …" | **Iterate (record)** | § 4 |
-| "where are we?" / "status?" / "what have we tried?" | **Project overview** | `references/maintenance_modes.md` § Overview |
-| "compare X and Y" / "X vs Y" | **Compare (read-only)** | `references/maintenance_modes.md` § Compare |
-| "let's pivot the goal" / "actually we care about <metric>" | **Goal pivot** | `references/maintenance_modes.md` § Goal pivots |
-| "abandon X" / "drop X" | **Abandoned** | `references/maintenance_modes.md` § Abandoned |
+| "where are we?" / "status?" / "what have we tried?" | **Project overview** | `references/maintenance_modes.md` § "Project overview" |
+| "compare X and Y" / "X vs Y" | **Compare (read-only)** | `references/maintenance_modes.md` § "Compare past experiments" |
+| "let's pivot the goal" / "actually we care about <metric>" | **Goal pivot** | `references/maintenance_modes.md` § "Goal pivots" |
+| "abandon X" / "drop X" | **Abandoned** | `references/maintenance_modes.md` § "Abandoned experiments" |
 | Re-do a prior experiment under different conditions | **Re-run** | `references/maintenance_modes.md` § Re-runs |
 
 If two modes seem to match ("compare X and Y, then propose"), pick
@@ -157,7 +157,7 @@ the **read** mode first, stop. Re-entering § 1 is a separate turn.
 | User said "quick baseline" → skip G-DESIGN | G-DESIGN is non-negotiable; "quick" never waives it. The design note is the postmortem's frozen Method |
 | Scaffold + implement in one turn before G-DESIGN | Inverts the contract. Code that lands before approval has no Motivation/Risks the user signed off on |
 | Skipped `evaluate-ml-pipeline` because `KFold(5)` "feels right" | Even empty `split_kwargs` is a justified pick the skill exists to surface. Bypass = user never got the choice |
-| Bootstrap mode → skip ALL questions, not just the sourcing menu | Bootstrap forbids the sourcing menu only. G-PKG-NAME / G-ENV-MGR / G-TABULAR / G-SKORE-MODE / G-CV-SPLITTER / G-DESIGN / G-RUN still fire |
+| Bootstrap mode → skip ALL questions, not just the sourcing menu | Bootstrap forbids the sourcing menu only. G-PKG-NAME / G-ENV-MGR / G-TABULAR / G-SKORE-MODE / G-EDA / G-DESIGN / G-CV-SPLITTER / G-RUN still fire |
 | Ambiguous "hmm interesting" / "I guess" read as approval | Approval is explicit. Ambiguity → re-ask, never silent yes |
 | Auto-detect run finished via `reports/` mtime | § 4 is user-triggered (v1). The skill never auto-records |
 | § 4 finishes recording → declare done, skip audit dispatch | § 4 audit dispatch is part of record-outcome, not optional. The audit digest carries the headline metrics for the JOURNAL row |
@@ -184,10 +184,12 @@ Pre-flight (iterate-ml-experiment):
       Evidence: AskUserQuestion id=<id>, answer=<skore|user|my-pick|B<N>>
                 | user free-text quote turn N
                 | "n/a — bootstrap / read-only mode"
-- [ ] (Bootstrap only) Config gates fired (G-PKG-NAME, G-ENV-MGR,
-      G-TABULAR, G-SKORE-MODE, G-CV-SPLITTER)
+- [ ] (Bootstrap only) Upfront config gates fired (G-PKG-NAME,
+      G-ENV-MGR, G-TABULAR, G-SKORE-MODE)
       Evidence: per-gate ask id OR JOURNAL.md Status reference
                 | "n/a — iterate mode"
+      Note: G-CV-SPLITTER is NOT an upfront gate — it fires later, in
+      the § 3 chain at the evaluation step (after G-DESIGN).
 - [ ] (Bootstrap only) G-EDA fired BEFORE the baseline draft
       Evidence: explore-ml-data dispatched; answer=<run|skip>;
                 JOURNAL.md `## Data understanding (EDA)` section present
@@ -201,6 +203,10 @@ Pre-flight (iterate-ml-experiment):
 - [ ] (§ 3 only) Three-skill chain ran in order:
       build → evaluate → test
       Evidence: each owning skill produced its file this turn
+                | "n/a outside § 3"
+- [ ] (§ 3 only) G-CV-SPLITTER resolved during the evaluate step
+      Evidence: evaluate-ml-pipeline fired the splitter AskUserQuestion
+                (or mapped split_kwargs) before `evaluate.py` write
                 | "n/a outside § 3"
 - [ ] (§ 3 only) G-RUN resolved: run now | leave for later
       Evidence: AskUserQuestion id=<id> | "n/a outside § 3"
@@ -232,16 +238,21 @@ placeholder, or has 0 History rows.
    run it executes `data/eda.py`, writes `data/eda.md` + HTML, and
    fills the `## Data understanding (EDA)` JOURNAL section. The
    findings (target balance / skew, datetime / group columns,
-   missingness, cardinality) feed the next step's learner / splitter /
-   metric defaults. The run path needs the agent feature (`ipython`)
-   and may trigger `G-AGENT-FEATURE` here, before the baseline; if the
-   user declines it, EDA falls back to **skip**. On skip, the JOURNAL
+   missingness, cardinality) feed the next step's learner and metric
+   defaults and inform the CV strategy chosen later at the evaluation
+   step. The run path needs the agent feature (`ipython`) and may
+   trigger `G-AGENT-FEATURE` here, before the baseline; if the user
+   declines it, EDA falls back to **skip**. On skip, the JOURNAL
    section records `Status: skipped`.
 5. **Auto-draft `journal/01_baseline.md`** via the consultation
    chain, **informed by the EDA findings**: learner default
-   (`build-ml-pipeline`), splitter default (`evaluate-ml-pipeline`),
-   metric default (`python-api` on skore.evaluate). Conflicts with the
-   EDA findings or the goal → flag in **Risks**, don't override.
+   (`build-ml-pipeline`) and metric default (`python-api` on
+   skore.evaluate). **Do NOT fix a splitter here** — the
+   cross-validation strategy is data-driven and decided at the
+   evaluation step (`G-CV-SPLITTER`, owned by `evaluate-ml-pipeline`)
+   once the pipeline's X-marker exists; the note simply records that it
+   is decided then. Conflicts with the EDA findings or the goal → flag
+   in **Risks**, don't override.
 6. **User's role in bootstrap is approve or amend** — not invent.
 7. **Exit bootstrap** once the baseline is approved and recorded.
    Audit file lands at first § 4 record-outcome.
@@ -260,8 +271,8 @@ placeholder, or has 0 History rows.
 | `G-SKORE-MODE` | Skore Project mode (local / hub / mlflow) + hub workspace name or MLflow tracking URI | `organize-ml-workspace` | before `pyproject.toml` write |
 | `G-EDA` | Explore the data (run / skip) before the baseline is designed | `explore-ml-data` | before the `journal/01_baseline.md` draft |
 | `G-AGENT-FEATURE` | Install ipython + pyright (install / skip) | `python-env-manager` | **conditional** — when G-EDA = run and the agent feature isn't present (else first audit at § 4) |
-| `G-CV-SPLITTER` | CV family for `skore.evaluate` | `evaluate-ml-pipeline` | before `evaluate.py` write — mandatory even with empty `split_kwargs` |
-| `G-DESIGN` | User approval of `journal/01_baseline.md` | this skill | before `experiments/01_baseline.py` write |
+| `G-DESIGN` | User approval of `journal/01_baseline.md` | this skill | before any `src/<pkg>/` or `experiments/` code — i.e. before the § 3 chain |
+| `G-CV-SPLITTER` | CV family for `skore.evaluate` | `evaluate-ml-pipeline` | **inside the § 3 chain, AFTER G-DESIGN** — at the evaluate step, before `evaluate.py` write; mandatory even with empty `split_kwargs` |
 | `G-RUN` | "run now" vs "leave for later" | this skill | before executing the experiment script |
 
 Free-text "quick baseline" / "you pick" do NOT resolve any of

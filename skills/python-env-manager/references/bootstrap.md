@@ -78,13 +78,18 @@ conda-forge by default, so the `[jupyter]` extra is **not** needed
 
 - `skore mode: local`  → `pixi add scikit-learn skrub skore`
 - `skore mode: hub`    → `pixi add scikit-learn skrub "skore[hub]"`
-- `skore mode: mlflow` → `pixi add scikit-learn skrub "skore[mlflow]"`
+- `skore mode: mlflow` → `pixi add scikit-learn skrub "skore[mlflow]" "mlflow>=3"`
+
+The `mlflow` variant pins `mlflow>=3` explicitly: `skore[mlflow]`
+alone can let the solver pick an old mlflow (2.x) the skore MLflow
+backend doesn't support.
 
 For PyPI-based managers running the analogous bootstrap (uv /
 poetry / hatch / pip+venv), substitute `skore[jupyter]` (local),
 `skore[hub,jupyter]` (hub), or `skore[mlflow,jupyter]` (mlflow) —
-see SKILL.md § "Tier 1 install: skore variant per mode" for the
-full source-aware table.
+keeping the `mlflow>=3` pin for the mlflow variant. See SKILL.md
+§ "Tier 1 install: skore variant per mode" for the full source-aware
+table.
 
 If G-SKORE-MODE hasn't fired yet at bootstrap time (rare —
 `organize-ml-workspace` fires it alongside G-PKG-NAME and

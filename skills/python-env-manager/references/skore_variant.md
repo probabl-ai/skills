@@ -41,13 +41,28 @@ Combined matrix:
 |---|---|---|
 | `local` | `skore` | `skore[jupyter]` |
 | `hub` | `skore[hub]` | `skore[hub,jupyter]` |
-| `mlflow` | `skore[mlflow]` | `skore[mlflow,jupyter]` |
+| `mlflow` | `skore[mlflow]` + `mlflow>=3` | `skore[mlflow,jupyter]` + `mlflow>=3` |
 
 Why a single combined extra string for PyPI hub / mlflow mode: PEP
 508 allows comma-separated extras (`skore[hub,jupyter]`,
 `skore[mlflow,jupyter]`) and that's the form all four PyPI-based
 managers accept. Splitting into two install calls works too but
 produces two manifest rows, which is noisier than necessary.
+
+### Why the `mlflow>=3` pin
+
+The `skore[mlflow]` extra declares mlflow as a dependency with a loose
+lower bound, so the environment solver can resolve an **old mlflow
+(2.x)** — which the skore MLflow backend (`skore.Project(mode="mlflow",
+...)`) does not support. Co-install an explicit `mlflow>=3` constraint
+so the solver is forced onto mlflow 3+:
+
+- conda-forge: `pixi add "skore[mlflow]" "mlflow>=3"`
+- PyPI: `uv add "skore[mlflow,jupyter]" "mlflow>=3"` (and the poetry /
+  hatch / pip equivalents).
+
+This is a hard requirement of the mlflow variant — the install is
+considered wrong without it.
 
 ## Forbidden
 
@@ -60,6 +75,9 @@ produces two manifest rows, which is noisier than necessary.
   widgets and the TableReport viz silently degrade.
 - Adding `[jupyter]` on conda-forge installs. Redundant — the
   conda-forge package already brings the integration in.
+- Installing `skore[mlflow]` **without** the `mlflow>=3` pin. The
+  solver will happily resolve mlflow 2.x, which the skore MLflow
+  backend does not support — see § "Why the `mlflow>=3` pin".
 
 ## Reading the recorded decision
 
@@ -85,10 +103,10 @@ forbidden by default" — requires explicit user confirmation):
   land additively; existing local-mode reports under `reports/`
   stay on disk but are no longer the active store.
 - **`local` → `mlflow`** (or **`hub` → `mlflow`**): add the mlflow
-  variant — `"skore[mlflow]"` (conda-forge) or
-  `"skore[mlflow,jupyter]"` (PyPI). The prior store's reports stay
-  where they were (disk / Skore Hub) but are no longer the active
-  store.
+  variant **with the pin** — `"skore[mlflow]" "mlflow>=3"`
+  (conda-forge) or `"skore[mlflow,jupyter]" "mlflow>=3"` (PyPI). The
+  prior store's reports stay where they were (disk / Skore Hub) but
+  are no longer the active store.
 - **`hub` / `mlflow` → `local`**: optionally remove the extra to
   slim the env. Per-manager: `pixi remove skore && pixi add skore`
   (conda-forge) or `uv remove skore && uv add "skore[jupyter]"`
