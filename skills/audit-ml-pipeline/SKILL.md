@@ -5,9 +5,9 @@ description: >
   per experiment, aligned 1:1 with `experiments/NN_<short_name>.py` and
   `journal/NN_<short_name>.md`, that loads the experiment's skore
   report **read-only** and uses bare-last-expression cells whose
-  `__repr__` carries the audit's signal. The agent executes the audit
+  `__repr__` carries the audit's signal.   The agent executes the audit
   file via the bundled in-process runner
-  (`audit-ml-pipeline/scripts/run_audit.py` — IPython
+  (`audit-ml-pipeline/scripts/run_cells.py` — IPython
   `InteractiveShell.run_cell`), which streams a markdown digest of
   each cell's stdout + last-expression repr to stdout (optionally also
   to a file). The digest fuels narrative work (the `JOURNAL.md`
@@ -30,15 +30,18 @@ description: >
   `iterate-ml-experiment`); the experiment hasn't been run (no report
   on disk); the agent feature isn't installed (delegate to
   `python-env-manager` § "Agent feature"); the user is mining the
-  report to source the *next* experiment (`iterate-from-skore`).
+  report to source the *next* experiment (`iterate-from-skore`); the
+  user wants to explore the **raw dataset** rather than a finished
+  run's skore report (`explore-ml-data` — audit reads a report, not
+  the data).
 
   HOW TO USE: confirm the four-way stem pairing exists (`journal/NN_*.md`
   approved + `experiments/NN_*.py` exists + smoke test passed +
   report under that key in the Project), then place
   `audit/NN_<short_name>.py` from `templates/audit.py`, substituting
   the package name + the literal Project init block copied from
-  `experiments/<stem>.py`. Execute via the bundled runner: `pixi run
-  -e agent python .agents/skills/audit-ml-pipeline/scripts/run_audit.py
+  `experiments/<stem>.py`.   Execute via the bundled runner: `pixi run
+  -e agent python .agents/skills/audit-ml-pipeline/scripts/run_cells.py
   audit/<stem>.py`. **Read the Stop conditions and emit the Pre-flight
   checklist before any write or shell command.** Always invoke
   `python-api` for skore symbol signatures — never write them from
@@ -69,8 +72,8 @@ extraction step.
 | Path | Durability | Who writes it | What it holds |
 |---|---|---|---|
 | `audit/<NN>_<short_name>.py` | **Durable** (in git) | This skill, once per experiment | The bare-expression cells. Source of truth. Can be opened as a notebook in JupyterLab / VS Code for the rich HTML view |
-| `scratch/audit/<stem>/audit.md` | Ephemeral (gitignored), optional | `run_audit.py` when given a 2nd arg | Per-cell markdown digest: source + stdout + last-expression `repr`. Same content as stdout |
-| Stdout from `run_audit.py` | Captured by the bash tool | `run_audit.py` (always) | Streamed digest — the agent reads this directly from the tool output |
+| `scratch/audit/<stem>/audit.md` | Ephemeral (gitignored), optional | `run_cells.py` when given a 2nd arg | Per-cell markdown digest: source + stdout + last-expression `repr`. Same content as stdout |
+| Stdout from `run_cells.py` | Captured by the bash tool | `run_cells.py` (always) | Streamed digest — the agent reads this directly from the tool output |
 
 **Mnemonic:** `audit/` is *source* (in git); `scratch/audit/` and
 stdout are *output*. Never put the source `.py` under
@@ -211,7 +214,7 @@ Pre-flight (audit-ml-pipeline):
       Evidence: explicit grep / Read confirmation of the drafted file
 - [ ] Execution command shape confirmed:
         pixi run -e agent python \
-          .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+          .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
           audit/<stem>.py [scratch/audit/<stem>/audit.md]
       (Second arg is optional — the runner always streams to stdout.)
       Evidence: command emitted in the response before running
@@ -288,7 +291,7 @@ deeper inspection here.
 
 ```bash
 pixi run -e agent python \
-  .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
   audit/<stem>.py
 ```
 
@@ -392,15 +395,16 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 
 - `templates/audit.py` — per-experiment audit file skeleton. Copy
   + substitute; don't rewrite from memory.
-- `scripts/run_audit.py` — the in-process cell runner. Source of
-  truth for the execution contract; don't reimplement.
+- `scripts/run_cells.py` — the in-process cell runner (generic;
+  shared with `explore-ml-data`). Source of truth for the execution
+  contract; don't reimplement or fork.
 
 ## References (load on demand)
 
 - `references/cell_anatomy.md` — concrete cell examples (right /
   wrong shapes), full 7-cell sequence, why `.frame()` matters,
   bare-expression rules.
-- `references/runner_internals.md` — what `run_audit.py` does
+- `references/runner_internals.md` — what `run_cells.py` does
   internally: parsing, IPython shell + NoOpDisplayHook, matplotlib
   Agg backend, progress-bar suppression, pandas widening, per-cell
   capture, error rendering.

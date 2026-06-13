@@ -37,10 +37,41 @@ Propose it; the user confirms or amends. **Do not prompt with a
 blank.** If no README / dataset card exists, then ask — but make
 that the exception, not the default.
 
+## Step 3.5 — Explore the data before designing the model (G-EDA)
+
+Before drafting the baseline, dispatch to `explore-ml-data`. This is
+the **G-EDA** gate — binary **run** / **skip**:
+
+- **run** → the skill places and executes `data/eda.py` via the
+  shared cell runner, writes `data/eda.md` (findings + modelling
+  implications) and `data/eda_<table>.html`, and fills the
+  `## Data understanding (EDA)` section of `JOURNAL.md`. Requires the
+  agent feature (`ipython`); if missing, `explore-ml-data` routes to
+  `python-env-manager` § Agent feature (`G-AGENT-FEATURE`) — so on the
+  run path the agent feature can get installed here, at bootstrap,
+  before the baseline. The raw data may live outside `data/`; reuse
+  the location already found when deriving the goal in Step 3 rather
+  than re-discovering it.
+- **skip** → only the `## Data understanding (EDA)` section's
+  `Status: skipped — <date>` line is written; proceed to the baseline.
+  If the user picks **run** but then **declines** the agent-feature
+  install, fall back to this skip path (record `Status: skipped`) —
+  do not loop between run and install.
+
+Why before the baseline: the dataset facts EDA surfaces (target
+balance / skew, datetime / group structure, missingness,
+cardinality, leakage flags) are exactly what justifies the learner /
+splitter / metric defaults in Step 4. Designing first and exploring
+later defeats the purpose and is the named anti-pattern.
+
+Free-text "go fast" / "quick baseline" does NOT resolve G-EDA — fire
+the `AskUserQuestion` (run / skip).
+
 ## Step 4 — Auto-draft `journal/01_baseline.md` via the consultation chain
 
 The baseline is forced, not invented — but its defaults come from
-sibling skills, not from memory:
+sibling skills, not from memory (and from the Step 3.5 EDA findings
+when EDA ran):
 
 - **Learner default**: consult `build-ml-pipeline` for what a
   "baseline" means for the data shape (tabular regression /
@@ -95,6 +126,8 @@ gate the workflow normally fires still fires.
 | `G-PKG-NAME` | `src/<pkg>/` import name | `organize-ml-workspace` | **Before** any `pyproject.toml` / `pixi.toml` creation |
 | `G-ENV-MGR` | Python env manager (`pixi`, `uv`, `poetry`, `hatch`, `conda`, `pip+venv`). The 3-feature layout (`default` / `dev` / `agent`) is enforced automatically — no scope sub-pick. | `python-env-manager` | **Before** any `pixi init` / `pixi add` / equivalent |
 | `G-TABULAR` | Tabular library (`pandas` / `polars`) + other Tier 2 contested-library picks | `data-science-python-stack` | **Before** any `Write` of `data.py` / experiment script importing the contested library |
+| `G-EDA` | Explore the data (run / skip) | `explore-ml-data` | **Before** the `journal/01_baseline.md` draft — so EDA findings can inform the learner / splitter / metric defaults |
+| `G-AGENT-FEATURE` | Install `ipython` + `pyright` (install / skip) | `python-env-manager` | **Conditional** — fires when G-EDA = run and the agent feature isn't present (the EDA cell runner needs `ipython`). Otherwise deferred to the first audit at § 4. Decline → EDA falls back to skip |
 | `G-CV-SPLITTER` | Cross-validator family for `skore.evaluate` (`KFold`, `StratifiedKFold`, `GroupKFold`, `TimeSeriesSplit`, ...) | `evaluate-ml-pipeline` | **Before** any `Write` of `src/<pkg>/evaluate.py`; mandatory even when `split_kwargs` is empty (the empty case is itself a justified pick) |
 | `G-DESIGN` | Explicit user approval of `journal/01_baseline.md` | `iterate-ml-experiment` § 3 | **Before** any `Write` of `experiments/01_baseline.py` / `src/<pkg>/*.py` content authored from the design note |
 | `G-RUN` | "Run now" vs "leave for later" once smoke tests pass | `iterate-ml-experiment` § 3 | **Before** the shell call that executes `experiments/01_baseline.py` |

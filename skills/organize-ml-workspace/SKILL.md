@@ -56,7 +56,7 @@ declaring the turn done.
 
 ## Sibling skills — open just-in-time
 
-Don't pre-read all nine at session start (paralysis). Open each
+Don't pre-read every sibling at session start (paralysis). Open each
 sibling SKILL.md when a step calls for it (e.g. open
 `python-env-manager` before G-ENV-MGR; open `iterate-ml-experiment`
 before handing off the design-note write). Emit this tracker once
@@ -65,8 +65,9 @@ per turn:
 ```
 Sibling skills (just-in-time):
   - data-science-python-stack, python-env-manager, python-api,
-    python-code-style, iterate-ml-experiment, build-ml-pipeline,
-    evaluate-ml-pipeline, test-ml-pipeline, smoke-test-ml-pipeline
+    python-code-style, iterate-ml-experiment, explore-ml-data,
+    build-ml-pipeline, evaluate-ml-pipeline, test-ml-pipeline,
+    smoke-test-ml-pipeline
 ```
 
 ## Stop conditions — read before anything else
@@ -267,7 +268,10 @@ Wiring per-manager: `python-env-manager` § Editable workspace.
 manager's manifest**, not in `[project.dependencies]`.
 
 **Deliberately absent:** no `data/` (user-owned), no `models/`
-(out of scope). Add later only on user request — don't pre-empt.
+(out of scope). Add later only on user request — don't pre-empt. The
+sole writer into `data/` is `explore-ml-data`, and only its own EDA
+deliverables (`data/eda.py` / `data/eda.md` / `data/eda_<table>.html`);
+the user's raw data is never modified by any skill.
 
 ## File-creation rules
 
@@ -330,7 +334,7 @@ revisiting the matching smoke test
 | 7 | Create `journal/JOURNAL.md` one-line placeholder; `iterate-ml-experiment` rewrites it | this skill |
 | 8 | Create empty `scratch/` (no README — owned by `python-api`) | this skill |
 | 9 | Create empty `reports/` | this skill |
-| 10 | Touch `.gitignore` — drop template if none; else suggest patch (always ask about `reports/`) | this skill |
+| 10 | Touch `.gitignore` — drop template if none; else suggest patch (always ask about `reports/`). **Never ignore the whole `data/`** (EDA deliverables live there); to keep raw inputs out of git, ignore specific input paths only and ask | this skill |
 | 11 | **Hand off to `python-code-style`** § Initial setup for `ruff.toml` + first pass — invoking the skill teaches NumPyDoc | this skill → python-code-style |
 | 12 | Hand back to the relevant sibling (`iterate-ml-experiment` for design note, etc.) | this skill → next caller |
 
@@ -390,6 +394,7 @@ report.
 | Skill | Relationship |
 |---|---|
 | `iterate-ml-experiment` | Owns `journal/JOURNAL.md` and per-experiment design notes. This skill places empty `journal/`; that skill fills it |
+| `explore-ml-data` | Owns the EDA deliverables inside the user's `data/` (`data/eda.py`, `data/eda.md`, `data/eda_<table>.html`) — the one exception to "this skill doesn't touch `data/`". Reads raw data, never rewrites it |
 | `build-ml-pipeline` | Body of `pipeline.py`, `features.py`, `data.py` |
 | `evaluate-ml-pipeline` | Body of `evaluate.py`; CV strategy |
 | `test-ml-pipeline` | Layout of `tests/<category>/` + stem-pairing rule |

@@ -9,10 +9,11 @@ when debugging a failed install.
 
 A project-scoped install of two agent-only tools plus a config:
 
-- **`ipython`** — powers the in-process cell runner at
-  `audit-ml-pipeline/scripts/run_audit.py` via
-  `InteractiveShell.run_cell`. No kernel registration, no
-  notebook conversion.
+- **`ipython`** — powers the shared in-process cell runner at
+  `audit-ml-pipeline/scripts/run_cells.py` via
+  `InteractiveShell.run_cell`. Used by `audit-ml-pipeline` (audit
+  files) and `explore-ml-data` (`data/eda.py`). No kernel
+  registration, no notebook conversion.
 - **`pyright`** — powers the opencode LSP integration for Python
   files. Surfaces import / type / undefined-symbol diagnostics in
   the editor. Configured via the bundled `pyrightconfig.json`
@@ -80,41 +81,45 @@ silent failure mode the script catches.
 
 Per-manager footgun catalogue: `references/per_manager_footguns.md`.
 
-## Post-install: how to invoke the audit runner
+## Post-install: how to invoke the shared cell runner
+
+The same runner executes both `audit/<stem>.py` (audit-ml-pipeline)
+and `data/eda.py` (explore-ml-data) — swap the file argument. The
+examples below show an audit file; for EDA pass `data/eda.py`.
 
 ```bash
 # pixi
 pixi run -e agent python \
-  .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
   audit/<stem>.py
 
 # uv
 uv run --group agent python \
-  .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
   audit/<stem>.py
 
 # poetry
 poetry run python \
-  .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
   audit/<stem>.py
 
 # hatch
 hatch run agent:python \
-  .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
   audit/<stem>.py
 
 # conda
 conda run -n <project>-agent python \
-  .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
   audit/<stem>.py
 
 # pip + venv
 .venv-agent/bin/python \
-  .agents/skills/audit-ml-pipeline/scripts/run_audit.py \
+  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
   audit/<stem>.py
 ```
 
-The runner now streams the digest to stdout by default. Pass a
+The runner streams the digest to stdout by default. Pass a
 second arg `<dst.md>` to also write to a file.
 
 ## `pyrightconfig.json` — bundled template
