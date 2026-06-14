@@ -111,7 +111,10 @@ Sibling skills (just-in-time):
 - **Skore Project mode is asked, not assumed (G-SKORE-MODE).**
   Before any template instantiation containing
   `skore.Project(...)`, fire an `AskUserQuestion` for `local` |
-  `hub` | `mlflow`. Default proposal: `local`. Hub triggers a
+  `hub` | `mlflow`. Default proposal: `local`. All three are
+  always offered; a detected hub config in the CWD (`config.toml` /
+  `SKH__*` / cached login) only influences the default, never
+  prunes the choices. Hub triggers a
   follow-up for the workspace name (org/team on the hub — distinct
   from local-mode `workspace=`); mlflow triggers a follow-up for
   the **MLflow tracking server URI** (`tracking_uri=`) — the agent
@@ -154,6 +157,7 @@ Sibling skills (just-in-time):
 | Skip G-SKORE-MODE because templates use `mode="local"` | Templates carry the `<SKORE_PROJECT_INIT>` marker, not a literal. The gate must fire |
 | Pick `mode="hub"` without checking the workspace exists / user has access | Project init fails at first `put()` with an authorization error. Confirm during G-SKORE-MODE, not at execution time |
 | Pick `mode="mlflow"` and invent / default the `tracking_uri=` | The tracking URI is server-specific; the agent cannot infer it. Ask the user at the G-SKORE-MODE follow-up. No silent `http://localhost:5000` |
+| Folder has skore-hub config (`config.toml` / `SKH__*` / cached login) → present only `hub` (or `hub`+`local`), drop `mlflow` | Detected config is detection, not permission (cf. "Pixi on PATH"). The gate must always offer all three; config only sets the default highlight |
 | Substitute `pip install "skore[hub]"` / `"skore[mlflow]"` based on agent guess | Install variant comes from G-SKORE-MODE's recorded answer. `python-env-manager` reads that row, not agent intuition |
 | Silently change `skore mode:` mid-project to "fix" a broken init | Switching orphans existing reports. Always explicit `AskUserQuestion` first |
 | Hub / mlflow substitution but leaving `workspace=` kwarg | `workspace=` is local-only; hub and mlflow reject it (hub raises `TypeError`; mlflow uses `tracking_uri=`). Substitute the whole block, not just the mode literal |

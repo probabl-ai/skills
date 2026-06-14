@@ -80,8 +80,14 @@ Source: https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html
 ## The gate — AskUserQuestion shape
 
 Fires at workspace scaffold, alongside G-PKG-NAME / G-TABULAR /
-G-ENV-MGR (per `SKILL.md` § Decision flow step 2a). Never silent —
-even if the user has used skore in `local` mode in prior projects.
+G-ENV-MGR (per `SKILL.md` § Decision flow step 2a). Never silent,
+and **always presents all three options** (`local` / `hub` /
+`mlflow`) as selectable choices — even if the user has used skore
+in `local` mode in prior projects, **and even if the current folder
+already contains skore-hub configuration** (`config.toml`, `SKH__*`
+env vars, a cached hub login). Detected hub config is *detection,
+not a decision*: it MAY set the highlighted default, but it MUST
+NOT remove `mlflow` or `local` from the list.
 
 ### Structured pick with default and follow-up
 
