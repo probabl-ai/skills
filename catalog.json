@@ -2,7 +2,7 @@
   "name": "probabl-skills",
   "version": "0.4.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "eb1518487b30caf646ae5eee771e2362a4fe059848fc9723e2a717c3340e39f4",
+  "catalog_hash": "d18ac6621b93642fabae808400fcede9b308a0e94088930767573bc16288d4c7",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -92,7 +92,7 @@
       "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "de5c6509da7b076aae74249c2685b6be22e1a33b98965f1d8c41f2c6f07fa7c4"
+      "hash": "db7a8e361eb335871071ff9167bd41fa749df7f7d676a216a122608c686727cf"
     },
     {
       "id": "python-code-style",
