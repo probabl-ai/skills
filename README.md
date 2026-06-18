@@ -43,7 +43,7 @@ You can use `uvx` or `pixi exec` to install the `skore` CLI and directly run the
 command in an isolated environment:
 
 ```bash
-uvx --from skore-cli skills install
+uvx --from skore-cli skore skills install
 ```
 
 or
