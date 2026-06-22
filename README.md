@@ -1,17 +1,17 @@
 # Probabl Skills
 
-A set of skills to team up with you in your machine learning experimentation journey.
-It helps you at:
+A set of skills to partner with you throughout your machine learning experimentation journey.
+It helps you with:
 
 - organizing your workspace
-- building your machine learning pipeline with the right libraries ensuring good methodologies
-- evaluating and storing your results such that you can easily audit and get insights from them
-- couple it with [Skore Hub](https://skore.probabl.ai/) to get a comprehensive view of your experiments and their results
-- iterate on your next experiments taking insights thanks to Skore diagnostics and your own feedback
+- building your machine learning pipeline with the right libraries while ensuring good methodologies
+- evaluating and storing your results so you can easily audit and get insights from them
+- coupling it with [Skore Hub](https://skore.probabl.ai/) to get a comprehensive view of your experiments and their results
+- iterating on your next experiments using insights from Skore diagnostics and your own feedback
 
-So we aim at allowing you to focus on the science, letting AI agents to take care about
-the implementation but guided by two important ingredients: great libraries for the
-maintainability and good methodologies to make experiments right.
+So we aim to let you focus on the science, with AI agents handling the implementation,
+guided by two important ingredients: great libraries for maintainability and good
+methodologies to run experiments correctly.
 
 In practice, from a prompt such as:
 
@@ -24,11 +24,11 @@ In practice, from a prompt such as:
 ╰────────────────────────────────────────────────────────────────────────╯
 ```
 
-you can expect your agent to start experimenting with you. The skills are working pretty
-well with models such as Claude Opus and Sonnet and gives really good results with
-smaller models such as Qwen 3.6 30B or DeepSeek v4 Flash. In terms of agent's
-harnessing, we tested them with Claude Code, OpenCode, Cursor, GitHub Copilot and
-do not witness any significant difference in terms of skills invocation.
+you can expect your agent to start experimenting with you. The skills work well with
+models such as Claude Opus and Sonnet and give great results with smaller models such
+as Qwen 3.6 30B or DeepSeek v4 Flash. As for agent harnesses, we tested them with
+Claude Code, OpenCode, Cursor, and GitHub Copilot and found no significant difference
+in terms of skill invocation.
 
 ## Install
 
@@ -73,7 +73,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 `/plugin update` pulls new releases.
 
-## Skills in details
+## Skills in Detail
 
 ### ML pipeline lifecycle
 
@@ -107,4 +107,4 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 | Skill | Description |
 | --- | --- |
-| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package to make agent find their way without bothering your workspace. |
+| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package to help agents navigate without polluting your workspace. |
