@@ -73,7 +73,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 `/plugin update` pulls new releases.
 
-## Skills in Detail
+## Skills in detail
 
 ### ML pipeline lifecycle
 
