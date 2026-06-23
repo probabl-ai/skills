@@ -7,7 +7,7 @@ something the dispatcher doesn't expose.
 
 | Need                                          | Use                       | Why                                   |
 |-----------------------------------------------|---------------------------|---------------------------------------|
-| One score / one report, default metrics       | `evaluate(learner, X, y, cv=...)` | One call, no boilerplate              |
+| One score / one report, default metrics       | `evaluate(learner, X, y, splitter=...)` | One call, no boilerplate              |
 | Per-fold predictions / per-fold artifacts     | `CrossValidationReport(...)` | Holds fold-level objects              |
 | Single fit on a held-out set (no CV)          | `EstimatorReport(...)`    | Skips the fold loop                   |
 | Side-by-side of ≥ 2 learners                  | `ComparisonReport([...])` | Aligned metric tables and plots       |

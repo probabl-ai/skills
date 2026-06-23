@@ -5,6 +5,19 @@ attaches per-row metadata that travels with X through fold splits.
 The keys in `split_kwargs` map directly to the keyword arguments of
 the splitter's `split(X, y, **split_kwargs)` call.
 
+`mark_as_X` **also** accepts a `cv=` argument (a scikit-learn
+cross-validator). When set, `skore.evaluate(...)` called **without**
+an explicit `splitter=` reuses that DataOp `cv` — including its
+`split_kwargs` such as `groups` — and returns a
+`CrossValidationReport` instead of the default 80/20 holdout. **This
+stack does not use that path**: per `build-ml-pipeline` § S3, no
+splitter is imported into pipeline code; the splitter is chosen at
+evaluate time (the `G-CV-SPLITTER` gate) and passed via `splitter=`,
+which **overrides** any DataOp `cv`. The `cv=` capability is
+documented here only so the override semantics are explicit. The X
+marker in this stack carries `split_kwargs` (metadata) but not `cv=`
+(the splitter object).
+
 skrub reference for the build-time API:
 https://skrub-data.org/stable/reference/generated/skrub.DataOp.skb.mark_as_X.html
 
@@ -48,9 +61,11 @@ picking (stratified variants and `LeaveOne*Out` family).
 | `LeavePGroupsOut` *(avoid)*           | `groups`                     |
 | Custom splitter                       | whatever you declared        |
 
-Pass the splitter via `cv=...` to `skore.evaluate` /
-`CrossValidationReport`. The framework forwards the metadata
-automatically — you don't pass `groups=` yourself at evaluation time.
+Pass the splitter via `splitter=...` to `skore.evaluate` (or as the
+`splitter=` argument of `CrossValidationReport`). The framework
+forwards the `split_kwargs` metadata automatically — you don't pass
+`groups=` yourself at evaluation time. Passing `splitter=` explicitly
+also overrides any `cv=` declared on the DataOp at the X marker.
 
 ## Mismatch errors
 

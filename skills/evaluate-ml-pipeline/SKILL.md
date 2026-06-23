@@ -205,6 +205,17 @@ Pre-flight (evaluate-ml-pipeline):
    redirect them through `skore.evaluate`. Consult `python-api` for
    the exact signature.
 
+   **Always pass `splitter=` explicitly.** When `splitter=` is
+   omitted, `evaluate` auto-selects: if the learner's DataOp was
+   declared with `mark_as_X(cv=...)` it reuses that cross-validator
+   (→ `CrossValidationReport`), otherwise it falls back to a single
+   80/20 holdout (→ `EstimatorReport`). This stack does not declare
+   `cv` at the X marker (`build-ml-pipeline` § S3), so an omitted
+   `splitter=` would silently produce a holdout instead of the
+   gated CV choice. Passing `splitter=` explicitly is what makes the
+   `G-CV-SPLITTER` decision visible, and it **overrides** any DataOp
+   `cv`.
+
    **Two data-passing forms — pick the one that matches the
    estimator:**
 
@@ -338,7 +349,10 @@ Pre-flight (evaluate-ml-pipeline):
 3. Map to a splitter using the table in rule 3.
 4. Pick the data-passing form (rule 1): `data={"X": X, "y": y, ...}`
    for a `SkrubLearner`, positional `X, y` otherwise.
-5. Pass the splitter via `splitter=...` to the chosen entry point.
+5. Pass the splitter via `splitter=...` to the chosen entry point
+   (always explicit — never rely on the omitted-`splitter` default,
+   which would holdout-or-DataOp-cv; an explicit `splitter=`
+   overrides any DataOp `cv`).
 6. Inspect the report; override metrics only on explicit user
    request.
 

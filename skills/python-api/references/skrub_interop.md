@@ -33,7 +33,11 @@ report = skore.evaluate(LogisticRegression(), X, y, splitter=0.2)
 
 `X` and `y` are passed positionally (or by keyword). `splitter` is
 either a numeric `test_size`, a scikit-learn cross-validator, or
-left at the default.
+omitted. When omitted, `evaluate` reuses the splitter declared on the
+learner's DataOp via `mark_as_X(cv=...)` if present (→
+`CrossValidationReport`), else falls back to a single 80/20 holdout
+(→ `EstimatorReport`). An explicit `splitter=` overrides any DataOp
+`cv`.
 
 ### Env-dict-style — `data={"<var>": ...}`
 
@@ -89,7 +93,11 @@ The return type depends on `splitter`:
 |---|---|
 | `float` (e.g. `0.2`) or `None` | `EstimatorReport` — single train/test split |
 | A scikit-learn cross-validator (`KFold`, `TimeSeriesSplit`, custom) | `CrossValidationReport` — multi-fold |
+| omitted, DataOp has `mark_as_X(cv=...)` | `CrossValidationReport` — reuses the DataOp `cv` + `split_kwargs` |
+| omitted, no DataOp `cv` | `EstimatorReport` — single 80/20 holdout |
 | Multi-key comparison | `ComparisonReport` |
+
+An explicit `splitter=` always overrides a DataOp `cv`.
 
 Confirm the exact dispatch rules via `python-api`
 (`inspect.signature(skore.evaluate)` + the docstring) against the
