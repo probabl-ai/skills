@@ -2,7 +2,7 @@
   "name": "probabl-skills",
   "version": "0.5.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "d18ac6621b93642fabae808400fcede9b308a0e94088930767573bc16288d4c7",
+  "catalog_hash": "6ab4a031471dffde5fa6fd154f0ef89c03ace85b8875bf1d5bd59c5940412b75",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -92,7 +92,7 @@
       "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "db7a8e361eb335871071ff9167bd41fa749df7f7d676a216a122608c686727cf"
+      "hash": "287691a83056e7c1c3e2b2da13b01d865728130307afd4b76b39359243ae4b61"
     },
     {
       "id": "python-code-style",
@@ -119,7 +119,7 @@
       "summary": "Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers.",
       "category": "reference",
       "subcategory": null,
-      "hash": "c98079d37ccec0a69bba4105673d2da6017c48e460b843fa8faca31928ccec24"
+      "hash": "021f3e2313f895ae9f533ca14e87f2e96ffe0d1a303f2adad2faf87aaf54ca23"
     },
     {
       "id": "python-api",
@@ -128,7 +128,7 @@
       "summary": "Discover the public API of any installed Python package to make agent find their way without bothering your workspace.",
       "category": "reference",
       "subcategory": null,
-      "hash": "811ffe54214f2e524efa5cb71f01adefaef01d95be916762969c0d62a2a80ea4"
+      "hash": "9cffba82c6182caefb600d5671b5cf4941f961b2e2f8271e166159e92484569c"
     }
   ],
   "workflows": [

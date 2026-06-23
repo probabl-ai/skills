@@ -467,9 +467,12 @@ answer.
   data=None, *, splitter=None, ...)` — dispatches by `splitter` to
   `EstimatorReport` (no splitter) / `CrossValidationReport` (CV
   splitter) / `ComparisonReport` (multi-key).
-- **Project**: `skore.Project(workspace=..., name=..., mode=...)`
-  with `put(key, report)` / `summarize()` (DataFrame indexed by id
-  with `key` column) / `get(id)` — **`get` is by id, not by `key`**.
+- **Project**: `skore.Project(name, *, mode="local", **kwargs)`
+  (per-mode kwargs: `workspace=` for local dir / hub workspace name,
+  `tracking_uri=` for mlflow) with `put(key, report)` /
+  `summarize()` (DataFrame indexed by id with `key` column, rows
+  ascending by `date`) / `get(id)` — **`get` is by id, not by
+  `key`** — and static `Project.delete(name, *, mode, **kwargs)`.
 
 Full per-library surface map (rare submodules, accessor cheat sheet):
 → `references/stack_orientation.md`.

@@ -122,7 +122,11 @@ project.put("01_baseline", report)
 # hub mode
 from skore import login
 login(mode="hub")  # interactive on first run; cached after
-project = skore.Project("<hub-workspace>/load-forecast", mode="hub")
+project = skore.Project(
+    name="load-forecast",
+    mode="hub",
+    workspace="<hub-workspace>",  # the Skore Hub org/team identifier
+)
 project.put("01_baseline", report)
 ```
 
@@ -140,18 +144,20 @@ project.put("01_baseline", report)   # key = MLflow run name
   the key in a later run overwrites the previous report — fork into
   a new experiment file if you want both. (In mlflow mode the key
   is the run name under the experiment.)
-- **Local-mode `workspace=str(PROJECT_ROOT / "reports")`** — the
-  on-disk directory where the Project store lives. Created on
-  first `put`. **Not** a valid kwarg in hub or mlflow mode.
+- **`workspace=`** — required by local and hub modes, with a
+  different meaning each: local takes an **on-disk directory**
+  (`str(PROJECT_ROOT / "reports")`, created on first `put`), hub
+  takes the **Skore Hub org/team identifier** (`workspace="<hub-workspace>"`).
+  **Not** a valid kwarg in mlflow mode.
 - **mlflow-mode `tracking_uri=`** — the MLflow tracking server URI
   (HTTP(S) server, `sqlite:///…`, or `file:./mlruns` backend).
   mlflow-only kwarg; no `login()`. `skore[mlflow]` extra required.
-  Note: `project.delete(...)` is not implemented for mlflow-mode
-  projects.
-- **`name=`** — short, stable, per-workspace name. Local mode uses
-  it directly; hub mode uses it after `<hub-workspace>/` as in
-  `"<hub-workspace>/load-forecast"`; mlflow mode uses it as the
-  experiment name. Set once at project bootstrap inside each
+  `project.delete(...)` is supported for mlflow-mode projects (it
+  removes the matching experiment; raises `LookupError` if none
+  exists at the `tracking_uri`).
+- **`name=`** — short, stable, per-workspace name, used directly as
+  the bare project name in **all** modes (mlflow uses it as the
+  experiment name). Set once at project bootstrap inside each
   experiment script's `skore.Project(...)` call (the agent reads
   the value from `experiments/01_baseline.py` when needed; there is
   no auto-discovery script).

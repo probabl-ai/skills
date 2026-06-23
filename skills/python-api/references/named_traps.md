@@ -25,11 +25,13 @@ installed version via a Shape 1 probe before writing the call.
 
 ## skore
 
-- **`skore.Project(workspace="reports", name="...")`** — the
-  `workspace` keyword is **mode-specific** (`local` mode only).
-  Skipping the docs on `mode=` makes the agent assume `workspace=`
-  is universal. Always look up the `Project` signature against the
-  installed skore.
+- **`skore.Project(workspace=..., name="...")`** — the
+  `workspace` keyword is **mode-specific in meaning**: a directory
+  path in `local` mode, the Hub org/team identifier in `hub` mode,
+  and rejected in `mlflow` mode (which takes `tracking_uri=`
+  instead). Assuming a single universal meaning for `workspace=`
+  silently writes to the wrong store. Always look up the `Project`
+  signature against the installed skore and key off `mode=`.
 - **`skore.evaluate(...)` recursion bug with Rich rendering** —
   when stdout is redirected (CLI contexts), the Rich-rendered
   report can hit a recursion in some versions. Workaround:
