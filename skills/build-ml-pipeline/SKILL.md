@@ -388,6 +388,13 @@ empty when group structure is plausible — that produces optimistic
 CV downstream. Choosing the splitter itself is
 `evaluate-ml-pipeline`'s job; this skill only wires the metadata.
 
+`mark_as_X` also accepts a `cv=<splitter>` argument, and
+`skore.evaluate(...)` without an explicit `splitter=` will reuse it
+(with these `split_kwargs`). **Do not use `cv=` here** — it would
+pull a splitter import into pipeline code (forbidden by S3). Wire
+only `split_kwargs`; `evaluate-ml-pipeline` selects the splitter and
+passes `splitter=`, which overrides any DataOp `cv` anyway.
+
 **When editing an existing pipeline that uses `skrub.X` /
 `skrub.y` or binds materialized data:** do not auto-rewrite.
 Surface the source-bound alternative and ask whether to refactor.

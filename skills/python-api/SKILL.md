@@ -464,9 +464,11 @@ answer.
 ### skore
 
 - **Evaluation**: `skore.evaluate(estimator, X=None, y=None,
-  data=None, *, splitter=None, ...)` — dispatches by `splitter` to
-  `EstimatorReport` (no splitter) / `CrossValidationReport` (CV
-  splitter) / `ComparisonReport` (multi-key).
+  data=None, *, splitter=..., ...)` — dispatches by `splitter` to
+  `EstimatorReport` (holdout) / `CrossValidationReport` (CV
+  splitter) / `ComparisonReport` (multi-key). When `splitter` is
+  omitted it reuses a DataOp `mark_as_X(cv=...)` if present, else an
+  80/20 holdout; an explicit `splitter=` overrides the DataOp `cv`.
 - **Project**: `skore.Project(name, *, mode="local", **kwargs)`
   (per-mode kwargs: `workspace=` for local dir / hub workspace name,
   `tracking_uri=` for mlflow) with `put(key, report)` /
