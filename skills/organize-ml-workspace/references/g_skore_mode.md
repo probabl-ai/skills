@@ -38,8 +38,9 @@ from skore import login
 login(mode="hub")
 
 project = skore.Project(
-    "<hub-workspace>/<project-name>",
+    name="<project-name>",
     mode="hub",
+    workspace="<hub-workspace>",
 )
 ```
 
@@ -70,9 +71,9 @@ Source: https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html
 |---|---|---|---|
 | `import` line for `login` | not needed | `from skore import login` | not needed |
 | `login(mode="hub")` call | not needed | **required, before `Project(...)`** | not needed |
-| `name=` argument | `name="<project-name>"` (bare) | `"<hub-workspace>/<project-name>"` (positional, slash-joined) | `name="<experiment-name>"` (MLflow experiment name) |
+| `name=` argument | `name="<project-name>"` (bare) | `name="<project-name>"` (bare — the Hub project name) | `name="<experiment-name>"` (MLflow experiment name) |
 | `mode=` argument | `mode="local"` | `mode="hub"` | `mode="mlflow"` |
-| `workspace=` argument | **required**: `workspace=str(PROJECT_ROOT / "reports")` | **MUST be absent** — passing it raises `TypeError` | **MUST be absent** — `tracking_uri=` is used instead |
+| `workspace=` argument | **required**: `workspace=str(PROJECT_ROOT / "reports")` (on-disk dir) | **required**: `workspace="<hub-workspace>"` (the Hub workspace name) | **MUST be absent** — `tracking_uri=` is used instead |
 | `tracking_uri=` argument | not used | not used | **required**: the MLflow tracking server URI |
 | Install variant | `pixi add skore` | `pixi add "skore[hub]"` | `pixi add "skore[mlflow]" "mlflow>=3"` (pin required) |
 | Pre-condition | none | Skore Hub account + access to `<hub-workspace>` | reachable MLflow tracking server at `<uri>` |
@@ -112,13 +113,14 @@ NOT remove `mlflow` or `local` from the list.
    that they need to create or join one at
    https://skore.probabl.ai first.
 
-   **Validation**: the workspace name MUST NOT contain `/` — the
-   slash is reserved as the separator between `<hub-workspace>`
-   and `<project-name>` in the hub-mode `name=` argument (e.g.
-   `"acme-corp/load-forecast"`). If the user types `acme/datasci`,
-   ask whether `acme` was the intended workspace and `datasci` is
-   part of the project name. Do not silently accept slashes — that
-   produces an unparseable Project name at runtime.
+   **Validation**: the workspace name MUST NOT contain `/`. The
+   `workspace=` value is a single Hub workspace identifier passed as
+   its own kwarg (e.g. `workspace="acme-corp"`), not a path and not a
+   `<workspace>/<project>` join — a `/` is not a valid Hub workspace
+   name. If the user types `acme/datasci`, ask whether `acme` was the
+   intended workspace and `datasci` is part of the project name. Do
+   not silently accept slashes — that produces an invalid workspace
+   identifier at runtime.
 
 3. **MLflow tracking URI** (only when mode is `mlflow`). Free-form
    string — the `tracking_uri=` passed to `skore.Project(...)`.
@@ -156,16 +158,18 @@ artifacts:
 
 | Downstream artifact | local-mode shape | hub-mode shape | mlflow-mode shape |
 |---|---|---|---|
-| `<SKORE_PROJECT_INIT>` in `experiments/NN_*.py` and `audit/NN_*.py` | `skore.Project(name="<project-name>", mode="local", workspace=str(PROJECT_ROOT / "reports"))` | `from skore import login; login(mode="hub"); skore.Project("<hub-workspace>/<project-name>", mode="hub")` | `skore.Project(name="<experiment-name>", mode="mlflow", tracking_uri="<mlflow-tracking-uri>")` |
+| `<SKORE_PROJECT_INIT>` in `experiments/NN_*.py` and `audit/NN_*.py` | `skore.Project(name="<project-name>", mode="local", workspace=str(PROJECT_ROOT / "reports"))` | `from skore import login; login(mode="hub"); skore.Project(name="<project-name>", mode="hub", workspace="<hub-workspace>")` | `skore.Project(name="<experiment-name>", mode="mlflow", tracking_uri="<mlflow-tracking-uri>")` |
 | Tier 1 skore install variant (per `python-env-manager` § Tier 1 install) | `pixi add skore` (or equivalent) | `pixi add "skore[hub]"` (or equivalent) | `pixi add "skore[mlflow]" "mlflow>=3"` (or equivalent — the `mlflow>=3` pin is required) |
 | `Workspace decisions` rows in `JOURNAL.md` | `skore mode: local` | `skore mode: hub` + `skore hub workspace: <name>` | `skore mode: mlflow` + `skore mlflow tracking uri: <uri>` |
 
-The `name=` argument shape **changes between modes** — local uses a
-bare name; hub uses `<hub-workspace>/<project>`; mlflow uses the
-MLflow experiment name. The local-mode `workspace=` kwarg points to a
-directory and is rejected by both hub and mlflow modes; mlflow takes
-`tracking_uri=` instead. These are not "swap one word" differences;
-the substitution marker exists precisely because the shape changes.
+`name=` is a bare project name in **all three** modes — local uses it
+directly, hub uses it as the Hub project name, mlflow uses it as the
+MLflow experiment name. What changes is the **companion kwarg**:
+`workspace=` is required by local (an on-disk directory `Path`) and by
+hub (the Hub workspace identifier `str`), while mlflow takes
+`tracking_uri=` instead and rejects `workspace=`. These are not "swap
+one word" differences; the substitution marker exists precisely
+because the companion kwarg changes.
 
 ## Persistence in `Workspace decisions`
 
@@ -252,16 +256,17 @@ from skore import login
 
 login(mode="hub")
 project = skore.Project(
-    "acme-corp/load-forecast",
+    name="load-forecast",
     mode="hub",
+    workspace="acme-corp",
 )
 ```
 
 Note that in the hub form:
 
-- `workspace=` is **gone** (would raise `TypeError`).
-- `name=` becomes positional and uses the slash-joined
-  `<hub-workspace>/<project-name>` shape.
+- `workspace=` is **kept**, but carries the **Hub workspace name**
+  (`"acme-corp"`), not an on-disk directory.
+- `name=` stays the bare project name (no slash join).
 - `login(...)` precedes `Project(...)` in the same cell so a
   single execution does both.
 
@@ -312,10 +317,12 @@ the `audit-ml-pipeline` Forbidden shortcuts row "Substituting
   responsibility — surface that pre-condition rather than spinning
   one up.
 
-- **MLflow `delete`.** `skore.Project.delete(...)` is not
-  implemented for mlflow-mode projects. The read-back contract
-  (`summarize()` → `get(id)`) still holds; deletions must be done
-  through MLflow's own tooling.
+- **Provisioning the MLflow backing store for `delete`.**
+  `skore.Project.delete(name=..., mode="mlflow", tracking_uri=...)`
+  is supported (it removes the matching MLflow experiment), but it
+  raises `LookupError` if no experiment exists at the given
+  `tracking_uri`. This skill does not stand up or seed that server;
+  a reachable tracking store is the user's responsibility.
 
 - **Skore Hub account creation.** The gate assumes the user has an
   account when they pick `hub`. Sign-up is a probabl.ai concern

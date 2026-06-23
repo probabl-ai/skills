@@ -77,9 +77,9 @@ when you need control beyond what `evaluate`'s arguments expose:
 ## Project API (experiment tracking)
 
 ```python
-project = skore.Project("my_project")
+project = skore.Project(name="my_project", mode="local")
 project.put("baseline", report_or_estimator_or_metric)
-project.get("baseline")
+project.get(report_id)  # by id from project.summarize(), not by key
 ```
 
 Use the Project API as the durable home for everything you produce:

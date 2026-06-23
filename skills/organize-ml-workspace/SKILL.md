@@ -160,12 +160,12 @@ Sibling skills (just-in-time):
 | Folder has skore-hub config (`config.toml` / `SKH__*` / cached login) → present only `hub` (or `hub`+`local`), drop `mlflow` | Detected config is detection, not permission (cf. "Pixi on PATH"). The gate must always offer all three; config only sets the default highlight |
 | Substitute `pip install "skore[hub]"` / `"skore[mlflow]"` based on agent guess | Install variant comes from G-SKORE-MODE's recorded answer. `python-env-manager` reads that row, not agent intuition |
 | Silently change `skore mode:` mid-project to "fix" a broken init | Switching orphans existing reports. Always explicit `AskUserQuestion` first |
-| Hub / mlflow substitution but leaving `workspace=` kwarg | `workspace=` is local-only; hub and mlflow reject it (hub raises `TypeError`; mlflow uses `tracking_uri=`). Substitute the whole block, not just the mode literal |
+| Hub substitution but leaving a directory-style `workspace=str(PROJECT_ROOT / "reports")` | In hub mode `workspace=` carries the **Hub workspace name** (e.g. `workspace="acme-corp"`), not an on-disk dir. mlflow rejects `workspace=` and uses `tracking_uri=`. Substitute the whole block, not just the mode literal |
 | mlflow substitution that keeps a `login(mode=...)` call | mlflow mode needs no skore login — auth is the MLflow server's concern. `login` belongs only to hub mode |
 | Local `workspace="reports"` (relative) instead of `str(PROJECT_ROOT / "reports")` (absolute) | Relative resolves against CWD; runs from other dirs write the store somewhere unexpected. Always absolute via `PROJECT_ROOT` |
 | Putting `skore.login(mode="hub")` after `skore.Project(...)` | `Project(...)` requires authenticated session in hub mode. `login` first |
 | Substituting `<SKORE_PROJECT_INIT>` in `audit/<stem>.py` independently of `experiments/<stem>.py` | Audit must open the same Project. Byte-identical copy from the experiment file is the rule |
-| Hub workspace name contains `/` (e.g. `acme/datasci`) | The `/` is reserved as separator. Reject at G-SKORE-MODE follow-up |
+| Hub workspace name contains `/` (e.g. `acme/datasci`) | `workspace=` is a single Hub workspace identifier, not a path or a `<workspace>/<project>` join; a `/` is invalid. Reject at G-SKORE-MODE follow-up |
 | `project.get(key)` raised `KeyError` → re-run `evaluate` + `put` to "recover" | Lookup shape wrong (`get` is by id). Use `summarize()` → `get(id)` |
 
 ## Pre-flight — emit before any code

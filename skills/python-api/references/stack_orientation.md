@@ -55,32 +55,41 @@ finds the right submodule.
   (for feature importance / coefficients where the estimator
   supports it).
 - **Project**: `skore.Project(name, *, mode='local', **kwargs)`.
-  Three mutually exclusive modes — the constructor args **change
-  shape per mode**:
+  `name=` is the bare project name in **all** modes; what changes is
+  the companion kwarg:
   - **local** (default): `skore.Project(name="<project>",
     mode="local", workspace=str(PROJECT_ROOT / "reports"))`.
-    `workspace=` is a **local-only** kwarg pointing to the on-disk
-    directory; defaults to OS cache dir if omitted. Reports persist
-    locally; no account / login.
+    `workspace=` points to the on-disk directory (`Path`/`str`);
+    defaults to the OS **data** dir if omitted (e.g. macOS
+    `~/Library/Application Support/skore`, Linux
+    `~/.local/share/skore`). Reports persist locally; no account /
+    login.
   - **hub**: `skore.login(mode="hub")` (interactive, first run only)
-    then `skore.Project("<hub-workspace>/<project>", mode="hub")`.
-    `name=` carries the **`<hub-workspace>/<project>`** form where
-    `<hub-workspace>` is a Skore Hub org/team identifier (NOT the
-    local-mode `workspace=` kwarg — skore overloads the term).
-    `workspace=` is rejected (`TypeError`). Requires
+    then `skore.Project(name="<project>", mode="hub",
+    workspace="<hub-workspace>")`. Here `workspace=` carries the
+    **Skore Hub org/team identifier** (a `str`, not a directory —
+    skore overloads the term across modes). Requires
     `pip install "skore[hub]"` and an account on
     https://skore.probabl.ai with access to the workspace.
   - **mlflow**: `skore.Project(name="<experiment>", mode="mlflow",
-    tracking_uri="<uri>")`. `name=` is the MLflow experiment name.
-    Requires `pip install "skore[mlflow]" "mlflow>=3"` (the explicit
+    tracking_uri="<uri>")`. `name=` is the MLflow experiment name;
+    `workspace=` is not accepted. Requires
+    `pip install "skore[mlflow]" "mlflow>=3"` (the explicit
     `mlflow>=3` pin is required — `skore[mlflow]` alone can resolve an
     unsupported mlflow 2.x).
+
+  Read-only attributes: `name`, `mode`, `workspace` (`Path` for
+  local, `str` for hub, `None` for mlflow), `tracking_uri` (`str`
+  for mlflow, `None` otherwise).
 
   Methods (same surface across modes): `put(key, report)`,
   `get(id)` (**by id, not by `key`** — get the id from
   `summarize()`), `summarize()` (returns a pandas DataFrame indexed
   by id with columns including `key`, `learner`, `ml_task`,
-  `report_type`, mean metrics, …), `delete(id)`.
+  `report_type`, mean metrics, … — rows ordered ascending by
+  `date`), and the static `Project.delete(name, *, mode, **kwargs)`
+  (same per-mode kwargs as the constructor; implemented for all
+  three modes incl. mlflow).
 
   Source: https://docs.skore.probabl.ai/stable/reference/api/skore.Project.html
   (skore 0.18.0). The mode choice for this stack's workspaces is
