@@ -1,6 +1,6 @@
 [workspace]
 name = "probabl-skills"
-version = "0.5.0"
+version = "0.6.0"
 description = "Skills for ML experimentation in Python, organized around skrub, scikit-learn, and skore."
 authors = ["Probabl <contact@probabl.ai>"]
 channels = ["conda-forge"]
