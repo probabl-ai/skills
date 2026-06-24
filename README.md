@@ -33,7 +33,19 @@ in terms of skill invocation.
 ## Install
 
 You can install the skills using the `skore` CLI that you can install from PyPI or from
-conda-forge and run the following command:
+conda-forge and run the following command.
+
+First install [skore-cli](https://github.com/probabl-ai/skore-cli):
+```
+# with pip
+pip install skore-cli
+# with uv
+uv tool install skore-cli
+# with pixi
+pixi global install skore-cli
+```
+
+Then run the following command:
 
 ```bash
 skore skills install
