@@ -1,17 +1,16 @@
 # Probabl Skills
 
 A set of skills to partner with you throughout your machine learning experimentation journey.
-It helps you with:
+The skills help you:
 
-- organizing your workspace
-- building your machine learning pipeline with the right libraries while ensuring good methodologies
-- evaluating and storing your results so you can easily audit and get insights from them
-- coupling it with [Skore Hub](https://skore.probabl.ai/) to get a comprehensive view of your experiments and their results
-- iterating on your next experiments using insights from Skore diagnostics and your own feedback
+- organize your workspace
+- build your machine learning pipeline with the right libraries while ensuring correct methodologies are followed by your agent
+- evaluate and store your results so you can easily audit and get insights from them
+- connect it with [Skore Hub](https://skore.probabl.ai/) to get a comprehensive view of your experiments and results
+- iterate on your next experiments using insights from Skore diagnostics and your own feedback
 
-So we aim to let you focus on the science, with AI agents handling the implementation,
-guided by two important ingredients: great libraries for maintainability and good
-methodologies to run experiments correctly.
+Probabl skills let you focus on the science while AI agents handle the implementation,
+guided by two important ingredients: use great libraries for maintainability and correct methodologies to run experiments properly.
 
 In practice, from a prompt such as:
 
@@ -24,16 +23,11 @@ In practice, from a prompt such as:
 ╰────────────────────────────────────────────────────────────────────────╯
 ```
 
-you can expect your agent to start experimenting with you. The skills work well with
-models such as Claude Opus and Sonnet and give great results with smaller models such
-as Qwen 3.6 30B or DeepSeek v4 Flash. As for agent harnesses, we tested them with
-Claude Code, OpenCode, Cursor, and GitHub Copilot and found no significant difference
-in terms of skill invocation.
+you can expect your agent to start experimenting with you. The skills work well with models such as Claude Opus and Sonnet and produce great results with smaller models such as Qwen 3.6 30B or DeepSeek v4 Flash. As for agent harnesses, we tested them with Claude Code, OpenCode, Cursor, and GitHub Copilot and found no significant difference in terms of skill invocation.
 
 ## Install
 
-You can install the skills using the `skore` CLI that you can install from PyPI or from
-conda-forge and run the following command.
+You can install the skills using the `skore` CLI that you can install from PyPI or from conda-forge and run the following command.
 
 First install [skore-cli](https://github.com/probabl-ai/skore-cli):
 ```
@@ -96,22 +90,22 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 | [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics. |
 | [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Make sure that your machine learning pipeline is production-ready statistically and functionally. |
 | [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Stress test your machine learning pipeline on future data to make sure it works. |
-| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Once testing and the experiment is done, audit by loading a skore report and investigate. |
+| [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Once testing and the experiment are done, audit the model by loading a skore report and investigate. |
 
 ### Iteration loop
 
 | Skill | Description |
 | --- | --- |
-| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Design, keep track of experiments and iterate on them. |
+| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Design, keep track of experiments, and iterate on them. |
 | [iterate-from-skore](skills/iterate-from-skore/SKILL.md) | Use skore to run diagnostics and checks that can be reported and addressed in the next experiment. |
-| [iterate-from-user](skills/iterate-from-user/SKILL.md) | As a user be in the loop and propose new experiments — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo). |
+| [iterate-from-user](skills/iterate-from-user/SKILL.md) | As a user, be in the loop and propose new experiments — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo). |
 
 ### Workspace and tooling
 
 | Skill | Description |
 | --- | --- |
 | [organize-ml-workspace](skills/organize-ml-workspace/SKILL.md) | An organized workspace to keep track of your experiments. |
-| [python-code-style](skills/python-code-style/SKILL.md) | Enforce good practices out-of-the-box for the Python ecosystem for your code. |
+| [python-code-style](skills/python-code-style/SKILL.md) | Enforce best practices out-of-the-box from the Python ecosystem in your code. |
 | [python-env-manager](skills/python-env-manager/SKILL.md) | Bootstrapping the experiment setup based on your favorite Python environment manager. |
 | [data-science-python-stack](skills/data-science-python-stack/SKILL.md) | Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers. |
 
