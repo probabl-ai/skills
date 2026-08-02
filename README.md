@@ -23,7 +23,9 @@ In practice, from a prompt such as:
 ╰────────────────────────────────────────────────────────────────────────╯
 ```
 
-you can expect your agent to start experimenting with you. The skills work well with models such as Claude Opus and Sonnet and produce great results with smaller models such as Qwen 3.6 30B or DeepSeek v4 Flash. As for agent harnesses, we tested them with Claude Code, OpenCode, Cursor, and GitHub Copilot and found no significant difference in terms of skill invocation.
+you can expect your agent to start experimenting with you. The skills work well with models such as Claude Opus and Sonnet and produce great results with smaller models such as Qwen 3.6 30B or DeepSeek v4 Flash. 
+
+As for agent harnesses, we tested them with Claude Code, OpenCode, Cursor, and GitHub Copilot and found no significant difference in terms of skill invocation.
 
 ## Install
 
