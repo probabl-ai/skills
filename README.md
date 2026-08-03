@@ -13,7 +13,8 @@ The skills help you:
   feedback
 
 Probabl skills let you focus on the science while AI agents handle the implementation,
-guided by two important ingredients: use great libraries for maintainability and correct methodologies to run experiments properly.
+guided by two important ingredients: use great libraries for maintainability and correct
+methodologies to run experiments properly.
 
 In practice, from a prompt such as:
 
