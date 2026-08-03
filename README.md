@@ -1,20 +1,18 @@
 # Probabl Skills
 
-A set of skills to partner with you throughout your AI-assisted machine learning experimentation journey.
-The skills help you:
+A set of skills to steer your AI-assisted machine learning experiments. Probabl skills help you:
 
-- organize your workspace
-- build your machine learning pipeline with the right libraries while ensuring
-  correct methodologies are followed by your agent
-- evaluate and store your results so you can easily audit and get insights from them
-- connect your agent with [Skore Hub](https://skore.probabl.ai/) to get a comprehensive view of
+- build your machine learning pipeline with the core data science libraries (e.g. scikit-learn, skrub, skore, pandas, polar) while ensuring your agent follows methodological best practices 
+- evaluate and store your results so that you can easily audit and get insights from them
+- connect your agent to [Skore Hub](https://skore.probabl.ai/) to get a comprehensive view of
   your experiments and results
 - iterate on your next experiments using insights from Skore diagnostics and your own
   feedback
+- organize your workspace according to best practices for data science projects (e.g. cookiecutter template)
 
-Probabl skills let you focus on the science while AI agents handle the implementation,
-guided by two important ingredients: use great libraries for maintainability and correct
-methodologies to run experiments properly.
+In summary, Probabl skills let you focus on the science while AI agents handle the implementation,
+guided by two important ingredients: core data science libraries for maintainability and
+methodological best practices for running experiments correctly.
 
 In practice, from a prompt such as:
 
