@@ -3,14 +3,16 @@
 A set of skills to steer your AI-assisted machine learning experiments.
 The skills help you:
 
-- build your machine learning pipeline with core data science libraries (e.g. scikit-learn, skrub, skore, pandas, polar) while ensuring
+- build your machine learning pipeline with core data science libraries
+  (e.g. scikit-learn, skrub, skore, pandas, polar) while ensuring
   your agent follows correct methodologies
 - evaluate and store your results so you can easily audit and get insights from them
 - connect your agent to [Skore Hub](https://skore.probabl.ai/) to get a comprehensive view of
   your experiments and results
 - iterate on your next experiments using insights from Skore diagnostics and your own
   feedback
-- organize your workspace according to best practices for data science projects (e.g. cookiecutter template)
+- organize your workspace according to best practices for data science projects
+  (e.g. cookiecutter template)
 
 Probabl skills let you focus on the science while AI agents handle the implementation,
 guided by two important ingredients: core data science libraries for maintainability  and
