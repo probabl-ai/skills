@@ -13,9 +13,7 @@ from skore_skills.cli import cli
 def test_api_get_kfold(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """``api get`` writes a KFold card under scratch/api."""
     monkeypatch.chdir(tmp_path)
-    result = CliRunner().invoke(
-        cli, ["api", "get", "sklearn.model_selection.KFold"]
-    )
+    result = CliRunner().invoke(cli, ["api", "get", "sklearn.model_selection.KFold"])
     assert result.exit_code == 0, result.output
     assert "n_splits" in result.output
     assert "KFold" in result.output
@@ -24,7 +22,9 @@ def test_api_get_kfold(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert caches[0].read_text(encoding="utf-8") == result.output
 
 
-def test_api_get_unknown_symbol(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_api_get_unknown_symbol(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Unknown dotted path exits non-zero and writes no cache."""
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(
