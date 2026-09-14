@@ -283,7 +283,7 @@ def main(argv: list[str] | None = None) -> int:
     """
     args = sys.argv[1:] if argv is None else argv
     if not (1 <= len(args) <= 2):
-        print(__doc__, file=sys.stderr)
+        print(__doc__, file=sys.stderr)  # noqa: T201
         return 2
     out_path = Path(args[1]) if len(args) == 2 else None
     run(Path(args[0]), out_path)
