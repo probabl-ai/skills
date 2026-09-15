@@ -5,13 +5,15 @@
       "id": 1,
       "title": "Approved model implementation",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Matching approved design note and experiment shell exist.]\n\nThe baseline design is approved. Implement and test the model.",
-      "expected_output": "Behavioural response satisfying: - Dispatch build, evaluate, then smoke-test in that order. - Preserve the matching experiment stem. It must NOT: - Replace skrub DataOps with a bare sklearn Pipeline. - Mark the experiment done while smoke tests fail.",
+      "expected_output": "Behavioural response satisfying: - Dispatch build, then smoke-test. Do not insert evaluate between them. - Preserve the matching experiment stem. - After smoke, stop and ask triage. It must NOT: - Replace skrub DataOps with a bare sklearn Pipeline. - Mark the experiment done while smoke tests fail. - Run `evaluate-ml-pipeline` as part of this stage.",
       "files": [],
       "expectations": [
-        "Dispatch build, evaluate, then smoke-test in that order.",
+        "Dispatch build, then smoke-test. Do not insert evaluate between them.",
         "Preserve the matching experiment stem.",
+        "After smoke, stop and ask triage.",
         "The response does NOT: Replace skrub DataOps with a bare sklearn Pipeline.",
-        "The response does NOT: Mark the experiment done while smoke tests fail."
+        "The response does NOT: Mark the experiment done while smoke tests fail.",
+        "The response does NOT: Run `evaluate-ml-pipeline` as part of this stage."
       ],
       "tools": false,
       "sandbox": [],

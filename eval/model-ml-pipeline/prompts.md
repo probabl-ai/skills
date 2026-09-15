@@ -11,9 +11,12 @@
 - Matching approved design note and experiment shell exist.
 
 **Must do:**
-- Dispatch build, evaluate, then smoke-test in that order.
+- Dispatch build, then smoke-test. Do not insert evaluate between
+  them.
 - Preserve the matching experiment stem.
+- After smoke, stop and ask triage.
 
 **Must NOT do:**
 - Replace skrub DataOps with a bare sklearn Pipeline.
 - Mark the experiment done while smoke tests fail.
+- Run `evaluate-ml-pipeline` as part of this stage.

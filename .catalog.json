@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "d40befc40c4b718c06842cb36125275f53f3ad346007c74c95a89827e1e8c2a8",
+  "catalog_hash": "d499d9bb584c639de8400b8b74c18fc1543985cf1be5f0b5661408dd4b24ea8a",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -144,10 +144,10 @@
       "id": "model-ml-pipeline",
       "path": "skills/model-ml-pipeline",
       "title": "Model ML Pipeline",
-      "summary": "Coordinate build, evaluation, and smoke testing.",
+      "summary": "Coordinate build then smoke for the implement stage.",
       "category": "meta",
       "subcategory": null,
-      "hash": "1212b8f6c5ff9a3d13881dc12697a72247c57d7bd1ebc6270bc12a57037f5f5f"
+      "hash": "d061649e1933e217d86a3d7f89e017f57cb3358764ab53ef65d0770c28604dbe"
     },
     {
       "id": "choose-python-library",
