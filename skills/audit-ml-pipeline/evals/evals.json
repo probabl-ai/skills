@@ -1,0 +1,21 @@
+{
+  "skill_name": "audit-ml-pipeline",
+  "evals": [
+    {
+      "id": 1,
+      "title": "Audit stop is triage",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Approved design, experiment, smoke, and a skore report exist\n  for stem `01_baseline`.]\n\nAudit experiment 01 and tell me what the report says.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills cells run` for `audit/01_baseline.py`. - After the digest, ask triage rather than iterate. It must NOT: - Call `skore.evaluate` or `project.put`. - Load `iterate-ml-experiment` as the next owner.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills cells run` for `audit/01_baseline.py`.",
+        "After the digest, ask triage rather than iterate.",
+        "The response does NOT: Call `skore.evaluate` or `project.put`.",
+        "The response does NOT: Load `iterate-ml-experiment` as the next owner."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

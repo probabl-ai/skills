@@ -25,9 +25,9 @@ description: >
 
   STOP when `python -m skore_skills status` shows no approved design,
   experiment report, or agent feature. Explain the missing fact and
-  ask the user to run the setup/model pack or ask triage. Also stop
-  when the request concerns raw-data EDA or sourcing a future
-  experiment. Do not require another action skill to be installed.
+  ask triage. Also stop when the request concerns raw-data EDA or
+  sourcing a future experiment. After the digest, stop at triage
+  rather than iterate.
 
   HOW TO USE: confirm the four-way stem pairing exists (`journal/NN_*.md`
   approved + `experiments/NN_*.py` exists + smoke test passed +
@@ -52,14 +52,13 @@ reading the digest. Read-only against the skore Project.
 
 | Came here from… | After audit, next is… |
 |---|---|
-| `iterate-ml-experiment` § 4 record-outcome | → Read audit digest, fill Status block + JOURNAL row |
-| User free-text ("audit 02", "re-audit 04") | → Surface metrics to the user; no further dispatch |
-| Re-run of an existing experiment | → Re-execute the existing audit file; surface diff if metrics changed |
+| Canonical loop (audit stage) | → Surface the digest, then ask triage |
+| User free-text ("audit 02", "re-audit 04") | → Surface metrics; ask triage |
+| Re-run of an existing experiment | → Re-execute the existing audit file; surface diff if metrics changed; ask triage |
 
-The audit is dispatched **FIRST** in § 4, before any scratch probes.
-The digest carries the checks summary and the metrics summary — it
-replaces ad-hoc `scratch/<ts>_inspect_*.py` files for the metric
-extraction step.
+Keep methodological review **thin**: the digest is the review. Do
+not load iterate. The digest replaces ad-hoc
+`scratch/<ts>_inspect_*.py` files for metric extraction.
 
 ## Where things live — visual map
 
@@ -323,17 +322,17 @@ Identical stems, 1:1. By the time the experiment shows `done` in
 
 | Caller | When |
 |---|---|
-| `iterate-ml-experiment` § 4 record-outcome | Automatic; dispatched FIRST (replaces scratch probes for metric extraction). Agent feature must be available |
-| `iterate-ml-experiment` § 0 (bootstrap) | After the first baseline run, dispatch here for `audit/01_baseline.py` |
+| `triage-ml-task` | Canonical audit stage |
 | User free-text | "audit experiment 02", "show me what 03", "re-audit 04" — resolves directly |
 
 ### Calls into
 
 | Callee | Why |
 |---|---|
-| `python -m skore_skills api get` | Every skore symbol (`Project`, `project.summarize`, `project.get`, `report.checks.summarize`, `report.metrics.summarize`, `.frame()`). Cache hits first |
-| `python-env-manager` § Agent feature | When `ipython` / `pyright` are missing — G-AGENT-FEATURE gate |
-| `python-code-style` | After writing / editing `audit/<stem>.py` — bundled `ruff.toml` carries `audit/**` per-file ignores; also contextualizes the header to name the audited experiment and strips workflow/process prose |
+| `python -m skore_skills cells run` | Execute `audit/<stem>.py` |
+| `python -m skore_skills api get` | Every skore symbol. Cache hits first |
+| missing agent feature | Status fact; ask triage |
+| `python -m skore_skills style` | After writing / editing `audit/<stem>.py` |
 
 ## Failure modes and recovery
 
@@ -354,10 +353,10 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 ## What this skill does NOT do
 
 - Open or write the skore Project's reports (`evaluate-ml-pipeline`).
-- Install `ipython` / `pyright` (`python-env-manager` owns).
+- Install `ipython` / `pyright` (ask triage).
 - Drop or edit `pyrightconfig.json` (`python-env-manager` owns).
-- Enrich the Backlog from the audit digest (`iterate-from-skore`).
-- Write or edit `journal/NN_*.md` (`iterate-ml-experiment`).
+- Enrich the Backlog from the audit digest (backlog step / triage).
+- Write or edit `journal/NN_*.md` (triage / implement stage).
 - Run pytest / smoke tests (`smoke-test-ml-pipeline`).
 - Render commits or PRs.
 - Decide *which* metrics matter — the cells are filled per task,
@@ -367,14 +366,11 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 
 | Skill | Relationship |
 |---|---|
-| `iterate-ml-experiment` | Caller. § 4 dispatches here FIRST; the digest feeds the `JOURNAL.md` Status + History update |
-| `iterate-from-skore` | Downstream consumer of this skill's digest. `audit-ml-pipeline` opens the Project and renders the digest; `iterate-from-skore` parses the digest as text and drafts Backlog rows from each surfaced check. Never opens the Project itself |
+| `triage-ml-task` | Session owner. Stop here after the digest |
 | `evaluate-ml-pipeline` | Producer side. `skore.evaluate` + `project.put` live only in `experiments/NN_*.py` |
-| `organize-ml-workspace` | Workspace layout; four-way stem pairing |
-| `python-env-manager` | Agent feature install (G-AGENT-FEATURE). This skill requests; that skill installs |
+| `setup-workspace` | Workspace layout; four-way stem pairing |
 | `python -m skore_skills api get` | skore symbol lookups. Cache hits first |
-| `python-code-style` | ruff after writing/editing `audit/<stem>.py` |
-| `data-science-python-stack` | Catalogues `ipython` + `pyright` under the agent feature |
+| `python -m skore_skills style` | ruff after writing/editing `audit/<stem>.py` |
 
 ## Templates and assets
 
