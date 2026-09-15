@@ -1,0 +1,37 @@
+{
+  "skill_name": "explore-ml-data",
+  "evals": [
+    {
+      "id": 1,
+      "title": "End of EDA returns to triage",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace with raw data and tabular library recorded.\n- No `data/eda.md` yet.]\n\nExplore the dataset and tell me what you found.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills cells run` for `data/eda.py`. - After findings, give a short summary and ask triage (deeper EDA vs next stage). It must NOT: - Design a learner or write `src/<pkg>/pipeline.py`. - Load `iterate-ml-experiment` or skip to `build-ml-pipeline`.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills cells run` for `data/eda.py`.",
+        "After findings, give a short summary and ask triage (deeper EDA vs next stage).",
+        "The response does NOT: Design a learner or write `src/<pkg>/pipeline.py`.",
+        "The response does NOT: Load `iterate-ml-experiment` or skip to `build-ml-pipeline`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 2,
+      "title": "Missing data is a status fact",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace with no data files and no data path.]\n\nRun EDA.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills status`. - Explain that data is missing and ask triage. It must NOT: - Invent a dataset. - Start `build-ml-pipeline`.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills status`.",
+        "Explain that data is missing and ask triage.",
+        "The response does NOT: Invent a dataset.",
+        "The response does NOT: Start `build-ml-pipeline`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

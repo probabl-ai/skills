@@ -25,10 +25,11 @@ description: >
     next experiment.
 
   STOP when `python -m skore_skills status` shows no scaffold or no
-  data: explain the missing fact and ask the user to run the setup
-  pack or ask triage. Also stop when the request is not raw-data EDA,
-  or when EDA is already recorded and no refresh was requested. Do
-  not require another action skill to be installed.
+  data: explain the missing fact and ask triage. Also stop when the
+  request is not raw-data EDA, or when EDA is already recorded and
+  no refresh was requested. After a successful EDA, summarize then
+  ask triage (deeper EDA vs next stage). Do not SKIP to iterate or
+  build.
 
   HOW TO USE: run the Detection step (does `data/eda.md` + the JOURNAL
   EDA section already exist?), emit the Pre-flight checklist as
@@ -52,30 +53,28 @@ design note's learner / splitter / metric choices.
 
 | You came here for… | → next |
 |---|---|
-| Bootstrap, before the first baseline | → return the EDA findings; they inform the baseline design |
-| User free-text ("explore the data") | → surface the findings; no further dispatch unless the user asks to model |
-| Re-understand a changed data source | → re-run, overwrite `data/eda.*`, refresh the JOURNAL EDA section |
+| Canonical loop (EDA stage) | → short findings summary, then triage |
+| User free-text ("explore the data") | → surface the findings; ask triage |
+| Re-understand a changed data source | → re-run, overwrite `data/eda.*`, refresh the JOURNAL EDA section, then triage |
 
 Always re-emit the Pre-flight checklist with evidence before
-declaring the turn done.
+declaring the turn done. Do not load `iterate-ml-experiment` or
+`build-ml-pipeline`.
 
 ## Where this sits in the loop
 
-EDA is a **bootstrap-time gate (G-EDA)** owned by this skill and
-fired by `iterate-ml-experiment` § 0 **before** the baseline design
-note. Ordering matters: the dataset facts (class balance, datetime /
-group columns, missingness, cardinality) are exactly what justifies
-the splitter (`G-CV-SPLITTER`), the metric default, and the learner
-default. Running EDA after the model is designed defeats the purpose.
+EDA is a **canonical loop stage** owned by this skill, entered from
+`triage-ml-task`. Dataset facts (class balance, datetime / group
+columns, missingness, cardinality) justify later splitter, metric,
+and learner decisions. Running EDA after the model is designed
+defeats the purpose.
 
 ```
-scaffold → JOURNAL → goal from data/README.md
-   │
-   └─► G-EDA (run | skip)  ◄── this skill
-         │ run
-         └─► data/eda.py → execute → data/eda.md + HTML + JOURNAL §EDA
-   │
-   └─► auto-draft 01_baseline.md  (cites the EDA findings)
+triage → G-EDA (run | skip)  ◄── this skill
+           │ run
+           └─► data/eda.py → execute → data/eda.md + HTML + JOURNAL §EDA
+           │
+           └─► summary + triage (deeper EDA vs implement)
 ```
 
 ## Where things live — visual map
@@ -149,6 +148,7 @@ The central rule. Surfaced as the first Stop condition below.
   do NOT fabricate EDA output with hand-written `print()`s. If the
   user declines the agent feature, **fall back to the skip path**
   (record `Status: skipped`) — never loop between run and install.
+  Ask triage for the install rather than SKIP-routing by skill id.
 - **Symbol from memory is forbidden.** Any `skrub` / `pandas` /
   `polars` symbol (`TableReport`, `TableReport.json`, `write_html`,
   `column_associations`, the tabular reader, …) must come from
@@ -211,7 +211,7 @@ The central rule. Surfaced as the first Stop condition below.
 | Assume the raw data is in `data/` | The raw source may live anywhere; only the deliverables are pinned to `data/`. Set `RAW = <LOAD_RAW_DATA>` to wherever the data actually is |
 | Gitignore the whole `data/` folder | The committed deliverables (`data/eda.*`) live there. Ignore only specific input patterns, and ask the user first |
 | Run EDA without the agent feature by hand-writing the expected output | Fabricated EDA is worse than none. Missing runner → G-AGENT-FEATURE (install) or the skip path |
-| `pixi add ipython` directly from this skill | Install is owned by `python-env-manager`. This skill *requests* via G-AGENT-FEATURE |
+| `pixi add ipython` directly from this skill | Install is owned by env setup. This skill *requests* via G-AGENT-FEATURE; triage routes it |
 | Drop the authored `data/eda.md` and leave only the HTML | The `.md` carries the modelling implications the baseline note cites and the JOURNAL section links. Both are required |
 | Invent column meanings not visible in the data | Report what the data shows. Domain semantics the user didn't state go in an explicit "open questions" list, not as asserted fact |
 | Forget the JOURNAL § Data understanding update | The section is the index entry; without it later sessions can't find the EDA. It is part of "done" |
@@ -242,7 +242,7 @@ Pre-flight (explore-ml-data):
 - [ ] Agent feature available (run path only):
         `pixi run -e agent ipython -c "print(0)"` exit 0
       Evidence: tool output | JOURNAL.md Status `agent feature: installed`
-                Missing → STOP, delegate to python-env-manager G-AGENT-FEATURE
+                Missing → STOP, ask triage for G-AGENT-FEATURE
                 (decline → fall back to skip path)
 - [ ] API CLI consulted for symbols used:
         skrub.TableReport, TableReport.write_html, TableReport.json,
@@ -334,9 +334,8 @@ Stale skill copies may still call
 **Prerequisites for the run path:** the workspace package must be
 importable (`from <pkg> import PROJECT_ROOT` — editable install done
 during scaffold) and `skrub` installed (Tier 1). If either import
-fails, the digest shows the `ImportError`; route to
-`python-env-manager` for the missing piece rather than working around
-it.
+fails, the digest shows the `ImportError`; ask triage for the missing
+piece rather than working around it.
 
 ### Re-execution semantics
 
@@ -370,7 +369,7 @@ Link each `data/eda_<table>.html` from the relevant section.
 
 ## JOURNAL § Data understanding (EDA)
 
-`iterate-ml-experiment`'s `JOURNAL.md` carries a top-level
+`journal/JOURNAL.md` carries a top-level
 `## Data understanding (EDA)` section (placed right after `##
 Status`). This skill owns its content:
 
@@ -393,27 +392,27 @@ detail lives in `data/eda.md`. On the **skip** path, only the
 
 | Caller | When |
 |---|---|
-| `iterate-ml-experiment` § 0 bootstrap | Automatic; G-EDA fires **before** the baseline design note |
+| `triage-ml-task` | Canonical EDA stage |
 | User free-text | "explore the data", "do an EDA", "profile the dataset" — resolves directly |
 
 ### Calls into
 
 | Callee | Why |
 |---|---|
-| `python-env-manager` § Agent feature | When `ipython` is missing on the run path — G-AGENT-FEATURE |
+| `python -m skore_skills cells run` | Execute `data/eda.py` |
 | `python -m skore_skills api get` | Every skrub / pandas / polars symbol. Cache hits first |
-| `data-science-python-stack` | G-TABULAR (pandas / polars) if not yet recorded; skrub `TableReport` reference |
-| `python-code-style` | After writing `data/eda.py` — ruff format / check + contextualize the comments to this dataset (strip any leftover workflow/process prose) |
+| missing `ipython` / tabular | Status fact; ask triage (do not SKIP-route by skill id) |
+| `python -m skore_skills style` | After writing `data/eda.py` |
 
 ## What this skill does NOT do
 
 - Design, select, or evaluate a model (`build-ml-pipeline` /
-  `evaluate-ml-pipeline` / `iterate-ml-experiment`).
+  `evaluate-ml-pipeline` / iterate).
 - Pick the CV splitter or metric — it only surfaces the *evidence*
   for those picks.
 - Edit `src/<pkg>/` or the experiment / audit files.
 - Clean, transform, or re-save the user's raw data.
-- Install `ipython` / `pyright` (`python-env-manager` owns).
+- Install `ipython` / `pyright` (ask triage).
 - Open or write the skore Project.
 - Render commits or PRs.
 
@@ -421,13 +420,11 @@ detail lives in `data/eda.md`. On the **skip** path, only the
 
 | Skill | Relationship |
 |---|---|
-| `iterate-ml-experiment` | Caller. § 0 fires G-EDA before the baseline note; the EDA findings seed the note's Method / Risks |
+| `triage-ml-task` | Session owner. This skill stops there after the findings summary |
 | `audit-ml-pipeline` | Same `cells run` CLI and bare-expression discipline |
-| `organize-ml-workspace` | Workspace layout; `data/` is user-owned — this skill is the one exception that writes `data/eda.*` into it |
-| `python-env-manager` | Agent feature install (G-AGENT-FEATURE). This skill requests; that skill installs |
+| `setup-workspace` | Workspace layout; `data/` is user-owned — this skill is the one exception that writes `data/eda.*` into it |
 | `python -m skore_skills api get` | skrub / pandas / polars symbol lookups. Cache hits first |
-| `data-science-python-stack` | G-TABULAR; skrub `TableReport` is catalogued there |
-| `python-code-style` | ruff after writing `data/eda.py` |
+| `python -m skore_skills style` | ruff after writing `data/eda.py` |
 
 ## Templates and assets
 
