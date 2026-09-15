@@ -3,7 +3,7 @@ name: setup-workspace
 description: >
   Detect an existing ML workspace or scaffold a fresh one. Owns
   layout, G-PKG-NAME, and G-SKORE-MODE only. Persist those in
-  `.skore-workspace.json`. Missing env manager or tabular library
+  `.skore` (`workspace` section). Missing env manager or tabular library
   is a status fact — ask triage; do not dispatch sibling actions.
 
   TRIGGER for a new ML project, first experiment, first reusable
