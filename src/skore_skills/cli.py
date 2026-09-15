@@ -187,14 +187,14 @@ def env_add(packages: tuple[str, ...], execute: bool) -> None:
 
 @cli.group("policy")
 def policy_group() -> None:
-    """Read and write ``.skore-workspace.json``."""
+    """Read and write the ``workspace`` section of ``.skore``."""
 
 
 @policy_group.command("set")
 @click.argument("key")
 @click.argument("value")
 def policy_set(key: str, value: str) -> None:
-    """Set one dotted policy key and print the saved JSON."""
+    """Set one dotted workspace policy key and print the section JSON."""
     import json
 
     from skore_skills.policy import set_policy_value

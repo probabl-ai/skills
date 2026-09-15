@@ -2,7 +2,7 @@
 name: setup-git
 description: >
   Set up git for an ML workspace after scaffolding. Persist
-  `git.autocommit` (`off` | `ask` | `on`) in `.skore-workspace.json`.
+  `git.autocommit` (`off` | `ask` | `on`) in `.skore` (`workspace`).
   Trigger when the user asks to initialize version control, add
   ignore rules, or make the first commit. Stop is triage.
 ---
