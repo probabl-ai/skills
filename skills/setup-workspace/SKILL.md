@@ -1,10 +1,10 @@
 ---
 name: setup-workspace
 description: >
-  Detect an existing ML workspace or scaffold a fresh one. Reusable
-  code lives in `src/<pkg>/`; experiments are `# %%` scripts;
-  design notes and index live in `journal/`; reports in `reports/`;
-  agent probes in `scratch/`. Existing conventions always win.
+  Detect an existing ML workspace or scaffold a fresh one. Owns
+  layout, G-PKG-NAME, and G-SKORE-MODE only. Persist those in
+  `.skore-workspace.json`. Missing env manager or tabular library
+  is a status fact — ask triage; do not dispatch sibling actions.
 
   TRIGGER for a new ML project, first experiment, first reusable
   modules, notebook-to-script organization, or a new experiment
@@ -13,9 +13,9 @@ description: >
   SKIP edits inside an already-populated module and pipeline,
   evaluation, or API mechanics owned by sibling skills.
 
-  HOW TO USE: detect first. For a fresh layout resolve package,
-  tabular library, environment manager, and skore mode gates, then
-  run `python -m skore_skills scaffold --package <pkg>`. For an
+  HOW TO USE: detect first. For a fresh layout resolve package
+  name and skore mode, then run
+  `python -m skore_skills scaffold --package <pkg>`. For an
   existing layout, glue to it without renaming or overwriting.
 ---
 
@@ -31,10 +31,9 @@ Decide where artifacts live. Do not design an experiment here.
   layout, ask for the `src/<pkg>/` import name and propose the
   snake-case folder name as default. “You pick” does not resolve it.
   A complete `[project] name` + matching `src/<pkg>/` resolves it.
-- **G-ENV-MGR is owned by `setup-python-env`.** A manager on PATH
-  is context, not permission. Do not run `pixi init` before the gate.
-- **G-TABULAR is asked through `choose-python-library`.** Do not
-  silently choose pandas.
+- **Do not dispatch env or tabular skills.** If `status` shows no
+  `env_manager` or `tabular`, say so and ask triage. A manager on
+  PATH is context, not permission.
 - **G-SKORE-MODE is asked:** local, hub, or mlflow; local is the
   proposed default. Keep a recorded mode unless an explicit migration
   is approved.
@@ -57,19 +56,18 @@ and manager manifests.
   package name rather than inventing it.
 
 For a request to add an experiment to an existing workspace, report
-that setup is complete and ask the user to run the model/loop pack or
-ask triage. Do not create `experiments/NN_*.py` before its design
-note is approved.
+that setup is complete and ask triage. Do not create
+`experiments/NN_*.py` before its design note is approved.
 
 ## Pre-flight
 
 ```
 - [ ] Layout: fresh | existing/glue
 - [ ] G-PKG-NAME: <pkg> | ask
-- [ ] G-TABULAR: pandas | polars | ask
-- [ ] G-ENV-MGR: <manager> | setup-python-env
 - [ ] G-SKORE-MODE: local | hub | mlflow | ask
 - [ ] Command: python -m skore_skills scaffold --package <pkg>
+- [ ] Persist: python -m skore_skills policy set package <pkg>
+              python -m skore_skills policy set skore_mode <mode>
 ```
 
 ## Fresh scaffold
@@ -83,6 +81,16 @@ python -m skore_skills scaffold --package <pkg>
 The CLI copies packaged templates and substitutes the import name.
 Do not reproduce the old per-template write recipe and do not pass
 `--force` during normal setup.
+
+Persist after a successful scaffold:
+
+```bash
+python -m skore_skills policy set package <pkg>
+python -m skore_skills policy set skore_mode local
+```
+
+If `status` still shows missing `env_manager` or `tabular`, stop and
+ask triage. Do not load `setup-python-env` or `choose-python-library`.
 
 The default workspace contract is:
 
@@ -98,8 +106,9 @@ reports/                   durable human-facing exports
 data/                      user-owned inputs; EDA deliverables only
 ```
 
-The package scaffold must be installed editable through
-`setup-python-env` before imports are expected from every CWD.
+The package scaffold must be installed editable before imports are
+expected from every CWD. That install is a status fact for triage,
+not a dispatch from this skill.
 
 ## Existing workspace
 
@@ -115,7 +124,8 @@ When iterating a completed experiment, ask:
 2. edit the existing `NN_<short>.py`, overwriting that experiment
    key and revisiting the paired smoke test.
 
-Do not pick silently and do not edit the design note here.
+Do not pick silently and do not edit the design note here. After the
+choice, stop and ask triage.
 
 ## Pairing
 

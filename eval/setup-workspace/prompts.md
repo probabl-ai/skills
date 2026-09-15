@@ -26,9 +26,10 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT in any transcript.
 - Name **G-PKG-NAME** as the next gate — the `src/<pkg>/` import
   name goes to the user via `AskUserQuestion`, with the folder name
   as the default, and is not picked here.
-- Name **G-TABULAR** — pandas / polars pick via
-  `choose-python-library`.
-- Mention **G-ENV-MGR** as routed via `setup-python-env`.
+- Name **G-SKORE-MODE** — local / hub / mlflow.
+- If env manager or tabular library is missing, name
+  `python -m skore_skills status` and ask triage. Do not name
+  `setup-python-env` or `choose-python-library` as dispatch.
 - Name `python -m skore_skills scaffold --package <pkg>` as the
   action after the gates resolve.
 - Mention scaffolding the default layout: `src/<pkg>/`,
@@ -37,7 +38,9 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT in any transcript.
 
 **Must NOT do:**
 - Run `pixi init` / `uv init` / `poetry init` on the user's behalf
-  before G-ENV-MGR + G-PKG-NAME have passed.
+  before G-PKG-NAME has passed.
+- Dispatch `setup-python-env` or `choose-python-library` by skill
+  id.
 - Pick a package name silently from the folder name.
 - Write a runnable `experiments/01_baseline.py` whose body actually
   calls `build_learner` / `skore.evaluate` / `project.put`
@@ -66,8 +69,8 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT in any transcript.
 - Detect the **existing layout** from the signals (pyproject.toml,
   `src/claim_predictor/`, `experiments/`, `journal/`).
 - Glue to existing folders / names — no renames, no relocates.
-- Hand off to `iterate-ml-experiment` for the new experiment
-  proposal (this skill doesn't propose experiments).
+- Hand off to triage for the new experiment proposal (this skill
+  doesn't propose experiments).
 - Keep `claim_predictor` as the package / import name (do not
   rename `src/` or the import).
 
@@ -139,8 +142,8 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT in any transcript.
   `run_skore_skills`; the resulting template tree is the scaffold.
 - Refuse to write `experiments/01_baseline.py` with a **runnable
   body** during the scaffold turn.
-- Cite the rule: "design note first, then code" /
-  `iterate-ml-experiment` § 3 owns experiment-script content.
+- Cite the rule: "design note first, then code". Experiment-script
+  content is not this skill's job.
 - An empty or templated `experiments/01_baseline.py` shell
   (imports / `# %%` / commented stubs / `<pkg>` placeholders)
   counts as the Decision-flow drop. Do not require the words
@@ -179,8 +182,7 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT in any transcript.
 **Must NOT do:**
 - Silently pick "edit in place" or "create new file" — the rule
   is hard: ask.
-- Touch the design note `journal/02_text_encoder.md` directly
-  (that's `iterate-ml-experiment`'s domain).
+- Touch the design note `journal/02_text_encoder.md` directly.
 
 ---
 
@@ -227,13 +229,13 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT in any transcript.
 
 **Must do:**
 - Refuse to run `pixi init`.
-- Cite that **G-ENV-MGR + G-PKG-NAME must pass first** — pixi on
-  PATH is detection context, not permission.
+- Cite that **G-PKG-NAME must pass first** — pixi on PATH is
+  detection context, not permission. Env manager is a status fact
+  for triage, not a silent `pixi init`.
 - Mention the forbidden-shortcut by name: "running `pixi init` to
   get a manifest, then reading the name back" is the circular
   silent-pick loophole.
-- Route the env-manager pick to `setup-python-env` for the
-  structured ask.
+- Ask triage rather than dispatching `setup-python-env`.
 
 **Must NOT do:**
 - Run `pixi init` / `uv init` / `poetry init` in this turn.
