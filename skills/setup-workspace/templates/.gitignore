@@ -49,3 +49,6 @@ mlartifacts/
 # claude harness state
 .claude/mlflow
 .claude/settings.*
+
+# skore-cli hub keys + workspace policy (never commit)
+.skore

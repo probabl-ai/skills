@@ -7,6 +7,7 @@ eval/*-workspace/
 
 # Local secrets (API keys, etc.) — committed template is .env.example
 .env
+.skore
 .env.local
 .env.*.local
 
