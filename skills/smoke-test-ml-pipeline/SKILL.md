@@ -14,20 +14,18 @@ description: >
   steps will pass trivially. The smoke test is the executable
   proof of the X-marker placement rule from `build-ml-pipeline`.
 
-  TRIGGER when: `test-ml-pipeline` has dispatched here to write
-  the smoke test for an approved experiment; `pytest tests/smoke/`
+  TRIGGER when: an approved experiment needs its smoke test;
+  `pytest tests/smoke/`
   is failing on row count; the user asks "why is the smoke test
   failing?"; a pipeline edit in `build-ml-pipeline` needs an
   executable proof; an experiment script changes the pipeline
   shape and the matching smoke test needs revisiting.
 
-  SKIP when: the design note does not exist or is not yet
-  approved (route to `iterate-ml-experiment`); the user is asking
-  about a regression test or schema invariant (route to
-  `regression-test-ml-pipeline` /
-  `distribution-test-ml-pipeline` once those exist); the question
-  is the *interpretation* of CV metrics, not predict-time
-  correctness (route to `evaluate-ml-pipeline`).
+  STOP when `python -m skore_skills status` shows no approved design
+  or matching experiment script: explain the missing fact and ask
+  the user to run the model pack or ask triage. This action does not
+  cover regression/distribution tests or CV interpretation. Do not
+  require another action skill to be installed.
 
   HOW TO USE: read the matching experiment's `journal/NN_*.md` and
   `experiments/NN_*.py` first to understand the pipeline's source
@@ -58,14 +56,14 @@ channel.
 ## Stop conditions — read before anything else
 
 - **No smoke test without an approved design note + script.** The pairing
-  rule from `test-ml-pipeline` is hard:
+  rule is hard:
   `tests/smoke/test_NN_<short_name>.py` exists only when
   `journal/NN_<short_name>.md` is at least `approved` *and*
   `experiments/NN_<short_name>.py` exists with the matching stem.
 - **Symbol from memory is forbidden.** Any skrub /
-  scikit-learn name you write in the smoke test must come from a
-  `Skill(python-api)` / `Skill(python-api)` call **in this
-  turn**. The smoke test is a small file but it imports the
+  scikit-learn name you write in the smoke test must come from
+  `python -m skore_skills api get <dotted>` or a matching cache
+  read **in this turn**. The smoke test is a small file but it imports the
   predicting-package API surface; the same memory-forbidden rule
   applies.
 - **Don't shrink the assertion.** The hard assertion is exact
@@ -120,13 +118,13 @@ Pre-flight (smoke-test-ml-pipeline):
       (per `data-science-python-stack` § "Tier 1"). **Not skore** —
       see the Stop conditions; the smoke test is intentionally
       portable to any skrub-capable environment
-- [ ] Skill(python-api) consulted for skrub / sklearn symbols used in
+- [ ] API confirmed for skrub / sklearn symbols used in
       the test: <symbols, or "none">
-      Evidence: Read scratch/api/<lib>/<version>/<topic>.md (this turn)
+      Evidence: python -m skore_skills api get <dotted>
+                | Read scratch/api/<lib>/<version>/<topic>.md (this turn)
                 | Write scratch/api/<lib>/<version>/<topic>.md (this turn)
                 | "n/a — test only uses symbols already present in
                   src/<pkg>/ (build_learner / load_training_table / etc.)"
-      "Read python-api SKILL.md" alone is NOT evidence.
 - [ ] `journal/NN_<short_name>.md` read this turn (frozen sections:
       Question, Method) so the test asserts what the experiment claims
 - [ ] `experiments/NN_<short_name>.py` skimmed this turn for the env-dict
@@ -285,7 +283,7 @@ three layers — sources → predict-grid + alignment + `mark_as_X`
 described in `build-ml-pipeline` § "Common patterns" rule 2,
 with a full worked example (drawn from this workspace's
 01_baseline pipeline) in
-`python-api/references/pre_mark_alignment.md`. Read that
+`build-ml-pipeline/references/pre_mark_alignment.md`. Read that
 reference before constructing the predict env for an early-mark
 pipeline.
 
@@ -417,8 +415,6 @@ metric problem.
 
 ## Companion skills
 
-- **`test-ml-pipeline`** — the router that dispatched here.
-  Owns layout and pairing.
 - **`build-ml-pipeline`** — owns the X-marker placement rule
   the smoke test asserts. Smoke-test failure typically routes
   back here for a pipeline-shape fix.
@@ -430,13 +426,13 @@ metric problem.
   matching design note's Status.headline (which `evaluate-ml-pipeline`
   ultimately fills in after the run); the test does not import
   skore at runtime.
-- **`python-api`** / **`python-api`** — symbol references for
+- **`python -m skore_skills api get`** — symbol references for
   the predicting-package APIs the smoke test uses. Consult
   before naming any imported function in the test body.
-  `python-api` is **not** a smoke-test dependency — see the
+  `python -m skore_skills api get` is **not** a smoke-test dependency — see the
   "no skore import" Stop condition above. **Cache hits first**:
   check `scratch/api/<lib>/<version>/` before WebSearching;
-  cache new findings back there (per `python-api` Shape 0/3).
+  cache new findings back there (per `python -m skore_skills api get` Shape 0/3).
 - **`data-science-python-stack`** — declares pytest as a Tier 1
   mandatory dependency for any workspace using this skill.
 - **`python-code-style`** — **must be invoked** after writing or

@@ -15,17 +15,14 @@ DEFAULT_TIER = "medium"
 DEFAULT_TIER_MODELS = {
     "small": "openrouter/qwen/qwen3.7-flash",
     "medium": "openrouter/deepseek/deepseek-v4.1-flash",
-    "big": "openrouter/moonshotai/kimi-k3",
+    "big": "openrouter/deepseek/deepseek-v4.1-flash",
 }
 
 # Skills with no evals.json yet are listed so a later converter run
 # picks the right model without a harness edit.
 SKILL_TIER: dict[str, str] = {
-    "test-ml-pipeline": "small",
-    "python-code-style": "small",
-    "organize-ml-workspace": "medium",
-    "python-env-manager": "medium",
-    "data-science-python-stack": "medium",
+    "setup-workspace": "medium",
+    "setup-python-env": "medium",
     "evaluate-ml-pipeline": "medium",
     "smoke-test-ml-pipeline": "medium",
     "iterate-from-skore": "medium",
@@ -33,7 +30,6 @@ SKILL_TIER: dict[str, str] = {
     "explore-ml-data": "medium",
     "audit-ml-pipeline": "medium",
     "iterate-ml-experiment": "big",
-    "python-api": "big",
     "build-ml-pipeline": "big",
 }
 

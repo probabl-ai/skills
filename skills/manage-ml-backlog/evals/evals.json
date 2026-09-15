@@ -1,0 +1,55 @@
+{
+  "skill_name": "manage-ml-backlog",
+  "evals": [
+    {
+      "id": 1,
+      "title": "Record outcome into History",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Audit digest exists with a headline ROC-AUC.\n- Smoke tests passed.\n- History row for `01_baseline` is `running`.]\n\nThe 01_baseline run finished. Record it.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills status`. - Copy the headline result into the History row and ask triage. It must NOT: - Invent a metric that is not in the digest or user text. - Draft `02_*.py` in this turn.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills status`.",
+        "Copy the headline result into the History row and ask triage.",
+        "The response does NOT: Invent a metric that is not in the digest or user text.",
+        "The response does NOT: Draft `02_*.py` in this turn."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 2,
+      "title": "Do not implement next experiment",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- One `done` History row and two Backlog rows `B1`, `B2`.]\n\nWhat should we try next?",
+      "expected_output": "Behavioural response satisfying: - Surface Backlog options and ask triage which lever to take. It must NOT: - Silently pick `B1`. - Load `iterate-ml-experiment` as the session owner. - Start `build-ml-pipeline`.",
+      "files": [],
+      "expectations": [
+        "Surface Backlog options and ask triage which lever to take.",
+        "The response does NOT: Silently pick `B1`.",
+        "The response does NOT: Load `iterate-ml-experiment` as the session owner.",
+        "The response does NOT: Start `build-ml-pipeline`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 3,
+      "title": "Missing journal index uses packaged shape",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/` exists but `journal/JOURNAL.md` is missing.]\n\nStart the experiment backlog for this workspace.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills scaffold --journal` as the initialization command. - State that the packaged index provides Status, Data understanding, History, and Backlog. - Return to triage after initialization. It must NOT: - Recreate the index shape from memory. - Load the deprecated `iterate-ml-experiment` skill. - Draft or implement an experiment in this turn.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills scaffold --journal` as the initialization command.",
+        "State that the packaged index provides Status, Data understanding, History, and Backlog.",
+        "Return to triage after initialization.",
+        "The response does NOT: Recreate the index shape from memory.",
+        "The response does NOT: Load the deprecated `iterate-ml-experiment` skill.",
+        "The response does NOT: Draft or implement an experiment in this turn."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

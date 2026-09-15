@@ -56,6 +56,7 @@ class EvalCase:
     sandbox: tuple[dict[str, Any], ...] = ()
     expect_files: tuple[str, ...] = ()
     expect_reads: tuple[str, ...] = ()
+    expect_cli: tuple[str, ...] = ()
 
     @property
     def must_do(self) -> tuple[str, ...]:
@@ -125,6 +126,7 @@ def load_eval_cases() -> list[EvalCase]:
             )
             expect_files = tuple(str(item) for item in (raw.get("expect_files") or []))
             expect_reads = tuple(str(item) for item in (raw.get("expect_reads") or []))
+            expect_cli = tuple(str(item) for item in (raw.get("expect_cli") or []))
             cases.append(
                 EvalCase(
                     skill_name=skill_name,
@@ -137,6 +139,7 @@ def load_eval_cases() -> list[EvalCase]:
                     sandbox=sandbox,
                     expect_files=expect_files,
                     expect_reads=expect_reads,
+                    expect_cli=expect_cli,
                 )
             )
     return cases
@@ -205,14 +208,15 @@ def case_hard_pass(
     outcomes: Sequence[MetricOutcome],
     missing_files: Sequence[str] = (),
     missing_reads: Sequence[str] = (),
+    missing_cli: Sequence[str] = (),
 ) -> tuple[bool, bool, bool]:
     """Return ``(hard_pass, must_do_weak, must_not_judge_error)``.
 
     Pytest fails only when ``hard_pass`` is false (Must-NOT miss,
-    missing sandbox files/reads, or a Must-NOT judge error).
+    missing sandbox files/reads/cli, or a Must-NOT judge error).
     Must-do below threshold is ``must_do_weak`` and does not fail.
     """
-    if missing_files or missing_reads:
+    if missing_files or missing_reads or missing_cli:
         return False, False, False
     by_name = {item.name: item for item in outcomes}
     must_not = by_name.get("must_not")

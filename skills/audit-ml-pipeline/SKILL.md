@@ -6,19 +6,16 @@ description: >
   `journal/NN_<short_name>.md`, that loads the experiment's skore
   report **read-only** and uses bare-last-expression cells whose
   `__repr__` carries the audit's signal.   The agent executes the audit
-  file via the bundled in-process runner
-  (`audit-ml-pipeline/scripts/run_cells.py` — IPython
-  `InteractiveShell.run_cell`), which streams a markdown digest of
-  each cell's stdout + last-expression repr to stdout (optionally also
-  to a file). The digest fuels narrative work (the `JOURNAL.md`
-  Status + History update, follow-up questions about a past
-  experiment, cross-experiment comparison). Stops at "audit/NN_*.py
-  is placed, executed, and the digest is available." Never calls
-  `skore.evaluate(...)` or `project.put(...)`.
+  file via `python -m skore_skills cells run`, which streams a
+  markdown digest of each cell's stdout + last-expression repr to
+  stdout (optionally also to a file). The digest fuels narrative work
+  (the `JOURNAL.md` Status + History update, follow-up questions
+  about a past experiment, cross-experiment comparison). Stops at
+  "audit/NN_*.py is placed, executed, and the digest is available."
+  Never calls `skore.evaluate(...)` or `project.put(...)`.
 
   TRIGGER — any of:
-  - `iterate-ml-experiment` § 4 record-outcome — audit is dispatched
-    FIRST (replaces scratch probes for metric extraction).
+  - A completed run needs a read-only audit for outcome recording.
   - The user asks "audit experiment 02", "show me what 03 looks
     like", "re-audit 04 against the new report".
   - An experiment was re-run (same `put()` key overwritten) and the
@@ -26,25 +23,22 @@ description: >
   - The user wants a human-readable narrative of a past experiment
     without firing the full `iterate-from-skore` flow.
 
-  SKIP when: the design note isn't approved yet (route to
-  `iterate-ml-experiment`); the experiment hasn't been run (no report
-  on disk); the agent feature isn't installed (delegate to
-  `python-env-manager` § "Agent feature"); the user is mining the
-  report to source the *next* experiment (`iterate-from-skore`); the
-  user wants to explore the **raw dataset** rather than a finished
-  run's skore report (`explore-ml-data` — audit reads a report, not
-  the data).
+  STOP when `python -m skore_skills status` shows no approved design,
+  experiment report, or agent feature. Explain the missing fact and
+  ask the user to run the setup/model pack or ask triage. Also stop
+  when the request concerns raw-data EDA or sourcing a future
+  experiment. Do not require another action skill to be installed.
 
   HOW TO USE: confirm the four-way stem pairing exists (`journal/NN_*.md`
   approved + `experiments/NN_*.py` exists + smoke test passed +
   report under that key in the Project), then place
   `audit/NN_<short_name>.py` from `templates/audit.py`, substituting
   the package name + the literal Project init block copied from
-  `experiments/<stem>.py`.   Execute via the bundled runner: `pixi run
-  -e agent python .agents/skills/audit-ml-pipeline/scripts/run_cells.py
-  audit/<stem>.py`. **Read the Stop conditions and emit the Pre-flight
+  `experiments/<stem>.py`. Execute via
+  `python -m skore_skills cells run audit/<stem>.py`.
+  **Read the Stop conditions and emit the Pre-flight
   checklist before any write or shell command.** Always invoke
-  `python-api` for skore symbol signatures — never write them from
+  `python -m skore_skills api get` for skore symbol signatures — never write them from
   memory.
 ---
 
@@ -72,8 +66,8 @@ extraction step.
 | Path | Durability | Who writes it | What it holds |
 |---|---|---|---|
 | `audit/<NN>_<short_name>.py` | **Durable** (in git) | This skill, once per experiment | The bare-expression cells. Source of truth. Can be opened as a notebook in JupyterLab / VS Code for the rich HTML view |
-| `scratch/audit/<stem>/audit.md` | Ephemeral (gitignored), optional | `run_cells.py` when given a 2nd arg | Per-cell markdown digest: source + stdout + last-expression `repr`. Same content as stdout |
-| Stdout from `run_cells.py` | Captured by the bash tool | `run_cells.py` (always) | Streamed digest — the agent reads this directly from the tool output |
+| `scratch/audit/<stem>/audit.md` | Ephemeral (gitignored), optional | `cells run` when given a 2nd arg | Per-cell markdown digest: source + stdout + last-expression `repr`. Same content as stdout |
+| Stdout from `cells run` | Captured by the bash tool | CLI (always) | Streamed digest — the agent reads this directly from the tool output |
 
 **Mnemonic:** `audit/` is *source* (in git); `scratch/audit/` and
 stdout are *output*. Never put the source `.py` under
@@ -127,7 +121,7 @@ conditions for the three-consumer rule.
   lookup shape is wrong (get is by id), not that the report is
   missing.
 - **Symbol from memory is forbidden.** Any `skore` / `skrub` /
-  `sklearn` symbol must come from `python-api` *this turn*. Cache
+  `sklearn` symbol must come from `python -m skore_skills api get` *this turn*. Cache
   hits under `scratch/api/skore/<version>/` count (Shape 0); inline
   memory does not.
 - **Agent feature missing → STOP and delegate.** If `ipython` /
@@ -198,7 +192,7 @@ Pre-flight (audit-ml-pipeline):
       Evidence: tool output of each
                 | JOURNAL.md Status `agent feature: installed`
                 Missing → STOP, delegate to python-env-manager G-AGENT-FEATURE
-- [ ] python-api consulted for skore symbols used:
+- [ ] API CLI consulted for skore symbols used:
       Project, summarize, get, report.checks.summarize, report.metrics.summarize
       Evidence: Read scratch/api/skore/<version>/<topic>.md (this turn)
                 | Write the same (this turn)
@@ -213,10 +207,8 @@ Pre-flight (audit-ml-pipeline):
       summarize / get / report.* only — no evaluate, no put
       Evidence: explicit grep / Read confirmation of the drafted file
 - [ ] Execution command shape confirmed:
-        pixi run -e agent python \
-          .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
-          audit/<stem>.py [scratch/audit/<stem>/audit.md]
-      (Second arg is optional — the runner always streams to stdout.)
+        python -m skore_skills cells run audit/<stem>.py [scratch/audit/<stem>/audit.md]
+      (In a pixi agent env: `pixi run -e agent python -m skore_skills …`.)
       Evidence: command emitted in the response before running
 - [ ] Pre-flight re-emitted with evidence before final message.
       Evidence: this checklist appears in the end-of-turn summary.
@@ -290,22 +282,14 @@ deeper inspection here.
 ## Execution contract — one command
 
 ```bash
-pixi run -e agent python \
-  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
-  audit/<stem>.py
+python -m skore_skills cells run audit/<stem>.py
 ```
 
-The runner streams the digest to stdout — the agent reads it
-directly from the bash tool's output. Pass a second arg
+The CLI streams the digest to stdout. Pass a second arg
 `scratch/audit/<stem>/audit.md` to also write to a file (parent
-created if missing).
-
-For non-pixi workspaces, swap the activation prefix per
-`python-env-manager` § Agent feature.
-
-What the runner does internally (parsing, IPython shell setup,
-matplotlib backend fix, progress-bar suppression, displayhook
-patch, pandas widening, error capture) → `references/runner_internals.md`.
+created if missing). For a pixi agent environment, prefix with
+`pixi run -e agent`. Details:
+`python -m skore_skills cells run --help`.
 
 ### Re-execution semantics
 
@@ -346,7 +330,7 @@ Identical stems, 1:1. By the time the experiment shows `done` in
 
 | Callee | Why |
 |---|---|
-| `python-api` | Every skore symbol (`Project`, `project.summarize`, `project.get`, `report.checks.summarize`, `report.metrics.summarize`, `.frame()`). Cache hits first |
+| `python -m skore_skills api get` | Every skore symbol (`Project`, `project.summarize`, `project.get`, `report.checks.summarize`, `report.metrics.summarize`, `.frame()`). Cache hits first |
 | `python-env-manager` § Agent feature | When `ipython` / `pyright` are missing — G-AGENT-FEATURE gate |
 | `python-code-style` | After writing / editing `audit/<stem>.py` — bundled `ruff.toml` carries `audit/**` per-file ignores; also contextualizes the header to name the audited experiment and strips workflow/process prose |
 
@@ -387,7 +371,7 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 | `evaluate-ml-pipeline` | Producer side. `skore.evaluate` + `project.put` live only in `experiments/NN_*.py` |
 | `organize-ml-workspace` | Workspace layout; four-way stem pairing |
 | `python-env-manager` | Agent feature install (G-AGENT-FEATURE). This skill requests; that skill installs |
-| `python-api` | skore symbol lookups. Cache hits first |
+| `python -m skore_skills api get` | skore symbol lookups. Cache hits first |
 | `python-code-style` | ruff after writing/editing `audit/<stem>.py` |
 | `data-science-python-stack` | Catalogues `ipython` + `pyright` under the agent feature |
 
@@ -395,18 +379,13 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 
 - `templates/audit.py` — per-experiment audit file skeleton. Copy
   + substitute; don't rewrite from memory.
-- `scripts/run_cells.py` — the in-process cell runner (generic;
-  shared with `explore-ml-data`). Source of truth for the execution
-  contract; don't reimplement or fork.
 
 ## References (load on demand)
 
 - `references/cell_anatomy.md` — concrete cell examples (right /
   wrong shapes), full 7-cell sequence, why `.frame()` matters,
   bare-expression rules.
-- `references/runner_internals.md` — what `run_cells.py` does
-  internally: parsing, IPython shell + NoOpDisplayHook, matplotlib
-  Agg backend, progress-bar suppression, pandas widening, per-cell
-  capture, error rendering.
+- `references/runner_internals.md` — leftover runner internals
+  (IPython, Agg). Prefer `--help` / the package docstring.
 - `references/failure_modes.md` — detailed recovery for every
   symptom in § Failure modes.

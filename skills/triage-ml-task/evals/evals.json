@@ -1,0 +1,24 @@
+{
+  "skill_name": "triage-ml-task",
+  "evals": [
+    {
+      "id": 1,
+      "title": "Ambiguous capability request",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Existing scaffold with no specific task requested.\n- No `.skore` file.]\n\nWhat can you help me with on this machine learning project?",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills status`. - Name the current `loop_stage` (or equivalent stage) from the snapshot, even when `.skore` is missing. - Ask exactly one focused question: stay, go deeper, next stage, confirm/persist detected facts, or change a persisted choice. It must NOT: - Start designing the next experiment. - Claim to have loaded or executed every skill. - Treat `iterate-ml-experiment` as the session owner.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills status`.",
+        "Name the current `loop_stage` (or equivalent stage) from the snapshot, even when `.skore` is missing.",
+        "Ask exactly one focused question: stay, go deeper, next stage, confirm/persist detected facts, or change a persisted choice.",
+        "The response does NOT: Start designing the next experiment.",
+        "The response does NOT: Claim to have loaded or executed every skill.",
+        "The response does NOT: Treat `iterate-ml-experiment` as the session owner.",
+        "The response does NOT: Treat the missing `.skore` as an empty project despite the existing scaffold."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

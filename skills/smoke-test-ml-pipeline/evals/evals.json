@@ -4,7 +4,7 @@
     {
       "id": 1,
       "title": "Standard smoke test for history-dependent pipeline",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/02_load_forecast.md` approved with Status.headline\n  `RMSE 0.083 \u00b1 0.004 (5-fold CV)`.\n- `experiments/02_load_forecast.py` exists.\n- `src/<pkg>/data.py` exposes `build_supervised_frame(data_dir)`.\n- `tests/smoke/test_02_load_forecast.py` empty scaffold from\n  `test-ml-pipeline`.]\n\nWrite the smoke test for `02_load_forecast`. The pipeline has lag\nfeatures going back 168 hours and a 24h-ahead target.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/02_load_forecast.md` approved with Status.headline\n  `RMSE 0.083 \u00b1 0.004 (5-fold CV)`.\n- `experiments/02_load_forecast.py` exists.\n- `src/<pkg>/data.py` exposes `build_supervised_frame(data_dir)`.\n- `tests/smoke/test_02_load_forecast.py` is an empty scaffold.]\n\nWrite the smoke test for `02_load_forecast`. The pipeline has lag\nfeatures going back 168 hours and a 24h-ahead target.",
       "expected_output": "Behavioural response satisfying: - Wire the **hard assertion**: `assert len(predictions) == n_predict_grid_rows`. - Build the predict env-dict with **no pre-history buffer** \u2014 only the rows we want predictions for. - Use the **real `data/` source** (not a synthesized fixture). It must NOT: - Synthesize a fake DataFrame fixture. - Import `skore` / `skore.Project` in the test. - Wrap the predictor or add NaN-handling to make the test pass.",
       "files": [],
       "expectations": [
@@ -26,12 +26,12 @@
       "id": 2,
       "title": "Refuse to write before approved design note",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `experiments/03_target_transform.py` exists (written directly).\n- `journal/03_target_transform.md` does NOT exist.]\n\nSmoke-test `experiments/03_target_transform.py` \u2014 I haven't\nwritten the design note yet but the script's ready.",
-      "expected_output": "Behavioural response satisfying: - Refuse to write the smoke test. - Cite the Stop condition: \"No smoke test without an approved design note + script.\" - Route to `iterate-ml-experiment` to author + approve the design note first. It must NOT: - Write `tests/smoke/test_03_target_transform.py` even as a stub. - Treat the script's existence as resolving the design-note requirement.",
+      "expected_output": "Behavioural response satisfying: - Refuse to write the smoke test. - Cite the Stop condition: \"No smoke test without an approved design note + script.\" - State that status is missing an approved design and tell the user to run the model/loop pack or ask triage. It must NOT: - Write `tests/smoke/test_03_target_transform.py` even as a stub. - Treat the script's existence as resolving the design-note requirement.",
       "files": [],
       "expectations": [
         "Refuse to write the smoke test.",
         "Cite the Stop condition: \"No smoke test without an approved design note + script.\"",
-        "Route to `iterate-ml-experiment` to author + approve the design note first.",
+        "State that status is missing an approved design and tell the user to run the model/loop pack or ask triage.",
         "The response does NOT: Write `tests/smoke/test_03_target_transform.py` even as a stub.",
         "The response does NOT: Treat the script's existence as resolving the design-note requirement."
       ],
@@ -98,15 +98,15 @@
     },
     {
       "id": 6,
-      "title": "Smoke fails \u2192 route to build-ml-pipeline, not loosen",
+      "title": "Smoke fails \u2192 report topology defect, do not loosen",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `tests/smoke/test_02_load_forecast.py` failing on\n  `len(predictions) < n_predict_grid_rows`.\n- The pipeline has lag features.]\n\nThe smoke test for `02_load_forecast` is red on row count. The\nsimplest fix is to wrap `build_learner` so predict-time skips lag\nfeatures. Just wrap it.",
-      "expected_output": "Behavioural response satisfying: - Refuse the wrapper fix. - Cite the Stop condition: \"No wrappers, no NaN-handling, no `eval_mode` hacks. Wrappers paper over the failure mode.\" - Diagnose as a Layer-2 / late-mark issue in `build-ml-pipeline`. It must NOT: - Approve the `eval_mode` / `feature_steps=[]` toggle on `build_learner`. - Wrap the predictor with NaN-handling. - Add a try/except that catches the row-count mismatch.",
+      "expected_output": "Behavioural response satisfying: - Refuse the wrapper fix. - Cite the Stop condition: \"No wrappers, no NaN-handling, no `eval_mode` hacks. Wrappers paper over the failure mode.\" - Diagnose as a Layer-2 / late-mark topology issue. It must NOT: - Approve the `eval_mode` / `feature_steps=[]` toggle on `build_learner`. - Wrap the predictor with NaN-handling. - Add a try/except that catches the row-count mismatch.",
       "files": [],
       "expectations": [
         "Refuse the wrapper fix.",
         "Cite the Stop condition: \"No wrappers, no NaN-handling, no `eval_mode` hacks. Wrappers paper over the failure mode.\"",
-        "Diagnose as a Layer-2 / late-mark issue in `build-ml-pipeline`.",
-        "Route back to `build-ml-pipeline` to fix the X-marker placement (three-layer pattern: predict_grid + history sources at Layer 1; aligner at Layer 2 marks X; feature steps at Layer 3 reference history as additional `apply_func` arg).",
+        "Diagnose as a Layer-2 / late-mark topology issue.",
+        "Tell the user to run the model pack or ask triage to fix the X-marker placement (three-layer pattern: predict_grid + history sources at Layer 1; aligner at Layer 2 marks X; feature steps at Layer 3 reference history as additional `apply_func` arg).",
         "The response does NOT: Approve the `eval_mode` / `feature_steps=[]` toggle on `build_learner`.",
         "The response does NOT: Wrap the predictor with NaN-handling.",
         "The response does NOT: Add a try/except that catches the row-count mismatch."

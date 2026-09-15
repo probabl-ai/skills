@@ -36,7 +36,8 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT violated.
   rooted at `skrub.var(...)`.
 - Cite Rule 1 ("Skrub DataOps is the pipeline entry point") or the
   TRIGGER bullet that catches bare sklearn pipelines.
-- Mention consulting `python-api` to confirm skrub symbols.
+- Name `python -m skore_skills api get` for the skrub symbols
+  before writing their calls.
 - Propose a `build_learner` function returning
   `predictions.skb.make_learner()` (not a `Pipeline` object).
 
@@ -179,8 +180,9 @@ violated. Overall: ≥ 6/7 cases pass and no Must NOT violated.
 - Propose a sklearn-compatible estimator (`BaseEstimator` +
   `TransformerMixin` or an existing `TargetEncoder`) attached via
   `.skb.apply`.
-- Mention `python-api` consultation to confirm
-  `sklearn.preprocessing.TargetEncoder` (or equivalent) signature.
+- Name `python -m skore_skills api get
+  sklearn.preprocessing.TargetEncoder` (or equivalent) before
+  writing its call.
 
 **Must NOT do:**
 - Accept `apply_func(target_encode)` as written.

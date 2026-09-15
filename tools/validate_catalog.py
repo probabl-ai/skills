@@ -31,6 +31,8 @@ from pathlib import Path
 # An empty set means the category does not take a subcategory
 # (entries under it must have ``"subcategory": null``).
 CATEGORIES: dict[str, set[str]] = {
+    "action": set(),
+    "meta": set(),
     "methodology": set(),
     "orchestration": {"dispatchers", "experiment-sourcing", "test-strategies"},
     "tooling": {"project-setup", "code-quality"},

@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "fce2b37257bc8e82240b1f7a6ebacae755afb8393d607f434967ce49eaaa3821",
+  "catalog_hash": "234829ea15722097bffe68a172724736c5d71a08b78274e5aeeba5aacf575713",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "60fa149bf056699ec7f7608dd9ee95cce30c2c6689b579a3da58d857fa900064"
+      "hash": "17fce9394ddb0f5c3a00c4d6246acaa9821b96f66f5e078f2005367091053203"
     },
     {
       "id": "build-ml-pipeline",
@@ -21,7 +21,7 @@
       "summary": "Build a machine learning pipeline from the data source to the learner, including multi-tables engineering.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "553b63a73671686aedd41eb6ebe8f3090171859406369c8bfc9d84c7665574c2"
+      "hash": "8a486a0eed9ac71e22886aa03ee7eaec70f2952d9f3111f5d38225e16733c4ea"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -30,16 +30,7 @@
       "summary": "Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "430849648a6e96080861bd0bef2f1ff0dd57c48a0bb8b1629f95ccd495eb1be1"
-    },
-    {
-      "id": "test-ml-pipeline",
-      "path": "skills/test-ml-pipeline",
-      "title": "Test ML Pipeline",
-      "summary": "Make sure that your machine learning pipeline is production-ready statistically and functionally.",
-      "category": "orchestration",
-      "subcategory": "dispatchers",
-      "hash": "d07aaa92b51ebb9528fae4a54c9eb869d44d0d20ebaebb6c42937a344bd48fdb"
+      "hash": "a589dec48b17fe33975fa4a6c93134ef5b43616b40f68ca097d1fb244ee5c443"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -48,7 +39,7 @@
       "summary": "Stress test your machine learning pipeline on future data to make sure it works.",
       "category": "orchestration",
       "subcategory": "test-strategies",
-      "hash": "a65d8bd6134264a905485f1d96cb3eb99f1f177fe413651efb4d817f6fae351f"
+      "hash": "1be41cbc39dbf4ceca178f2f0f7ca321d03d12694de80a7ff1012fd2ce0bc44e"
     },
     {
       "id": "audit-ml-pipeline",
@@ -57,16 +48,25 @@
       "summary": "Once testing and the experiment is done, audit by loading a skore report and investigate.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "d48c089c0c5b77c667ffc989c3989c01c82f7e51667fad895e31b0a045e16a87"
+      "hash": "0389b212b1bf93c435a3c2c9da223ca07d41a31a4c2e3ff928547f519b65fa7d"
+    },
+    {
+      "id": "manage-ml-backlog",
+      "path": "skills/manage-ml-backlog",
+      "title": "Manage ML Backlog",
+      "summary": "Record experiment outcomes and next-lever backlog rows.",
+      "category": "action",
+      "subcategory": null,
+      "hash": "b5e28567979743bdbf238bdbe555d376d638ec9da0f54f16560bf6590f4529e0"
     },
     {
       "id": "iterate-ml-experiment",
       "path": "skills/iterate-ml-experiment",
       "title": "Iterate ML Experiment",
-      "summary": "Design, keep track of experiments and iterate on them.",
+      "summary": "Deprecated pointer to triage and backlog.",
       "category": "orchestration",
       "subcategory": "dispatchers",
-      "hash": "c6a076718f6e2ab86b9d9d6254ed1a546778dfe47826946fed34cbb0356e0e21"
+      "hash": "e6129cd4976c56084a078cea7e98e1b6d17308379a060aab7c83b45be8c657d9"
     },
     {
       "id": "iterate-from-skore",
@@ -84,7 +84,7 @@
       "summary": "As a user be in the loop and propose new experiments — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo).",
       "category": "orchestration",
       "subcategory": "experiment-sourcing",
-      "hash": "7fd5206f0f84ce13882058c328a370edde545383c0075802b370580d63f72da3"
+      "hash": "87c312e69eeaf9a24f90a9d08a15a1f80a30eb9bdad54881d146b6498fb81868"
     },
     {
       "id": "organize-ml-workspace",
@@ -93,7 +93,7 @@
       "summary": "An organized workspace to keep track of your experiments.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "098a7a9cace84cda6754fcadc569f15e303ef19aa66c2f8004b31439936fe452"
+      "hash": "533b0d5e5a7691bbfe09c12444f3e5290f1a0ef439ba21666779c2c7153f0db6"
     },
     {
       "id": "python-code-style",
@@ -102,7 +102,7 @@
       "summary": "Enforce good practices out-of-the-box for the Python ecosystem for your code.",
       "category": "tooling",
       "subcategory": "code-quality",
-      "hash": "2bbd0970fd2d62769a7a013d13ca59035e4e1c9b6b9a256a913f275f5023defa"
+      "hash": "8e13ace9c5f387ddcce3a91f8e9c4ee5bb6187000138781a8417c06fe073447b"
     },
     {
       "id": "python-env-manager",
@@ -111,7 +111,7 @@
       "summary": "Bootstrapping the experiment setup based on your favorite Python environment manager.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "b1d35827e371408e7fb72b851fcfbeec1b030a0454446fb9fe3ee92f0a7ae579"
+      "hash": "1a7d2cf880502819e7eebea3c0c61aea8ecf1c0321b2df50bdae597a8206083c"
     },
     {
       "id": "data-science-python-stack",
@@ -120,36 +120,134 @@
       "summary": "Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers.",
       "category": "reference",
       "subcategory": null,
-      "hash": "e77aa0b94063307c361cab411400ce6ad69be40b2585e84fa709a19f910abc6d"
+      "hash": "8d9ada1b7d974dc0f49f94cf900b0201b98fcfbff7044267f24a1f872d15ffc9"
     },
     {
-      "id": "python-api",
-      "path": "skills/python-api",
-      "title": "Python API Discovery",
-      "summary": "Discover the public API of any installed Python package to make agent find their way without bothering your workspace.",
-      "category": "reference",
+      "id": "triage-ml-task",
+      "path": "skills/triage-ml-task",
+      "title": "Triage ML Task",
+      "summary": "Route an ambiguous ML request to a focused workflow pack.",
+      "category": "meta",
       "subcategory": null,
-      "hash": "76f364876dde905a40be55fc560cc4124f1f75fe8dff9430276f08024cca15af"
+      "hash": "e399eb1d771b2e4939c7de81279e81c6d275c5b7bf4e99ffc160b43cb323523b"
+    },
+    {
+      "id": "setup-ml-project",
+      "path": "skills/setup-ml-project",
+      "title": "Set Up ML Project",
+      "summary": "Coordinate workspace, environment, and git setup.",
+      "category": "meta",
+      "subcategory": null,
+      "hash": "0a0165c5bd3879bd1d3d8b6faa4a8aa2402370119bdf42fddea674bfa383d212"
+    },
+    {
+      "id": "setup-git",
+      "path": "skills/setup-git",
+      "title": "Set Up Git",
+      "summary": "Initialize safe version control for an ML workspace.",
+      "category": "action",
+      "subcategory": null,
+      "hash": "742d4e1d0593e3b2376b7dceb094214d86ebdad52211ad46f7096f95c608e328"
+    },
+    {
+      "id": "model-ml-pipeline",
+      "path": "skills/model-ml-pipeline",
+      "title": "Model ML Pipeline",
+      "summary": "Coordinate build, evaluation, and smoke testing.",
+      "category": "meta",
+      "subcategory": null,
+      "hash": "61d2c25db4de45f79dad3d071a73e4e5e86d4160cde9d1b734cc057aba6b68c5"
+    },
+    {
+      "id": "choose-python-library",
+      "path": "skills/choose-python-library",
+      "title": "Choose Python Library",
+      "summary": "Resolve a library choice and add the selected dependency.",
+      "category": "action",
+      "subcategory": null,
+      "hash": "e51b04f31b902ad52a5948ffa5745afce605c3df91ff9c5b72045be4482220e9"
+    },
+    {
+      "id": "setup-workspace",
+      "path": "skills/setup-workspace",
+      "title": "Set Up Workspace",
+      "summary": "Detect or scaffold the standard ML workspace layout.",
+      "category": "action",
+      "subcategory": null,
+      "hash": "4e18db201bdbac082c06ebd8ef941efe80f8bcf7c5010c460dbd651e8b538af4"
+    },
+    {
+      "id": "setup-python-env",
+      "path": "skills/setup-python-env",
+      "title": "Set Up Python Environment",
+      "summary": "Configure dependencies, editable install, and Python code style.",
+      "category": "action",
+      "subcategory": null,
+      "hash": "2220d4d76a3b45365f4d2dc03432a8f7e1ea47318b3453aeff93154c91f94037"
     }
   ],
   "workflows": [
+    {
+      "id": "setup",
+      "title": "Set Up an ML Workspace",
+      "summary": "Scaffold an ML workspace, choose its Python stack, and configure its environment and code style.",
+      "includes": [
+        "setup-ml-project",
+        "setup-workspace",
+        "setup-python-env",
+        "setup-git",
+        "choose-python-library"
+      ]
+    },
+    {
+      "id": "eda",
+      "title": "Explore ML Data",
+      "summary": "Install the data exploration workflow.",
+      "includes": [
+        "explore-ml-data"
+      ]
+    },
+    {
+      "id": "model",
+      "title": "Model an ML Pipeline",
+      "summary": "Build, evaluate, and test an ML pipeline.",
+      "includes": [
+        "model-ml-pipeline",
+        "build-ml-pipeline",
+        "evaluate-ml-pipeline",
+        "smoke-test-ml-pipeline"
+      ]
+    },
+    {
+      "id": "loop",
+      "title": "Iterate on ML Experiments",
+      "summary": "Triage the loop, audit reports, and manage the experiment backlog.",
+      "includes": [
+        "triage-ml-task",
+        "manage-ml-backlog",
+        "iterate-from-skore",
+        "iterate-from-user",
+        "audit-ml-pipeline"
+      ]
+    },
     {
       "id": "ml-experimentation",
       "title": "ML Experimentation Companion",
       "summary": "A machine learning experiment companion. Focus on the science, the companion organizes the rest with organized workspaces and reporting, auditable results where you are still the owner.",
       "includes": [
-        "organize-ml-workspace",
-        "python-env-manager",
-        "data-science-python-stack",
-        "python-code-style",
-        "python-api",
+        "setup-ml-project",
+        "setup-workspace",
+        "setup-python-env",
+        "setup-git",
+        "model-ml-pipeline",
+        "choose-python-library",
         "explore-ml-data",
         "build-ml-pipeline",
         "evaluate-ml-pipeline",
-        "test-ml-pipeline",
         "smoke-test-ml-pipeline",
         "audit-ml-pipeline",
-        "iterate-ml-experiment",
+        "triage-ml-task",
+        "manage-ml-backlog",
         "iterate-from-skore",
         "iterate-from-user"
       ]

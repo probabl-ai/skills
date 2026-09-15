@@ -53,9 +53,9 @@ digest doesn't carry), the probe goes to
 `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and runs via
 `pixi run python scratch/<ts>_<short>.py`.
 
-See `python-api` § "`scratch/` conventions" for the full
+See `python -m skore_skills api get` § "`scratch/` conventions" for the full
 convention. **Inline `pixi run python -c "..."` is forbidden
-regardless of length** (see `python-api` § Stop conditions).
+regardless of length** (see `python -m skore_skills api get` § Stop conditions).
 
 **Do NOT edit the experiment script to add agent-only `print`
 calls.** The script is the durable record of what was run; the

@@ -85,7 +85,7 @@ when EDA ran):
   records that the CV strategy is decided then, it does not commit a
   specific splitter. (EDA's structure signals still *inform* that
   later choice; they don't pre-empt it.)
-- **Metric default**: consult `python-api` for what
+- **Metric default**: consult `python -m skore_skills api get` for what
   `skore.evaluate` reports by default for the task type.
 
 ### Mismatch handling

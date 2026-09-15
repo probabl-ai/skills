@@ -2,7 +2,7 @@
 
 Recurring shapes of a complex pipeline expressed within the skrub
 DataOps graph. SKILL.md has the one-line summaries; this file has
-the worked patterns. Look up exact symbols in `python-api` — the
+the worked patterns. Look up exact symbols in `python -m skore_skills api get` — the
 patterns tell you *which* shape applies, not the precise signature.
 
 ## 1. Heterogeneous columns (skrub answer to `ColumnTransformer`)
@@ -145,5 +145,5 @@ Attach via `.skb.apply(QuantileRankEncoder(), cols=s.numeric())`.
 
 Drop a `scratch/<ts>_<short>.py` probe to explore the skrub
 surface (`dir(skrub)`, `dir(some_node.skb)`), or WebFetch the skrub
-narrative docs for the installed version via `python-api` Shape 3.
+narrative docs for the installed version via `python -m skore_skills api get` Shape 3.
 Cache new findings to `scratch/api/skrub/<version>/<topic>.md`.

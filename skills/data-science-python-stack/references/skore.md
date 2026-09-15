@@ -3,7 +3,7 @@
 > **Always install the latest `skore`.** The library ships breaking
 > changes in minor versions (e.g. `report.id`, `data=` on `evaluate`,
 > `splitter=` on `CrossValidationReport`); older versions silently
-> diverge from the examples below and from `python-api`. Use `skore =
+> diverge from the examples below and from `python -m skore_skills api get`. Use `skore =
 > ">=<latest>"` as a floor; refresh the floor on every install.
 
 Two responsibilities, one library:

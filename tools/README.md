@@ -25,7 +25,7 @@ Optional LLM skill evals live in a separate pixi environment and are
 
 ```bash
 pixi install -e eval
-pixi run -e eval eval -- -k python-api
+pixi run -e eval eval -- -k build-ml-pipeline
 ```
 
 ## hash_skills.py

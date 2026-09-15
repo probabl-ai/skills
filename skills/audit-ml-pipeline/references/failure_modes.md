@@ -19,17 +19,16 @@ Lookup shape is wrong: `get` is by id, not by key.
   `summary.loc[summary["key"] == "<NN>_<short_name>", "id"].iloc[0]`
   and set it as `REPORT_ID`.
 
-Never substitute by re-running `evaluate` + `put`. See `python-api`
+Never substitute by re-running `evaluate` + `put`. See `python -m skore_skills api get`
 § "Lookup failure ≠ artifact missing".
 
-## `run_cells.py` exits with `ModuleNotFoundError: No module named 'IPython'`
+## `cells run` exits with `ModuleNotFoundError: No module named 'IPython'`
 
 Agent feature not installed in the env the runner is invoked from.
 **Delegate to `python-env-manager` § "Agent feature" via
 `G-AGENT-FEATURE`.** Do not type install commands from this skill.
-The per-manager install scripts under
-`.agents/skills/python-env-manager/scripts/install_agent_feature_<manager>.sh`
-do the full install + verification in one call.
+`python -m skore_skills env agent` prints the full plan;
+`env agent --execute` installs and verifies it.
 
 ## Cell renders as `<Display object at 0x…>` in the digest
 
@@ -46,7 +45,7 @@ report.checks.summarize().frame()
 ## Digest contains `**error:** AttributeError: 'X' object has no attribute 'Y'` for a `report.*` accessor
 
 Symbol drift between skore versions OR symbol-from-memory in the
-audit file. Consult `python-api` against the installed skore version,
+audit file. Consult `python -m skore_skills api get` against the installed skore version,
 update the cell, re-run the runner.
 
 ## Digest contains `**error:**` for the `project.get(REPORT_ID)` cell

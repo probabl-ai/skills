@@ -1,30 +1,39 @@
-"""Temp-workspace tools for lookup-gated evals (list / read / write / run_python)."""
+"""Temp-workspace tools for lookup-gated evals (list / read / write / run)."""
 
 from __future__ import annotations
 
 import json
 import re
+import shlex
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 TOOL_LOOP_CAP = 12
 RUN_PYTHON_TIMEOUT = 30
+RUN_SKORE_SKILLS_TIMEOUT = 30
+CELLS_TIMEOUT = 120
+
+
+def _is_absolute_path(raw: str) -> bool:
+    return PurePosixPath(raw).is_absolute() or PureWindowsPath(raw).is_absolute()
 
 TOOLS_NOTE = (
     "Harness note: you have tools this turn. The project root is a real "
     "directory (your cwd). If SKILL.md points at a relative "
     "`references/` path, that file is on disk here — open it with "
     "read_file before answering from memory. Use list_dir, read_file, "
-    "write_file, and run_python. run_python only executes files under "
-    "scratch/ — inline python -c is rejected. When you are done, put "
-    "the complete deliverable in the assistant message (not only in a "
-    "thinking channel). The last message must be that deliverable, "
-    "not another tool call."
+    "write_file, run_python, and run_skore_skills. run_python only "
+    "executes files under scratch/ — inline python -c is rejected. "
+    "run_skore_skills runs python -m skore_skills with the given argv "
+    "(cwd is this project root). When you are done, put the complete "
+    "deliverable in the assistant message (not only in a thinking "
+    "channel). The last message must be that deliverable, not another "
+    "tool call."
 )
 
 TOOL_SCHEMAS: list[dict[str, Any]] = [
@@ -89,12 +98,36 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_skore_skills",
+            "description": (
+                "Run python -m skore_skills with argv after the module. "
+                "cwd is the project root. No python -c; no shell."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "args": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": (
+                            "Remaining argv, e.g. "
+                            '["api", "get", "sklearn.model_selection.KFold"].'
+                        ),
+                    }
+                },
+                "required": ["args"],
+            },
+        },
+    },
 ]
 
 
 def _repo_file(rel: str) -> Path:
     raw = (rel or "").strip()
-    if not raw or Path(raw).is_absolute():
+    if not raw or _is_absolute_path(raw):
         raise ValueError("copy source must be a repo-relative path")
     source = (REPO_ROOT / raw).resolve()
     try:
@@ -130,6 +163,65 @@ def missing_reads(
     return missing
 
 
+def _cli_argv_joined(arguments: dict[str, Any]) -> str:
+    raw = arguments.get("args")
+    if isinstance(raw, list):
+        return " ".join(str(item) for item in raw)
+    return str(raw or "")
+
+
+def missing_cli(
+    tool_trace: list[dict[str, Any]] | None, patterns: list[str]
+) -> list[str]:
+    """Return expect-cli argv substrings that never appeared in run_skore_skills."""
+    seen: list[str] = []
+    for item in tool_trace or []:
+        if item.get("name") != "run_skore_skills":
+            continue
+        seen.append(_cli_argv_joined(item.get("arguments") or {}))
+    missing: list[str] = []
+    for pattern in patterns:
+        want = pattern.strip().strip("`")
+        if not want:
+            continue
+        if not any(want in call for call in seen):
+            missing.append(pattern)
+    return missing
+
+
+def parse_cli_args(raw: Any) -> list[str]:
+    """Normalize run_skore_skills args; raise ValueError on empty / -c / abs paths."""
+    if raw is None:
+        raise ValueError("args is required")
+    if isinstance(raw, str):
+        text = raw.strip()
+        if not text:
+            raise ValueError("args must be a non-empty list")
+        if text.startswith("["):
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError as exc:
+                raise ValueError("args must be a non-empty list") from exc
+            if not isinstance(data, list):
+                raise ValueError("args must be a non-empty list")
+            tokens = [str(item) for item in data]
+        else:
+            tokens = shlex.split(text)
+    elif isinstance(raw, list):
+        tokens = [str(item) for item in raw]
+    else:
+        raise ValueError("args must be a non-empty list")
+    if not tokens:
+        raise ValueError("args must be a non-empty list")
+    joined = " ".join(tokens)
+    if any(tok == "-c" for tok in tokens) or "python -c" in joined:
+        raise ValueError("python -c is rejected")
+    for tok in tokens:
+        if _is_absolute_path(tok):
+            raise ValueError("paths must be relative to the sandbox")
+    return tokens
+
+
 class Sandbox:
     def __init__(self, root: Path) -> None:
         self.root = root.resolve()
@@ -138,7 +230,7 @@ class Sandbox:
 
     def resolve(self, rel: str) -> Path:
         raw = (rel or ".").strip() or "."
-        if Path(raw).is_absolute():
+        if _is_absolute_path(raw):
             raise ValueError("path must be relative to the project root")
         target = (self.root / raw).resolve()
         try:
@@ -193,6 +285,8 @@ class Sandbox:
                 )
             if name == "run_python":
                 return self._run_python(str(arguments.get("path") or ""))
+            if name == "run_skore_skills":
+                return self._run_skore_skills(arguments.get("args"))
             return f"unknown tool: {name}"
         except Exception as exc:  # noqa: BLE001 — surface tool errors to the model
             return f"error: {exc}"
@@ -236,6 +330,31 @@ class Sandbox:
             timeout=RUN_PYTHON_TIMEOUT,
             check=False,
         )
+        out = []
+        if proc.stdout:
+            out.append(proc.stdout)
+        if proc.stderr:
+            out.append(proc.stderr)
+        out.append(f"exit_code={proc.returncode}")
+        return "\n".join(out).strip()
+
+    def _run_skore_skills(self, raw_args: Any) -> str:
+        try:
+            args = parse_cli_args(raw_args)
+        except ValueError as exc:
+            return f"error: {exc}"
+        timeout = CELLS_TIMEOUT if args[0] == "cells" else RUN_SKORE_SKILLS_TIMEOUT
+        try:
+            proc = subprocess.run(
+                [sys.executable, "-m", "skore_skills", *args],
+                cwd=self.root,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            return f"error: timed out after {timeout}s"
         out = []
         if proc.stdout:
             out.append(proc.stdout)

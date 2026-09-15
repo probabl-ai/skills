@@ -1,0 +1,21 @@
+{
+  "skill_name": "setup-git",
+  "evals": [
+    {
+      "id": 1,
+      "title": "First repository",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `.env` and raw data are present and must remain untracked.]\n\nInitialize git here and make the first commit.",
+      "expected_output": "Behavioural response satisfying: - Propose git initialization, inspect/merge ignore rules, and show status. - Ask before creating the first commit. It must NOT: - Stage `.env` or raw data. - Commit, push, or create a remote without confirmation.",
+      "files": [],
+      "expectations": [
+        "Propose git initialization, inspect/merge ignore rules, and show status.",
+        "Ask before creating the first commit.",
+        "The response does NOT: Stage `.env` or raw data.",
+        "The response does NOT: Commit, push, or create a remote without confirmation."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

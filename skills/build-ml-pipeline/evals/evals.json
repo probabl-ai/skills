@@ -5,12 +5,12 @@
       "id": 1,
       "title": "Bare `sklearn.Pipeline` \u2192 redirect to skrub DataOps",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Tabular regression task, mixed-type DataFrame, no cross-row\n  features (IID).\n- `skrub`, `scikit-learn`, `skore` are installed and importable.\n- No existing `src/<pkg>/pipeline.py`.]\n\nSet up the baseline pipeline using `sklearn.Pipeline` with a\n`StandardScaler` and `Ridge`. Just write `src/<pkg>/pipeline.py`\nwith a `build_pipeline()` function.",
-      "expected_output": "Behavioural response satisfying: - Redirect from bare `sklearn.Pipeline` to a **skrub DataOps graph** rooted at `skrub.var(...)`. - Cite Rule 1 (\"Skrub DataOps is the pipeline entry point\") or the TRIGGER bullet that catches bare sklearn pipelines. - Mention consulting `python-api` to confirm skrub symbols. It must NOT: - Write `from sklearn.pipeline import Pipeline` as a live import in `pipeline.py`. - Return a `Pipeline([(\"scaler\", StandardScaler()), ...])` object from `build_learner` / `build_pipeline`. A docstring that only names the forbidden equivalent is not a violation. - Use `skrub.X(...)` / `skrub.y(...)` as graph roots.",
+      "expected_output": "Behavioural response satisfying: - Redirect from bare `sklearn.Pipeline` to a **skrub DataOps graph** rooted at `skrub.var(...)`. - Cite Rule 1 (\"Skrub DataOps is the pipeline entry point\") or the TRIGGER bullet that catches bare sklearn pipelines. - Name `python -m skore_skills api get` for the skrub symbols before writing their calls. It must NOT: - Write `from sklearn.pipeline import Pipeline` as a live import in `pipeline.py`. - Return a `Pipeline([(\"scaler\", StandardScaler()), ...])` object from `build_learner` / `build_pipeline`. A docstring that only names the forbidden equivalent is not a violation. - Use `skrub.X(...)` / `skrub.y(...)` as graph roots.",
       "files": [],
       "expectations": [
         "Redirect from bare `sklearn.Pipeline` to a **skrub DataOps graph** rooted at `skrub.var(...)`.",
         "Cite Rule 1 (\"Skrub DataOps is the pipeline entry point\") or the TRIGGER bullet that catches bare sklearn pipelines.",
-        "Mention consulting `python-api` to confirm skrub symbols.",
+        "Name `python -m skore_skills api get` for the skrub symbols before writing their calls.",
         "Propose a `build_learner` function returning `predictions.skb.make_learner()` (not a `Pipeline` object).",
         "The response does NOT: Write `from sklearn.pipeline import Pipeline` as a live import in `pipeline.py`.",
         "The response does NOT: Return a `Pipeline([(\"scaler\", StandardScaler()), ...])` object from `build_learner` / `build_pipeline`. A docstring that only names the forbidden equivalent is not a violation.",
@@ -96,7 +96,7 @@
         "Refuse the `apply_func` route for this step.",
         "Cite the **statelessness rule** (stateful \u2192 estimator) and/or the **leakage rule** (uses statistics learned from data \u2192 must be stateful) \u2014 target encoding learns category \u2192 mean from training y.",
         "Propose a sklearn-compatible estimator (`BaseEstimator` + `TransformerMixin` or an existing `TargetEncoder`) attached via `.skb.apply`.",
-        "Mention `python-api` consultation to confirm `sklearn.preprocessing.TargetEncoder` (or equivalent) signature.",
+        "Name `python -m skore_skills api get sklearn.preprocessing.TargetEncoder` (or equivalent) before writing its call.",
         "The response does NOT: Accept `apply_func(target_encode)` as written.",
         "The response does NOT: Propose the function with a \"compute mean on training only via manual filtering\" workaround."
       ],

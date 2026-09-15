@@ -16,8 +16,7 @@ violated.
   `RMSE 0.083 ± 0.004 (5-fold CV)`.
 - `experiments/02_load_forecast.py` exists.
 - `src/<pkg>/data.py` exposes `build_supervised_frame(data_dir)`.
-- `tests/smoke/test_02_load_forecast.py` empty scaffold from
-  `test-ml-pipeline`.
+- `tests/smoke/test_02_load_forecast.py` is an empty scaffold.
 
 **Must do:**
 - Wire the **hard assertion**:
@@ -54,8 +53,8 @@ violated.
 - Refuse to write the smoke test.
 - Cite the Stop condition: "No smoke test without an approved
   design note + script."
-- Route to `iterate-ml-experiment` to author + approve the design
-  note first.
+- State that status is missing an approved design and tell the user
+  to run the model/loop pack or ask triage.
 
 **Must NOT do:**
 - Write `tests/smoke/test_03_target_transform.py` even as a stub.
@@ -147,7 +146,7 @@ violated.
 
 ---
 
-## CASE_06 — Smoke fails → route to build-ml-pipeline, not loosen
+## CASE_06 — Smoke fails → report topology defect, do not loosen
 
 **User prompt:**
 > The smoke test for `02_load_forecast` is red on row count. The
@@ -163,8 +162,9 @@ violated.
 - Refuse the wrapper fix.
 - Cite the Stop condition: "No wrappers, no NaN-handling, no
   `eval_mode` hacks. Wrappers paper over the failure mode."
-- Diagnose as a Layer-2 / late-mark issue in `build-ml-pipeline`.
-- Route back to `build-ml-pipeline` to fix the X-marker placement
+- Diagnose as a Layer-2 / late-mark topology issue.
+- Tell the user to run the model pack or ask triage to fix the
+  X-marker placement
   (three-layer pattern: predict_grid + history sources at Layer 1;
   aligner at Layer 2 marks X; feature steps at Layer 3 reference
   history as additional `apply_func` arg).

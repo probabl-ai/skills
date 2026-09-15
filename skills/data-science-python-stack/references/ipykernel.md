@@ -12,7 +12,7 @@ The Python kernel for Jupyter — the bridge that lets notebook clients
 - An agent (including this one) can drive a running kernel the same way
   an IDE does — execute code, read outputs, keep state across turns —
   whenever a persistent Python session is more useful than one-shot
-  scratch scripts. (Inline `python -c` is forbidden by `python-api` §
+  scratch scripts. (Inline `python -c` is forbidden by `python -m skore_skills api get` §
   Stop conditions; one-shot Python execution always goes to
   `scratch/<ts>_*.py`.)
 

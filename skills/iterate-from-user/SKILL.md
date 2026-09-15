@@ -22,7 +22,7 @@ description: >
 
   SKIP when: the user wants to mine the previous report (use
   `iterate-from-skore`); the user is asking for a symbol lookup or
-  pipeline mechanics (use the `python-api` skill); the work is
+  pipeline mechanics (use the `python -m skore_skills api get` skill); the work is
   evaluation mechanics on a single report (route to
   `evaluate-ml-pipeline`).
 

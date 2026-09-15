@@ -3,8 +3,8 @@
 
 Increments the semver ``major``, ``minor``, or ``patch`` component and
 writes the new version consistently to ``.catalog.json``, ``pixi.toml``,
-``.claude-plugin/plugin.json``, ``.claude-plugin/marketplace.json``, and
-``.cursor-plugin/plugin.json``.
+``pyproject.toml``, ``.claude-plugin/plugin.json``,
+``.claude-plugin/marketplace.json``, and ``.cursor-plugin/plugin.json``.
 
 The script refuses to run when those sources disagree; run
 ``check_versions.py`` first to diagnose drift.
@@ -34,6 +34,7 @@ SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 VERSION_FILES: tuple[str, ...] = (
     ".catalog.json",
     "pixi.toml",
+    "pyproject.toml",
     ".claude-plugin/plugin.json",
     ".claude-plugin/marketplace.json",
     ".cursor-plugin/plugin.json",
@@ -93,7 +94,7 @@ def replacement_patterns(current: str, new: str, relative_path: str) -> tuple[st
         ``(old_fragment, new_fragment)`` suitable for a single in-place
         string replacement.
     """
-    if relative_path == "pixi.toml":
+    if relative_path in {"pixi.toml", "pyproject.toml"}:
         return f'version = "{current}"', f'version = "{new}"'
     return f'"version": "{current}"', f'"version": "{new}"'
 

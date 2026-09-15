@@ -1,0 +1,16 @@
+line-length = 88
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "D"]
+
+[lint.per-file-ignores]
+"experiments/**" = ["E402", "B018", "D100", "D103"]
+"audit/**" = ["E402", "B018", "D100", "D103"]
+"data/eda.py" = ["E402", "B018", "D100", "D103"]
+
+[lint.pydocstyle]
+convention = "numpy"
+
+[format]
+docstring-code-format = true

@@ -1,0 +1,22 @@
+{
+  "skill_name": "choose-python-library",
+  "evals": [
+    {
+      "id": 1,
+      "title": "Competing optional libraries",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Pixi project; neither package is installed.\n- The stack does not fix one canonical tuning library.]\n\nAdd either optuna or scikit-optimize for tuning. You choose.",
+      "expected_output": "Behavioural response satisfying: - Present the smallest useful comparison and ask the user to choose. - After a choice, route installation through `python -m skore_skills env add <package>`. It must NOT: - Install both candidates. - Pick silently because the user said \u201cyou choose.\u201d - Run `pip install`.",
+      "files": [],
+      "expectations": [
+        "Present the smallest useful comparison and ask the user to choose.",
+        "After a choice, route installation through `python -m skore_skills env add <package>`.",
+        "The response does NOT: Install both candidates.",
+        "The response does NOT: Pick silently because the user said \u201cyou choose.\u201d",
+        "The response does NOT: Run `pip install`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

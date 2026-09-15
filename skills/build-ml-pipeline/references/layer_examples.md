@@ -102,7 +102,7 @@ def build_learner(predict_grid_preview=None, history_source_preview=None):
     # Layer 2: align predict_grid + history into (X, y).
     # `align_xy` is a small stateful BaseEstimator:
     #   fit_transform → {X, y}; transform → {X, y=None}.
-    # See python-api/references/pre_mark_alignment.md for the full
+    # See build-ml-pipeline/references/pre_mark_alignment.md for the full
     # production-style walkthrough drawn from this workspace's
     # 01_baseline.
     aligned = skrub.as_data_op(
@@ -129,7 +129,7 @@ immediately after. Other shapes work too (e.g. two parallel
 expresses the alignment most clearly for the data.
 
 Look up the underlying skrub DataOp / `mark_as_X` / `mark_as_y`
-signatures via `python-api` against the installed skrub version.
+signatures via `python -m skore_skills api get` against the installed skrub version.
 
 ### Inside the aligner — JOIN, not SHIFT+DROP
 

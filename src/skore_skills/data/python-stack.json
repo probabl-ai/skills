@@ -1,0 +1,43 @@
+{
+  "mandatory": [
+    "scikit-learn",
+    "skrub",
+    "skore",
+    "ruff",
+    "pytest"
+  ],
+  "competing": {
+    "tabular": ["pandas", "polars"],
+    "deep_learning_framework": ["pytorch", "keras"],
+    "sklearn_dl_wrapper": ["skorch", "keras"],
+    "plotting": ["matplotlib", "seaborn", "plotly"],
+    "serving": ["mlflow", "fastapi"]
+  },
+  "optional": [
+    "jupyterlab",
+    "ipykernel",
+    "jupytext",
+    "pytorch",
+    "keras",
+    "skorch",
+    "mlflow"
+  ],
+  "transitive": [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "seaborn",
+    "plotly",
+    "joblib",
+    "pandas"
+  ],
+  "forbidden_substitutes": {
+    "xgboost": "Use scikit-learn HistGradientBoosting instead of xgboost (data-science-python-stack).",
+    "lightgbm": "Use scikit-learn HistGradientBoosting instead of lightgbm (data-science-python-stack).",
+    "catboost": "Use scikit-learn HistGradientBoosting instead of catboost (data-science-python-stack).",
+    "black": "Use ruff instead of black (data-science-python-stack).",
+    "isort": "Use ruff instead of isort (data-science-python-stack).",
+    "flake8": "Use ruff instead of flake8 (data-science-python-stack).",
+    "pydocstyle": "Use ruff instead of pydocstyle (data-science-python-stack)."
+  }
+}

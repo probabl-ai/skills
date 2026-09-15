@@ -1,0 +1,119 @@
+{
+  "skill_name": "setup-python-env",
+  "evals": [
+    {
+      "id": 1,
+      "title": "Detection of pixi project, install per-manager",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Project root has `pixi.toml` + `pixi.lock`.\n- `skrub` is missing from the env.\n- `JOURNAL.md` Status records `env manager: pixi`, `env scope:\n  default` from prior session.]\n\nAdd skrub to the project's deps.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills env detect`; detect pixi from the manifest evidence. - Recognise the pre-recorded `Workspace decisions` (skip G-ENV-MGR re-ask). - `G-ENV-SCOPE` is **n/a** for `skrub`: routing is fixed (`default`). Do not require a per-install scope ask. It must NOT: - Run `pip install skrub` in a pixi project (wrong-manager install). - Run `uv add skrub` / `poetry add skrub`. - Auto-routing `skrub` to `default` is **not** a silent dump. Fail this bullet only if the package is an ambiguous extra (`optuna` / `xgboost` / `mlflow`) dropped into `default` without `G-ENV-SCOPE`.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills env detect`; detect pixi from the manifest evidence.",
+        "Recognise the pre-recorded `Workspace decisions` (skip G-ENV-MGR re-ask).",
+        "`G-ENV-SCOPE` is **n/a** for `skrub`: routing is fixed (`default`). Do not require a per-install scope ask.",
+        "Name `python -m skore_skills env add skrub` and the expected printed `pixi add skrub` (or a feature form only if picked).",
+        "The response does NOT: Run `pip install skrub` in a pixi project (wrong-manager install).",
+        "The response does NOT: Run `uv add skrub` / `poetry add skrub`.",
+        "The response does NOT: Auto-routing `skrub` to `default` is **not** a silent dump. Fail this bullet only if the package is an ambiguous extra (`optuna` / `xgboost` / `mlflow`) dropped into `default` without `G-ENV-SCOPE`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 2,
+      "title": "No manager detected, ask before bootstrapping",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Empty folder.\n- No `pyproject.toml`, no `pixi.toml`, no `poetry.lock`, no `uv.lock`.\n- pixi is on PATH.]\n\nInstall pandas.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills env detect`; detect that no manager is in place. - Fire **`G-ENV-MGR`**: a structured `AskUserQuestion` **or** a narrative table of manager options that waits for the user's pick. No tools this turn: enumerating pixi (recommended) plus uv / poetry / hatch / conda / pip+venv is enough. Do not require the tool call. - Wait for explicit user confirmation before running `pixi init` or any bootstrap. It must NOT: - Run `pixi init` silently. - Run `pip install pandas` to \"just get started\". - Pick a manager based on PATH alone.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills env detect`; detect that no manager is in place.",
+        "Fire **`G-ENV-MGR`**: a structured `AskUserQuestion` **or** a narrative table of manager options that waits for the user's pick. No tools this turn: enumerating pixi (recommended) plus uv / poetry / hatch / conda / pip+venv is enough. Do not require the tool call.",
+        "Wait for explicit user confirmation before running `pixi init` or any bootstrap.",
+        "Mention that pixi being on PATH is detection context, not permission.",
+        "Scope sub-pick is **n/a** when the requested package auto-routes (here `pandas` \u2192 `default`). Do not require a second ask.",
+        "The response does NOT: Run `pixi init` silently.",
+        "The response does NOT: Run `pip install pandas` to \"just get started\".",
+        "The response does NOT: Pick a manager based on PATH alone.",
+        "The response does NOT: Run the bootstrap installer (`curl | sh`) itself."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 3,
+      "title": "Wrong-manager refusal",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Project uses pixi (`pixi.toml` + `pixi.lock` at root).\n- pixi env is active.]\n\nJust run `pip install scikit-learn` \u2014 quickest path.",
+      "expected_output": "Behavioural response satisfying: - Refuse `pip install` in a pixi-managed project. - Cite the Stop condition: \"Wrong-manager install is forbidden. Mixing managers creates env state the manifest won't track.\" - Propose `python -m skore_skills env add scikit-learn`, whose checked output is `pixi add scikit-learn`. It must NOT: - Run `pip install scikit-learn`. - Add a `requirements.txt` to the project. - Bypass the manifest with `--user` / `--break-system-packages`.",
+      "files": [],
+      "expectations": [
+        "Refuse `pip install` in a pixi-managed project.",
+        "Cite the Stop condition: \"Wrong-manager install is forbidden. Mixing managers creates env state the manifest won't track.\"",
+        "Propose `python -m skore_skills env add scikit-learn`, whose checked output is `pixi add scikit-learn`.",
+        "Explain that the next `pixi install` would silently undo the pip install.",
+        "The response does NOT: Run `pip install scikit-learn`.",
+        "The response does NOT: Add a `requirements.txt` to the project.",
+        "The response does NOT: Bypass the manifest with `--user` / `--break-system-packages`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 4,
+      "title": "`G-ENV-SCOPE` on an ambiguous extra",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- pixi project, `Workspace decisions` records `env manager: pixi`,\n  `env scope: default`.\n- `pixi.toml` has the enforced 3-feature layout: `default`, `dev`,\n  `agent`.\n- `optuna` is not in the auto-routing table.]\n\nAdd optuna to the project \u2014 I want to tune the learner's\nhyperparameters. You pick where it goes.",
+      "expected_output": "Behavioural response satisfying: - Identify `optuna` as an **ambiguous extra** \u2014 it misses the auto-routing table, so `G-ENV-SCOPE` is the gate for this install. - Name `AskUserQuestion` as the gate and give its **two** options: `default` (fold into runtime deps) vs a new named feature, with `tuning` proposed as the name from the user's wording. - State that \"you pick\" does not resolve `G-ENV-SCOPE` \u2014 only an explicit `default` or a feature name does. It must NOT: - Silently `pixi add optuna` into `default` or into any feature. - Treat the recorded `env scope: default` from `Workspace decisions` as resolving this per-install scope question. - Treat \"you pick\" as free-text resolution of the gate.",
+      "files": [],
+      "expectations": [
+        "Identify `optuna` as an **ambiguous extra** \u2014 it misses the auto-routing table, so `G-ENV-SCOPE` is the gate for this install.",
+        "Name `AskUserQuestion` as the gate and give its **two** options: `default` (fold into runtime deps) vs a new named feature, with `tuning` proposed as the name from the user's wording.",
+        "State that \"you pick\" does not resolve `G-ENV-SCOPE` \u2014 only an explicit `default` or a feature name does.",
+        "The response does NOT: Silently `pixi add optuna` into `default` or into any feature.",
+        "The response does NOT: Treat the recorded `env scope: default` from `Workspace decisions` as resolving this per-install scope question.",
+        "The response does NOT: Treat \"you pick\" as free-text resolution of the gate."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 5,
+      "title": "Mixed ambient state (pixi + conda visible)",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Project root has `pixi.toml` (pixi-managed).\n- A conda env named `myenv` is active in the user's shell.\n- `pip --version` shows pip from conda's env, not pixi's.]\n\nInstall lightgbm.",
+      "expected_output": "Behavioural response satisfying: - Detect ambient state (conda active despite pixi being the project manager). - Surface the conflict to the user \u2014 which env should this install target? - Name `AskUserQuestion` as the mechanism for resolving the manager ambiguity, and state the options it would carry (err on side of asking when borderline, per Stop conditions). It must NOT: - Pick pixi silently because `pixi.toml` exists. - Pick conda silently because the conda env is active. - Treat one as \"obviously right\" without flagging the conflict.",
+      "files": [],
+      "expectations": [
+        "Detect ambient state (conda active despite pixi being the project manager).",
+        "Surface the conflict to the user \u2014 which env should this install target?",
+        "Name `AskUserQuestion` as the mechanism for resolving the manager ambiguity, and state the options it would carry (err on side of asking when borderline, per Stop conditions).",
+        "Recommend `pixi add lightgbm` if the user picks pixi.",
+        "The response does NOT: Pick pixi silently because `pixi.toml` exists.",
+        "The response does NOT: Pick conda silently because the conda env is active.",
+        "The response does NOT: Treat one as \"obviously right\" without flagging the conflict."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 6,
+      "title": "Editable workspace install for a fresh scaffold",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Fresh scaffold from `setup-workspace`.\n- `pyproject.toml` declares `src/<pkg>/`.\n- `pixi.toml` exists.\n- pixi is the manager (recorded).]\n\nThe workspace was just scaffolded. Wire the editable install for\n`src/<pkg>/`.",
+      "expected_output": "Behavioural response satisfying: - Recognise this as the **Editable workspace package** sub-routine. - Propose the documented pixi two-step: `pixi add --pypi \"<pkg> @ .\"`, then `<pkg> = { path = \".\", editable = true }` in `pixi.toml`, then `pixi install`. - Explain that this lets `from <pkg>.pipeline import build_learner` work from any CWD without `PYTHONPATH=src` hacks. It must NOT: - Run `pip install -e .` (wrong manager in a pixi project). - Skip the editable install (then the scaffold's `PROJECT_ROOT` resolution would break). - Modify `pyproject.toml`'s `[project]` block ad-hoc to make the package \"findable\" by inference.",
+      "files": [],
+      "expectations": [
+        "Recognise this as the **Editable workspace package** sub-routine.",
+        "Propose the documented pixi two-step: `pixi add --pypi \"<pkg> @ .\"`, then `<pkg> = { path = \".\", editable = true }` in `pixi.toml`, then `pixi install`.",
+        "Explain that this lets `from <pkg>.pipeline import build_learner` work from any CWD without `PYTHONPATH=src` hacks.",
+        "The response does NOT: Run `pip install -e .` (wrong manager in a pixi project).",
+        "The response does NOT: Skip the editable install (then the scaffold's `PROJECT_ROOT` resolution would break).",
+        "The response does NOT: Modify `pyproject.toml`'s `[project]` block ad-hoc to make the package \"findable\" by inference."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

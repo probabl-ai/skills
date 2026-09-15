@@ -33,7 +33,7 @@ The only library-specific line in the whole file is
 
 > **Dependency:** `TableReport.json()`'s exact keys are not formally
 > documented and can shift across skrub versions. Confirm the shape
-> via `python-api` *this turn* (probe `report.json()` on a tiny frame
+> via `python -m skore_skills api get` *this turn* (probe `report.json()` on a tiny frame
 > in `scratch/`), pin a skrub floor, and parse defensively with
 > `.get(...)`. If a key you expect is absent, adapt the field name —
 > don't crash the cell. (The template uses `name`, `dtype`,

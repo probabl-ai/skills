@@ -12,12 +12,15 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 # and CI.
 python = ">=3.11,<3.14"
 
+[pypi-dependencies]
+skore-skills = { path = ".", editable = true }
+
 [tasks]
 hash = { cmd = "python tools/hash_skills.py", description = "Refresh per-skill and aggregate SHA-256 hashes in .catalog.json." }
 hash-check = { cmd = "python tools/hash_skills.py --check", description = "Verify .catalog.json hashes match the on-disk skills (non-zero exit on drift)." }
 evals-check = { cmd = "python eval/convert_to_evals_json.py --check", description = "Verify skills/*/evals/evals.json match eval/*/prompts.md (non-zero exit on drift)." }
 validate = { cmd = "python tools/validate_catalog.py", description = "Validate .catalog.json structure: skill/folder symmetry, categories, workflow references." }
-check-versions = { cmd = "python tools/check_versions.py", description = "Verify the version matches across .catalog.json, pixi.toml, and the Claude/Cursor plugin manifests." }
+check-versions = { cmd = "python tools/check_versions.py", description = "Verify the version matches across .catalog.json, pixi.toml, pyproject.toml, and the Claude/Cursor plugin manifests." }
 bump-major = { cmd = "python tools/bump_version.py major", description = "Bump the major version across all version sources." }
 bump-minor = { cmd = "python tools/bump_version.py minor", description = "Bump the minor version across all version sources." }
 bump-patch = { cmd = "python tools/bump_version.py patch", description = "Bump the patch version across all version sources." }
@@ -30,7 +33,7 @@ litellm = "*"
 pytest = ">=8"
 pytest-xdist = "*"
 python-dotenv = ">=1.0"
-# Shape 1 probes in tool-enabled python-api evals import these.
+# Tool-enabled API lookup evals import these.
 # Keep them off the default catalog environment.
 skrub = "==0.9.0"
 scikit-learn = "*"
@@ -65,7 +68,7 @@ joblib = "<1.5"
 [feature.eval.activation.env]
 SKILL_EVAL_TIER_SMALL = "openrouter/qwen/qwen3.7-flash"
 SKILL_EVAL_TIER_MEDIUM = "openrouter/deepseek/deepseek-v4.1-flash"
-SKILL_EVAL_TIER_BIG = "openrouter/moonshotai/kimi-k3"
+SKILL_EVAL_TIER_BIG = "openrouter/deepseek/deepseek-v4.1-flash"
 SKILL_EVAL_TIER = "assigned"
 SKILL_EVAL_JUDGE_MODEL = "openrouter/deepseek/deepseek-v4.1-flash"
 SKILL_EVAL_MODE = "with"
@@ -74,5 +77,39 @@ SKILL_EVAL_PASS_RATIO = "0.7"
 [feature.eval.tasks]
 eval = { cmd = "pytest tests/eval -m eval -n auto", description = "Run DeepEval skill evaluations (requires provider API keys)." }
 
+[feature.test.dependencies]
+pytest = ">=8"
+pytest-cov = "*"
+pytest-xdist = "*"
+pytest-randomly = "*"
+ipython = "*"
+matplotlib = "*"
+scikit-learn = "*"
+skrub = "==0.9.0"
+joblib = "<1.5"
+ruff = "*"
+
+[feature.test.tasks]
+tests = { cmd = "pytest tests/skore_skills --cov=skore_skills --cov-report=xml", description = "Run skore_skills CLI tests with coverage." }
+
+[feature.lint.dependencies]
+pre-commit = "*"
+
+[feature.lint.tasks]
+lint = { cmd = "pre-commit run --all-files", description = "Run pre-commit hooks (ruff, mypy, typos)." }
+
+[feature.py311.dependencies]
+python = "3.11.*"
+
+[feature.py312.dependencies]
+python = "3.12.*"
+
+[feature.py313.dependencies]
+python = "3.13.*"
+
 [environments]
 eval = { features = ["eval"] }
+lint = { features = ["lint"] }
+test-py311 = { features = ["test", "py311"] }
+test-py312 = { features = ["test", "py312"] }
+test-py313 = { features = ["test", "py313"] }

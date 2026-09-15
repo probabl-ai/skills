@@ -2,8 +2,8 @@
 name: explore-ml-data
 description: >
   Owns data understanding BEFORE any model is designed. Places and
-  executes `data/eda.py` (a jupytext `# %%` script) via the shared
-  in-process runner, reads the streamed digest, then writes a
+  in-process runner (`python -m skore_skills cells run`), reads the
+  streamed digest, then writes a
   persisted `data/eda.md` report (plus linked `data/eda_<table>.html`
   skrub `TableReport` pages) and the `## Data understanding (EDA)`
   section of `journal/JOURNAL.md`. The point is to surface the
@@ -12,37 +12,31 @@ description: >
   that JUSTIFY the later learner / splitter / metric decisions, so the
   user understands *why* the modelling choices are made. Uses
   `skrub.TableReport` for dataframe overviews and the shared runner
-  `audit-ml-pipeline/scripts/run_cells.py`. Stops at "EDA executed,
+  `python -m skore_skills cells run`. Stops at "EDA executed,
   `data/eda.md` + HTML written, JOURNAL EDA section updated." Never
   designs the model, never edits `src/<pkg>/`, never modifies the
   user's raw data files.
 
   TRIGGER — any of:
-  - `iterate-ml-experiment` § 0 bootstrap, BEFORE the baseline design
-    note — the G-EDA gate fires here (run / skip).
+  - Bootstrap requires data understanding before baseline design.
   - The user asks to "explore the data", "do an EDA", "profile the
     dataset", "what does the data look like", "understand the data".
   - A new or changed data source needs (re-)understanding before the
     next experiment.
 
-  SKIP when: the workspace isn't scaffolded / bootstrapped yet —
-  `iterate-ml-experiment` § 0 owns bootstrap ordering and will
-  dispatch here at the G-EDA step; don't run standalone ahead of
-  scaffolding (route to `iterate-ml-experiment` / `organize-ml-
-  workspace`); there is no data to explore yet; the user wants to
-  inspect a finished run's skore report rather than the raw dataset
-  (`audit-ml-pipeline`); the user is past data understanding and wants
-  pipeline / evaluation mechanics (`build-ml-pipeline` /
-  `evaluate-ml-pipeline`); a pure symbol lookup (`python-api`); EDA is
-  already recorded (`data/eda.md` + the JOURNAL EDA section exist) and
-  the user is not asking to refresh it.
+  STOP when `python -m skore_skills status` shows no scaffold or no
+  data: explain the missing fact and ask the user to run the setup
+  pack or ask triage. Also stop when the request is not raw-data EDA,
+  or when EDA is already recorded and no refresh was requested. Do
+  not require another action skill to be installed.
 
   HOW TO USE: run the Detection step (does `data/eda.md` + the JOURNAL
   EDA section already exist?), emit the Pre-flight checklist as
   visible text, read the Stop conditions, then place `data/eda.py`
-  from `templates/eda.py`, execute it via the shared runner, read the
+  from `templates/eda.py`, execute it via
+  `python -m skore_skills cells run`, read the
   digest, and author `data/eda.md` + the JOURNAL EDA section. Always
-  resolve skrub / pandas / polars symbols via `python-api`, never from
+  resolve skrub / pandas / polars symbols via `python -m skore_skills api get`, never from
   memory.
 ---
 
@@ -58,7 +52,7 @@ design note's learner / splitter / metric choices.
 
 | You came here for… | → next |
 |---|---|
-| Bootstrap, before the first baseline | → back to `iterate-ml-experiment` § 0; the EDA findings inform the auto-drafted `01_baseline.md` |
+| Bootstrap, before the first baseline | → return the EDA findings; they inform the baseline design |
 | User free-text ("explore the data") | → surface the findings; no further dispatch unless the user asks to model |
 | Re-understand a changed data source | → re-run, overwrite `data/eda.*`, refresh the JOURNAL EDA section |
 
@@ -96,7 +90,7 @@ may live anywhere) and the **EDA deliverables** (always under
 | `data/eda.py` | **Durable** (committed) | This skill, once per workspace | The jupytext `# %%` EDA cells. Source of truth. Openable as a notebook for the rich view |
 | `data/eda.md` | **Durable** (committed) | This skill (authored from the digest) | The prose narrative: findings + **modelling implications** that the baseline note cites |
 | `data/eda_<table>.html` | **Durable** (committed) | `data/eda.py` via `TableReport.write_html(...)` | The rich, interactive skrub report per table — for the human |
-| `scratch/eda/eda.md` | Ephemeral (gitignored), optional | `run_cells.py` when given a 2nd arg | Per-cell digest the agent reads. Same content as stdout |
+| `scratch/eda/eda.md` | Ephemeral (gitignored), optional | `cells run` when given a 2nd arg | Per-cell digest the agent reads. Same content as stdout |
 | `journal/JOURNAL.md` § Data understanding (EDA) | **Durable** (committed) | This skill | 2–4 line summary + link to `data/eda.md` |
 
 **Mnemonic:** the raw data is *read-only and lives wherever the user
@@ -158,10 +152,10 @@ The central rule. Surfaced as the first Stop condition below.
 - **Symbol from memory is forbidden.** Any `skrub` / `pandas` /
   `polars` symbol (`TableReport`, `TableReport.json`, `write_html`,
   `column_associations`, the tabular reader, …) must come from
-  `python-api` *this turn*. Cache hits under
+  `python -m skore_skills api get` *this turn*. Cache hits under
   `scratch/api/<lib>/<version>/` count; inline memory does not.
   **`TableReport.json()`'s key names are not formally documented and
-  drift across skrub versions — confirm them via `python-api` and
+  drift across skrub versions — confirm them via `python -m skore_skills api get` and
   parse defensively (`.get(...)`).**
 - **Library-agnostic — read facts off skrub, not pandas/polars.** The
   workspace may use pandas OR polars (G-TABULAR), whose summary
@@ -250,7 +244,7 @@ Pre-flight (explore-ml-data):
       Evidence: tool output | JOURNAL.md Status `agent feature: installed`
                 Missing → STOP, delegate to python-env-manager G-AGENT-FEATURE
                 (decline → fall back to skip path)
-- [ ] python-api consulted for symbols used:
+- [ ] API CLI consulted for symbols used:
         skrub.TableReport, TableReport.write_html, TableReport.json,
         skrub.column_associations, the tabular reader (load cell only)
       Evidence: Read/Write scratch/api/<lib>/<version>/<topic>.md (this turn)
@@ -262,9 +256,8 @@ Pre-flight (explore-ml-data):
         <table> → short slug per table for eda_<table>.html
       Evidence: Read templates/eda.py this turn before Write data/eda.py
 - [ ] Execution command shape confirmed:
-        pixi run -e agent python \
-          .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
-          data/eda.py [scratch/eda/eda.md]
+        python -m skore_skills cells run data/eda.py [scratch/eda/eda.md]
+      (In a pixi agent env: `pixi run -e agent python -m skore_skills …`.)
       Evidence: command emitted before running
 - [ ] Deliverables written: data/eda.md (prose + implications),
         data/eda_<table>.html (≥1), JOURNAL §Data understanding
@@ -329,21 +322,12 @@ very large data, load a row sample (see `references/cell_anatomy.md`).
 ## Execution contract — one command
 
 ```bash
-pixi run -e agent python \
-  .agents/skills/audit-ml-pipeline/scripts/run_cells.py \
-  data/eda.py
+python -m skore_skills cells run data/eda.py
 ```
 
-The runner (shared with `audit-ml-pipeline`) streams the digest to
-stdout — the agent reads it directly from the bash tool output. Pass
-a second arg `scratch/eda/eda.md` to also write the digest to a file.
-For non-pixi workspaces, swap the activation prefix per
-`python-env-manager` § "Agent feature".
-
-**This skill ships no runner of its own** — there is no
-`explore-ml-data/scripts/`. Always invoke the shared
-`audit-ml-pipeline/scripts/run_cells.py` at the path above; don't
-look for or fork a local copy.
+The CLI streams the digest to stdout. Pass a second arg
+`scratch/eda/eda.md` to also write the digest to a file.
+For a pixi agent environment, prefix with `pixi run -e agent`.
 
 **Prerequisites for the run path:** the workspace package must be
 importable (`from <pkg> import PROJECT_ROOT` — editable install done
@@ -415,7 +399,7 @@ detail lives in `data/eda.md`. On the **skip** path, only the
 | Callee | Why |
 |---|---|
 | `python-env-manager` § Agent feature | When `ipython` is missing on the run path — G-AGENT-FEATURE |
-| `python-api` | Every skrub / pandas / polars symbol. Cache hits first |
+| `python -m skore_skills api get` | Every skrub / pandas / polars symbol. Cache hits first |
 | `data-science-python-stack` | G-TABULAR (pandas / polars) if not yet recorded; skrub `TableReport` reference |
 | `python-code-style` | After writing `data/eda.py` — ruff format / check + contextualize the comments to this dataset (strip any leftover workflow/process prose) |
 
@@ -436,10 +420,10 @@ detail lives in `data/eda.md`. On the **skip** path, only the
 | Skill | Relationship |
 |---|---|
 | `iterate-ml-experiment` | Caller. § 0 fires G-EDA before the baseline note; the EDA findings seed the note's Method / Risks |
-| `audit-ml-pipeline` | Owns the shared cell runner `scripts/run_cells.py` this skill executes; same bare-expression discipline |
+| `audit-ml-pipeline` | Same `cells run` CLI and bare-expression discipline |
 | `organize-ml-workspace` | Workspace layout; `data/` is user-owned — this skill is the one exception that writes `data/eda.*` into it |
 | `python-env-manager` | Agent feature install (G-AGENT-FEATURE). This skill requests; that skill installs |
-| `python-api` | skrub / pandas / polars symbol lookups. Cache hits first |
+| `python -m skore_skills api get` | skrub / pandas / polars symbol lookups. Cache hits first |
 | `data-science-python-stack` | G-TABULAR; skrub `TableReport` is catalogued there |
 | `python-code-style` | ruff after writing `data/eda.py` |
 
@@ -449,8 +433,8 @@ detail lives in `data/eda.md`. On the **skip** path, only the
   don't rewrite from memory.
 - `templates/eda.md` — the `data/eda.md` report skeleton.
 
-The cell runner is **not** owned here — it is
-`audit-ml-pipeline/scripts/run_cells.py` (shared). Don't fork it.
+The cell runner is **the CLI** —
+`python -m skore_skills cells run`.
 
 ## References (load on demand)
 

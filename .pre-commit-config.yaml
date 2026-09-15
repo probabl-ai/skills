@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.46.0
+    hooks:
+      - id: typos
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff-check
+        files: ^(src/skore_skills|tests/skore_skills)/
+        args: [--fix, --extend-select, I]
+      - id: ruff-format
+        files: ^(src/skore_skills|tests/skore_skills)/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.20.2
+    hooks:
+      - id: mypy
+        pass_filenames: false
+        files: ^src/skore_skills/
+        args: [--config-file=pyproject.toml, src/skore_skills]
+        additional_dependencies:
+          - click

@@ -57,6 +57,19 @@ Then run the following command:
 skore skills install
 ```
 
+Install a smaller workflow pack by id when you do not need the full
+companion:
+
+```bash
+skore skills install setup  # workspace, environment, stack, style
+skore skills install eda    # data exploration
+skore skills install model  # build, evaluate, test, smoke
+skore skills install loop   # triage, backlog, audit, sourcing
+```
+
+`skore skills install ml-experimentation` remains the complete pack,
+and the default `install` / `install all` behavior is unchanged.
+
 You can use `uvx` or `pixi exec` to install the `skore` CLI and directly run the
 command in an isolated environment:
 
@@ -93,6 +106,18 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 ## Skills in detail
 
+### Meta and setup actions
+
+| Skill | Description |
+| --- | --- |
+| [triage-ml-task](skills/triage-ml-task/SKILL.md) | Own the canonical loop and ask one next-stage question. |
+| [setup-ml-project](skills/setup-ml-project/SKILL.md) | Coordinate workspace, environment, and git setup. |
+| [setup-workspace](skills/setup-workspace/SKILL.md) | Detect or scaffold the standard ML workspace layout. |
+| [setup-python-env](skills/setup-python-env/SKILL.md) | Configure dependencies, editable install, and Python code style. |
+| [setup-git](skills/setup-git/SKILL.md) | Initialize safe version control for an ML workspace. |
+| [model-ml-pipeline](skills/model-ml-pipeline/SKILL.md) | Coordinate build, evaluation, and smoke testing. |
+| [choose-python-library](skills/choose-python-library/SKILL.md) | Resolve a library choice and add the selected dependency. |
+
 ### ML pipeline lifecycle
 
 | Skill | Description |
@@ -100,7 +125,6 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 | [explore-ml-data](skills/explore-ml-data/SKILL.md) | Explore the dataset before designing any model. |
 | [build-ml-pipeline](skills/build-ml-pipeline/SKILL.md) | Build a machine learning pipeline from the data source to the learner, including multi-tables engineering. |
 | [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics. |
-| [test-ml-pipeline](skills/test-ml-pipeline/SKILL.md) | Make sure that your machine learning pipeline is production-ready statistically and functionally. |
 | [smoke-test-ml-pipeline](skills/smoke-test-ml-pipeline/SKILL.md) | Stress test your machine learning pipeline on future data to make sure it works. |
 | [audit-ml-pipeline](skills/audit-ml-pipeline/SKILL.md) | Once testing and the experiment are done, audit the model by loading a skore report and investigate. |
 
@@ -108,7 +132,8 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 | Skill | Description |
 | --- | --- |
-| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Design, keep track of experiments, and iterate on them. |
+| [iterate-ml-experiment](skills/iterate-ml-experiment/SKILL.md) | Deprecated one-release pointer to triage and backlog. |
+| [manage-ml-backlog](skills/manage-ml-backlog/SKILL.md) | Record experiment outcomes and next-lever backlog rows. |
 | [iterate-from-skore](skills/iterate-from-skore/SKILL.md) | Use skore to run diagnostics and checks that can be reported and addressed in the next experiment. |
 | [iterate-from-user](skills/iterate-from-user/SKILL.md) | As a user, be in the loop and propose new experiments — free-text, a scientific article URL, or a resource link (GitHub issue / spec / reference repo). |
 
@@ -116,13 +141,11 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 | Skill | Description |
 | --- | --- |
-| [organize-ml-workspace](skills/organize-ml-workspace/SKILL.md) | An organized workspace to keep track of your experiments. |
-| [python-code-style](skills/python-code-style/SKILL.md) | Enforce best practices out-of-the-box from the Python ecosystem in your code. |
-| [python-env-manager](skills/python-env-manager/SKILL.md) | Bootstrapping the experiment setup based on your favorite Python environment manager. |
-| [data-science-python-stack](skills/data-science-python-stack/SKILL.md) | Opinionated one-library-per-job Python stack, organized into mandatory / user-choice / optional / transitive tiers. |
+| [setup-workspace](skills/setup-workspace/SKILL.md) | An organized workspace to keep track of experiments. |
+| [setup-python-env](skills/setup-python-env/SKILL.md) | Environment, editable install, Ruff configuration, and style execution. |
+| [choose-python-library](skills/choose-python-library/SKILL.md) | Select optional libraries without reopening fixed stack choices. |
 
 ### API references
 
 | Skill | Description |
 | --- | --- |
-| [python-api](skills/python-api/SKILL.md) | Discover the public API of any installed Python package to help agents navigate without polluting your workspace. |

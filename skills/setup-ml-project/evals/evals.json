@@ -1,0 +1,22 @@
+{
+  "skill_name": "setup-ml-project",
+  "evals": [
+    {
+      "id": 1,
+      "title": "Full project setup",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Empty folder; no manager or package name selected.]\n\nSet up this empty folder for a tabular ML project.",
+      "expected_output": "Behavioural response satisfying: - Dispatch workspace, environment, then git setup in that order. - Ask for unresolved package, tabular, manager, and skore-mode decisions before scaffold/install actions. It must NOT: - Run `pip install`. - Commit without asking. - Write a runnable baseline experiment.",
+      "files": [],
+      "expectations": [
+        "Dispatch workspace, environment, then git setup in that order.",
+        "Ask for unresolved package, tabular, manager, and skore-mode decisions before scaffold/install actions.",
+        "The response does NOT: Run `pip install`.",
+        "The response does NOT: Commit without asking.",
+        "The response does NOT: Write a runnable baseline experiment."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

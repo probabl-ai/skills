@@ -9,9 +9,10 @@ Sources checked
 ---------------
 1. ``.catalog.json``                -> top-level ``version``.
 2. ``pixi.toml``                    -> ``[workspace] version``.
-3. ``.claude-plugin/plugin.json``   -> ``version``.
-4. ``.claude-plugin/marketplace.json`` -> each ``plugins[].version``.
-5. ``.cursor-plugin/plugin.json``   -> ``version``.
+3. ``pyproject.toml``               -> ``[project] version``.
+4. ``.claude-plugin/plugin.json``   -> ``version``.
+5. ``.claude-plugin/marketplace.json`` -> each ``plugins[].version``.
+6. ``.cursor-plugin/plugin.json``   -> ``version``.
 
 Usage
 -----
@@ -63,6 +64,13 @@ def collect_versions(repo_root: Path) -> tuple[dict[str, str], list[str]]:
         versions["pixi.toml"] = pixi["workspace"]["version"]
     except (OSError, tomllib.TOMLDecodeError, KeyError) as exc:
         errors.append(f"pixi.toml: could not read [workspace] version ({exc})")
+
+    pyproject_path = repo_root / "pyproject.toml"
+    try:
+        pyproject = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
+        versions["pyproject.toml"] = pyproject["project"]["version"]
+    except (OSError, tomllib.TOMLDecodeError, KeyError) as exc:
+        errors.append(f"pyproject.toml: could not read [project] version ({exc})")
 
     plugin_path = repo_root / ".claude-plugin" / "plugin.json"
     try:

@@ -24,8 +24,8 @@ violated.
 - Pick **`skore.evaluate(learner, data={...}, splitter=...)`** as
   the entry point (not `cross_val_score`, not `cross_validate`).
 - Map empty `split_kwargs` + IID → **`KFold`** per the mapping table.
-- Mention python-api consultation for `skore.evaluate` and
-  `KFold` signatures.
+- Name `python -m skore_skills api get` for `skore.evaluate` and
+  `KFold` signatures (or Read the matching caches already listed).
 - Mention `data={...}` (env-dict) for `SkrubLearner`, NOT
   positional `X, y`.
 
@@ -98,9 +98,9 @@ violated.
 **Must do:**
 - Paste **`GroupKFold`** from the mapping table (`groups` →
   `GroupKFold`). That identifier is the mapping; do not withhold it.
-- python-api for the *signature* may be named as the next live
-  turn. Do not fail if signature lookup is BLOCKED as long as
-  `GroupKFold` is named.
+- `python -m skore_skills api get` for the *signature* may be named
+  as the next live turn. Do not fail if signature lookup is BLOCKED
+  as long as `GroupKFold` is named.
 - Show the `data={...}` env-dict form for a `SkrubLearner`.
 - Do NOT use `StratifiedGroupKFold` (forbidden by Stop conditions).
 
@@ -184,8 +184,8 @@ violated.
 - Mention that `skore.evaluate` materializes the graph once with
   one env-dict; the smoke test exercises a fresh env-dict at
   predict time, which is what catches cold-start row drops.
-- Route to `smoke-test-ml-pipeline` (or its router
-  `test-ml-pipeline`) before flipping the status.
+- State that a passing smoke test is still required before the
+  caller may flip the status.
 
 **Must NOT do:**
 - Edit `journal/02_load_forecast.md` Status to `done`.

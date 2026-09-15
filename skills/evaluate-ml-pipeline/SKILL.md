@@ -19,10 +19,11 @@ description: >
   user asks how to pick a cross-validator; user wants to see a
   report / metrics / diagnostic plots for a fitted learner.
 
-  SKIP when: declaring the pipeline (use `build-ml-pipeline`);
-  hyperparameter / model search (separate skill); fitting,
-  persisting, or serving the final model; tracking or comparing
-  experiments across multiple runs over time (separate skill).
+  STOP when `python -m skore_skills status` shows no declared
+  learner or no approved design: explain the missing prerequisite
+  and ask the user to run the model pack or ask triage. Also stop
+  for hyperparameter search, final-model serving, or multi-run
+  tracking. Do not require another action skill to be installed.
 
   HOW TO USE: invoke before any evaluation call. **First, read the
   "Stop conditions" block at the top of the body and emit the
@@ -30,10 +31,9 @@ description: >
   mandatory before any evaluation code is written.** The structural
   facts about the data (group keys, time ordering) should already be
   encoded at the X marker via `split_kwargs` — if they aren't and you
-  can't tell from the data, return to `build-ml-pipeline` and ask the
-  user. For symbol-level lookups, defer to `python-api` (skore
-  symbols) and `python-api` (splitters); don't guess names from
-  memory.
+  can't tell from the data, report the missing pipeline fact and ask
+  the user. Confirm all symbols with
+  `python -m skore_skills api get`; don't guess names from memory.
 ---
 
 # Evaluate ML Pipeline
@@ -52,14 +52,14 @@ read the report. The pipeline declaration is out of scope (see
   `classification_report`, or hand-rolled metric prints** — that
   silently rewrites this skill out of the project. See
   `data-science-python-stack` § "Missing dependency".
-- **Symbol from memory is forbidden.** Any `skore` entry point
-  (`evaluate`, `EstimatorReport`, `CrossValidationReport`,
-  `ComparisonReport`) and any sklearn splitter name must come from a
-  `Skill(python-api)` or `Skill(python-api)` call **in this turn**.
+- **Symbol from memory is forbidden.** Any new `skore` entry point
+  or sklearn splitter signature must come from
+  `python -m skore_skills api get <dotted>` or a matching cache
+  read **in this turn**.
   "I remember `KFold(n_splits=5)`" is not acceptable.
 - **The rule-3 table is not a substitute for the lookup.** The
   mapping table below tells you *which* splitter the data calls
-  for; `python-api` tells you what it is called and how it is
+  for; `python -m skore_skills api get` tells you what it is called and how it is
   signed in the installed version. Naming `KFold(5)` because the
   table says so, with the lookup deferred, is the same violation as
   naming it from memory.
@@ -70,7 +70,7 @@ read the report. The pipeline declaration is out of scope (see
   identifiers (`groups` → `GroupKFold`) are already in this skill
   — paste `GroupKFold` anyway. Do not BLOCKED the identifier.
   The turn still ends with a single line for the signature probe:
-  `BLOCKED: GroupKFold signature needs a python-api lookup that
+  `BLOCKED: GroupKFold signature needs a API CLI lookup that
   cannot run this turn (<why>).`
 - **`BLOCKED` is scoped to the lookup, not to the whole turn.** It
   withholds the splitter *name*; it does not excuse the rest of the
@@ -116,7 +116,7 @@ read the report. The pipeline declaration is out of scope (see
   `scratch/<YYYY-MM-DD>_<HHMMSS>_<short>.py` and runs via
   `pixi run python scratch/<ts>_<short>.py`. **Inline
   `pixi run python -c "..."` is forbidden regardless of length**
-  (see `python-api` § Stop conditions). The previous "2-line
+  (see `python -m skore_skills api get` § Stop conditions). The previous "2-line
   inline cap" is removed.
 - **Don't filter warnings.** No `warnings.filterwarnings(...)`
   around `skore.evaluate(...)` or the CV splitter unless the user
@@ -142,7 +142,7 @@ read the report. The pipeline declaration is out of scope (see
   "the report is missing" but actually means "the lookup shape is
   wrong — `get` is by id, not
   by `key`". Never substitute by re-running `evaluate` + `put`.
-  See `python-api` § "Lookup failure ≠ artifact missing" for the
+  See `python -m skore_skills api get` § "Lookup failure ≠ artifact missing" for the
   general registry-lookup discipline.
 - **The time-ordered splitter AskUserQuestion is non-skippable,
   even under harness-level "no clarifying questions"
@@ -169,12 +169,12 @@ tool call or an explicit decision documented in the response.
 Pre-flight (evaluate-ml-pipeline):
 - [ ] Tier 1 mandatory libs importable in this env: sklearn, skrub, skore
       (per `data-science-python-stack` § "Tier 1")
-- [ ] Skill(python-api) consulted for skore symbols (evaluate /
+- [ ] API confirmed for skore symbols (evaluate /
       report classes): <symbols>
-      Evidence: Read scratch/api/skore/<version>/<topic>.md (this turn)
+      Evidence: python -m skore_skills api get <dotted>
+                | Read scratch/api/skore/<version>/<topic>.md (this turn)
                 | Write scratch/api/skore/<version>/<topic>.md (this turn)
                 | "n/a — no new skore symbol introduced this turn"
-      "Read python-api SKILL.md" alone is NOT evidence.
 - [ ] Call site for `skore.evaluate(...)` / `project.put(...)`
       is `experiments/NN_*.py` (not `scratch/`, not a notebook,
       not `src/<pkg>/`). See Stop condition
@@ -182,13 +182,13 @@ Pre-flight (evaluate-ml-pipeline):
       `experiments/NN_*.py`".
       Evidence: Write experiments/<NN>_<name>.py (this turn) |
                 "the call already lives in an existing experiments/ file"
-- [ ] Skill(python-api) consulted for sklearn splitter: <name>
-      Evidence: Read scratch/api/sklearn/<version>/cv_splitters.md
+- [ ] API confirmed for sklearn splitter: <name>
+      Evidence: python -m skore_skills api get <dotted>
+                | Read scratch/api/sklearn/<version>/cv_splitters.md
                 (or topic-matching file, this turn)
                 | Write of the same (this turn)
                 | "n/a — splitter is one already in src/<pkg>/evaluate.py
                   and its arguments are unchanged"
-      "Read python-api SKILL.md" alone is NOT evidence.
 - [ ] split_kwargs at the X marker read: <groups | time | none>
 - [ ] Splitter chosen via rule 3 mapping table: <name + reason>
 - [ ] Data-passing form picked: <X, y> | <data={...}>
@@ -225,7 +225,7 @@ Pre-flight (evaluate-ml-pipeline):
    prints, and don't drop back to bare sklearn for evaluation. If you
    see existing `cross_val_score` / `cross_validate` /
    `classification_report` / `mean_squared_error` calls in the diff,
-   redirect them through `skore.evaluate`. Consult `python-api` for
+   redirect them through `skore.evaluate`. Consult `python -m skore_skills api get` for
    the exact signature.
 
    **Always pass `splitter=` explicitly.** When `splitter=` is
@@ -256,9 +256,9 @@ Pre-flight (evaluate-ml-pipeline):
    `X_train` / `y_train` / `X_test` / `y_test`. The full interop
    pattern (env-dict-style vs sklearn-style, how `data={...}` keys
    map to `skrub.var` roots, key conventions in the Project store)
-   is in `python-api/references/skrub_interop.md`; for exact
-   signatures, look them up via `python-api` against the installed
-   skore version.
+   is in `build-ml-pipeline/references/skrub_interop.md`; for exact
+   signatures, run `python -m skore_skills api get` against the
+   installed skore version.
 
 2. **Escalate to explicit report classes only when `evaluate` is too
    coarse.** The escalation order:
@@ -271,7 +271,7 @@ Pre-flight (evaluate-ml-pipeline):
    - `ComparisonReport` — two or more learners side-by-side.
 
    See `references/reports.md` for the escalation table; defer all
-   API details to `python-api`.
+   API details to `python -m skore_skills api get`.
 
 3. **Pick the cross-validator from the structural facts of the data
    — not by default (the `G-CV-SPLITTER` gate).** The data tells you
@@ -288,7 +288,7 @@ Pre-flight (evaluate-ml-pipeline):
 
 When `split_kwargs` contains `groups`, the next token in the reply
 is **`GroupKFold`**. The mapping table is the name source;
-python-api is only for the signature after the name.
+API CLI is only for the signature after the name.
 
    Imbalanced classification *does not* change the choice — use
    plain `KFold` / `GroupKFold`. See "Avoid by default" below.
@@ -388,13 +388,13 @@ python-api is only for the signature after the name.
 
 ## Companion skills
 
-- **`python-api`** — every skore symbol used here. Mandatory before
+- **`python -m skore_skills api get`** — every skore symbol used here. Mandatory before
   naming `evaluate`, `EstimatorReport`, `CrossValidationReport`,
   `ComparisonReport`. Don't guess from memory. **Cache hits
   first**: check `scratch/api/skore/<version>/` before
   WebSearching for narrative pages; cache new findings back
-  there (per `python-api` Shape 0/3).
-- **`python-api`** — every splitter used here. Mandatory before
+  there (per `python -m skore_skills api get` Shape 0/3).
+- **`python -m skore_skills api get`** — every splitter used here. Mandatory before
   naming `KFold`, `GroupKFold`, `TimeSeriesSplit`, etc. **Cache
   hits first**: check `scratch/api/sklearn/<version>/` before
   WebSearching.
@@ -417,7 +417,7 @@ python-api is only for the signature after the name.
   `project.summarize()` → `project.get(id)` and renders a
   markdown digest for the agent (no `evaluate`, no `put`).
   Fires at `iterate-ml-experiment` § 4 record-outcome.
-- **`test-ml-pipeline`** — router for `tests/`. Owns layout and
+- **`smoke-test-ml-pipeline`** — router for `tests/`. Owns layout and
   the stem pairing between an experiment and its smoke test.
 - **`python-env-manager`** — detection + install commands for the
   project's environment manager (pixi / uv / poetry / hatch / conda

@@ -26,20 +26,20 @@ description: >
   - The user asks to build / declare / set up a pipeline /
     classifier / regressor for X.
 
-  SKIP when: `.fit(...)` calls / training loops / `Trainer.fit` /
-  epoch loops; train/test split or cross-validation splitting;
-  hyperparameter search; persistence (`joblib.dump`, checkpointing);
-  evaluation / metrics / scoring; inference over a pre-trained
-  model; pure EDA; library-choice questions with no concrete
-  declaration in play.
+  STOP when `python -m skore_skills status` shows no scaffold,
+  approved design, or data contract: explain the missing fact and
+  ask the user to run the setup/model pack or ask triage. This
+  action does not cover fitting, CV, metrics, persistence, inference,
+  pure EDA, or abstract library choice. Do not require another
+  action skill to be installed.
 
   HOW TO USE: consult before the first declarative line and on
   every structural edit (added/swapped step, changed input columns,
   changed estimator family). Don't re-consult for cosmetic edits.
   **First, read the Stop conditions and emit the Pre-flight
-  checklist as visible text before any code.** Always invoke
-  `python-api` to confirm skrub / sklearn symbol names and
-  signatures before typing — don't guess from memory.
+  checklist as visible text before any code.** Always run
+  `python -m skore_skills api get <dotted>` to confirm skrub /
+  sklearn symbol names and signatures before typing.
 ---
 
 # Build ML Pipeline (Declaration)
@@ -67,15 +67,12 @@ Read these once; they're referenced throughout.
 - **Layers 1 / 2 / 3** — source / predict-grid + X-marker / features
   after the marker. Defined in Rule 2.
 
-## Next-step pointers — where you go after this skill
+## Completion
 
-| You came here for… | → next |
-|---|---|
-| Declared pipeline → CV strategy | → `evaluate-ml-pipeline` (the `G-CV-SPLITTER` gate, rule 3) |
-| Declared pipeline → smoke test | → `test-ml-pipeline` → `smoke-test-ml-pipeline` |
-| Symbol lookup mid-declaration | → `python-api` (Shape 1 / 1b / 3) |
-| Missing skrub/sklearn import | → `python-env-manager` § install |
-| Modified `pipeline.py` / `features.py` / `data.py` | → `python-code-style` (ruff + NumPyDoc) |
+Return the declared graph and its verified API evidence. The caller
+decides whether to continue with evaluation or smoke testing. If a
+dependency or workspace fact is missing, state it and suggest the
+setup/model pack or triage rather than loading another action.
 
 Always re-emit the Pre-flight checklist with evidence before
 declaring the turn done.
@@ -136,13 +133,14 @@ bottom; any match means STOP.
 
 ### S2. Symbol from memory is forbidden
 
-- **Rule:** every skrub / scikit-learn / skore name must come from
-  a `python-api` lookup *this turn*.
+- **Rule:** every new skrub / scikit-learn / skore name must come
+  from `python -m skore_skills api get <dotted>` or an existing
+  matching cache read *this turn*.
 - **Symptom:** you type `tabular_learner` (renamed in 0.7+),
   `mark_as_y(col)` (signature dropped the positional in 0.9+), or
   any name "you remember".
-- **Recovery:** invoke `python-api`. Recognition is not a lookup;
-  names drift between releases.
+- **Recovery:** run `api get`. Recognition is not a lookup; names
+  drift between releases.
 
 ### S3. Splitter selection is out of scope
 
@@ -258,7 +256,7 @@ Layer 3: features take X + history as references.
 - **Symptom:** you catch yourself typing `pixi run python -c`
   or `python -c`.
 - **Recovery:** write the file first, then execute. **Inline is
-  forbidden regardless of length** (see `python-api` § Stop
+  forbidden regardless of length** (see `python -m skore_skills api get` § Stop
   conditions). No 2-line carve-out.
 
 ### S8. Don't filter warnings
@@ -293,11 +291,13 @@ Pre-flight (build-ml-pipeline):
 - [ ] Tabular library identified: pandas | polars
       Evidence: JOURNAL.md Status (Workspace decisions) | user quote
                 | "n/a — pandas already in loader signature"
-- [ ] python-api consulted for skrub symbols this turn
-      Evidence: Read scratch/api/skrub/<v>/<topic>.md (this turn)
+- [ ] API confirmed for skrub symbols this turn
+      Evidence: python -m skore_skills api get <dotted>
+                | Read scratch/api/skrub/<v>/<topic>.md (this turn)
                 | "n/a — no new skrub symbol this turn"
-- [ ] python-api consulted for sklearn symbols this turn
-      Evidence: Read scratch/api/sklearn/<v>/<topic>.md (this turn)
+- [ ] API confirmed for sklearn symbols this turn
+      Evidence: python -m skore_skills api get <dotted>
+                | Read scratch/api/sklearn/<v>/<topic>.md (this turn)
                 | "n/a — no new sklearn symbol this turn"
 - [ ] Source-binding pattern chosen
       Evidence: list each planned `skrub.var("<name>")` and state
@@ -343,7 +343,7 @@ Declare the pipeline as a skrub DataOps graph rooted at one or
 more `skrub.var(...)` calls — **not** as a bare
 `sklearn.Pipeline`. The `skrub.X(...)` / `skrub.y(...)` shortcuts
 are not acceptable roots (see S4). Look up the underlying
-signatures via `python-api`.
+signatures via `python -m skore_skills api get`.
 
 **If the user asks for `sklearn.Pipeline` / `build_pipeline()`:**
 do not `from sklearn.pipeline import Pipeline`. Redirect to
@@ -400,7 +400,7 @@ at rows other than the one currently being processed?*
 
 **Worked examples** (full code, IID + history-dependent +
 counter-example): → `references/layer_examples.md`. Also see
-`python-api/references/pre_mark_alignment.md` for the
+`build-ml-pipeline/references/pre_mark_alignment.md` for the
 production-style three-layer walkthrough drawn from this
 workspace's 01_baseline.
 
@@ -417,7 +417,8 @@ implement sklearn's `fit(X, y)` signature — it takes an
 environment dict. Pair with
 `skore.evaluate(learner, data={"data_dir": ..., ...}, splitter=...)`,
 never with `skore.evaluate(learner, X, y, ...)` (raises). See
-`evaluate-ml-pipeline`; confirm signatures via `python-api`.
+`evaluate-ml-pipeline`; confirm signatures via
+`python -m skore_skills api get`.
 
 **Cross-validation metadata at the X marker.** If the data has
 group structure (subjects, sessions, customer IDs, repeated
@@ -549,7 +550,7 @@ STOP — target encoding / apply_func. When the user asks for
 the leaky function body "as requested" and then the fix. Cite
 statelessness + leakage. Propose sklearn TargetEncoder (or
 BaseEstimator + TransformerMixin) via `.skb.apply`. Mention
-python-api for the TargetEncoder signature.
+API CLI for the TargetEncoder signature.
 ```
 
 → next: Decision flow.
@@ -612,7 +613,8 @@ declaring the new experiment ready.
 
 ## Common patterns
 
-Short catalogue. Look up exact symbols in `python-api`. Full
+Short catalogue. Look up exact symbols with
+`python -m skore_skills api get`. Full
 catalogue with code: → `references/common_patterns.md`.
 
 1. **Heterogeneous columns** — skrub column selectors with `cols=`
@@ -641,10 +643,10 @@ catalogue with code: → `references/common_patterns.md`.
 
 | Skill | Relationship |
 |---|---|
-| `python-api` | Authoritative lookup of sklearn / skrub / skore. Invoke whenever picking a symbol; cache hits first (Shape 0) |
+| `python -m skore_skills api get` | Authoritative lookup of sklearn / skrub / skore. Invoke whenever picking a symbol; cache hits first (Shape 0) |
 | `evaluate-ml-pipeline` | Owns `skore.evaluate`, CV selection, metric defaults. Consumes the `split_kwargs` wired at the X marker |
 | `smoke-test-ml-pipeline` | Executable proof of Rule 2's early-mark. Smoke failure → route back here; fix the topology, don't loosen the assertion |
-| `test-ml-pipeline` | Router for `tests/`. Smoke test pairs 1:1 with the experiment script |
+| `smoke-test-ml-pipeline` | Router for `tests/`. Smoke test pairs 1:1 with the experiment script |
 | `python-env-manager` | Detection + install commands. Invoke when `import skrub` raises |
 | `python-code-style` | **Must be invoked** after writing or editing `pipeline.py` / `features.py` / `data.py`. Direct `pixi run ruff check` drops the NumPyDoc convention |
 

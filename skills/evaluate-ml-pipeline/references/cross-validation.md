@@ -1,7 +1,7 @@
 # Cross-validation taxonomy
 
 When to pick which sklearn splitter. Symbols and exact signatures
-live in `python-api` — this file is the methodology, not the API
+live in `python -m skore_skills api get` — this file is the methodology, not the API
 reference.
 
 ## Decision tree
