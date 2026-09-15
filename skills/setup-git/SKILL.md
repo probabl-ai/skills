@@ -1,9 +1,10 @@
 ---
 name: setup-git
 description: >
-  Set up git for an ML workspace after scaffolding. Trigger when the
-  user asks to initialize version control, add ignore rules, or make
-  the first commit. This action owns git setup only.
+  Set up git for an ML workspace after scaffolding. Persist
+  `git.autocommit` (`off` | `ask` | `on`) in `.skore-workspace.json`.
+  Trigger when the user asks to initialize version control, add
+  ignore rules, or make the first commit. Stop is triage.
 ---
 
 # Set Up Git
@@ -17,6 +18,15 @@ description: >
 4. Show `git status`.
 5. Ask whether to create the first commit and what scope it should
    contain. Commit only after confirmation.
+6. Ask how future commits should work: `off` (never auto-commit),
+   `ask` (confirm each time), or `on` (commit after each approved
+   stage). Persist the pick:
+
+   ```bash
+   python -m skore_skills policy set git.autocommit ask
+   ```
+
+7. Stop and ask triage. Do not start EDA or iterate.
 
 ## Stop conditions
 
@@ -25,6 +35,7 @@ description: >
 - Never commit, push, create a remote, or rewrite history without
   explicit authorization.
 - Do not configure global git identity.
+- Default `git.autocommit` is `ask` until the user picks.
 
 No dedicated `skore_skills git` command exists; keep this action
 simple until reviewed.

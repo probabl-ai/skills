@@ -15,7 +15,11 @@
 - Propose git initialization, inspect/merge ignore rules, and show
   status.
 - Ask before creating the first commit.
+- Name `git.autocommit` options `off` / `ask` / `on` and
+  `python -m skore_skills policy set git.autocommit`.
+- Stop at triage rather than starting EDA.
 
 **Must NOT do:**
 - Stage `.env` or raw data.
 - Commit, push, or create a remote without confirmation.
+- Treat iterate as the next owner.
