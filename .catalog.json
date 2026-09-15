@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "6bb261d464e80f8da1201bacce151a886a41453dc47d0ab950c6edf09df90d36",
+  "catalog_hash": "87b1e52927f2a7bff30f571d783a365814ae0236706c61f7b8cf8df3246d5001",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -49,6 +49,15 @@
       "category": "methodology",
       "subcategory": null,
       "hash": "834739f198dc4a29f04d2dd7dc17f9afb62bfe64fb5b609e571e95dd076471c5"
+    },
+    {
+      "id": "manage-ml-backlog",
+      "path": "skills/manage-ml-backlog",
+      "title": "Manage ML Backlog",
+      "summary": "Record experiment outcomes and next-lever backlog rows.",
+      "category": "action",
+      "subcategory": null,
+      "hash": "2c3ac65b39c7c36fa39e374161a8c6ab79d11f4c2d4d83bb67a17cf2686f5070"
     },
     {
       "id": "iterate-ml-experiment",
