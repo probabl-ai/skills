@@ -20,10 +20,10 @@ description: >
   report / metrics / diagnostic plots for a fitted learner.
 
   STOP when `python -m skore_skills status` shows no declared
-  learner or no approved design: explain the missing prerequisite
-  and ask the user to run the model pack or ask triage. Also stop
-  for hyperparameter search, final-model serving, or multi-run
-  tracking. Do not require another action skill to be installed.
+  learner, no smoke for the stem, or no approved design: explain
+  the missing prerequisite and ask triage. Also stop for
+  hyperparameter search, final-model serving, or multi-run
+  tracking. Do not SKIP-route by skill id.
 
   HOW TO USE: invoke before any evaluation call. **First, read the
   "Stop conditions" block at the top of the body and emit the
@@ -45,13 +45,12 @@ read the report. The pipeline declaration is out of scope (see
 ## Stop conditions — read before anything else
 
 - **Missing dependency.** If `import skore` raises in this project's
-  env, STOP. **Invoke `python-env-manager`** to detect the manager
-  and produce the right install command (the project may not use
-  pixi); surface the command to the user and wait for confirmation.
+  env, STOP. Name `python -m skore_skills status` and ask triage
+  rather than SKIP-routing by skill id. Surface the needed
+  `env add` fact; wait for confirmation.
   **Do not drop back to `cross_val_score`, `cross_validate`,
   `classification_report`, or hand-rolled metric prints** — that
-  silently rewrites this skill out of the project. See
-  `data-science-python-stack` § "Missing dependency".
+  silently rewrites this skill out of the project.
 - **Symbol from memory is forbidden.** Any new `skore` entry point
   or sklearn splitter signature must come from
   `python -m skore_skills api get <dotted>` or a matching cache
@@ -82,9 +81,10 @@ read the report. The pipeline declaration is out of scope (see
   satisfied lookup, not a block.
 - **Splitter choice is data-driven, not default-driven
   (`G-CV-SPLITTER`).** This is the **G-CV-SPLITTER** gate — owned by
-  this skill, fired during `iterate-ml-experiment` § 3 (the build →
-  evaluate → test chain, **after** the design note is approved at
-  G-DESIGN), before `src/<pkg>/evaluate.py` is written. The splitter
+  this skill, fired in the **evaluate** loop stage after implement
+  (build + smoke) and after the design note is approved at
+  G-DESIGN), before `src/<pkg>/evaluate.py` is written. Reuse EDA
+  facts from `data/eda.md` / JOURNAL when present. The splitter
   is NOT pre-committed in the design note. Pick from the
   `split_kwargs` content at the X marker via the table in rule 3 —
   never reach for `KFold(5)` or `StratifiedKFold` out of habit. If
@@ -106,8 +106,9 @@ read the report. The pipeline declaration is out of scope (see
   rolling window, target shift, or join with side history. If
   you produce a CV report and the pipeline has any such step,
   the matching `tests/smoke/test_NN_<short_name>.py` must also
-  pass before the experiment can flip to `done` (enforced by
-  `iterate-ml-experiment` § 4).
+  pass before the experiment can flip to `done` (enforced when
+  triage records the outcome / backlog step). After CV is wired,
+  stop and ask triage — do not dispatch smoke or iterate.
 - **All Python execution goes to `scratch/`.** Every Python
   command — version checks, signature lookups, walking the skore
   report's metrics accessors, extracting per-fold values,
@@ -416,21 +417,6 @@ API CLI is only for the signature after the name.
   script puts the report; the audit file loads it via
   `project.summarize()` → `project.get(id)` and renders a
   markdown digest for the agent (no `evaluate`, no `put`).
-  Fires at `iterate-ml-experiment` § 4 record-outcome.
-- **`smoke-test-ml-pipeline`** — router for `tests/`. Owns layout and
-  the stem pairing between an experiment and its smoke test.
-- **`python-env-manager`** — detection + install commands for the
-  project's environment manager (pixi / uv / poetry / hatch / conda
-  / pip+venv). **Invoke whenever** the Stop condition on
-  `import skore` fires, or whenever any other dependency is missing
-  from the env. Don't infer the manager or hand-craft the install
-  command — that skill owns it.
-- **`python-code-style`** — **must be invoked** after writing or
-  editing `src/<pkg>/evaluate.py` (and, if a custom splitter is
-  authored, the module that holds it). Running `pixi run ruff
-  check` directly without invoking this skill silently drops the
-  NumPyDoc docstring convention this stack expects: ruff's
-  `D`-rules pass on a one-line summary, but only the skill body
-  teaches the parameter-shape-in-type-slot, `Parameters` /
-  `Returns` / `Yields` sections, and the imperative one-line
-  summary.
+  After this stage, stop and ask triage.
+- **`python -m skore_skills style`** — after writing or editing
+  `src/<pkg>/evaluate.py`.

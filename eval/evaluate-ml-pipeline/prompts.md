@@ -184,13 +184,15 @@ violated.
 - Mention that `skore.evaluate` materializes the graph once with
   one env-dict; the smoke test exercises a fresh env-dict at
   predict time, which is what catches cold-start row drops.
-- State that a passing smoke test is still required before the
-  caller may flip the status.
+- State that a passing smoke test is still required before
+  triage may record the experiment as done.
 
 **Must NOT do:**
 - Edit `journal/02_load_forecast.md` Status to `done`.
 - Edit `journal/JOURNAL.md` History row to `done`.
 - Treat clean CV as sufficient for a history-dependent pipeline.
+- Dispatch `smoke-test-ml-pipeline` or `iterate-ml-experiment`
+  by skill id.
 
 ---
 
@@ -219,3 +221,25 @@ violated.
 **Must NOT do:**
 - Approve the scratch probe with `evaluate` + `put`.
 - Treat scratch as a producer of reports.
+
+---
+
+## CASE_08 — No learner yet, ask triage
+
+**User prompt:**
+> Wire evaluation and pick the CV splitter.
+
+**Assumed workspace state:**
+- Scaffolded workspace with `data/eda.md`.
+- No `src/<pkg>/pipeline.py` learner and no smoke test.
+
+**Must do:**
+- Name `python -m skore_skills status`.
+- Explain that a learner / smoke is missing.
+- Reuse EDA facts from `data/eda.md` only as evidence, not as
+  a splitter lock without G-CV-SPLITTER.
+- Ask triage rather than starting build.
+
+**Must NOT do:**
+- Invent `build_learner`.
+- Dispatch `iterate-ml-experiment`.

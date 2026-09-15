@@ -104,10 +104,11 @@
         "Refuse to mark `done` without the smoke test passing.",
         "Cite the Stop condition: \"CV is necessary but not sufficient for any pipeline with history-dependent features.\"",
         "Mention that `skore.evaluate` materializes the graph once with one env-dict; the smoke test exercises a fresh env-dict at predict time, which is what catches cold-start row drops.",
-        "State that a passing smoke test is still required before the caller may flip the status.",
+        "State that a passing smoke test is still required before triage may record the experiment as done.",
         "The response does NOT: Edit `journal/02_load_forecast.md` Status to `done`.",
         "The response does NOT: Edit `journal/JOURNAL.md` History row to `done`.",
-        "The response does NOT: Treat clean CV as sufficient for a history-dependent pipeline."
+        "The response does NOT: Treat clean CV as sufficient for a history-dependent pipeline.",
+        "The response does NOT: Dispatch `smoke-test-ml-pipeline` or `iterate-ml-experiment` by skill id."
       ],
       "tools": false,
       "sandbox": [],
@@ -126,6 +127,24 @@
         "Recommend using `project.summarize()` + `project.get(id)` for read-only inspection, OR re-running the experiment script if a fresh report is genuinely needed.",
         "The response does NOT: Approve the scratch probe with `evaluate` + `put`.",
         "The response does NOT: Treat scratch as a producer of reports."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 8,
+      "title": "No learner yet, ask triage",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace with `data/eda.md`.\n- No `src/<pkg>/pipeline.py` learner and no smoke test.]\n\nWire evaluation and pick the CV splitter.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills status`. - Explain that a learner / smoke is missing. - Reuse EDA facts from `data/eda.md` only as evidence, not as a splitter lock without G-CV-SPLITTER. It must NOT: - Invent `build_learner`. - Dispatch `iterate-ml-experiment`.",
+      "files": [],
+      "expectations": [
+        "Name `python -m skore_skills status`.",
+        "Explain that a learner / smoke is missing.",
+        "Reuse EDA facts from `data/eda.md` only as evidence, not as a splitter lock without G-CV-SPLITTER.",
+        "Ask triage rather than starting build.",
+        "The response does NOT: Invent `build_learner`.",
+        "The response does NOT: Dispatch `iterate-ml-experiment`."
       ],
       "tools": false,
       "sandbox": [],
