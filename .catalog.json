@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "d40befc40c4b718c06842cb36125275f53f3ad346007c74c95a89827e1e8c2a8",
+  "catalog_hash": "c394f4107682566108d790edf5b2dda88185ce9c92c0d6106550f8c34beb53da",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -174,7 +174,7 @@
       "summary": "Configure dependencies, editable install, and Python code style.",
       "category": "action",
       "subcategory": null,
-      "hash": "d51ff27bad7eb7a07cc2201c1760223849268863878bdfdb254c9931241d75b5"
+      "hash": "b8402cb2715d57b1fa6d39b49f28d85c3d82e6e2fb9713b762366383ab6e87b3"
     }
   ],
   "workflows": [

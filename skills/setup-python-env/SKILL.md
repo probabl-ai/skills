@@ -2,10 +2,10 @@
 name: setup-python-env
 description: >
   Detect the Python environment manager and add packages through it.
-  Uses `python -m skore_skills env detect` for evidence and
-  `python -m skore_skills env add <packages>` for the manager-specific
-  command. Keeps user gates for no manager, ambiguous managers,
-  ambiguous dependency scope, and the optional agent feature.
+  Two modes: one-time bootstrap (G-ENV-MGR) and repeatable
+  `python -m skore_skills env add`. Persist `env_manager` in
+  `.skore-workspace.json`. Missing layout is a status fact; ask
+  triage rather than scaffolding.
 
   TRIGGER before installing, adding, pinning, upgrading, or removing
   Python packages; when a workflow reports a missing dependency; when
@@ -20,8 +20,16 @@ description: >
 
 # Python Env Manager
 
-Detect first. Add with the detected manager. Return to the calling
-skill after the dependency is importable.
+Two modes. Do not mix them.
+
+1. **One-time bootstrap.** No manager in the project. Fire
+   `G-ENV-MGR`, wait, then bootstrap. Persist with
+   `python -m skore_skills policy set env_manager <name>`.
+2. **Repeatable add.** A manager is already recorded or detected.
+   Skip `G-ENV-MGR`. Run `env add` for the requested packages.
+
+Missing `src/` / scaffold is not this skill's job. Run
+`python -m skore_skills status` and ask triage.
 
 ## Stop conditions
 
@@ -67,6 +75,12 @@ manager is visible. Also surface an active ambient environment that
 conflicts with the project (for example conda active beside
 `pixi.toml`) and ask which target to use.
 
+If detection returns a single project manager, persist it:
+
+```bash
+python -m skore_skills policy set env_manager <name>
+```
+
 If detection returns `none`, ask:
 
 1. pixi (recommended)
@@ -76,7 +90,14 @@ If detection returns `none`, ask:
 5. conda/mamba
 6. pip + venv
 
-Wait for the answer before bootstrap.
+Wait for the answer before bootstrap. After the manager exists:
+
+```bash
+python -m skore_skills policy set env_manager pixi
+```
+
+Use the chosen manager name. Do not write hub credentials under
+`.skore`.
 
 ## Add packages
 

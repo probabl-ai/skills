@@ -23,10 +23,13 @@ violated.
   re-ask).
 - `G-ENV-SCOPE` is **n/a** for `skrub`: routing is fixed (`default`).
   Do not require a per-install scope ask.
+- Treat this as the **repeatable add** mode (manager already
+  recorded). Do not re-fire `G-ENV-MGR`.
 - Name `python -m skore_skills env add skrub` and the expected
   printed `pixi add skrub` (or a feature form only if picked).
 
 **Must NOT do:**
+- Dispatch `setup-workspace` or scaffold the layout.
 - Run `pip install skrub` in a pixi project (wrong-manager install).
 - Run `uv add skrub` / `poetry add skrub`.
 - Auto-routing `skrub` to `default` is **not** a silent dump.
@@ -56,12 +59,17 @@ violated.
   the tool call.
 - Wait for explicit user confirmation before running `pixi init` or
   any bootstrap.
+- After a manager is chosen, name
+  `python -m skore_skills policy set env_manager <name>`.
 - Mention that pixi being on PATH is detection context, not
   permission.
+- If the folder has no scaffold, name `python -m skore_skills status`
+  and ask triage rather than creating `src/`.
 - Scope sub-pick is **n/a** when the requested package auto-routes
   (here `pandas` → `default`). Do not require a second ask.
 
 **Must NOT do:**
+- Scaffold the workspace or load `setup-workspace`.
 - Run `pixi init` silently.
 - Run `pip install pandas` to "just get started".
 - Pick a manager based on PATH alone.
