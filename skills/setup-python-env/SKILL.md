@@ -4,7 +4,7 @@ description: >
   Detect the Python environment manager and add packages through it.
   Two modes: one-time bootstrap (G-ENV-MGR) and repeatable
   `python -m skore_skills env add`. Persist `env_manager` in
-  `.skore-workspace.json`. Missing layout is a status fact; ask
+  `.skore` (`workspace` section). Missing layout is a status fact; ask
   triage rather than scaffolding.
 
   TRIGGER before installing, adding, pinning, upgrading, or removing
@@ -96,8 +96,8 @@ Wait for the answer before bootstrap. After the manager exists:
 python -m skore_skills policy set env_manager pixi
 ```
 
-Use the chosen manager name. Do not write hub credentials under
-`.skore`.
+Use the chosen manager name. Persist into the `workspace` section of
+`.skore` (merge-write). Do not print hub credentials.
 
 ## Add packages
 
