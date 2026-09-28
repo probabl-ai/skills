@@ -25,8 +25,7 @@ def test_scaffold_tree_and_no_placeholders(
     assert (src / "pipeline.py").is_file()
     assert (src / "evaluate.py").is_file()
     evaluate_stub = (src / "evaluate.py").read_text(encoding="utf-8")
-    assert "Pattern A" in evaluate_stub
-    assert "Pattern B" in evaluate_stub
+    assert "Do not pass ``splitter=``" in evaluate_stub
     assert "splitter = None" in evaluate_stub
     assert not (tmp_path / "experiments" / "01_baseline.py").exists()
     assert not (tmp_path / "data" / "data_analysis.py").exists()

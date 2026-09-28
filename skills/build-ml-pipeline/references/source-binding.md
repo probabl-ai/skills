@@ -42,7 +42,7 @@ TRAIN_PATH = PROJECT_ROOT / "data/train.parquet"
 
 learner = build_learner(path_preview=TRAIN_PATH)
 report = skore.evaluate(
-    learner, data={"path": str(TRAIN_PATH)}, splitter=splitter,
+    learner, data={"path": str(TRAIN_PATH)},
 )
 ```
 

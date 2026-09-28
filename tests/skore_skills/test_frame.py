@@ -137,6 +137,7 @@ def test_locked_iid_translates_to_kfold(tmp_path: Path) -> None:
     assert payload["translation"] == {
         "splitter": "KFold",
         "pattern": "A",
+        "scheme": None,
         "n_splits": 5,
         "gap": None,
         "gap_unit": None,
@@ -146,7 +147,7 @@ def test_locked_iid_translates_to_kfold(tmp_path: Path) -> None:
     }
 
 
-def test_locked_time_translates_to_time_series_split(tmp_path: Path) -> None:
+def test_locked_time_translates_to_a_date_splitter(tmp_path: Path) -> None:
     _journal(
         tmp_path,
         **_locked_iid(
@@ -163,8 +164,10 @@ def test_locked_time_translates_to_time_series_split(tmp_path: Path) -> None:
 
     payload = frame_show(tmp_path)
 
-    assert payload["translation"]["splitter"] == "TimeSeriesSplit"
-    assert payload["translation"]["pattern"] == "A"
+    assert payload["translation"]["splitter"] is None
+    assert payload["translation"]["pattern"] == "B"
+    assert payload["translation"]["scheme"] == "date_time"
+    assert payload["translation"]["groups"] is None
     assert payload["translation"]["n_splits"] == 4
     assert payload["translation"]["gap"] == 7
     assert payload["translation"]["gap_unit"] == "day"

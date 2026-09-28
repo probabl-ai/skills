@@ -2,8 +2,9 @@
 name: model-ml-pipeline
 description: >
   Deterministic entry point for modeling. On a generic landing,
-  offer only the choices justified by the workspace (first-model
-  dummy / standard baseline, EDA proposal, Backlog, discussion).
+  offer only the choices justified by the workspace (the locked
+  baseline, an EDA proposal, Backlog, discussion). A missing
+  modeling lock loads `frame-ml-problem` and stops.
   After a design is approved, coordinate build (pytest smoke is a
   build sub-step), the user's Evaluate (Recommended) / Modify /
   Stop gate, evaluation, and audit. Not for a single action
@@ -53,22 +54,24 @@ criteria" section. Keep `## Notebooks` with Evaluation then Audit.
    and do not implement). Do not infer approval from "build it".
    Missing shell: no `site build`, no fill from memory.
 3. Otherwise run `python -m skore_skills model choices`. Treat its
-   JSON as authoritative. Present exactly `choices[]`, in returned
-   order, in one single-choice **AskUserQuestion**:
-   - `dummy` → **Build a dummy predictor**
-   - `standard_baseline` → **Build a standard baseline**
-   - `eda_proposal` → **Propose a pipeline from the EDA**
-   - `backlog` → **Pick from the Backlog**
-   - `discuss` → **Discuss the next step**
+   JSON as authoritative.
+   - `action` `stop` / `modeling_decisions_unlocked` — load
+     `frame-ml-problem` and stop. Do not offer a model menu.
+   - Otherwise present exactly `choices[]`, in returned order, in
+     one single-choice **AskUserQuestion**:
+     - `baseline` → **Build the locked baseline**
+     - `eda_proposal` → **Propose a pipeline from the EDA**
+     - `backlog` → **Pick from the Backlog**
+     - `discuss` → **Discuss the next step**
 
    Carry each choice's JSON `reason` as its description so the user
    reads why it is on offer.
 
 Do not add a disabled choice, infer availability yourself, or
-reorder the list. In particular: no dummy / standard baseline when
+reorder the list. In particular: no locked-baseline choice when
 `model_stems` is non-empty; no EDA proposal unless
 `data_analysis` is `present`; no Backlog option when `backlog` is
-empty. Discussion is always present.
+empty. Discussion is present only after the lock.
 
 ## Gate context
 
@@ -97,18 +100,16 @@ is approved only by Design approval below. No branch writes model
 code before that gate is `proceed`. Use the next available numeric
 stem; never overwrite an existing note.
 
-- **Dummy predictor (`dummy`).** Determine classification vs
-  regression from recorded project facts; ask if unknown. Propose
+- **Locked baseline (`baseline`).** The comparison model is the
+  one the journal already locked. A `dummy` token is a
   `DummyClassifier` or `DummyRegressor` inside the normal skrub
-  DataOps declaration. Its purpose is structural: prove loading,
-  fit/predict, and pytest smoke work; it is not expected to add
-  predictive value. Keep the normal post-smoke Evaluate
-  (Recommended) / Modify / Stop gate.
-- **Standard baseline (`standard_baseline`).** Propose a quick
-  traditional-ML baseline: skrub automatic preprocessing plus a
-  task-appropriate standard estimator, with no domain feature
-  engineering. It establishes a real comparison point. Confirm the
-  proposal, write the note, then Design approval, before build.
+  DataOps declaration: it proves loading, fit/predict, and pytest
+  smoke, and it is not expected to add predictive value. Any
+  other token (`logistic`, `seasonal_naive`, `group_mean`,
+  `production`) is that comparison model, named in the note. Do
+  not upgrade it to another estimator. Confirm the proposal,
+  write the note, then Design approval, before build. Keep the
+  normal post-smoke Evaluate (Recommended) / Modify / Stop gate.
 - **EDA proposal (`eda_proposal`).** Read
   `data_analysis/data_analysis.md` and the project goal. Cite the
   EDA findings that motivate one pipeline proposal. Do not invent
@@ -195,7 +196,7 @@ also ask in chat whether the note looks right.
    `skore.evaluate`.
 2. Only if the user chose **Evaluate** and `smoke run` is `proceed`: load
    `evaluate-ml-pipeline` only if `status.skills.evaluate-ml-pipeline`
-   is true — leakage-safe splitter and
+   is true. It reuses the DataOp `cv` and writes
    `skore.evaluate` in the experiment script. Re-run `status`
    first, then `python -m skore_skills evaluate consent --stem
    <stem>`. Consent JSON is authoritative, not the user's wording

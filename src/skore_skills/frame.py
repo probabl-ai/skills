@@ -285,20 +285,24 @@ def _translation(rows: dict[str, str]) -> dict[str, Any] | None:
     holdout = effective["validation"] == "holdout"
     splitter = None
     pattern = None
+    scheme = None
+    groups = None
     if not holdout and effective["deployment"] == "time":
-        splitter, pattern = "TimeSeriesSplit", "A"
+        pattern, scheme = "B", "date_time"
     elif not holdout and effective["deployment"] == "groups":
         splitter, pattern = "GroupKFold", "B"
+        groups = effective["generalize_to"]
     elif not holdout:
         splitter, pattern = "KFold", "A"
     folds = effective["folds"]
     return {
         "splitter": splitter,
         "pattern": pattern,
+        "scheme": scheme,
         "n_splits": None if holdout or not folds.isdigit() else int(folds),
         "gap": None if gap is None else _number(gap[0]),
         "gap_unit": None if gap is None else gap[1],
-        "groups": effective["generalize_to"] if pattern == "B" else None,
+        "groups": groups,
         "report": "EstimatorReport" if holdout else None,
         "metric": effective["metric"],
     }

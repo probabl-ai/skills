@@ -17,8 +17,8 @@
 
 - **Files touched:** <e.g., `src/<pkg>/features.py`, `src/<pkg>/pipeline.py`>
 - **Change versus baseline (or previous experiment):** <prose>
-- **Cross-validation:** chosen from the data's structure (groups /
-  time ordering) at evaluation time — not frozen here.
+- **Cross-validation:** the scheme locked under Modeling decisions
+  in the journal.
 - **Out of scope for this experiment:** <what we are deliberately not changing>
 - **Pipeline:** <!-- results-embed: pipeline -->
 

@@ -37,7 +37,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 
 learner = build_learner(data_dir_preview=DATA_DIR)
 report = skore.evaluate(
-    learner, data={"data_dir": str(DATA_DIR)}, splitter=splitter,
+    learner, data={"data_dir": str(DATA_DIR)},
 )
 ```
 

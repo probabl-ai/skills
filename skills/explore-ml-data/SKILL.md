@@ -117,7 +117,8 @@ Details: `references/cell_anatomy.md`. Extra recipes:
   After a named column, append that one target snippet. After
   “no target yet” or Decline → `<TARGET>=None`, `<TASK>=none`;
   TableReport + duplicates only. Do not persist a policy key.
-- **No train/test split.** Splitter choice is a later gate.
+- **No train/test split.** The modeling-decisions lock owns that
+  choice later. Do not split during EDA.
   Leakage cells are qualitative flags on the raw family that
   holds the target. Further families use `templates/family.py`
   only (TableReport + duplicates) — no leakage / target /

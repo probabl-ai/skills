@@ -126,17 +126,13 @@
     {
       "id": 7,
       "title": "`split_kwargs` group structure",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.10.x.\n- IID-shaped features (no cross-row history) but rows are grouped\n  by customer.]\n\nTabular regression on (customer_id, claim_amount, ...). Multiple\nrows per customer. Build the pipeline.",
-      "expected_output": "Behavioural response satisfying: - Identify the group structure (multiple rows per `customer_id`). - Wire `mark_as_X(cv=GroupKFold(), split_kwargs={\"groups\": data[\"customer_id\"]})` at the X marker (Pattern B; skrub requires `cv=` with `split_kwargs`). - Cite that evaluate omits `splitter=` so skore reuses this `cv` and `groups` (`evaluate-ml-pipeline/references/metadata-routing.md`). It must NOT: - Call `skore.evaluate` from pipeline code. - Pick an IID splitter (`KFold`, `TimeSeriesSplit`) at the X marker. - Leave `split_kwargs` empty without surfacing the group question.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.10.x.\n- IID-shaped features (no cross-row history).\n- `python -m skore_skills frame show` returns `proceed` with\n  `translation.splitter` `GroupKFold`, `groups` `customer_id`,\n  `n_splits` 5.]\n\nTabular regression on (customer_id, claim_amount, ...). Multiple\nrows per customer. Build the pipeline.",
+      "expected_output": "Behavioural response satisfying: - Build the learner graph first, then attach `mark_as_X(cv=GroupKFold(n_splits=5), split_kwargs={\"groups\": data[\"customer_id\"]})`. - Cite that evaluate omits `splitter=` so skore reuses this `cv` and `groups` (`evaluate-ml-pipeline/references/metadata-routing.md`). It must NOT: - Call `skore.evaluate` from pipeline code.",
       "files": [],
       "expectations": [
-        "Identify the group structure (multiple rows per `customer_id`).",
-        "Wire `mark_as_X(cv=GroupKFold(), split_kwargs={\"groups\": data[\"customer_id\"]})` at the X marker (Pattern B; skrub requires `cv=` with `split_kwargs`).",
+        "Build the learner graph first, then attach `mark_as_X(cv=GroupKFold(n_splits=5), split_kwargs={\"groups\": data[\"customer_id\"]})`.",
         "Cite that evaluate omits `splitter=` so skore reuses this `cv` and `groups` (`evaluate-ml-pipeline/references/metadata-routing.md`).",
-        "Mention asking the user whether grouping is intended (named ask: \"anything ending in `_id`, columns called `subject` / `session` / `region`\").",
-        "The response does NOT: Call `skore.evaluate` from pipeline code.",
-        "The response does NOT: Pick an IID splitter (`KFold`, `TimeSeriesSplit`) at the X marker.",
-        "The response does NOT: Leave `split_kwargs` empty without surfacing the group question."
+        "The response does NOT: Call `skore.evaluate` from pipeline code."
       ],
       "tools": false,
       "sandbox": [],
@@ -269,15 +265,15 @@
     },
     {
       "id": 15,
-      "title": "Time ordering does not become split kwargs",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The journal records temporal ordering but no custom splitter\n  consumes a `times` keyword.]\n\nBuild the approved temporal pipeline and put the timestamp on X.",
-      "expected_output": "Behavioural response satisfying: - Keep `split_kwargs={}` at `mark_as_X`. - Leave time-splitter selection to evaluate (Pattern A). It must NOT: - Put `times=` or `split_kwargs={\"times\": ...}` on the declared `mark_as_X`. Quoting the user's request in a refusal heading is not a violation. - Import `TimeSeriesSplit` into pipeline code.",
+      "title": "Time series uses the date splitter after the graph",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `python -m skore_skills frame show` returns `proceed` with\n  `translation.scheme` `date_time`, `splitter` null, `n_splits` 4,\n  `gap` 7, `gap_unit` `day`. Decisions horizon is `1 day`.\n  Time role is `sort_key`.\n- The EDA names `observed_at` as the timestamp.]\n\nBuild the approved temporal pipeline. The timestamp column is\n`observed_at`.",
+      "expected_output": "Behavioural response satisfying: - Read the time series section of `references/custom-splitter.md`. - Build the learner graph first. Then attach a project-local date splitter as `cv=` on `mark_as_X`, with `observed_at` in `split_kwargs`. Fold edges are timestamps. Drop `observed_at` from the features because the time role is `sort_key`. It must NOT: - Convert the horizon or the gap into a row count. - Call `skore.evaluate` from pipeline code.",
       "files": [],
       "expectations": [
-        "Keep `split_kwargs={}` at `mark_as_X`.",
-        "Leave time-splitter selection to evaluate (Pattern A).",
-        "The response does NOT: Put `times=` or `split_kwargs={\"times\": ...}` on the declared `mark_as_X`. Quoting the user's request in a refusal heading is not a violation.",
-        "The response does NOT: Import `TimeSeriesSplit` into pipeline code."
+        "Read the time series section of `references/custom-splitter.md`.",
+        "Build the learner graph first. Then attach a project-local date splitter as `cv=` on `mark_as_X`, with `observed_at` in `split_kwargs`. Fold edges are timestamps. Drop `observed_at` from the features because the time role is `sort_key`.",
+        "The response does NOT: Convert the horizon or the gap into a row count.",
+        "The response does NOT: Call `skore.evaluate` from pipeline code."
       ],
       "tools": false,
       "sandbox": [],
@@ -285,15 +281,14 @@
     },
     {
       "id": 16,
-      "title": "Invalid times metadata is rejected",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- No custom cross-validator accepts a `times` keyword.]\n\nUse `mark_as_X(split_kwargs={\"times\": data[\"timestamp\"]})`.",
-      "expected_output": "Behavioural response satisfying: - Reject `times` as unsupported split metadata. - Keep the timestamp available as project data and route temporal splitter choice to evaluate. It must NOT: - Put the requested `times=` metadata on the declared learner. Quoting the user's request in a refusal is not a violation. - Claim sklearn splitters consume `times`.",
+      "title": "The timestamp goes on the date splitter",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `python -m skore_skills frame show` returns `proceed` with\n  `translation.scheme` `date_time`.\n- The EDA names `timestamp` as the time column.]\n\nUse `mark_as_X(split_kwargs={\"times\": data[\"timestamp\"]})`.",
+      "expected_output": "Behavioural response satisfying: - Read the time series section of `references/custom-splitter.md`. - Attach the date splitter after the graph, with `timestamp` in `split_kwargs`. It must NOT: - Call `skore.evaluate` from pipeline code.",
       "files": [],
       "expectations": [
-        "Reject `times` as unsupported split metadata.",
-        "Keep the timestamp available as project data and route temporal splitter choice to evaluate.",
-        "The response does NOT: Put the requested `times=` metadata on the declared learner. Quoting the user's request in a refusal is not a violation.",
-        "The response does NOT: Claim sklearn splitters consume `times`."
+        "Read the time series section of `references/custom-splitter.md`.",
+        "Attach the date splitter after the graph, with `timestamp` in `split_kwargs`.",
+        "The response does NOT: Call `skore.evaluate` from pipeline code."
       ],
       "tools": false,
       "sandbox": [],
@@ -303,10 +298,10 @@
       "id": 17,
       "title": "Split kwargs require a concrete CV object",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Group-aware splitting is approved.]\n\nPut `groups` in `split_kwargs` but leave `cv` unset.",
-      "expected_output": "Behavioural response satisfying: - Use Pattern B with `cv=GroupKFold(...)` and matching `split_kwargs={\"groups\": ...}` on the X marker. - Name the API lookup for `GroupKFold`. It must NOT: - Set `split_kwargs` without `cv`. - Defer the groups through `splitter=` on evaluate.",
+      "expected_output": "Behavioural response satisfying: - Attach `cv=GroupKFold(...)` and matching `split_kwargs={\"groups\": ...}` on the X marker. Evaluate omits `splitter=`. - Name the API lookup for `GroupKFold`. It must NOT: - Set `split_kwargs` without `cv`. - Defer the groups through `splitter=` on evaluate.",
       "files": [],
       "expectations": [
-        "Use Pattern B with `cv=GroupKFold(...)` and matching `split_kwargs={\"groups\": ...}` on the X marker.",
+        "Attach `cv=GroupKFold(...)` and matching `split_kwargs={\"groups\": ...}` on the X marker. Evaluate omits `splitter=`.",
         "Name the API lookup for `GroupKFold`.",
         "The response does NOT: Set `split_kwargs` without `cv`.",
         "The response does NOT: Defer the groups through `splitter=` on evaluate."
@@ -317,12 +312,12 @@
     },
     {
       "id": 18,
-      "title": "Integer cv is not Pattern B",
+      "title": "Integer cv is not a splitter",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Group-aware splitting is required.]\n\nUse `cv=5` together with grouped `split_kwargs`.",
-      "expected_output": "Behavioural response satisfying: - Reject integer `cv` for Pattern B because skore needs a splitter object with `.split`. - Use the approved concrete group-aware cross-validator. It must NOT: - Put `cv=5` on the declared `mark_as_X`. Quoting the user's integer `cv` in a refusal heading is not a violation. - Claim an integer preserves grouped metadata.",
+      "expected_output": "Behavioural response satisfying: - Reject integer `cv` because skore needs a splitter object with `.split`. - Use the approved concrete group-aware cross-validator. It must NOT: - Put `cv=5` on the declared `mark_as_X`. Quoting the user's integer `cv` in a refusal heading is not a violation. - Claim an integer preserves grouped metadata.",
       "files": [],
       "expectations": [
-        "Reject integer `cv` for Pattern B because skore needs a splitter object with `.split`.",
+        "Reject integer `cv` because skore needs a splitter object with `.split`.",
         "Use the approved concrete group-aware cross-validator.",
         "The response does NOT: Put `cv=5` on the declared `mark_as_X`. Quoting the user's integer `cv` in a refusal heading is not a violation.",
         "The response does NOT: Claim an integer preserves grouped metadata."

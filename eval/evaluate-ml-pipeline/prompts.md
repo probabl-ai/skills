@@ -14,11 +14,14 @@ violated.
 **Assumed workspace state:**
 - `journal/01_baseline.md` approved.
 - `src/<pkg>/pipeline.py` exists with `build_learner` returning a
-  `SkrubLearner`. The X-marker has empty `split_kwargs`.
+  `SkrubLearner`. The X-marker has `cv=KFold(n_splits=5)` and
+  empty `split_kwargs`.
+- `python -m skore_skills frame show` returns `proceed` with
+  `translation.splitter` `KFold`, `n_splits` 5, `metric` `MAE`.
 - `experiments/01_baseline.py` is the scaffold placeholder.
 - `policy.skore_mode` is `local`.
 - Cache exists at `scratch/api/sklearn/1.8.0/cv_splitters.md`
-  covering `KFold` / `GroupKFold` / `TimeSeriesSplit`, and at
+  covering `KFold` / `GroupKFold`, and at
   `scratch/api/skore/0.18.0/evaluate.md`.
 
 **Must do:**
@@ -30,12 +33,12 @@ violated.
 - Name the fold count when known; otherwise explain that timing
   depends on rows, folds/repeats, and learner cost. Do not invent
   a minute estimate.
-- Pick **`skore.evaluate(learner, data={...}, splitter=...)`** as
-  the entry point (not `cross_val_score`, not `cross_validate`).
-- Map empty `split_kwargs` + IID → **`KFold`** per the mapping table
-  (Pattern A: pass `splitter=KFold(...)`).
-- Name `python -m skore_skills api get` for `skore.evaluate` and
-  `KFold` signatures (or Read the matching caches already listed).
+- Pick **`skore.evaluate(learner, data={...})`** as the entry
+  point, with no `splitter=` (not `cross_val_score`, not
+  `cross_validate`). The `KFold` already on the marker is reused.
+- Name `python -m skore_skills frame show` and
+  `python -m skore_skills api get` for `skore.evaluate` (or Read
+  the matching caches already listed).
 - Mention `data={...}` (env-dict) for `SkrubLearner`, NOT
   positional `X, y`.
 - Name `python -m skore_skills git end-turn --stage evaluate` at
@@ -52,18 +55,18 @@ violated.
   `python -m skore_skills loop artifacts --stem 01_baseline`.
 
 **Must NOT do:**
-- Present splitter reasoning alone as model fitting.
 - Recommend `cross_val_score`, `cross_validate`,
   `classification_report`, or hand-rolled `print(mean_squared_error(...))`.
 - Default to `StratifiedKFold` (forbidden — compresses across-fold
   variance, even on imbalance).
-- Pre-pin metrics (e.g. `scoring="neg_mean_squared_error"`) — trust
-  skore defaults.
+- Pass `splitter=` to `skore.evaluate`.
+- Pre-pin a different metric (e.g. `scoring="neg_mean_squared_error"`).
+  The locked comparison is `MAE`.
 - Run `git commit` in this skill or `git push`.
 
 ---
 
-## CASE_02 — Time-ordered data, mandatory AskUserQuestion
+## CASE_02 — Time series cv is missing on the DataOp
 
 **User prompt:**
 > Wire `experiments/02_load_forecast.py` for the 24h-ahead load
@@ -71,42 +74,19 @@ violated.
 
 **Assumed workspace state:**
 - `journal/02_load_forecast.md` approved.
-- `pipeline.py` X-marker has empty `split_kwargs` (no `cv=`).
-  Rows are already time-ordered. `TimeSeriesSplit` needs no
-  extra `split()` kwargs (Pattern A).
-- Forecast horizon is 24h.
+- `pipeline.py` X-marker has no `cv=`.
+- `python -m skore_skills frame show` returns `proceed` with
+  `translation.scheme` `date_time`, `n_splits` 4, `gap` 7,
+  `gap_unit` `day`.
 - Matching smoke pytest is green.
-- Cache hit at `scratch/api/sklearn/1.8.0/cv_splitters.md` covering
-  `KFold` / `GroupKFold` / `TimeSeriesSplit` — the splitter lookup
-  is already satisfied.
 
 **Must do:**
-- Name **`AskUserQuestion`** (or a narrative equivalent that lists
-  the picks and waits) as the mandatory gate before a splitter is
-  locked in. No tools this turn: enumerating the options in the
-  message counts as firing the gate.
-- Present the **four canonical options** (wording need not be
-  verbatim):
-  1. `TimeSeriesSplit(gap=horizon)` — safe default
-  2. `TimeSeriesSplit(gap=0)` — only on explicit user pick; warn
-     about leakage
-  3. Custom splitter (purged-and-embargoed / blocked calendar /
-     walk-forward)
-  4. `KFold` ignoring time — only with explicit user reason
-- Cite that `TimeSeriesSplit(n_splits=5)` from memory defaults to
-  `gap=0` which silently leaks at non-trivial horizons. Any
-  sentence that `gap=0` is the memory default / leaks is enough;
-  do not require the exact constructor spelling if `gap=0` is
-  named.
+- Name `python -m skore_skills frame show`.
+- Return to `build-ml-pipeline` because the locked date splitter
+  is not on the marker. Do not write `skore.evaluate` yet.
 
 **Must NOT do:**
-- Skip the four-option ask and lock a splitter with no user pick.
-  Naming a **recommended** option (e.g. `TimeSeriesSplit(gap=horizon)`)
-  next to the menu, or drafting `experiments/02_load_forecast.py`
-  labeled pending confirmation, is not a silent pick.
-- Default to `KFold` because empty `gap` "feels safer".
-- Treat harness "no clarifying questions" hint as waiving the
-  mandatory ask.
+- Write `skore.evaluate` in this turn.
 
 ---
 
@@ -118,16 +98,18 @@ violated.
 
 **Assumed workspace state:**
 - `pipeline.py` X-marker has
-  `cv=GroupKFold()` and
-  `split_kwargs={"groups": data["customer_id"]}` (Pattern B).
+  `cv=GroupKFold(n_splits=5)` and
+  `split_kwargs={"groups": data["customer_id"]}`.
+- `python -m skore_skills frame show` returns `proceed` with
+  `translation.splitter` `GroupKFold` and `groups` `customer_id`.
 - No temporal structure.
 
 **Must do:**
-- Paste **`GroupKFold`** from the mapping table (`groups` →
-  `GroupKFold`). That identifier is the mapping; do not withhold it.
+- Name `python -m skore_skills frame show`. Reuse the `GroupKFold`
+  already on the marker. Do not withhold that name.
 - Call `skore.evaluate(learner, data={...})` **without**
   `splitter=` so skore reuses the DataOp `cv` and `groups`
-  (`references/metadata-routing.md` Pattern B).
+  (`references/metadata-routing.md`).
 - `python -m skore_skills api get` for the *signature* may be named
   as the next live turn. Do not fail if signature lookup is BLOCKED
   as long as `GroupKFold` is named.
@@ -186,8 +168,8 @@ violated.
   stack.
 - Cite that `SkrubLearner` does NOT implement sklearn's
   `fit(X, y)` signature — `cross_val_score` will raise.
-- Propose `skore.evaluate(learner, data={...}, splitter=...)`
-  instead.
+- Propose `skore.evaluate(learner, data={...})` with no
+  `splitter=`.
 
 **Must NOT do:**
 - Write `cross_val_score(...)` in `experiments/NN_*.py`.
@@ -482,8 +464,8 @@ violated.
 - Smoke is green.
 
 **Must do:**
-- Cite Pattern B (`references/metadata-routing.md`): omit
-  `splitter=` so skore reuses DataOp `cv` + `groups`.
+- Cite `references/metadata-routing.md`: omit `splitter=` so
+  skore reuses DataOp `cv` and `groups`.
 - Write `skore.evaluate(learner, data={...})` with no `splitter=`.
 
 **Must NOT do:**
@@ -591,8 +573,8 @@ violated.
   marked/aligned X DataOp and attach
   `.skb.with_scoring(..., kwargs={"sample_weight": ...})` after
   prediction and before `.skb.make_learner()`.
-- Keep Pattern B: call `skore.evaluate(learner, data={...})`
-  without `splitter=`.
+- Call `skore.evaluate(learner, data={...})` without
+  `splitter=`.
 - Inspect the custom scorer with `report.metrics.score()`, then
   call `project.put(...)`.
 
@@ -648,8 +630,8 @@ violated.
 - The user did not ask for a custom metric or custom check.
 
 **Must do:**
-- Pick `skore.evaluate(learner, data={...}, splitter=...)` with
-  Pattern A `KFold`.
+- Pick `skore.evaluate(learner, data={...})` with no
+  `splitter=`. The `KFold` already on the marker is reused.
 - Trust skore metric and SKD-check defaults.
 
 **Must NOT do:**

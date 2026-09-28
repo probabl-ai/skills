@@ -22,16 +22,45 @@ def _ids(payload: dict[str, object]) -> list[str]:
     return [choice["id"] for choice in choices]
 
 
-def test_first_model_choices_are_ordered(tmp_path: Path) -> None:
+def _lock(
+    root: Path, *, baseline: str = "seasonal_naive", note: str = "last week"
+) -> None:
+    _write(
+        root / "journal" / "JOURNAL.md",
+        "## Modeling decisions\n\n"
+        "| Variable | Value |\n"
+        "|---|---|\n"
+        "| Status | locked |\n"
+        f"| Baseline | {baseline} |\n"
+        f"| Baseline note | {note} |\n",
+    )
+
+
+def test_unlocked_modeling_decisions_stop(tmp_path: Path) -> None:
     payload = model_choices(tmp_path)
 
-    assert _ids(payload) == ["dummy", "standard_baseline", "discuss"]
+    assert payload["action"] == "stop"
+    assert payload["reason"] == "modeling_decisions_unlocked"
+    assert payload["modeling_decisions"] == "missing"
+    assert "choices" not in payload
+
+
+def test_first_model_choice_is_the_locked_baseline(tmp_path: Path) -> None:
+    _lock(tmp_path)
+
+    payload = model_choices(tmp_path)
+
+    assert _ids(payload) == ["baseline", "discuss"]
+    assert payload["choices"][0]["reason"] == (
+        "locked baseline is seasonal_naive: last week"
+    )
     assert payload["model_stems"] == []
     assert payload["data_analysis"] == "missing"
     assert payload["backlog"] == []
 
 
 def test_existing_experiment_suppresses_first_model_choices(tmp_path: Path) -> None:
+    _lock(tmp_path)
     _write(tmp_path / "experiments" / "01_model.py", "# model\n")
     _write(tmp_path / "experiments" / "__init__.py")
 
@@ -44,6 +73,12 @@ def test_existing_experiment_suppresses_first_model_choices(tmp_path: Path) -> N
 def test_history_run_counts_as_a_prior_model(tmp_path: Path) -> None:
     _write(
         tmp_path / "journal" / "JOURNAL.md",
+        "## Modeling decisions\n\n"
+        "| Variable | Value |\n"
+        "|---|---|\n"
+        "| Status | locked |\n"
+        "| Baseline | dummy |\n"
+        "| Baseline note | global mean |\n\n"
         "## History\n\n"
         "| Stem | Intent | Status | Headline result | Report | Design note |\n"
         "|---|---|---|---|---|---|\n"
@@ -59,10 +94,10 @@ def test_history_run_counts_as_a_prior_model(tmp_path: Path) -> None:
 
 
 def test_present_eda_enables_proposal_but_skipped_does_not(tmp_path: Path) -> None:
+    _lock(tmp_path)
     _write(tmp_path / "data_analysis" / "data_analysis.md", "# report\n")
     assert _ids(model_choices(tmp_path)) == [
-        "dummy",
-        "standard_baseline",
+        "baseline",
         "eda_proposal",
         "discuss",
     ]
@@ -70,16 +105,18 @@ def test_present_eda_enables_proposal_but_skipped_does_not(tmp_path: Path) -> No
     (tmp_path / "data_analysis" / "data_analysis.md").unlink()
     _write(
         tmp_path / "journal" / "JOURNAL.md",
+        "## Modeling decisions\n\n"
+        "| Variable | Value |\n"
+        "|---|---|\n"
+        "| Status | locked |\n"
+        "| Baseline | logistic |\n"
+        "| Baseline note | class probabilities |\n\n"
         "## Data understanding\n\n"
         "| Variable | Value |\n"
         "|---|---|\n"
         "| Status | skipped — 2026-09-21 |\n",
     )
-    assert _ids(model_choices(tmp_path)) == [
-        "dummy",
-        "standard_baseline",
-        "discuss",
-    ]
+    assert _ids(model_choices(tmp_path)) == ["baseline", "discuss"]
 
 
 def test_real_backlog_rows_are_returned_and_malformed_rows_ignored(
@@ -87,6 +124,12 @@ def test_real_backlog_rows_are_returned_and_malformed_rows_ignored(
 ) -> None:
     _write(
         tmp_path / "journal" / "JOURNAL.md",
+        "## Modeling decisions\n\n"
+        "| Variable | Value |\n"
+        "|---|---|\n"
+        "| Status | locked |\n"
+        "| Baseline | dummy |\n"
+        "| Baseline note | global mean |\n\n"
         "## History\n\n"
         "| Stem | Intent | Status | Headline result | Report | Design note |\n"
         "|---|---|---|---|---|---|\n\n"
@@ -102,8 +145,7 @@ def test_real_backlog_rows_are_returned_and_malformed_rows_ignored(
     payload = model_choices(tmp_path)
 
     assert _ids(payload) == [
-        "dummy",
-        "standard_baseline",
+        "baseline",
         "backlog",
         "discuss",
     ]
@@ -118,11 +160,9 @@ def test_cli_prints_json(tmp_path: Path, monkeypatch) -> None:
     result = CliRunner().invoke(cli, ["model", "choices"])
 
     assert result.exit_code == 0, result.output
-    assert _ids(json.loads(result.output)) == [
-        "dummy",
-        "standard_baseline",
-        "discuss",
-    ]
+    payload = json.loads(result.output)
+    assert payload["action"] == "stop"
+    assert payload["reason"] == "modeling_decisions_unlocked"
 
 
 def test_cli_rejects_unknown_model_subcommand() -> None:

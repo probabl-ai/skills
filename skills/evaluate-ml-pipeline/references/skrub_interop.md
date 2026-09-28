@@ -31,12 +31,10 @@ X, y = make_classification(random_state=42)
 report = skore.evaluate(LogisticRegression(), X, y, splitter=0.2)
 ```
 
-`X` and `y` are passed positionally (or by keyword). `splitter` is
-either a numeric `test_size`, a scikit-learn cross-validator, or
-omitted. **Pattern A vs B** (when to pass `splitter=` vs declare
-`cv=` + `split_kwargs` on the DataOp) is
-`evaluate-ml-pipeline/references/metadata-routing.md`. An explicit
-`splitter=` overrides DataOp `cv` **and drops `split_kwargs`**.
+`X` and `y` are passed positionally (or by keyword). A locked
+`cv` on a DataOp is reused by omitting `splitter=`. An explicit
+`splitter=` overrides that `cv` and drops `split_kwargs`. See
+`references/metadata-routing.md`.
 
 ### Env-dict-style — `data={"<var>": ...}`
 
@@ -44,28 +42,16 @@ For a `SkrubLearner` (the only common case in this workspace), the
 learner's `fit` method takes a **single mapping** keyed by the names
 of the `skrub.var(name=...)` declarations in the DataOps graph:
 
-Pattern A (kwargs-free splitter) — inline `splitter=` in the
-experiment script. Do not pass `src/<pkg>/evaluate.py`'s default
-`splitter = None` (that is an 80/20 holdout).
+Omit `splitter=`. The locked `cv` is already on `mark_as_X`.
+Passing `splitter=` drops `split_kwargs`. An omitted `splitter=`
+with no DataOp `cv` is an 80/20 holdout, which is the holdout
+lock only. See `evaluate-ml-pipeline/references/metadata-routing.md`.
 
 ```python
-from sklearn.model_selection import KFold
 import skore
 from load_forecast.pipeline import build_learner
 
 learner = build_learner()  # binds skrub.var("data_dir")
-report = skore.evaluate(
-    learner,
-    data={"data_dir": "/abs/path/to/data"},
-    splitter=KFold(n_splits=5),
-)
-```
-
-Pattern B (`groups` on the DataOp) — omit `splitter=` so skore
-reuses `mark_as_X(cv=..., split_kwargs=...)`. See
-`evaluate-ml-pipeline/references/metadata-routing.md`.
-
-```python
 report = skore.evaluate(
     learner,
     data={"data_dir": "/abs/path/to/data"},
@@ -106,14 +92,14 @@ The return type depends on `splitter`:
 | `splitter` | Report type |
 |---|---|
 | `float` (e.g. `0.2`) or `None` | `EstimatorReport` — single train/test split |
-| A scikit-learn cross-validator (`KFold`, `TimeSeriesSplit`, custom) | `CrossValidationReport` — multi-fold |
-| omitted, DataOp has `mark_as_X(cv=...)` | `CrossValidationReport` — reuses the DataOp `cv` + `split_kwargs` (Pattern B) |
+| A scikit-learn or project cross-validator (`KFold`, `GroupKFold`, custom) | `CrossValidationReport` — multi-fold |
+| omitted, DataOp has `mark_as_X(cv=...)` | `CrossValidationReport` — reuses the DataOp `cv` and `split_kwargs` |
 | omitted, no DataOp `cv` | `EstimatorReport` — single 80/20 holdout |
 | Multi-key comparison | `ComparisonReport` |
 
-An explicit `splitter=` always overrides a DataOp `cv` **and drops
-`split_kwargs`**. Do not pass `splitter=` for Pattern B. See
-`evaluate-ml-pipeline/references/metadata-routing.md`.
+An explicit `splitter=` always overrides a DataOp `cv` and drops
+`split_kwargs`. Omit `splitter=` when the locked `cv` is on the
+marker. See `references/metadata-routing.md`.
 
 Confirm the exact dispatch rules via `python -m skore_skills api get`
 (`inspect.signature(skore.evaluate)` + the docstring) against the
@@ -239,8 +225,6 @@ This is the actual experiment script from the workspace:
 # %%
 import skore
 
-from sklearn.model_selection import TimeSeriesSplit
-
 from load_forecast import PROJECT_ROOT
 from load_forecast.pipeline import build_learner
 
@@ -283,7 +267,6 @@ learner
 report = skore.evaluate(
     learner,
     data={"data_dir": str(DATA_DIR)},
-    splitter=TimeSeriesSplit(n_splits=5, gap=12),
 )
 report
 
@@ -319,8 +302,8 @@ Note the clean separation:
   what `evaluate` actually fits on.
 - **`data={"data_dir": str(DATA_DIR)}`** is what `evaluate` uses to
   bind the source var at fit/CV time.
-- **`splitter=`** is Pattern A (here `TimeSeriesSplit`). Pattern B
-  omits it; see `evaluate-ml-pipeline/references/metadata-routing.md`.
+- **No `splitter=`.** The locked `cv` is already on the learner.
+  See `evaluate-ml-pipeline/references/metadata-routing.md`.
 - **No agent-only `print` calls** — inspection is the agent's
   scratch problem (see `python -m skore_skills api get` § "`scratch/` conventions"),
   not the script's. The bare `report` line is jupytext display,
@@ -342,8 +325,8 @@ version — the kwargs differ between `EstimatorReport` (uses
   DataOps pattern that produces the `SkrubLearner` consumed here.
 - `build-ml-pipeline/references/source-binding.md` — when to use
   source-bound vars vs materialized `(X, y)` bindings.
-- `evaluate-ml-pipeline` — the methodology side: cross-validator
-  choice, Pattern A vs B (`references/metadata-routing.md`).
+- `evaluate-ml-pipeline` — the call, the locator, and the close.
+  CV wiring is `references/metadata-routing.md`.
 - `review-ml-experiment` — reads the audit digest at
   `scratch/audit/<stem>/audit.md` (produced by `audit-ml-pipeline`)
   and writes one idea file per `issue` / `tip` line.

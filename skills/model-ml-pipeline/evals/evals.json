@@ -107,12 +107,12 @@
     {
       "id": 6,
       "title": "First-model menu without EDA or Backlog",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace.\n- No experiment scripts or completed/running History rows.\n- `status.data_analysis` is `missing`.\n- Backlog is empty.]\n\nLet us start modeling. What can we do?",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills status` and `python -m skore_skills model choices`. - Ask one question with, in order: Build a dummy predictor; Build a standard baseline; Discuss the next step. It must NOT: - Offer an EDA-derived proposal. - Offer Pick from the Backlog. - Write model code before a proposal and design are approved.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace.\n- Modeling decisions Status is `locked`. Baseline is\n  `seasonal_naive`. Baseline note is `last observed week`.\n- No experiment scripts or completed/running History rows.\n- `status.data_analysis` is `missing`.\n- Backlog is empty.\n- `python -m skore_skills model choices` returns `choices` whose\n  ids are `baseline` then `discuss`. The baseline reason quotes\n  `seasonal_naive` and `last observed week`.]\n\nLet us start modeling. What can we do?",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills status` and `python -m skore_skills model choices`. - Ask one question with, in order: Build the locked baseline; Discuss the next step. The baseline description quotes `seasonal_naive` and `last observed week`. It must NOT: - Offer an EDA-derived proposal. - Offer Pick from the Backlog. - Write model code before a proposal and design are approved.",
       "files": [],
       "expectations": [
         "Name `python -m skore_skills status` and `python -m skore_skills model choices`.",
-        "Ask one question with, in order: Build a dummy predictor; Build a standard baseline; Discuss the next step.",
+        "Ask one question with, in order: Build the locked baseline; Discuss the next step. The baseline description quotes `seasonal_naive` and `last observed week`.",
         "The response does NOT: Offer an EDA-derived proposal.",
         "The response does NOT: Offer Pick from the Backlog.",
         "The response does NOT: Write model code before a proposal and design are approved."
@@ -124,13 +124,13 @@
     {
       "id": 7,
       "title": "Existing model with EDA and Backlog",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `experiments/01_baseline.py` exists.\n- `status.data_analysis` is `present`.\n- Backlog contains B1 and B2.]\n\nStart the next modeling iteration.",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills model choices`. - Ask one question with, in order: Propose a pipeline from the EDA; Pick from the Backlog; Discuss the next step. It must NOT: - Offer a dummy predictor or standard baseline. - Silently pick B1.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Modeling decisions Status is `locked`.\n- `experiments/01_baseline.py` exists.\n- `status.data_analysis` is `present`.\n- Backlog contains B1 and B2.\n- `python -m skore_skills model choices` returns `choices` whose\n  ids are `eda_proposal`, `backlog`, `discuss`.]\n\nStart the next modeling iteration.",
+      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills model choices`. - Ask one question with, in order: Propose a pipeline from the EDA; Pick from the Backlog; Discuss the next step. It must NOT: - Offer the locked baseline. - Silently pick B1.",
       "files": [],
       "expectations": [
         "Name `python -m skore_skills model choices`.",
         "Ask one question with, in order: Propose a pipeline from the EDA; Pick from the Backlog; Discuss the next step.",
-        "The response does NOT: Offer a dummy predictor or standard baseline.",
+        "The response does NOT: Offer the locked baseline.",
         "The response does NOT: Silently pick B1."
       ],
       "tools": false,
@@ -140,13 +140,13 @@
     {
       "id": 8,
       "title": "Skipped EDA is not an EDA proposal",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- A prior experiment exists.\n- `status.data_analysis` is `skipped`.\n- Backlog is empty.]\n\nWhat model should we build next?",
-      "expected_output": "Behavioural response satisfying: - Offer only Discuss the next step. It must NOT: - Treat skipped EDA as recorded findings. - Offer dummy, standard baseline, EDA proposal, or Backlog.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Modeling decisions Status is `locked`.\n- A prior experiment exists.\n- `status.data_analysis` is `skipped`.\n- Backlog is empty.\n- `python -m skore_skills model choices` returns one choice,\n  `discuss`.]\n\nWhat model should we build next?",
+      "expected_output": "Behavioural response satisfying: - Offer only Discuss the next step. It must NOT: - Treat skipped EDA as recorded findings. - Offer an EDA proposal or Backlog.",
       "files": [],
       "expectations": [
         "Offer only Discuss the next step.",
         "The response does NOT: Treat skipped EDA as recorded findings.",
-        "The response does NOT: Offer dummy, standard baseline, EDA proposal, or Backlog."
+        "The response does NOT: Offer an EDA proposal or Backlog."
       ],
       "tools": false,
       "sandbox": [],

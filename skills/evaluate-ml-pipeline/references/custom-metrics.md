@@ -121,11 +121,10 @@ After evaluation, inspect DataOp scoring with `metrics.score`;
 these names do not become custom rows in `metrics.summarize`:
 
 ```python
-report = skore.evaluate(learner, data={"data": frame}, splitter=splitter)
+report = skore.evaluate(learner, data={"data": frame})
 report.metrics.score()
 project.put(STEM, report)
 ```
 
-Pattern A vs Pattern B still controls only CV wiring. Pattern A
-passes `splitter=` to evaluate. Pattern B stores `cv` and
-`split_kwargs` on `mark_as_X` and omits `splitter=`.
+The locked `cv` is on `mark_as_X`. Omit `splitter=` so skore
+reuses it. See `references/metadata-routing.md`.

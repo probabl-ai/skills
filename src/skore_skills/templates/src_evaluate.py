@@ -1,15 +1,10 @@
-"""Optional Pattern A splitter object.
+"""Unused splitter stub.
 
 ``skore.evaluate`` and ``project.put`` live in
-``experiments/NN_*.py``, not here.
-
-Pattern A (``KFold``, ``TimeSeriesSplit``, …): set ``splitter`` to a
-real cross-validator and pass it as ``splitter=`` from the experiment
-script. Do not pass this module's default ``None`` — that is an
-80/20 holdout.
-
-Pattern B (``GroupKFold`` / ``groups`` on the DataOp): do not import
-or pass ``splitter`` at all. See
+``experiments/NN_*.py``, not here. The locked cross-validator sits
+on the DataOp. Do not pass ``splitter=`` from the experiment
+script. ``None`` here is not a holdout by itself: a holdout is a
+marker with no ``cv``. See
 ``evaluate-ml-pipeline/references/metadata-routing.md``.
 """
 

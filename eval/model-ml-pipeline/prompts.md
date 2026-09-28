@@ -153,15 +153,21 @@
 
 **Assumed workspace state:**
 - Scaffolded workspace.
+- Modeling decisions Status is `locked`. Baseline is
+  `seasonal_naive`. Baseline note is `last observed week`.
 - No experiment scripts or completed/running History rows.
 - `status.data_analysis` is `missing`.
 - Backlog is empty.
+- `python -m skore_skills model choices` returns `choices` whose
+  ids are `baseline` then `discuss`. The baseline reason quotes
+  `seasonal_naive` and `last observed week`.
 
 **Must do:**
 - Name `python -m skore_skills status` and
   `python -m skore_skills model choices`.
-- Ask one question with, in order: Build a dummy predictor;
-  Build a standard baseline; Discuss the next step.
+- Ask one question with, in order: Build the locked baseline;
+  Discuss the next step. The baseline description quotes
+  `seasonal_naive` and `last observed week`.
 
 **Must NOT do:**
 - Offer an EDA-derived proposal.
@@ -176,9 +182,12 @@
 > Start the next modeling iteration.
 
 **Assumed workspace state:**
+- Modeling decisions Status is `locked`.
 - `experiments/01_baseline.py` exists.
 - `status.data_analysis` is `present`.
 - Backlog contains B1 and B2.
+- `python -m skore_skills model choices` returns `choices` whose
+  ids are `eda_proposal`, `backlog`, `discuss`.
 
 **Must do:**
 - Name `python -m skore_skills model choices`.
@@ -186,7 +195,7 @@
   EDA; Pick from the Backlog; Discuss the next step.
 
 **Must NOT do:**
-- Offer a dummy predictor or standard baseline.
+- Offer the locked baseline.
 - Silently pick B1.
 
 ---
@@ -197,16 +206,19 @@
 > What model should we build next?
 
 **Assumed workspace state:**
+- Modeling decisions Status is `locked`.
 - A prior experiment exists.
 - `status.data_analysis` is `skipped`.
 - Backlog is empty.
+- `python -m skore_skills model choices` returns one choice,
+  `discuss`.
 
 **Must do:**
 - Offer only Discuss the next step.
 
 **Must NOT do:**
 - Treat skipped EDA as recorded findings.
-- Offer dummy, standard baseline, EDA proposal, or Backlog.
+- Offer an EDA proposal or Backlog.
 
 ---
 

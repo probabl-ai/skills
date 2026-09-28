@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "48004b60d89d124efdd0b72e151a0c16f456fd7c4b6ba299b1590793afc22b64",
+  "catalog_hash": "193d56b5c9165f2ea29f65d9cd2dfcf1d0147abc2f1e9b408cd0eb8aa0b9aa40",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "25c70d098620cda3a9448ac7ab62330a97d6d0b37eed0fd9609fceb7dda211a2"
+      "hash": "fadb2e6df4cfaa4db7ea4fea87732cf62bbc0d2357b56d5e5c418ba66aac4112"
     },
     {
       "id": "frame-ml-problem",
@@ -30,7 +30,7 @@
       "summary": "Build a machine learning pipeline from the data source to the learner, including multi-tables engineering.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "49fab3263a0dce069480878a52af1028fb6debfb987eb1cbff27a3102e3ce011"
+      "hash": "a4c19b8a9fea197d2a1a4aed6dbc0358fc5e98cac6394128fce58823cf6b2814"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -39,7 +39,7 @@
       "summary": "Evaluate a complex machine learning pipeline and get structured reports including metrics, plots, and diagnostics.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "a80a06f5c7ce2b3b616cb0fa2fa41dd656054b8a2d654b767d7d7790a61d4a78"
+      "hash": "c7044a89ad777a290c104542625da88094e1038ebe8d997268d0f37ab9e54c28"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -156,7 +156,7 @@
       "summary": "Coordinate build (pytest smoke), evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "2e65c7bf7e62c841ff2f65f0765018a6f9859bfa5b5da7e5cebb1d97084bbf1d"
+      "hash": "fc24ee09b5b063b8f5e8ec7f5d28695535f059cce9794c938a85b36388d9c71e"
     },
     {
       "id": "choose-python-library",

@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from skore_skills.frame import _raw_rows, modeling_decisions_state
 from skore_skills.workspace import snapshot
 
 _SECTION = re.compile(r"^## (?P<name>History|Backlog)\s*$", re.MULTILINE)
@@ -62,6 +63,13 @@ def _journal_facts(root: Path) -> tuple[set[str], list[dict[str, str]]]:
 def model_choices(root: Path) -> dict[str, Any]:
     """Return model-entry choices justified by workspace evidence."""
     status = snapshot(root)
+    if modeling_decisions_state(root) != "locked":
+        return {
+            "action": "stop",
+            "reason": "modeling_decisions_unlocked",
+            "modeling_decisions": status["modeling_decisions"],
+        }
+
     history_stems, backlog = _journal_facts(root)
     experiments = root / "experiments"
     experiment_stems = (
@@ -75,23 +83,16 @@ def model_choices(root: Path) -> dict[str, Any]:
     )
     model_stems = sorted(history_stems | experiment_stems)
 
+    rows = _raw_rows(root)
     choices: list[dict[str, str]] = []
     if not model_stems:
-        choices.extend(
-            [
-                {
-                    "id": "dummy",
-                    "reason": (
-                        "no prior model; validate the build and pytest smoke path"
-                    ),
-                },
-                {
-                    "id": "standard_baseline",
-                    "reason": (
-                        "no prior model; establish an automatic-preprocessing baseline"
-                    ),
-                },
-            ]
+        choices.append(
+            {
+                "id": "baseline",
+                "reason": (
+                    f"locked baseline is {rows['baseline']}: {rows['baseline_note']}"
+                ),
+            }
         )
     if status["data_analysis"] == "present":
         choices.append(
