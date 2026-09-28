@@ -26,6 +26,12 @@ description: >
 Worker skill. Callers own the stage turn and the user-facing
 summary. Do not `git end-turn`.
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+Chat stays path + one or two sentences of the finding. Do not
+narrate the skills framework or the wrapper CLI.
+
 ## Sequence
 
 1. **Intake.** Infer modality from dtypes / JOURNAL when

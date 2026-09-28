@@ -34,6 +34,7 @@
   `loop locator` JSON only after Close audit.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Describe audit as model training or full CV.
 - Call `skore.evaluate` or `project.put`.
 - Require the experiment to be `done` before audit.
@@ -69,6 +70,7 @@
 - Close with `git end-turn --stage evaluate`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Paste `scratch/audit/<stem>/audit.md` wholesale into chat.
 - Open idea triage from record-outcome mode.
 - Call record-outcome before audit.
@@ -96,6 +98,7 @@
 - State that the dispatcher owns record-outcome, site, and git close.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write the User-facing close (narrative + Open these) here;
   the dispatcher owns it.
 - Run `git end-turn` or `persist-ml-git` from this skill (naming
@@ -119,6 +122,7 @@
 - Route recovery to evaluation.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Re-run `skore.evaluate` from audit.
 - Invent a report id, URL, metrics, or digest.
 - Mark the experiment done.
@@ -152,6 +156,7 @@
   present the same gate again.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Guess an accessor or show unavailable disabled choices.
 - Convert notebooks, build the site, run git end-turn,
   record-outcome, or return to the dispatcher before Close audit.

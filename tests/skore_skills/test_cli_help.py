@@ -62,3 +62,10 @@ def test_module_help_subprocess() -> None:
 def test_import_version() -> None:
     """The installed package exposes a version string."""
     assert __version__ == "0.7.0"
+
+
+def test_module_main_imports() -> None:
+    """``python -m skore_skills`` exposes the CLI entry point."""
+    import skore_skills.__main__ as entry
+
+    assert entry.main is main

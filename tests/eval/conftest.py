@@ -54,7 +54,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "--skill-judge-model",
         default=None,
         help=(
-            "Judge model for GEval (LiteLLM name). "
+            "Judge model (Jev or a GEval-compatible LiteLLM name). "
             "Overrides SKILL_EVAL_JUDGE_MODEL. "
             f"Default: {DEFAULT_JUDGE_MODEL}."
         ),

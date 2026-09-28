@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -14,6 +16,7 @@ from skore_skills.design_consent import render_design_consent
 from skore_skills.evaluate_consent import render_evaluate_consent
 from skore_skills.frame import render_frame_show
 from skore_skills.model_choices import render_model_choices
+from skore_skills.policy import LOOP_STAGES
 from skore_skills.review_consent import render_review_consent
 from skore_skills.status import render_status
 
@@ -24,6 +27,19 @@ def _reexec_library_command(argv: list[str]) -> None:
 
     code = reexec_in_dev(Path.cwd(), argv=argv)
     if code is not None:
+        raise SystemExit(code)
+
+
+def _emit_git(load: Callable[[], tuple[dict[str, Any], int]]) -> None:
+    """Print a git command payload and exit when its code is non-zero."""
+    from skore_skills.git import render_git_json
+
+    try:
+        payload, code = load()
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(render_git_json(payload), nl=False)
+    if code:
         raise SystemExit(code)
 
 
@@ -209,6 +225,17 @@ def review_group() -> None:
     """Inspect deterministic review-workflow gates."""
 
 
+@review_group.command("choices")
+def review_choices_cmd() -> None:
+    """Print the stored-choice board as JSON. Does not write."""
+    from skore_skills.review_choices import render_review_choices
+
+    try:
+        click.echo(render_review_choices(Path.cwd()), nl=False)
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
+
+
 @review_group.command("consent")
 @click.option("--stem", required=True, help="Experiment stem, e.g. 01_baseline.")
 def review_consent_cmd(stem: str) -> None:
@@ -233,6 +260,18 @@ def frame_group() -> None:
 def frame_show_cmd(revise: bool) -> None:
     """Print the next modeling-decisions gate as JSON."""
     click.echo(render_frame_show(Path.cwd(), revise=revise), nl=False)
+
+
+@frame_group.command("clear")
+@click.option("--cell", required=True, help="Framing cell key to blank, e.g. metric.")
+def frame_clear_cmd(cell: str) -> None:
+    """Blank one framing cell and its dependents, then print JSON."""
+    from skore_skills.frame import render_frame_clear
+
+    try:
+        click.echo(render_frame_clear(Path.cwd(), cell), nl=False)
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
 
 
 @cli.group("design")
@@ -509,19 +548,23 @@ def env_add(
 @env_group.command("add-skore")
 @click.option(
     "--mode",
-    required=True,
     type=click.Choice(["local", "hub", "mlflow"], case_sensitive=True),
+    help="Override the recorded destination. Omit to follow it.",
 )
 @click.option(
     "--execute",
     is_flag=True,
     help="Run the install command instead of printing it.",
 )
-def env_add_skore(mode: str, execute: bool) -> None:
+def env_add_skore(mode: str | None, execute: bool) -> None:
     """Print or run the manager-aware Skore install command."""
-    from skore_skills.env import add_skore
+    from skore_skills.env import add_skore, resolve_add_skore_mode
 
-    text, code = add_skore(Path.cwd(), mode, execute=execute)
+    try:
+        resolved = resolve_add_skore_mode(Path.cwd(), mode)
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
+    text, code = add_skore(Path.cwd(), resolved, execute=execute)
     click.echo(text, nl=False)
     if code:
         raise SystemExit(code)
@@ -652,7 +695,7 @@ def policy_set(key: str, value: str) -> None:
 
 @cli.group("git")
 def git_group() -> None:
-    """Merge ignore rules and print the end-of-turn persist hook."""
+    """Merge ignore rules, classify review paths, and print the end-turn hook."""
 
 
 @git_group.command("ignore-merge")
@@ -669,38 +712,55 @@ def git_group() -> None:
 )
 def git_ignore_merge_cmd(keep_paths: tuple[str, ...], decide: bool) -> None:
     """Union packaged ignore rules into ``.gitignore``. No git commands."""
-    from skore_skills.git import render_git_json, run_ignore_merge
+    from skore_skills.git import run_ignore_merge
 
-    try:
-        payload, code = run_ignore_merge(Path.cwd(), keep=keep_paths, decide=decide)
-    except ValueError as exc:
-        raise click.ClickException(str(exc)) from exc
-    click.echo(render_git_json(payload), nl=False)
-    if code:
-        raise SystemExit(code)
+    _emit_git(lambda: run_ignore_merge(Path.cwd(), keep=keep_paths, decide=decide))
 
 
 @git_group.command("end-turn")
 @click.option(
     "--stage",
     required=True,
-    type=click.Choice(
-        ["setup", "data_analysis", "implement", "evaluate", "backlog"],
-        case_sensitive=True,
-    ),
+    type=click.Choice(LOOP_STAGES, case_sensitive=True),
     help="Loop stage that just finished.",
 )
 def git_end_turn_cmd(stage: str) -> None:
     """Print whether to load ``persist-ml-git``. Never commits."""
-    from skore_skills.git import render_git_json, run_end_turn
+    from skore_skills.git import run_end_turn
 
-    try:
-        payload, code = run_end_turn(Path.cwd(), stage)
-    except ValueError as exc:
-        raise click.ClickException(str(exc)) from exc
-    click.echo(render_git_json(payload), nl=False)
-    if code:
-        raise SystemExit(code)
+    _emit_git(lambda: run_end_turn(Path.cwd(), stage))
+
+
+@git_group.command("review")
+def git_review_cmd() -> None:
+    """Print dirty paths that need a keep-or-ignore decision."""
+    from skore_skills.git import run_review
+
+    _emit_git(lambda: run_review(Path.cwd()))
+
+
+@git_group.command("review-decide")
+@click.option(
+    "--keep",
+    "keep_paths",
+    multiple=True,
+    help="Track a review path the user chose to keep.",
+)
+@click.option(
+    "--ignore",
+    "ignore_paths",
+    multiple=True,
+    help="Ignore a review path the user chose not to keep.",
+)
+def git_review_decide_cmd(
+    keep_paths: tuple[str, ...], ignore_paths: tuple[str, ...]
+) -> None:
+    """Record review choices in ``.gitignore``. No git add or commit."""
+    from skore_skills.git import run_review_decide
+
+    _emit_git(
+        lambda: run_review_decide(Path.cwd(), keep=keep_paths, ignore=ignore_paths)
+    )
 
 
 def main() -> None:

@@ -29,8 +29,10 @@ fit, tune, persist, or call `skore.evaluate`.
 
 Details: `setup-workspace` `references/human_facing_prose.md`.
 Experiment markdown, design-note Method text, and `#` comments
-describe this pipeline. `<!-- results-embed: … -->` is a site
-marker. Authoring hints stay in this skill.
+describe this pipeline. Questions and the checkpoint use the
+same data-science language: not skill ids, `G-*` names, or the
+wrapper CLI. `<!-- results-embed: … -->` is a site marker.
+Authoring hints stay in this skill.
 
 **X marker** is `.skb.mark_as_X()`. **Predict grid** is the rows
 to score. **Cross-row step** reads other rows (lag, rolling,
@@ -45,7 +47,8 @@ grid plus marker, and features after the marker.
    ("build it" is not approval). `proceed` continues. Then
    `python -m skore_skills frame show` without `--revise`.
    Anything other than `proceed` loads `frame-ml-problem` and
-   stops.
+   stops. A `proceed` whose `translation` is null stops: there
+   is no splitter translation.
 2. Emit 1–3 sentences before the first write: this is local
    preparation of an unfitted `build_learner`, Method cells, and
    a pipeline snapshot, then smoke. It does not train or run
@@ -257,6 +260,14 @@ all of `tests/smoke/`.
 `status` first. `has_src` and `has_journal` both false → stop.
 Do not require `git`. Missing design: `design consent`; `ask` /
 `stop` stay here. Missing data contract: explain and stop.
+
+### S0b. Modeling decisions are not locked
+
+- **Rule:** `status.modeling_decisions` must be `locked`, and
+  `python -m skore_skills frame show` must return `proceed` with
+  a non-null `translation`, before any declaration.
+- **Recovery:** load `frame-ml-problem` when installed. A null
+  `translation` stops with no pipeline. Do not invent the table.
 
 ### S1. Missing dependency
 

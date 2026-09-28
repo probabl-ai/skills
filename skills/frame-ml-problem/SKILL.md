@@ -27,7 +27,9 @@ not evaluate one.
 
 Details: `setup-workspace` `references/human_facing_prose.md`.
 Journal cells describe this dataset. Do not name the skills
-framework, the CLI, or a splitter class in the table.
+framework, the CLI, or a splitter class in the table. Questions
+use data-science language — not skill ids, `G-*` names, or the
+wrapper CLI.
 
 ## Procedure
 
@@ -39,7 +41,11 @@ framework, the CLI, or a splitter class in the table.
    facts. Do not ask this again once `data_analysis` is `present`
    or `skipped`.
 2. Run `python -m skore_skills frame show`. When the user is
-   changing a locked constraint, add `--revise`. JSON `action` is
+   changing a locked constraint and named one cell, add
+   `--revise`. When they are changing a constraint and did not
+   name a cell, ask which filled decision to change (skip
+   `n/a`) and stop. Do not `--revise`, do not `frame clear`, and
+   do not edit the journal on that turn. JSON `action` is
    authoritative. Do not invent a menu. If the command is missing
    or exits without JSON, read `references/fallback.md` and follow
    it. Do not open another reference. Do not guess candidates.
@@ -59,20 +65,36 @@ framework, the CLI, or a splitter class in the table.
    fact, quote it in the question. Write that Value cell. Do not
    rename Variable cells.
    When the deployment or the validation makes other rows
-   inapplicable, set those cells to `n/a` in the same edit. Once
-   any decision cell is filled and Status is not `locked`, set
-   Status to `draft`. Stop this turn.
-6. `ask` / `confirm_lock` or `ask` / `revise` — quote JSON
-   `context` inline, then offer JSON `choices` only.
-   - `lock` sets Status to `locked`.
-   - `modify` on a revise sets Status to `draft` and Revised on
-     to today's date (`YYYY-MM-DD`), then stop for the next
-     `frame show`.
+   inapplicable, set those cells to `n/a` in the same edit. A
+   new `holdout` sets Folds to `n/a`. A new `cv` keeps a valid
+   fold count. Once any decision cell is filled and Status is
+   not `locked`, set Status to `draft`. Stop this turn.
+6. When the user named one cell and Status is `draft`, do not
+   use the lock menu as the change. Run
+   `python -m skore_skills frame clear --cell <key>` for that
+   cell and stop. Do not write the new value. Do not name any
+   other cell as cleared. The command's JSON `blanked` list is
+   the record. Status stays `draft`. The next `frame show` asks
+   the first missing cell.
+7. `ask` / `confirm_lock` or `ask` / `revise` — quote JSON
+   `context` inline, then offer JSON `choices` only and stop.
+   The user sentence that opened this screen is not a choice.
+   Do not set Status to `locked` in that same turn.
+   - `lock` on a later turn sets Status to `locked`.
+   - `modify` on a revise, when the user named one cell: run
+     `python -m skore_skills frame clear --cell <key>` and stop.
+     Do not write the new value. Do not blank any other cell by
+     hand. The next `frame show` asks the first missing cell.
+     `modify` with no named cell writes nothing and does not
+     `frame clear`: ask which filled decision to change and stop.
    - `keep` leaves the locked table unchanged.
    - `stop` writes nothing further.
-7. `proceed` — the table is locked. If `translation` is null, say
+8. `proceed` — the table is locked. If `translation` is null, say
    that this lock has no splitter translation. Do not load
-   `build-ml-pipeline`. Run
+   `build-ml-pipeline` and do not return to `model-ml-pipeline`.
+   Stop. If `model-ml-pipeline` dispatched this turn, return to
+   that coordinator and stop. Do not start build, write a design
+   note, or run the git close from here. Otherwise run
    `python -m skore_skills git end-turn --stage implement`. If
    JSON `action` is `invoke`, load `persist-ml-git` only if
    `status.skills.persist-ml-git` is true and stop. Otherwise
@@ -90,3 +112,10 @@ framework, the CLI, or a splitter class in the table.
   `references/fallback.md` when the command is missing.
 - A locked table changes only through `frame show --revise`, then
   the same fill and confirm gates. `keep` does not edit it.
+- On `modify`, `frame clear` is the only journal edit, and only
+  for the cell the user named. Do not rewrite `experiments/`,
+  `audit/`, or a report in this skill.
+- After a cell is blanked, do not run an existing experiment
+  script. Say that it still uses the previous splitter and
+  metric. The next build or evaluate rewrites it after the table
+  is locked again.

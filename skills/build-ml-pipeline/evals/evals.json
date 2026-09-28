@@ -5,13 +5,14 @@
       "id": 1,
       "title": "Bare `sklearn.Pipeline` \u2192 redirect to skrub DataOps",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Tabular regression task, mixed-type DataFrame, no cross-row\n  features (IID).\n- `skrub`, `scikit-learn`, `skore` are installed and importable.\n- No existing `src/<pkg>/pipeline.py`.]\n\nSet up the baseline pipeline using `sklearn.Pipeline` with a\n`StandardScaler` and `Ridge`. Just write `src/<pkg>/pipeline.py`\nwith a `build_pipeline()` function.",
-      "expected_output": "Behavioural response satisfying: - Redirect from bare `sklearn.Pipeline` to a **skrub DataOps graph** rooted at `skrub.var(...)`. - Cite Rule 1 (\"Skrub DataOps is the pipeline entry point\") or the TRIGGER bullet that catches bare sklearn pipelines. - Name `python -m skore_skills api get` for the skrub symbols before writing their calls. It must NOT: - Write `from sklearn.pipeline import Pipeline` as a live import in `pipeline.py`. - Return a `Pipeline([(\"scaler\", StandardScaler()), ...])` object from `build_learner` / `build_pipeline`. A docstring that only names the forbidden equivalent is not a violation. - Use `skrub.X(...)` / `skrub.y(...)` as graph roots.",
+      "expected_output": "Behavioural response satisfying: - Redirect from bare `sklearn.Pipeline` to a **skrub DataOps graph** rooted at `skrub.var(...)`. - Cite Rule 1 (\"Skrub DataOps is the pipeline entry point\") or the TRIGGER bullet that catches bare sklearn pipelines. - Run `python -m skore_skills api get` for the skrub symbols before writing their calls. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write `from sklearn.pipeline import Pipeline` as a live import in `pipeline.py`. - Return a `Pipeline([(\"scaler\", StandardScaler()), ...])` object from `build_learner` / `build_pipeline`. A docstring that only names the forbidden equivalent is not a violation.",
       "files": [],
       "expectations": [
         "Redirect from bare `sklearn.Pipeline` to a **skrub DataOps graph** rooted at `skrub.var(...)`.",
         "Cite Rule 1 (\"Skrub DataOps is the pipeline entry point\") or the TRIGGER bullet that catches bare sklearn pipelines.",
-        "Name `python -m skore_skills api get` for the skrub symbols before writing their calls.",
+        "Run `python -m skore_skills api get` for the skrub symbols before writing their calls.",
         "Propose a `build_learner` function returning `predictions.skb.make_learner()` (not a `Pipeline` object).",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write `from sklearn.pipeline import Pipeline` as a live import in `pipeline.py`.",
         "The response does NOT: Return a `Pipeline([(\"scaler\", StandardScaler()), ...])` object from `build_learner` / `build_pipeline`. A docstring that only names the forbidden equivalent is not a violation.",
         "The response does NOT: Use `skrub.X(...)` / `skrub.y(...)` as graph roots.",
@@ -25,13 +26,14 @@
       "id": 2,
       "title": "IID flat-table marker placement",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.9.0.\n- Cache exists at `scratch/api/skrub/0.9.0/tabular_pipeline.md`\n  (you may treat its content as known).]\n\nTabular CSV, columns `[feature_1, feature_2, ..., target, id]`.\nPredict `target`. No time-series, no groups. Write the skrub\nDataOps pipeline.",
-      "expected_output": "Behavioural response satisfying: - Use a single `skrub.var(\"<source>\", ...)` root for the source. - Place `mark_as_X()` and `mark_as_y()` directly on the loaded source frame (IID branch \u2014 no three-layer needed). - Drop `id` and `target` from X. It must NOT: - Introduce a `predict_grid` Layer 1 root when no cross-row features exist (over-engineering). - Use `skrub.X(...)` / `skrub.y(...)` as roots. - Bake the preview value as a literal string in `pipeline.py` (relative path that breaks CWD-dependent runs).",
+      "expected_output": "Behavioural response satisfying: - Use a single `skrub.var(\"<source>\", ...)` root for the source. - Place `mark_as_X()` and `mark_as_y()` directly on the loaded source frame (IID branch \u2014 no three-layer needed). - Drop `id` and `target` from X. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Introduce a `predict_grid` Layer 1 root when no cross-row features exist (over-engineering). - Use `skrub.X(...)` / `skrub.y(...)` as roots.",
       "files": [],
       "expectations": [
         "Use a single `skrub.var(\"<source>\", ...)` root for the source.",
         "Place `mark_as_X()` and `mark_as_y()` directly on the loaded source frame (IID branch \u2014 no three-layer needed).",
         "Drop `id` and `target` from X.",
         "Mention the optional `<source>_preview` keyword on `build_learner`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Introduce a `predict_grid` Layer 1 root when no cross-row features exist (over-engineering).",
         "The response does NOT: Use `skrub.X(...)` / `skrub.y(...)` as roots.",
         "The response does NOT: Bake the preview value as a literal string in `pipeline.py` (relative path that breaks CWD-dependent runs)."
@@ -44,7 +46,7 @@
       "id": 3,
       "title": "History-dependent late `mark_as_X` trap",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.9.0.\n- The user is in early baseline construction.\n- The skill's `references/` tree is on disk at the project root\n  (`references/layer_examples.md`). Open that file with `read_file`\n  before proposing Layer 2.]\n\nTime-series load forecast. Each row = (timestamp, region, load).\nI want a 24-hour-ahead forecast. Write the loader so it computes\n`y = load.shift(-24)` then drops the rows with `NaN` in `y`, and\nwe'll do `mark_as_X` on the result.",
-      "expected_output": "Behavioural response satisfying: - Refuse the proposed loader-baked target shift. - Cite the **late-`mark_as_X` forbidden** rule (cross-row dependency). - Cite **Layer 1 doesn't know the question** \u2014 the 24-hour horizon belongs to Layer 2, not the loader. It must NOT: - Accept the loader-baked shift as written. - Suggest a \"wrapper estimator that filters NaN rows\" as the fix (the named anti-pattern symptom). - Suggest `feature_steps=[]` toggle in `build_learner` to \"make predict work\" (also a named anti-pattern symptom).",
+      "expected_output": "Behavioural response satisfying: - Refuse the proposed loader-baked target shift. - Cite the **late-`mark_as_X` forbidden** rule (cross-row dependency). - Cite **Layer 1 doesn't know the question** \u2014 the 24-hour horizon belongs to Layer 2, not the loader. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Accept the loader-baked shift as written. - Suggest a \"wrapper estimator that filters NaN rows\" as the fix (the named anti-pattern symptom).",
       "files": [],
       "expectations": [
         "Refuse the proposed loader-baked target shift.",
@@ -52,6 +54,7 @@
         "Cite **Layer 1 doesn't know the question** \u2014 the 24-hour horizon belongs to Layer 2, not the loader.",
         "Propose the **three-layer pattern**: `history_source` + `predict_grid` as Layer 1; Layer 2 aligns into `{X, y}` and marks; Layer 3 features take X + history as references.",
         "Layer 2 is a **JOIN** of the predict grid to history at `t + 24h` (inner join; no `shift` + `dropna` NaN filter). A small `align_xy` estimator is fine if it joins.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Accept the loader-baked shift as written.",
         "The response does NOT: Suggest a \"wrapper estimator that filters NaN rows\" as the fix (the named anti-pattern symptom).",
         "The response does NOT: Suggest `feature_steps=[]` toggle in `build_learner` to \"make predict work\" (also a named anti-pattern symptom)."
@@ -73,13 +76,14 @@
       "id": 4,
       "title": "`skrub.X / skrub.y` as roots \u2014 refuse",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.9.0.\n- `data` is already a loaded DataFrame.]\n\nHere's my draft:\n\n```python\nX = skrub.X(data.drop([\"id\", \"target\"], axis=1))\ny = skrub.y(data[\"target\"])\n```\n\nContinue from here \u2014 add the encoder and the predictor.",
-      "expected_output": "Behavioural response satisfying: - Refuse `skrub.X(...)` / `skrub.y(...)` as graph roots. - Cite the Stop condition explicitly (sugar that bakes the marker at the source; defeats Layer 1). - Propose the source-bound alternative: `skrub.var(\"<source>\", preview)` then `.skb.mark_as_X()` on that frame. When the source is a path/dir, that includes `.skb.apply_func(load_*)` before the marker. When the workspace already has a loaded DataFrame, `skrub.var(..., value=preview)` + `.skb.mark_as_X()` counts \u2014 do not require a loader call. It must NOT: - Continue adding steps to the `skrub.X` / `skrub.y` skeleton silently. - Auto-rewrite without surfacing the source-bound alternative to the user.",
+      "expected_output": "Behavioural response satisfying: - Refuse `skrub.X(...)` / `skrub.y(...)` as graph roots. - Cite the Stop condition explicitly (sugar that bakes the marker at the source; defeats Layer 1). - Propose the source-bound alternative: `skrub.var(\"<source>\", preview)` then `.skb.mark_as_X()` on that frame. When the source is a path/dir, that includes `.skb.apply_func(load_*)` before the marker. When the workspace already has a loaded DataFrame, `skrub.var(..., value=preview)` + `.skb.mark_as_X()` counts \u2014 do not require a loader call. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Continue adding steps to the `skrub.X` / `skrub.y` skeleton silently. - Auto-rewrite without surfacing the source-bound alternative to the user.",
       "files": [],
       "expectations": [
         "Refuse `skrub.X(...)` / `skrub.y(...)` as graph roots.",
         "Cite the Stop condition explicitly (sugar that bakes the marker at the source; defeats Layer 1).",
         "Propose the source-bound alternative: `skrub.var(\"<source>\", preview)` then `.skb.mark_as_X()` on that frame. When the source is a path/dir, that includes `.skb.apply_func(load_*)` before the marker. When the workspace already has a loaded DataFrame, `skrub.var(..., value=preview)` + `.skb.mark_as_X()` counts \u2014 do not require a loader call.",
         "Surface that this is a refactor and offer to do it (or ask user).",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Continue adding steps to the `skrub.X` / `skrub.y` skeleton silently.",
         "The response does NOT: Auto-rewrite without surfacing the source-bound alternative to the user."
       ],
@@ -91,13 +95,14 @@
       "id": 5,
       "title": "Stateful step misclassified as stateless (leakage)",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.9.0.\n- An existing skrub DataOps graph with `mark_as_X` / `mark_as_y`\n  in place.]\n\nAdd target encoding for the `category` column. Just write a\n`def target_encode(df): ...` that computes the mean target per\ncategory and replaces the column. Attach it with `.skb.apply_func`.",
-      "expected_output": "Behavioural response satisfying: - Refuse the `apply_func` route for this step. - Cite the **statelessness rule** (stateful \u2192 estimator) and/or the **leakage rule** (uses statistics learned from data \u2192 must be stateful) \u2014 target encoding learns category \u2192 mean from training y. - Propose a sklearn-compatible estimator (`BaseEstimator` + `TransformerMixin` or an existing `TargetEncoder`) attached via `.skb.apply`. It must NOT: - Accept `apply_func(target_encode)` as written. - Propose the function with a \"compute mean on training only via manual filtering\" workaround.",
+      "expected_output": "Behavioural response satisfying: - Refuse the `apply_func` route for this step. - Cite the **statelessness rule** (stateful \u2192 estimator) and/or the **leakage rule** (uses statistics learned from data \u2192 must be stateful) \u2014 target encoding learns category \u2192 mean from training y. - Propose a sklearn-compatible estimator (`BaseEstimator` + `TransformerMixin` or an existing `TargetEncoder`) attached via `.skb.apply`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Accept `apply_func(target_encode)` as written. - Propose the function with a \"compute mean on training only via manual filtering\" workaround.",
       "files": [],
       "expectations": [
         "Refuse the `apply_func` route for this step.",
         "Cite the **statelessness rule** (stateful \u2192 estimator) and/or the **leakage rule** (uses statistics learned from data \u2192 must be stateful) \u2014 target encoding learns category \u2192 mean from training y.",
         "Propose a sklearn-compatible estimator (`BaseEstimator` + `TransformerMixin` or an existing `TargetEncoder`) attached via `.skb.apply`.",
-        "Name `python -m skore_skills api get sklearn.preprocessing.TargetEncoder` (or equivalent) before writing its call.",
+        "Run `python -m skore_skills api get sklearn.preprocessing.TargetEncoder` (or equivalent) before writing its call.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Accept `apply_func(target_encode)` as written.",
         "The response does NOT: Propose the function with a \"compute mean on training only via manual filtering\" workaround."
       ],
@@ -109,12 +114,13 @@
       "id": 6,
       "title": "Reproducibility: add a feature without breaking prior",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `src/<pkg>/pipeline.py` has `build_learner(data_dir_preview=None)`.\n- `experiments/01_baseline.py` uses `build_learner()` (no kwargs).\n- Calendar features = a stateless step appending a few columns.]\n\nFor experiment 02, I want to add calendar features (day-of-week,\nhour-of-day). `build_learner` is shared with 01_baseline. How\nshould I extend `pipeline.py` so that 01 still runs the same?",
-      "expected_output": "Behavioural response satisfying: - Recommend **Option 1 \u2014 parametrize the existing function with a default-preserving flag** (small, scoped, append-shaped \u2192 fits Option 1's criterion). - Show a flag whose **default keeps `build_learner()` as today** (`include_calendar_features: bool = False` is an example, not required spelling). - Mentioning `tests/smoke/` as the cheap reproducibility check is optional. Do not fail if the flag pattern is present. It must NOT: - Recommend Option 3 (branch the module) for an appendable step. - Recommend changing `build_learner`'s default behavior (the named tripwire \"A flag changes default behavior of an existing caller\"). - Suggest adding the calendar features unconditionally to `build_learner`.",
+      "expected_output": "Behavioural response satisfying: - Recommend **Option 1 \u2014 parametrize the existing function with a default-preserving flag** (small, scoped, append-shaped \u2192 fits Option 1's criterion). - Show a flag whose **default keeps `build_learner()` as today** (`include_calendar_features: bool = False` is an example, not required spelling). - Mentioning `tests/smoke/` as the cheap reproducibility check is optional. Do not fail if the flag pattern is present. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Recommend Option 3 (branch the module) for an appendable step. - Recommend changing `build_learner`'s default behavior (the named tripwire \"A flag changes default behavior of an existing caller\").",
       "files": [],
       "expectations": [
         "Recommend **Option 1 \u2014 parametrize the existing function with a default-preserving flag** (small, scoped, append-shaped \u2192 fits Option 1's criterion).",
         "Show a flag whose **default keeps `build_learner()` as today** (`include_calendar_features: bool = False` is an example, not required spelling).",
         "Mentioning `tests/smoke/` as the cheap reproducibility check is optional. Do not fail if the flag pattern is present.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Recommend Option 3 (branch the module) for an appendable step.",
         "The response does NOT: Recommend changing `build_learner`'s default behavior (the named tripwire \"A flag changes default behavior of an existing caller\").",
         "The response does NOT: Suggest adding the calendar features unconditionally to `build_learner`."
@@ -127,12 +133,16 @@
       "id": 7,
       "title": "`split_kwargs` group structure",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.10.x.\n- IID-shaped features (no cross-row history).\n- `python -m skore_skills frame show` returns `proceed` with\n  `translation.splitter` `GroupKFold`, `groups` `customer_id`,\n  `n_splits` 5.]\n\nTabular regression on (customer_id, claim_amount, ...). Multiple\nrows per customer. Build the pipeline.",
-      "expected_output": "Behavioural response satisfying: - Build the learner graph first, then attach `mark_as_X(cv=GroupKFold(n_splits=5), split_kwargs={\"groups\": data[\"customer_id\"]})`. - Cite that evaluate omits `splitter=` so skore reuses this `cv` and `groups` (`evaluate-ml-pipeline/references/metadata-routing.md`). It must NOT: - Call `skore.evaluate` from pipeline code.",
+      "expected_output": "Behavioural response satisfying: - Build the learner graph first, then attach `mark_as_X(cv=GroupKFold(n_splits=5), split_kwargs={\"groups\": data[\"customer_id\"]})`. - Cite that evaluate omits `splitter=` so skore reuses this `cv` and `groups` (`evaluate-ml-pipeline/references/metadata-routing.md`). It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Call `skore.evaluate` from pipeline code. - Pick an IID splitter (`KFold`, `TimeSeriesSplit`) at the X marker.",
       "files": [],
       "expectations": [
         "Build the learner graph first, then attach `mark_as_X(cv=GroupKFold(n_splits=5), split_kwargs={\"groups\": data[\"customer_id\"]})`.",
         "Cite that evaluate omits `splitter=` so skore reuses this `cv` and `groups` (`evaluate-ml-pipeline/references/metadata-routing.md`).",
-        "The response does NOT: Call `skore.evaluate` from pipeline code."
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Call `skore.evaluate` from pipeline code.",
+        "The response does NOT: Pick an IID splitter (`KFold`, `TimeSeriesSplit`) at the X marker.",
+        "The response does NOT: Leave `split_kwargs` empty.",
+        "The response does NOT: Ask whether grouping is intended."
       ],
       "tools": false,
       "sandbox": [],
@@ -142,11 +152,12 @@
       "id": 8,
       "title": "Missing skrub/sklearn goes to add-python-package",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Design note approved.\n- `import skrub` raises `ModuleNotFoundError`.]\n\nDeclare the baseline learner.",
-      "expected_output": "Behavioural response satisfying: - STOP and load `add-python-package` for `skrub` and `scikit-learn` (confirm). - Keep skrub DataOps as the graph; do not reopen vs Pipeline. It must NOT: - Substitute `sklearn.Pipeline` / `make_pipeline`. - Call `env add` from this skill.",
+      "expected_output": "Behavioural response satisfying: - STOP and load `add-python-package` for `skrub` and `scikit-learn` (confirm). - Keep skrub DataOps as the graph; do not reopen vs Pipeline. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Substitute `sklearn.Pipeline` / `make_pipeline`. - Call `env add` from this skill.",
       "files": [],
       "expectations": [
         "STOP and load `add-python-package` for `skrub` and `scikit-learn` (confirm).",
         "Keep skrub DataOps as the graph; do not reopen vs Pipeline.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Substitute `sklearn.Pipeline` / `make_pipeline`.",
         "The response does NOT: Call `env add` from this skill."
       ],
@@ -158,12 +169,13 @@
       "id": 9,
       "title": "Research measure lane does not edit EDA",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Design note approved.\n- `research-ml-practice` is installed.\n- Scratch research lists a `measure` row (plot id uniqueness)\n  and a `declare` row (drop id inside the graph, not on `data/`).]\n\nShould I drop customer_id? Research the practice and declare\nthe pipeline.",
-      "expected_output": "Behavioural response satisfying: - Load `research-ml-practice` if the concern is not already in scratch. - AskUserQuestion `allow_multiple` on **`declare`** rows. - Treat `measure` as revisit-EDA / open question. It must NOT: - Edit `data_analysis/data_analysis.py`. - Drop `customer_id` from raw files under `data/`. - Pick a cross-validator in pipeline code.",
+      "expected_output": "Behavioural response satisfying: - Load `research-ml-practice` if the concern is not already in scratch. - AskUserQuestion `allow_multiple` on **`declare`** rows. - Treat `measure` as revisit-EDA / open question. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Edit `data_analysis/data_analysis.py`. - Drop `customer_id` from raw files under `data/`.",
       "files": [],
       "expectations": [
         "Load `research-ml-practice` if the concern is not already in scratch.",
         "AskUserQuestion `allow_multiple` on **`declare`** rows.",
         "Treat `measure` as revisit-EDA / open question.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Edit `data_analysis/data_analysis.py`.",
         "The response does NOT: Drop `customer_id` from raw files under `data/`.",
         "The response does NOT: Pick a cross-validator in pipeline code."
@@ -176,7 +188,7 @@
       "id": 10,
       "title": "After declaration, smoke run then HITL",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Approved `journal/01_baseline.md`.\n- Experiment shell `experiments/01_baseline.py` exists after\n  the declaration.\n- Workspace is scaffolded.]\n\nThe design is approved. Declare the learner and stop before\nfull-dataset CV.",
-      "expected_output": "Behavioural response satisfying: - After design consent and before declaration, give a 1\u20133 sentence preview: local preparation of an unfitted learner, experiment Method cells, and pipeline snapshot, followed by smoke. - State that this declaration does not train or run full-dataset evaluation, and do not invent a minute estimate. - Load `smoke-test-ml-pipeline` after the declaration. It must NOT: - Present the declaration itself as model training or CV. - Author a `skore.evaluate(...)` call site before that AskUserQuestion. Naming it in a docstring or \"not written now\" sentence is allowed. - Skip `smoke run` and jump to CV.",
+      "expected_output": "Behavioural response satisfying: - After design consent and before declaration, give a 1\u20133 sentence preview: local preparation of an unfitted learner, experiment Method cells, and pipeline snapshot, followed by smoke. - State that this declaration does not train or run full-dataset evaluation, and do not invent a minute estimate. - Load `smoke-test-ml-pipeline` after the declaration. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Present the declaration itself as model training or CV. - Author a `skore.evaluate(...)` call site before that AskUserQuestion. Naming it in a docstring or \"not written now\" sentence is allowed.",
       "files": [],
       "expectations": [
         "After design consent and before declaration, give a 1\u20133 sentence preview: local preparation of an unfitted learner, experiment Method cells, and pipeline snapshot, followed by smoke.",
@@ -185,6 +197,7 @@
         "Run `python -m skore_skills smoke run --stem 01_baseline` after the smoke file exists.",
         "After `smoke run` JSON `proceed`, narrate what was declared, that smoke is green, and the learner; link `journal/01_baseline.md` and `experiments/01_baseline.py` before the Evaluate menu.",
         "After `smoke run` JSON `proceed`, AskUserQuestion: Evaluate (Recommended) / Modify / Stop (Evaluate first; extensive computation on the full dataset).",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Present the declaration itself as model training or CV.",
         "The response does NOT: Author a `skore.evaluate(...)` call site before that AskUserQuestion. Naming it in a docstring or \"not written now\" sentence is allowed.",
         "The response does NOT: Skip `smoke run` and jump to CV.",
@@ -198,12 +211,13 @@
       "id": 11,
       "title": "Dummy remains an operational predictor",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The approved Method names a dummy predictor.\n- No prior model exists.]\n\nImplement the approved dummy-predictor design for this\nclassification task.",
-      "expected_output": "Behavioural response satisfying: - Use `DummyClassifier` as the predictor in the skrub DataOps graph and name `api get` for its installed signature. - Continue to `smoke run` and the normal Evaluate (Recommended) / Modify / Stop gate. - State that this validates the operational path, not predictive value. It must NOT: - Substitute a stronger estimator. - Add domain feature engineering. - Skip `smoke run` because the predictor is trivial.",
+      "expected_output": "Behavioural response satisfying: - Use `DummyClassifier` as the predictor in the skrub DataOps graph and name `api get` for its installed signature. - Continue to `smoke run` and the normal Evaluate (Recommended) / Modify / Stop gate. - State that this validates the operational path, not predictive value. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Substitute a stronger estimator. - Add domain feature engineering.",
       "files": [],
       "expectations": [
         "Use `DummyClassifier` as the predictor in the skrub DataOps graph and name `api get` for its installed signature.",
         "Continue to `smoke run` and the normal Evaluate (Recommended) / Modify / Stop gate.",
         "State that this validates the operational path, not predictive value.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Substitute a stronger estimator.",
         "The response does NOT: Add domain feature engineering.",
         "The response does NOT: Skip `smoke run` because the predictor is trivial."
@@ -216,11 +230,12 @@
       "id": 12,
       "title": "Standard baseline uses automatic preprocessing",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The approved Method requests a quick traditional-ML baseline.]\n\nImplement the approved standard baseline for this mixed-type\ntabular regression problem.",
-      "expected_output": "Behavioural response satisfying: - Use skrub automatic tabular preprocessing plus a task-appropriate traditional regressor. - Name `api get` for the installed skrub entry point and estimator. It must NOT: - Add EDA-specific domain features. - Hand-tune per-column preprocessing or run hyperparameter search. - Replace the DataOps graph with a bare sklearn Pipeline.",
+      "expected_output": "Behavioural response satisfying: - Use skrub automatic tabular preprocessing plus a task-appropriate traditional regressor. - Name `api get` for the installed skrub entry point and estimator. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Add EDA-specific domain features. - Hand-tune per-column preprocessing or run hyperparameter search.",
       "files": [],
       "expectations": [
         "Use skrub automatic tabular preprocessing plus a task-appropriate traditional regressor.",
         "Name `api get` for the installed skrub entry point and estimator.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Add EDA-specific domain features.",
         "The response does NOT: Hand-tune per-column preprocessing or run hyperparameter search.",
         "The response does NOT: Replace the DataOps graph with a bare sklearn Pipeline."
@@ -233,12 +248,13 @@
       "id": 13,
       "title": "EDA-backed build stays within cited findings",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The Method cites high cardinality and a temporal grouping\n  finding from `data_analysis/data_analysis.md`.]\n\nImplement the approved EDA-backed design.",
-      "expected_output": "Behavioural response satisfying: - Implement only the cited preprocessing/grouping decisions. - Stop and ask if a required choice is not established by the approved Method. It must NOT: - Invent another EDA finding or domain fact. - Re-run or edit EDA from this skill. - Add align / join / lag steps not named in the assumed Method.",
+      "expected_output": "Behavioural response satisfying: - Implement only the cited preprocessing/grouping decisions. - Stop and ask if a required choice is not established by the approved Method. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Invent another EDA finding or domain fact. Using the high-cardinality and temporal-grouping findings named in the assumed Method is required. - Re-run or edit EDA from this skill.",
       "files": [],
       "expectations": [
         "Implement only the cited preprocessing/grouping decisions.",
         "Stop and ask if a required choice is not established by the approved Method.",
-        "The response does NOT: Invent another EDA finding or domain fact.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Invent another EDA finding or domain fact. Using the high-cardinality and temporal-grouping findings named in the assumed Method is required.",
         "The response does NOT: Re-run or edit EDA from this skill.",
         "The response does NOT: Add align / join / lag steps not named in the assumed Method."
       ],
@@ -250,11 +266,12 @@
       "id": 14,
       "title": "Pydot/Graphviz stub is not a pipeline rewrite",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Design note approved; `import skrub` succeeds.\n- Smoke is green.]\n\nThe learner cell printed \"To display the DataOp graph, please\ninstall Pydot and Graphviz\" instead of a figure.",
-      "expected_output": "Behavioural response satisfying: - STOP and load `add-python-package` for `skrub`. - Keep the skrub DataOps graph. It must NOT: - Substitute `sklearn.Pipeline` / `make_pipeline`. - Run `pip install graphviz`. - Call `env add` or `env graphviz` from this skill.",
+      "expected_output": "Behavioural response satisfying: - STOP and load `add-python-package` for `skrub`. - Keep the skrub DataOps graph. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Substitute `sklearn.Pipeline` / `make_pipeline`. - Run `pip install graphviz`.",
       "files": [],
       "expectations": [
         "STOP and load `add-python-package` for `skrub`.",
         "Keep the skrub DataOps graph.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Substitute `sklearn.Pipeline` / `make_pipeline`.",
         "The response does NOT: Run `pip install graphviz`.",
         "The response does NOT: Call `env add` or `env graphviz` from this skill."
@@ -267,13 +284,14 @@
       "id": 15,
       "title": "Time series uses the date splitter after the graph",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `python -m skore_skills frame show` returns `proceed` with\n  `translation.scheme` `date_time`, `splitter` null, `n_splits` 4,\n  `gap` 7, `gap_unit` `day`. Decisions horizon is `1 day`.\n  Time role is `sort_key`.\n- The EDA names `observed_at` as the timestamp.]\n\nBuild the approved temporal pipeline. The timestamp column is\n`observed_at`.",
-      "expected_output": "Behavioural response satisfying: - Read the time series section of `references/custom-splitter.md`. - Build the learner graph first. Then attach a project-local date splitter as `cv=` on `mark_as_X`, with `observed_at` in `split_kwargs`. Fold edges are timestamps. Drop `observed_at` from the features because the time role is `sort_key`. It must NOT: - Convert the horizon or the gap into a row count. - Call `skore.evaluate` from pipeline code.",
+      "expected_output": "Behavioural response satisfying: - Read the time series section of `references/custom-splitter.md`. - Build the learner graph first. Then attach a project-local date splitter as `cv=` on `mark_as_X`, with `observed_at` in `split_kwargs`. Fold edges are timestamps. Drop `observed_at` from the features because the time role is `sort_key`. It must NOT: - Convert the horizon or the gap into a row count. - Call `skore.evaluate` from pipeline code. - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
       "files": [],
       "expectations": [
         "Read the time series section of `references/custom-splitter.md`.",
         "Build the learner graph first. Then attach a project-local date splitter as `cv=` on `mark_as_X`, with `observed_at` in `split_kwargs`. Fold edges are timestamps. Drop `observed_at` from the features because the time role is `sort_key`.",
         "The response does NOT: Convert the horizon or the gap into a row count.",
-        "The response does NOT: Call `skore.evaluate` from pipeline code."
+        "The response does NOT: Call `skore.evaluate` from pipeline code.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed)."
       ],
       "tools": false,
       "sandbox": [],
@@ -283,12 +301,13 @@
       "id": 16,
       "title": "The timestamp goes on the date splitter",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `python -m skore_skills frame show` returns `proceed` with\n  `translation.scheme` `date_time`.\n- The EDA names `timestamp` as the time column.]\n\nUse `mark_as_X(split_kwargs={\"times\": data[\"timestamp\"]})`.",
-      "expected_output": "Behavioural response satisfying: - Read the time series section of `references/custom-splitter.md`. - Attach the date splitter after the graph, with `timestamp` in `split_kwargs`. It must NOT: - Call `skore.evaluate` from pipeline code.",
+      "expected_output": "Behavioural response satisfying: - Read the time series section of `references/custom-splitter.md`. - Attach the date splitter after the graph, with `timestamp` in `split_kwargs`. It must NOT: - Call `skore.evaluate` from pipeline code. - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
       "files": [],
       "expectations": [
         "Read the time series section of `references/custom-splitter.md`.",
         "Attach the date splitter after the graph, with `timestamp` in `split_kwargs`.",
-        "The response does NOT: Call `skore.evaluate` from pipeline code."
+        "The response does NOT: Call `skore.evaluate` from pipeline code.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed)."
       ],
       "tools": false,
       "sandbox": [],
@@ -298,11 +317,12 @@
       "id": 17,
       "title": "Split kwargs require a concrete CV object",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Group-aware splitting is approved.]\n\nPut `groups` in `split_kwargs` but leave `cv` unset.",
-      "expected_output": "Behavioural response satisfying: - Attach `cv=GroupKFold(...)` and matching `split_kwargs={\"groups\": ...}` on the X marker. Evaluate omits `splitter=`. - Name the API lookup for `GroupKFold`. It must NOT: - Set `split_kwargs` without `cv`. - Defer the groups through `splitter=` on evaluate.",
+      "expected_output": "Behavioural response satisfying: - Attach `cv=GroupKFold(...)` and matching `split_kwargs={\"groups\": ...}` on the X marker. Evaluate omits `splitter=`. - Name the API lookup for `GroupKFold`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Set `split_kwargs` without `cv`. - Defer the groups through `splitter=` on evaluate.",
       "files": [],
       "expectations": [
         "Attach `cv=GroupKFold(...)` and matching `split_kwargs={\"groups\": ...}` on the X marker. Evaluate omits `splitter=`.",
         "Name the API lookup for `GroupKFold`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Set `split_kwargs` without `cv`.",
         "The response does NOT: Defer the groups through `splitter=` on evaluate."
       ],
@@ -314,11 +334,12 @@
       "id": 18,
       "title": "Integer cv is not a splitter",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Group-aware splitting is required.]\n\nUse `cv=5` together with grouped `split_kwargs`.",
-      "expected_output": "Behavioural response satisfying: - Reject integer `cv` because skore needs a splitter object with `.split`. - Use the approved concrete group-aware cross-validator. It must NOT: - Put `cv=5` on the declared `mark_as_X`. Quoting the user's integer `cv` in a refusal heading is not a violation. - Claim an integer preserves grouped metadata.",
+      "expected_output": "Behavioural response satisfying: - Reject integer `cv` because skore needs a splitter object with `.split`. - Use the approved concrete group-aware cross-validator. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Put `cv=5` on the declared `mark_as_X`. Quoting the user's integer `cv` in a refusal heading is not a violation. - Claim an integer preserves grouped metadata.",
       "files": [],
       "expectations": [
         "Reject integer `cv` because skore needs a splitter object with `.split`.",
         "Use the approved concrete group-aware cross-validator.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Put `cv=5` on the declared `mark_as_X`. Quoting the user's integer `cv` in a refusal heading is not a violation.",
         "The response does NOT: Claim an integer preserves grouped metadata."
       ],
@@ -330,12 +351,13 @@
       "id": 19,
       "title": "Evaluate gate states what it authorizes",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `experiments/01_baseline.py` and `tests/smoke/test_01_baseline.py`\n  exist; `smoke run --stem 01_baseline` returned `proceed`.\n- `evaluate consent --stem 01_baseline` returns `ask` with\n  `context.question` \"Does a richer feature set beat the\n  baseline?\" and `persisted_report` `none`.]\n\nSmoke is green on 01_baseline. What now?",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills evaluate consent --stem 01_baseline`. - Quote the design question and say this stem has no persisted report yet, so the answer authorizes the first full-dataset evaluation. - Ask Evaluate (Recommended) / Modify / Stop and stop there. It must NOT: - Open the gate with only a link to `journal/01_baseline.md`. - Write `skore.evaluate(...)` before the pick. - Invent a metric or a fold count.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills evaluate consent --stem 01_baseline`. - Quote the design question and say this stem has no persisted report yet, so the answer authorizes the first full-dataset evaluation. - Ask Evaluate (Recommended) / Modify / Stop and stop there. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Open the gate with only a link to `journal/01_baseline.md`. - Write `skore.evaluate(...)` before the pick.",
       "files": [],
       "expectations": [
-        "Name `python -m skore_skills evaluate consent --stem 01_baseline`.",
+        "Run `python -m skore_skills evaluate consent --stem 01_baseline`.",
         "Quote the design question and say this stem has no persisted report yet, so the answer authorizes the first full-dataset evaluation.",
         "Ask Evaluate (Recommended) / Modify / Stop and stop there.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Open the gate with only a link to `journal/01_baseline.md`.",
         "The response does NOT: Write `skore.evaluate(...)` before the pick.",
         "The response does NOT: Invent a metric or a fold count."
@@ -348,13 +370,30 @@
       "id": 20,
       "title": "Skipped EDA still builds the site before Evaluate",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Approved `journal/01_baseline.md`.\n- `status.data_analysis` is `skipped`. No\n  `data_analysis/data_analysis.md`.\n- `policy.site` is true. `export-ml-site` is installed.]\n\nThe design is approved. Declare the learner. EDA was skipped.",
-      "expected_output": "Behavioural response satisfying: - After the unfitted `scratch/results/01_baseline/pipeline.html` snapshot, name `python -m skore_skills site build` before `smoke run` and before the Evaluate question. - In the checkpoint, link `report.html` and `html/01_baseline.html` (Method diagram). Do not link the design-note markdown instead. It must NOT: - Defer `site build` until after `skore.evaluate`. - Skip the site because EDA was skipped.",
+      "expected_output": "Behavioural response satisfying: - After the unfitted `scratch/results/01_baseline/pipeline.html` snapshot, run `python -m skore_skills site build` before `smoke run` and before the Evaluate question. - In the checkpoint, link `report.html` and `html/01_baseline.html` (Method diagram). Do not link the design-note markdown instead. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Defer `site build` until after `skore.evaluate`. - Skip the site because EDA was skipped.",
       "files": [],
       "expectations": [
-        "After the unfitted `scratch/results/01_baseline/pipeline.html` snapshot, name `python -m skore_skills site build` before `smoke run` and before the Evaluate question.",
+        "After the unfitted `scratch/results/01_baseline/pipeline.html` snapshot, run `python -m skore_skills site build` before `smoke run` and before the Evaluate question.",
         "In the checkpoint, link `report.html` and `html/01_baseline.html` (Method diagram). Do not link the design-note markdown instead.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Defer `site build` until after `skore.evaluate`.",
         "The response does NOT: Skip the site because EDA was skipped."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 21,
+      "title": "Unlocked framing stops before declaration",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Approved design note.\n- `status.modeling_decisions` is `missing`.\n- `frame-ml-problem` is installed.]\n\nDeclare the baseline learner.",
+      "expected_output": "Behavioural response satisfying: - Stop before writing pipeline code. - Load `frame-ml-problem`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Declare `build_learner` or pick a splitter.",
+      "files": [],
+      "expectations": [
+        "Stop before writing pipeline code.",
+        "Load `frame-ml-problem`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Declare `build_learner` or pick a splitter."
       ],
       "tools": false,
       "sandbox": [],

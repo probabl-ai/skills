@@ -84,3 +84,21 @@ def test_cli_green(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.exit_code == 0, result.output
     payload = _payload(result.output)
     assert payload["action"] == "proceed"
+
+
+def test_cli_rejects_blank_stem(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A blank stem is a usage error before pytest starts."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["smoke", "run", "--stem", "  "])
+    assert result.exit_code != 0
+    assert "stem is required" in result.output
+
+
+def test_rel_keeps_paths_outside_the_workspace(tmp_path: Path) -> None:
+    """A smoke path that is not under the root is reported as given."""
+    from skore_skills.smoke import _rel
+
+    outside = tmp_path.parent / "elsewhere.py"
+    assert _rel(tmp_path, outside) == outside.as_posix()

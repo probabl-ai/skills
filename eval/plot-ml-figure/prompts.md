@@ -18,6 +18,7 @@
 - Save a PNG and leave the figure/grid as the cell output.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write a long matplotlib `bar`/`bxp` loop for the same plot.
 - Use plotly for this PNG.
 - Load `choose-python-library` for matplotlib vs seaborn vs plotly.
@@ -40,6 +41,7 @@
 - Save the figure and leave it visible (no `plt.close`).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Hand-build 20+ lines of `plt.bar` from the Series.
 - Use plotly for this PNG.
 - Call `plt.close`.
@@ -66,6 +68,7 @@
 - Load `add-python-package` for `plotly` if it is not importable.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Use seaborn-only for this interactive request.
 - Overwrite `data_analysis_<slug>.html`.
 - Add kaleido unless the user asked to export a static image.
@@ -87,6 +90,7 @@
 - Save a PNG and leave the figure visible as the cell output.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Use plotly for this PNG.
 - Load `choose-python-library` for the plotting competing set.
 - Call `plt.close`.

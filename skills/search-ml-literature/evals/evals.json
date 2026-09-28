@@ -5,13 +5,14 @@
       "id": 1,
       "title": "Show directions and do not pick a winner",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- JOURNAL Status names a regression task.\n- The dataset is loaded with `sklearn.datasets.fetch_openml`.]\n\nWhat do people do for censored regression?",
-      "expected_output": "Behavioural response satisfying: - Rewrite the query as a problem class before searching. Do not search the loader or the dataset name. - Fetch primary pages. - Show two to four directions, each with a URL and the claim. It must NOT: - Load `research-ml-practice`. - Rank a winner or say which direction to run next. - Invent a paper, URL, or claim.",
+      "expected_output": "Behavioural response satisfying: - Rewrite the query as a problem class before searching. Do not search the loader or the dataset name. - Fetch primary pages. - Show two to four directions, each with a URL and the claim. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Load `research-ml-practice`. - Rank a winner or say which direction to run next.",
       "files": [],
       "expectations": [
         "Rewrite the query as a problem class before searching. Do not search the loader or the dataset name.",
         "Fetch primary pages.",
         "Show two to four directions, each with a URL and the claim.",
         "Ask the user to pick one, narrow, or stop.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Load `research-ml-practice`.",
         "The response does NOT: Rank a winner or say which direction to run next.",
         "The response does NOT: Invent a paper, URL, or claim.",
@@ -25,11 +26,12 @@
       "id": 2,
       "title": "Confirmed direction writes one idea file",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The user picked one of the directions shown this turn.\n- Its URL is `https://example.invalid/censored-models`.\n- The last History stem is `01_baseline`.]\n\nYes, that one.",
-      "expected_output": "Behavioural response satisfying: - Restate the direction and wait for yes. The user already said yes in this prompt, so write the file. - Write `journal/ideas/<slug>.md` with Source `literature: https://example.invalid/censored-models` and Experiment `01_baseline`. It must NOT: - Write `JOURNAL.md` or a design note. - Append a `B<N>` row. - Add a package.",
+      "expected_output": "Behavioural response satisfying: - Restate the direction and wait for yes. The user already said yes in this prompt, so write the file. - Write `journal/ideas/<slug>.md` with Source `literature: https://example.invalid/censored-models` and Experiment `01_baseline`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write `JOURNAL.md` or a design note. - Append a `B<N>` row.",
       "files": [],
       "expectations": [
         "Restate the direction and wait for yes. The user already said yes in this prompt, so write the file.",
         "Write `journal/ideas/<slug>.md` with Source `literature: https://example.invalid/censored-models` and Experiment `01_baseline`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write `JOURNAL.md` or a design note.",
         "The response does NOT: Append a `B<N>` row.",
         "The response does NOT: Add a package."
@@ -42,10 +44,11 @@
       "id": 3,
       "title": "Stop writes nothing",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Directions were shown. The user chose stop.]\n\nStop.",
-      "expected_output": "Behavioural response satisfying: - Return to the caller with no idea file. It must NOT: - Write `journal/ideas/`. - Pick a direction anyway.",
+      "expected_output": "Behavioural response satisfying: - Return to the caller with no idea file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write `journal/ideas/`. - Pick a direction anyway.",
       "files": [],
       "expectations": [
         "Return to the caller with no idea file.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write `journal/ideas/`.",
         "The response does NOT: Pick a direction anyway."
       ],

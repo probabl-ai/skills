@@ -17,14 +17,15 @@
 **Must do:**
 - Emit the Pre-flight then run the commands (do not stop after
   listing boxes).
-- Name `python -m skore_skills env detect` / status.
-- Name `python -m skore_skills env add --execute skrub` (or
+- Run `python -m skore_skills env detect` / status.
+- Run `python -m skore_skills env add --execute skrub` (or
   `env route` then that add). Do not invent `pixi add` from memory.
 - Route skrub to default (not `--feature agent`).
-- Name `python -m skore_skills env graphviz` and, with `action`
+- Run `python -m skore_skills env graphviz` and, with `action`
   conda and managed, `env graphviz --execute`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `pip install skrub`.
 - Run `pip install graphviz`.
 - Re-bootstrap with `env init`.
@@ -46,9 +47,12 @@
 - Return without waiting after the default choice.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Pass `--execute` on `env add`.
 - Mention `python -m skore_skills` or `env add` in the user-facing
-  ask.
+  ask. The two-option ask must not tell the user to run `env add`.
+  A sentence that the print-only `env add` could not run this turn
+  is not that ask.
 - Treat unmanaged as silent skip without naming the package.
 
 ---
@@ -71,6 +75,7 @@
 - Still not execute `env add`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `python -m skore_skills env add pytest --execute`.
 - Show `python -m skore_skills env add` in the user-facing ask.
 - Put pytest in `--feature agent`.
@@ -88,10 +93,11 @@
   `scope: default`.
 
 **Must do:**
-- Name `python -m skore_skills env add --execute xgboost` (or
+- Run `python -m skore_skills env add --execute xgboost` (or
   `env route` then that add).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Refuse xgboost or swap it for HistGradientBoosting.
 - Run `pip install xgboost`.
 
@@ -112,6 +118,7 @@
   status is enough.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `env init`.
 - Run `env add` while managed is unanswered.
 
@@ -130,6 +137,7 @@
 - Run `python -m skore_skills env add-skore --mode hub --execute`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `pixi add "skore[hub]"`.
 - Add Skore with `--pypi`.
 - Infer the package source from PATH.
@@ -147,9 +155,10 @@
 - User asked for the workspace package (not a named dependency).
 
 **Must do:**
-- Name `python -m skore_skills env add --editable --execute`.
+- Run `python -m skore_skills env add --editable --execute`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `pip install -e .`.
 - Run `env add --editable` for a named library such as skrub.
 
@@ -165,13 +174,14 @@
 - `env route optuna` returns `scope: ask`.
 
 **Must do:**
-- Name `python -m skore_skills env route optuna`.
-- Ask G-ENV-SCOPE in plain language (project runtime vs a named
-  optional extra / agent tools).
+- Run `python -m skore_skills env route optuna`.
+- Ask in plain language whether the package belongs in the
+  project runtime vs a named optional extra / agent tools.
 - After the choice, `env add --execute` with the mapped
   `--feature` / `--group`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Silently `pixi add optuna` from memory.
 - Put `--feature` / `--group` in the question text.
 - Put optuna on `--feature agent` without asking.
@@ -191,12 +201,13 @@
   manager so `dot` is on PATH."
 
 **Must do:**
-- Name `python -m skore_skills env add --execute skrub`.
+- Run `python -m skore_skills env add --execute skrub`.
 - Treat that `env graphviz` JSON as already returned (naming
   `python -m skore_skills env graphviz` is optional).
 - Ask the Graphviz question quoting JSON `instructions` only.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Propose `env add graphviz` or `uv add graphviz` as the
   Graphviz install (a fenced command or a step to run). Naming
   them in a STOP / "will not" sentence is allowed.

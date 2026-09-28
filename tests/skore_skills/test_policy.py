@@ -153,3 +153,70 @@ def test_policy_set_rejects_audit_loop_stage(tmp_path: Path) -> None:
     """Audit is not a persistable loop stage."""
     with pytest.raises(ValueError, match="loop.stage must be one of"):
         set_policy_value(tmp_path, "loop.stage", "audit")
+
+
+def test_policy_set_loop_keys(tmp_path: Path) -> None:
+    """``loop.stage`` and ``loop.stem`` persist on the nested mapping."""
+    policy = set_policy_value(tmp_path, "loop.stage", "implement")
+    assert policy["loop"]["stage"] == "implement"
+    policy = set_policy_value(tmp_path, "loop.stem", "01_baseline")
+    assert policy["loop"]["stem"] == "01_baseline"
+
+
+def test_policy_set_cli_rejects_unknown_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Unknown keys fail at the CLI before a write."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["policy", "set", "nope", "x"])
+    assert result.exit_code != 0
+    assert "unknown policy key" in result.output
+    assert not (tmp_path / ".skore").exists()
+
+
+def test_load_policy_managed_string_aliases(tmp_path: Path) -> None:
+    """String managed aliases fold to booleans."""
+    from skore_skills.policy import load_policy
+
+    (tmp_path / ".skore").write_text(
+        json.dumps({"workspace": {"env": {"managed": "YES"}}}) + "\n",
+        encoding="utf-8",
+    )
+    assert load_policy(tmp_path)["env"]["managed"] is True
+    (tmp_path / ".skore").write_text(
+        json.dumps({"workspace": {"env": {"managed": "Off"}}}) + "\n",
+        encoding="utf-8",
+    )
+    assert load_policy(tmp_path)["env"]["managed"] is False
+
+
+def test_load_policy_ignores_non_object_and_reads_flat_document(tmp_path: Path) -> None:
+    """A JSON list is ignored; a flat ``.skore`` object is the workspace section."""
+    from skore_skills.policy import load_policy
+
+    (tmp_path / ".skore").write_text("[]\n", encoding="utf-8")
+    assert load_policy(tmp_path) == empty_policy()
+    (tmp_path / ".skore").write_text(
+        json.dumps({"env_manager": "uv"}) + "\n", encoding="utf-8"
+    )
+    assert load_policy(tmp_path)["env_manager"] == "uv"
+
+
+def test_load_legacy_nested_workspace_section(tmp_path: Path) -> None:
+    """A leftover file may already nest keys under ``workspace``."""
+    from skore_skills.policy import load_policy
+
+    (tmp_path / ".skore-workspace.json").write_text(
+        json.dumps({"workspace": {"package": "demo"}}) + "\n",
+        encoding="utf-8",
+    )
+    assert load_policy(tmp_path)["package"] == "demo"
+
+
+def test_load_policy_rejects_skore_directory(tmp_path: Path) -> None:
+    """``.skore`` as a directory is not a policy file."""
+    from skore_skills.policy import load_policy
+
+    (tmp_path / ".skore").mkdir()
+    with pytest.raises(ValueError, match="directory"):
+        load_policy(tmp_path)

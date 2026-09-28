@@ -101,3 +101,25 @@ def test_cli_artifacts_and_locator(
 
     no_stem = CliRunner().invoke(cli, ["loop", "artifacts"])
     assert no_stem.exit_code == 2
+
+
+def test_locator_without_persisted_cell_is_missing(tmp_path: Path) -> None:
+    """An audit file that never records a locator does not invent one."""
+    stem = "01_x"
+    _touch(tmp_path / "audit" / f"{stem}.py", "# %%\nprint('no locator')\n")
+    payload = loop_locator(tmp_path, stem)
+    assert payload["reason"] == "missing"
+    assert payload["locator"] == MISSING_LOCATOR
+
+
+def test_cli_rejects_blank_stem(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A blank stem is a usage error for both loop commands."""
+    monkeypatch.chdir(tmp_path)
+    artifacts = CliRunner().invoke(cli, ["loop", "artifacts", "--stem", "  "])
+    locator = CliRunner().invoke(cli, ["loop", "locator", "--stem", "  "])
+    assert artifacts.exit_code != 0
+    assert locator.exit_code != 0
+    assert "stem is required" in artifacts.output
+    assert "stem is required" in locator.output

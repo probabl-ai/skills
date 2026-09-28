@@ -5,12 +5,13 @@
       "id": 1,
       "title": "Competing optional libraries",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Pixi project; neither package is installed.\n- The stack does not fix one canonical tuning library.\n- `add-python-package` is installed (`status.skills` true).]\n\nAdd either optuna or scikit-optimize for tuning. You choose.",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills env stack` before presenting the choice; do not read the packaged JSON file. - Present the smallest useful comparison and ask the user to choose. - After a choice, load `add-python-package` rather than calling `env add` directly. It must NOT: - Install both candidates. - Pick silently because the user said \u201cyou choose.\u201d - Run `pip install`.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills env stack` before presenting the choice; do not read the packaged JSON file. - Present the smallest useful comparison and ask the user to choose. - After a choice, load `add-python-package` rather than calling `env add` directly. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Install both candidates. - Pick silently because the user said \u201cyou choose.\u201d",
       "files": [],
       "expectations": [
-        "Name `python -m skore_skills env stack` before presenting the choice; do not read the packaged JSON file.",
+        "Run `python -m skore_skills env stack` before presenting the choice; do not read the packaged JSON file.",
         "Present the smallest useful comparison and ask the user to choose.",
         "After a choice, load `add-python-package` rather than calling `env add` directly.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Install both candidates.",
         "The response does NOT: Pick silently because the user said \u201cyou choose.\u201d",
         "The response does NOT: Run `pip install`.",
@@ -24,11 +25,12 @@
       "id": 2,
       "title": "Add skill not installed",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Pixi project; neither package is installed.\n- The stack does not fix one canonical tuning library.\n- `status.skills.add-python-package` is `false`.]\n\nAdd either optuna or scikit-optimize for tuning.",
-      "expected_output": "Behavioural response satisfying: - Ask the user to choose. - After a choice, name the package and stop. It must NOT: - Run `python -m skore_skills env add`. - Invent the `add-python-package` procedure from memory.",
+      "expected_output": "Behavioural response satisfying: - Ask the user to choose. - After a choice, name the package and stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `python -m skore_skills env add`. - Invent the `add-python-package` procedure from memory.",
       "files": [],
       "expectations": [
         "Ask the user to choose.",
         "After a choice, name the package and stop.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `python -m skore_skills env add`.",
         "The response does NOT: Invent the `add-python-package` procedure from memory."
       ],
@@ -40,10 +42,11 @@
       "id": 3,
       "title": "Plotting is not a competing ask",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `plot-ml-figure` is installed (`status.skills` true).]\n\nWhich plotting library should I use, matplotlib or seaborn?",
-      "expected_output": "Behavioural response satisfying: - Load `plot-ml-figure` rather than asking matplotlib vs seaborn vs plotly. It must NOT: - Present the competing plotting set as a user choice. - Run `pip install`.",
+      "expected_output": "Behavioural response satisfying: - Load `plot-ml-figure` rather than asking matplotlib vs seaborn vs plotly. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Present the competing plotting set as a user choice. - Run `pip install`.",
       "files": [],
       "expectations": [
         "Load `plot-ml-figure` rather than asking matplotlib vs seaborn vs plotly.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Present the competing plotting set as a user choice.",
         "The response does NOT: Run `pip install`."
       ],

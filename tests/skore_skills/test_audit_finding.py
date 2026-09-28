@@ -98,3 +98,14 @@ def test_cli_stem_and_missing_args(
     absent = CliRunner().invoke(cli, ["audit", "finding", "--stem", "nope"])
     assert absent.exit_code == 1
     assert json.loads(absent.output)["finding"] == UNAVAILABLE
+
+
+def test_blank_line_inside_a_bullet_list_keeps_both_codes(tmp_path: Path) -> None:
+    """A blank line between issue bullets does not end the list."""
+    path = tmp_path / "audit.md"
+    path.write_text(
+        "Issues:\n- [SKD002] first\n\n- [SKD003] second\n\nTips:\n",
+        encoding="utf-8",
+    )
+    payload = audit_finding(path)
+    assert payload["issues"] == ["SKD002", "SKD003"]

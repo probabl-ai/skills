@@ -2,8 +2,9 @@
 
 Behavioural evals for each skill: the **target** model sees `SKILL.md`
 as its system prompt (or an empty system, for the baseline) and answers
-a golden prompt. A **judge** model scores the Must / Must NOT
-expectations via DeepEval `GEval`.
+a golden prompt. A **judge** model scores the Must / Must NOT expectations.
+The default TypeSafe Jev judge uses OpenRouter's Decisions API; generative
+judges use DeepEval `GEval`.
 
 **Default is still single-turn, no tools.** Workspace state is inlined
 and the harness note forbids tool calls. Opt-in cases set
@@ -36,7 +37,26 @@ Expectations from `prompts.md` are split on the prefix
 dramatic misses:
 
 - **Must-NOT** is all-or-nothing (`threshold=1.0`, `strict_mode`).
-  A violated prohibition fails the case.
+  A violated prohibition fails the case. The shared user-facing
+  language prohibition (catalog skill ids, HITL, `G-*` ask names,
+  and `python -m skore_skills` / `env add`) is not sent to the
+  judge. The harness checks it on the question and close narrative
+  only. Pre-flight, State at close, Post-close, Mechanical, Run,
+  Commands, Checklist, agent, internal, harness, handoff, sequence,
+  actions, end-of-turn, and gate sections are ignored, as is a plain
+  Pre-flight block until the next heading. Fenced blocks, code
+  comments, import lines, checklist rows, and a heading or bullet
+  whose label is only a `G-*` ask name are ignored. Any line that
+  records `python -m skore_skills` or `env add` is ignored
+  (`**Expect cli:**` scores those). Backtick-wrapped procedure
+  names, bold procedure names, and parenthetical gate labels are
+  not the close   narrative. A `G-*` ask name in a later step is not the question.
+  Asking the user about that name still is. `AskUserQuestion` is the
+  tool name, not a violation.
+  Trailing `G-REPORT-LOCATOR` /
+  `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` /
+  `pip install` lines stay allowed.
+  Every other Must-NOT item is still an all-or-nothing judge score.
 - Missing `**Expect files:**` / `**Expect reads:**` / `**Expect cli:**` fails.
 - An **empty** visible answer (not a skip) fails.
 
@@ -72,7 +92,12 @@ files / empty) separately from `must-do-weak`.
    `**Expect cli:**` (argv substring of a `run_skore_skills` call,
    e.g. `api get sklearn.model_selection.KFold`),
    `**Expect tools:**` (tool-trace names, e.g. `AskUserQuestion`).
-   Document
+   User-facing Must-NOT: questions and the close narrative must not
+   quote catalog skill ids, HITL, `G-*` ask names, or
+   `python -m skore_skills` / `env add`. Score wrapper CLI via
+   `**Expect cli:**` or internal **Run**; trailing locator tokens
+   and unmanaged `pixi add` / `uv add` / `pip install` lines are
+   allowed. Document
    `python -m skore_skills` until `skore skills run` ships; do not
    require the forwarder in evals yet.
 2. Regenerate the skill-creator schema file:
@@ -118,10 +143,17 @@ Defaults (override in `pixi.toml` or on the CLI):
     `explore-ml-data`, `audit-ml-pipeline`
   - big — `openrouter/deepseek/deepseek-v4.1-flash`:
     `build-ml-pipeline`
-- judge: `openrouter/deepseek/deepseek-v4.1-flash` (not tiered)
+- judge: `~typesafe/jev-latest` (not tiered)
 - mode: `with` (SKILL.md as system prompt)
 - Must-do pass ratio: `0.7` (diagnostic metric only; Must-NOT is
   always all-or-nothing and is what fails the node)
+
+Jev batches one yes/no decision per expectation. A probability of at least
+`0.5` satisfies that expectation; the Must-do score is the fraction satisfied,
+while Must-NOT remains all-or-nothing. Jev does not generate prose reasons, so
+transcripts record each decision and probability instead. Set
+`--skill-judge-model openrouter/deepseek/deepseek-v4.1-flash` to use the
+previous DeepSeek `GEval` judge.
 
 `--skill-tier all` runs every case on all three models.
 `--skill-tier small|medium|big` keeps only skills assigned to that
@@ -153,7 +185,7 @@ pixi run -e eval eval -- --skill-tier all
 # Ignore the table and pin one model
 pixi run -e eval eval -- \
   --skill-model openrouter/deepseek/deepseek-v4.1-flash \
-  --skill-judge-model openrouter/deepseek/deepseek-v4.1-flash \
+  --skill-judge-model ~typesafe/jev-latest \
   --skill-mode both \
   --skill-pass-ratio 0.7 \
   -k build-ml-pipeline

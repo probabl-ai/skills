@@ -35,6 +35,8 @@ and omit `splitter=`.
 
 Details: `setup-workspace` `references/human_facing_prose.md`.
 Experiment markdown and `#` comments describe this evaluation.
+Questions and the close use the same data-science language: not
+skill ids, `G-*` names, or the wrapper CLI.
 `<!-- results-embed: … -->` is a site marker.
 
 ## Procedure
@@ -188,7 +190,13 @@ When `model-ml-pipeline` dispatched this turn, pass JSON
 `locator` up and return. Do not run `loop artifacts`, audit,
 record-outcome, convert, site, or `git end-turn`.
 
-Otherwise this skill owns the close. Run
+Otherwise this skill owns the close. When both `policy.notebooks`
+and `policy.site` are true, the turn is unfinished until
+record-outcome, `notebook convert --html`, `site build`, and
+`git end-turn` have run, in that order, after the locator is in
+the close. A stop at an earlier gate still names `notebook convert`
+then `site build` in that order. Do not leave them as a conditional
+aside, and do not stop after the narrative. Run
 `python -m skore_skills loop artifacts --stem <stem>`.
 `stop` / `evaluate_incomplete` → name the missing file and do
 not audit. `audit` → load `audit-ml-pipeline` when installed.

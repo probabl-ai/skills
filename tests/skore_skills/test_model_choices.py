@@ -139,6 +139,7 @@ def test_real_backlog_rows_are_returned_and_malformed_rows_ignored(
         "| B1 | try robust scaling | `user` |\n"
         "| nope | malformed identifier | user |\n"
         "| B2 |  | user |\n"
+        "| B9 | only two columns |\n"
         "| <!-- B3 --> | <!-- example --> | <!-- user --> |\n",
     )
 

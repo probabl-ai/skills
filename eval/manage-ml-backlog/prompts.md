@@ -14,15 +14,16 @@
 - G-REPORT-LOCATOR and G-AUDIT-FINDING are available from the digest.
 
 **Must do:**
-- Name `python -m skore_skills status`.
+- Run `python -m skore_skills status`.
 - Copy the headline result, locator, and G-AUDIT-FINDING into
   History / the design-note Status block.
 - Do not open idea triage in this record. An empty `journal/ideas/`
   is a one-line skip.
-- Name `python -m skore_skills git end-turn --stage backlog`.
+- Run `python -m skore_skills git end-turn --stage backlog`.
 - If that command returns `invoke`, load `persist-ml-git`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Invent a metric that is not in the digest or user text.
 - Draft `02_*.py` in this turn.
 - Run `git commit` in this skill or `git push`.
@@ -47,6 +48,7 @@
 - Delete `journal/ideas/01_baseline-calibration.md`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Silently pick an existing Backlog row.
 - Start `build-ml-pipeline`.
 - Write a design note in this turn.
@@ -63,13 +65,14 @@
 - `journal/` exists but `journal/JOURNAL.md` is missing.
 
 **Must do:**
-- Name `python -m skore_skills scaffold --journal` as the
+- Run `python -m skore_skills scaffold --journal` as the
   initialization command.
 - State that the packaged index provides Status, Data understanding,
   History, and Backlog.
 - Return to triage after initialization.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Paste a `JOURNAL.md` body, a markdown fence of that file, or
   History/Backlog tables reconstructed from memory.
 - Draft or implement an experiment in this turn.
@@ -90,10 +93,11 @@
 
 **Must do:**
 - Copy the headline result into the History row.
-- Name `python -m skore_skills site build` before git end-turn.
-- Name `python -m skore_skills git end-turn --stage backlog`.
+- Run `python -m skore_skills site build` before git end-turn.
+- Run `python -m skore_skills git end-turn --stage backlog`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Fail the backlog turn if site build errors.
 - Run `notebook convert`.
 - Run `git commit` in this skill or `git push`.
@@ -119,6 +123,7 @@
   design note.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Invent B2/B3 or renumber B4.
 - Invent a Method from the one-line item.
 - Require an audit digest for this selection mode.
@@ -145,7 +150,7 @@
 - Backlog has rows `B1` and `B2`.
 
 **Must do:**
-- Name `python -m skore_skills status`.
+- Run `python -m skore_skills status`.
 - Flip the `01_baseline` History row to `done` and copy the
   headline result from the digest.
 - Copy the locator byte-for-byte into the History `Report` cell
@@ -163,14 +168,18 @@
 - Return to the caller after recording.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Rescan the Backlog or add/resolve `B1` / `B2` rows.
 - Ask the idea-triage question.
-- Dispatch `audit-ml-pipeline`.
+- Dispatch `audit-ml-pipeline`. Naming the caller when returning
+  is not dispatching it.
 - Run `site build` or `git end-turn --stage backlog` — the caller
   owns the close.
 - Rewrite or shorten the supplied Hub URL. Pasting the digest
   string unchanged is required, not a violation.
 - Merge the audit finding into the headline metric or Last result.
+  Copying the supplied G-AUDIT-FINDING unchanged, including the
+  `ROC-AUC 0.86` already inside that string, is required.
 - Parse `scratch/results/` HTML when writing `## Results`.
 - Invent extra Display subsections without a matching digest cell.
 
@@ -198,6 +207,7 @@
   Checks or Metrics subsections.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Invent or estimate a metric.
 - Mark the row `done` without a result.
 - Ask the idea-triage question.
@@ -221,6 +231,7 @@
 - Continue recording the valid headline result.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Guess a Hub, MLflow, or local artifact URL.
 - Omit the Report cell from the History row.
 
@@ -244,6 +255,9 @@
   the user picks one.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Fabricate a `B1` row.
 - Write a design note.
-- Invent a literature search or a shaping menu from this skill.
+- Start a literature search or a shaping questionnaire. Offering
+  to shape an idea or search the literature, without loading
+  either skill, is required.

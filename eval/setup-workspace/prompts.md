@@ -28,32 +28,34 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 - Emit the Pre-flight then run the commands (do not stop after
   listing boxes).
 - Identify as a **fresh** layout (no detection signals matched).
-- Name **G-PKG-NAME** as the next gate — the `src/<pkg>/` import
-  name goes to the user via `AskUserQuestion`, with the folder name
-  as the default, and is not picked here.
-- Do not ask G-ENV-MGR.
-- Name `python -m skore_skills scaffold --package <pkg>` as the
-  action after G-PKG-NAME.
+- AskUserQuestion for the Python import name (`src/<pkg>/`), with
+  the folder name as the default. Do not pick it silently.
+- Do not ask which environment manager to use.
+- Run `python -m skore_skills scaffold --package <pkg>` after the
+  import name is confirmed.
 - Mention scaffolding the default layout: `src/<pkg>/`,
   `journal/`, `experiments/`, `data_analysis/`, `data/`, `audit/`,
   `tests/smoke/`, `scratch/`, each with `README.md`.
-- After scaffold, AskUserQuestion executed notebooks +
-  documentation site (`allow_multiple`, both **unchecked** by
-  default). Persist `false` when left unchecked.
-- Name `python -m skore_skills git end-turn --stage setup` at the
+- After scaffold, persist `policy set notebooks true` and
+  `policy set site true`. Do not AskUserQuestion for notebooks
+  or site.
+- Run `python -m skore_skills git end-turn --stage setup` at the
   end of this standalone turn.
 - If that command returns `invoke`, load `persist-ml-git`.
 
 **Must NOT do:**
-- Skip persisting `notebooks` / `site` after the gate.
-- Ask G-ENV-MGR or pick an environment manager in this skill.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Skip persisting `notebooks` / `site` true after scaffold.
+- AskUserQuestion for executed notebooks or the documentation
+  site.
+- Ask which environment manager to use, or pick one in this skill.
 - Run `pixi init` / `uv init` / `poetry init` on the user's behalf.
 - Pick a package name silently from the folder name.
 - Write a runnable `experiments/01_baseline.py`. Scaffold does not
   create that file.
 - Default to pandas, persist `tabular`, or load
-  `choose-python-library` (G-TABULAR belongs on exploratory data
-  analysis).
+  `choose-python-library` (tabular library choice belongs on
+  exploratory data analysis).
 - Run `git commit` in this skill or `git push`.
 
 ---
@@ -82,6 +84,7 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
   rename `src/` or the import).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Recreate / overwrite any existing folder.
 - Auto-write `experiments/02_*.py` before the design note is
   approved.
@@ -108,13 +111,14 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 - `AskUserQuestion`
 
 **Must do:**
-- Call `AskUserQuestion` with **G-PKG-NAME** and `ml_pricing` as
-  the default option. Do not scaffold yet.
+- Call `AskUserQuestion` for the Python import name, with
+  `ml_pricing` as the default option. Do not scaffold yet.
 - Refuse the silent-pick framing.
 - Cite that "go fast" / "no preference" / "you pick" do NOT
-  resolve the gate.
+  resolve the import name.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Pick a name and proceed (including silently using `ml_pricing`).
 - Run `pixi init` to "get the name from the manifest".
 - Ask only in prose instead of calling `AskUserQuestion`.
@@ -129,15 +133,20 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 > `experiments/01_baseline.py` so we can run it right away.
 
 **Assumed workspace state:**
-- Empty folder, fresh scaffold.
-- The config gates are already resolved and recorded: G-PKG-NAME =
-  `churnlab`, G-ENV-MGR = pixi. Nothing is left to ask before the
-  layout goes down.
+- Empty folder, fresh scaffold. No `src/` yet.
+- `.skore` records `policy.package` `churnlab` and
+  `policy.env_manager` `pixi`. That recorded package is the
+  resolved name. Nothing is left to ask before the layout goes
+  down.
 
 **Tools:** yes
 
 **Sandbox:**
 - dir: `scratch`
+- file: `.skore`
+```json
+{"workspace": {"package": "churnlab", "env_manager": "pixi"}}
+```
 
 **Expect files:**
 - `src/churnlab/pipeline.py`
@@ -158,6 +167,7 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
   `experiments/README.md` only.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Create `experiments/01_baseline.py` in this turn.
 - Treat "so we can run it right away" as a reason to write
   experiment code during scaffold.
@@ -179,6 +189,7 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 - Do not write a new experiment file or pick new vs in-place edit.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Silently pick "edit in place" or "create new file".
 - Touch the design note `journal/02_text_encoder.md` directly.
 
@@ -201,6 +212,7 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 - Say evaluation and `project.put` are not this skill.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Approve the scratch re-evaluate / re-put **this turn**.
 
 ---
@@ -216,10 +228,12 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 
 **Must do:**
 - Refuse to run `pixi init`.
-- Cite that the manager is not this skill's gate.
-- Cite that **G-PKG-NAME must pass** before scaffold.
+- Cite that the manager is not this skill's question.
+- Cite that the package/import name must be confirmed before
+  scaffold.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `pixi init` / `uv init` / `poetry init` in this turn.
 - Treat "pixi is on PATH" as resolving the manager.
 - Pick a package name from the folder via the `pixi init` side
@@ -242,13 +256,15 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 **Must do:**
 - Classify the root as **manager-only**: a scaffold target, not an
   existing layout.
-- Name `python -m skore_skills scaffold --package churnlab`.
+- Run `python -m skore_skills scaffold --package churnlab`.
 - State that the existing `pyproject.toml` is kept (no `--force`).
-- After scaffold, AskUserQuestion notebooks + site (both off by
-  default) unless those flags are already set.
+- After scaffold, persist `policy set notebooks true` and
+  `policy set site true` unless those flags are already set.
+  Do not AskUserQuestion for notebooks or site.
 - Return control to `setup-ml-project` at the end of the turn.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Pass `--force` to `scaffold`.
 - Treat the manifest as an existing layout and refuse to scaffold.
 - Run `python -m skore_skills git end-turn`, load `persist-ml-git`,
@@ -257,7 +273,7 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 
 ---
 
-## CASE_09 — Yes executed notebooks after scaffold
+## CASE_09 — Default notebooks and site on after scaffold
 
 **User prompt:**
 > Set up a fresh ML workspace in this folder.
@@ -265,53 +281,56 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 **Assumed workspace state:**
 - Empty folder. Fresh layout.
 - `policy.notebooks` and `policy.site` are `null`.
+- `policy.env.managed` is true.
 - `add-python-package` is installed.
-- After G-PKG-NAME and scaffold, the user checks **Executed
-  notebooks** and leaves the site off.
 
 **Must do:**
-- AskUserQuestion notebooks + site with both off by default,
-  after scaffold.
-- Persist `policy set notebooks true` and `policy set site false`.
-- Load `add-python-package` for `jupytext` and `nbclient`.
+- After scaffold, persist `policy set notebooks true` and
+  `policy set site true`. Do not AskUserQuestion for notebooks
+  or site.
+- Load `add-python-package` for `jupytext`, `nbclient`, and
+  `nbconvert` (agent) — stage turns write the notebook viewer
+  with `--html`.
+- Load `add-python-package` for `mkdocs-material` (agent).
+- Run `python -m skore_skills site init`.
 - Name `env add` with the agent feature (do not leave `env route`
   as ask).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Leave `jupytext` as `env route` ask / optional extra.
 - Run `pixi add` / `uv add` from this skill.
 - Run `notebook convert` during setup.
-- Install `nbconvert` while the site gate is off.
-- Ask the gate before scaffold.
+- AskUserQuestion for notebooks or site before or after scaffold.
 
 ---
 
-## CASE_10 — Yes documentation site after scaffold
+## CASE_10 — Already-off flags are not overwritten
 
 **User prompt:**
 > Set up a fresh ML workspace in this folder.
 
 **Assumed workspace state:**
 - Empty folder. Fresh layout.
-- `policy.notebooks` and `policy.site` are `null`.
+- `policy.package` is already set; G-PKG-NAME is already answered.
+- Scaffold has run.
+- `policy.notebooks` is false. `policy.site` is false.
 - `add-python-package` is installed.
-- After G-PKG-NAME and scaffold, the user checks **Documentation
-  site** and leaves notebooks off.
 
 **Must do:**
-- Persist `policy set site true` and `notebooks false`.
-- Load `add-python-package` for `mkdocs-material` (agent).
-- Name `python -m skore_skills site init`.
+- Leave `policy.notebooks` and `policy.site` false. Do not persist
+  `true`.
 
 **Must NOT do:**
-- Run `pixi add mkdocs-material` from this skill.
-- Load `add-python-package` for `nbconvert` for the site gate.
-- Skip init after the user opted into the site.
-- Ask the gate on an existing layout.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- AskUserQuestion for notebooks or site.
+- Load `add-python-package` for `jupytext`, `nbclient`,
+  `nbconvert`, or `mkdocs-material` from this persist step.
+- Run `python -m skore_skills site init`.
 
 ---
 
-## CASE_11 — Both gates on install the HTML toolchain
+## CASE_11 — Both defaults on install the HTML toolchain
 
 **User prompt:**
 > Set up a fresh ML workspace in this folder.
@@ -321,17 +340,19 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 - `policy.package` is already set; G-PKG-NAME is already answered.
 - Scaffold has run.
 - `policy.notebooks` and `policy.site` are `null`.
+- `policy.env.managed` is true.
 - `add-python-package` is installed.
-- The user checks **both** notebooks and site boxes.
 
 **Must do:**
 - Persist `policy set notebooks true` and `policy set site true`.
+  Do not AskUserQuestion for notebooks or site.
 - Load `add-python-package` for `jupytext`, `nbclient`, and
   `nbconvert` (agent) — stage turns write the notebook viewer
   with `--html`.
-- Name `python -m skore_skills site init`.
+- Run `python -m skore_skills site init`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `notebook convert` during setup.
 - Run `pixi add` / `uv add` from this skill.
-- Leave either flag `null`.
+- Omit `policy set notebooks true` or `policy set site true`.

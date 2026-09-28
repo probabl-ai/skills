@@ -145,3 +145,23 @@ def test_cli_requires_stem() -> None:
 
     assert result.exit_code == 2
     assert "Missing option" in result.output
+
+
+def test_cli_rejects_blank_stem(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A blank stem is a usage error."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["design", "consent", "--stem", "  "])
+    assert result.exit_code != 0
+    assert "stem is required" in result.output
+
+
+def test_missing_or_blank_state_asks(tmp_path: Path) -> None:
+    """No State line, or a State that strips to nothing, is still first approval."""
+    stem = "05_new_model"
+    _write(tmp_path / "journal" / f"{stem}.md", "# note\n\nno status yet\n")
+    assert design_consent(tmp_path, stem)["reason"] == "first_approval"
+
+    _write(tmp_path / "journal" / f"{stem}.md", "- **State:** `\n")
+    assert design_consent(tmp_path, stem)["reason"] == "first_approval"

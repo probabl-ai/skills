@@ -1,0 +1,131 @@
+{
+  "skill_name": "review-ml-choices",
+  "evals": [
+    {
+      "id": 1,
+      "title": "Package name stays read-only",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.package` is `load_forecast`.\n- `src/load_forecast/` exists.\n- `review-ml-choices` is the skill for this turn.]\n\nShow what we decided. Rename the Python package to forecasts.",
+      "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Show the package name and say an existing tree is not renamed. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Load `setup-workspace` to rename `src/`. - Run `policy set package`.",
+      "files": [],
+      "expectations": [
+        "Use the `review choices` JSON. Do not rebuild which rows are offered.",
+        "Show the package name and say an existing tree is not renamed.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Load `setup-workspace` to rename `src/`.",
+        "The response does NOT: Run `policy set package`.",
+        "The response does NOT: Scaffold a new package."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 2,
+      "title": "Unset report destination is not a switch",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.skore_mode` is unset.\n- `status.skills.sync-ml-reports` is `true`.\n- `status.skills.evaluate-ml-pipeline` is `true`.]\n\nWhat did we decide? Change where reports go.",
+      "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Show that where reports go is not chosen yet. - Say the first choice happens when a report is stored. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Load `sync-ml-reports`. - Run `policy set skore_mode`.",
+      "files": [],
+      "expectations": [
+        "Use the `review choices` JSON. Do not rebuild which rows are offered.",
+        "Show that where reports go is not chosen yet.",
+        "Say the first choice happens when a report is stored.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Load `sync-ml-reports`.",
+        "The response does NOT: Run `policy set skore_mode`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 3,
+      "title": "Recorded report destination loads sync",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.skore_mode` is `local`.\n- `status.skills.sync-ml-reports` is `true`.\n- The user picks the report-destination change.]\n\nShow our choices. I want to change where reports go.",
+      "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Show the current destination as local. - Hand off to changing where reports go, and stop, without a catalog id. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `policy set skore_mode`. - Rewrite `skore.Project` init blocks in this skill.",
+      "files": [],
+      "expectations": [
+        "Use the `review choices` JSON. Do not rebuild which rows are offered.",
+        "Show the current destination as local.",
+        "Hand off to changing where reports go, and stop, without a catalog id.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Run `policy set skore_mode`.",
+        "The response does NOT: Rewrite `skore.Project` init blocks in this skill."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 4,
+      "title": "Notebooks and site load export",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.notebooks` is true.\n- `policy.site` is false.\n- `status.skills.export-ml-project` is `true`.\n- The user picks that change.]\n\nWhat did we decide about notebooks and the site? I want to change that.",
+      "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Show both current values. - Hand off to changing notebooks and the site, and stop, without a catalog id. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `policy set notebooks` or `policy set site`. - Invent `notebook convert` or `mkdocs` steps.",
+      "files": [],
+      "expectations": [
+        "Use the `review choices` JSON. Do not rebuild which rows are offered.",
+        "Show both current values.",
+        "Hand off to changing notebooks and the site, and stop, without a catalog id.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Run `policy set notebooks` or `policy set site`.",
+        "The response does NOT: Invent `notebook convert` or `mkdocs` steps."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 5,
+      "title": "Present data analysis is not marked skipped",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.data_analysis` is `present`.\n- `data_analysis/data_analysis.md` exists.\n- `status.skills.explore-ml-data` is `true`.]\n\nChange our choices. Skip the data analysis; we already wrote it.",
+      "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Say the written analysis stays and that the change is to run it again. - Hand off to running it again, without a catalog id. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write a JOURNAL Data understanding Status of `skipped`. - Overwrite `data_analysis/data_analysis.md` from this skill.",
+      "files": [],
+      "expectations": [
+        "Use the `review choices` JSON. Do not rebuild which rows are offered.",
+        "Say the written analysis stays and that the change is to run it again.",
+        "Hand off to running it again, without a catalog id.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Write a JOURNAL Data understanding Status of `skipped`.",
+        "The response does NOT: Overwrite `data_analysis/data_analysis.md` from this skill."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 6,
+      "title": "One framing cell loads frame",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.modeling_decisions` is `locked`.\n- `status.skills.frame-ml-problem` is `true`.\n- `frame show` returns `action` `proceed` and `decisions.metric`\n  `MAE`, `decisions.validation` `cv`, `decisions.folds` `5`.\n- The user picks the metric.]\n\nShow our choices. I want to change the comparison metric.",
+      "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Offer the metric (MAE) as its own choice, not one \u201cmodeling decisions\u201d row. - Hand off to re-asking that metric, and stop, without a catalog id. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Edit the journal, including blanking the metric, from this skill. - Run `frame show --revise` from this skill.",
+      "files": [],
+      "expectations": [
+        "Use the `review choices` JSON. Do not rebuild which rows are offered.",
+        "Offer the metric (MAE) as its own choice, not one \u201cmodeling decisions\u201d row.",
+        "Hand off to re-asking that metric, and stop, without a catalog id.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Edit the journal, including blanking the metric, from this skill.",
+        "The response does NOT: Run `frame show --revise` from this skill.",
+        "The response does NOT: Run `policy set`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 7,
+      "title": "Hub mode is not replayed as local",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.env.managed` is true.\n- `policy.skore_mode` is `hub`.\n- `status.skills.setup-python-env` is `true`.\n- The user picks that change.]\n\nShow our choices. Change who manages the environment.",
+      "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Hand off to re-deciding who manages the environment, and stop, without a catalog id. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `env add-skore --mode local`. - Run `policy set env.managed` from this skill.",
+      "files": [],
+      "expectations": [
+        "Use the `review choices` JSON. Do not rebuild which rows are offered.",
+        "Hand off to re-deciding who manages the environment, and stop, without a catalog id.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Run `env add-skore --mode local`.",
+        "The response does NOT: Run `policy set env.managed` from this skill."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    }
+  ]
+}

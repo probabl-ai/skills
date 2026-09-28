@@ -11,6 +11,13 @@ description: >
 
 Ordering only. Children own convert and site commands.
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+The multi-select uses **Executed notebooks** and **Documentation
+site**. Do not put skill ids, convert flags, or the wrapper CLI
+in the question.
+
 ## Sequence
 
 1. `python -m skore_skills status`. Read `policy.notebooks`,
@@ -21,8 +28,9 @@ Ordering only. Children own convert and site commands.
    policy. A file link is an addition, never the context.
 
    - Executed notebooks — preselected iff `policy.notebooks` is
-     true
-   - Documentation site — preselected iff `policy.site` is true
+     not false (`true` or `null`)
+   - Documentation site — preselected iff `policy.site` is not
+     false (`true` or `null`)
 
 3. Persist each box this turn: checked →
    `python -m skore_skills policy set notebooks true` (or `site`);

@@ -22,10 +22,11 @@ description: >
 The only skill that knows `python -m skore_skills env add`. Callers
 must not splice manager commands themselves.
 
-## User-facing language
+## Human-facing prose
 
+Details: `setup-workspace` `references/human_facing_prose.md`.
 Run `python -m skore_skills …` yourself. In questions and replies,
-name the manager command from print-only stdout (`pixi add …`,
+show the manager command from print-only stdout (`pixi add …`,
 `uv add …`, `pip install …`) or a plain-language intent. Never
 paste `python -m skore_skills`, `env add`, `env add-skore`, or
 `--feature` / `--group` as something the user should run or choose.
@@ -63,9 +64,9 @@ after listing the boxes.
    `env add` (or `env add --editable`, or `env add-skore --mode
    <mode>`) to obtain the manager line. Every ask in this skill
    carries its context inline: name the package(s), the manager
-   and env the command would touch, which skill asked for them,
-   and what each option does. A file link is an addition, never
-   the context. Ask with two options:
+   and env the command would touch, and what each option does.
+   Do not name the calling skill. A file link is an addition,
+   never the context. Ask with two options:
 
    1. **I will handle it** (default) — name the package(s) and
       **show that stdout** (e.g. `pixi add pandas`). Do not wait;

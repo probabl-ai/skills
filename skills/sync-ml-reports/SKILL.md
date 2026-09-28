@@ -15,6 +15,14 @@ Copy reports with the `skore` CLI. Switch the default destination
 only when the user asked to. Do not evaluate, audit, or invent
 `Project.sync` Python.
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+Ask where reports live (disk, Hub, MLflow) in those words. Do not
+name `G-SKORE-MODE`, skill ids, or the wrapper CLI in the
+question. `skore sync` output may appear in the close as the
+sync table.
+
 ## Procedure
 
 1. Run `python -m skore_skills status`. Read `policy.skore_mode`
@@ -28,7 +36,11 @@ only when the user asked to. Do not evaluate, audit, or invent
    G-SKORE-MODE in `evaluate-ml-pipeline`. Do not ask local / hub
    / mlflow here. Load that skill only if
    `status.skills.evaluate-ml-pipeline` is true and the user
-   asked to evaluate; else one-line skip.
+   asked to evaluate; else one-line skip. The close is only this
+   stop: the destination is not chosen yet and is picked when a
+   report is stored. Do not list local, Hub, or MLflow, a
+   workspace name, or a tracking URI. Do not use the
+   source-to-destination close below.
 
 3. **AskUserQuestion** for any answer not already in the request.
    Ahead of each question, state in 2–4 lines what the answer
@@ -121,6 +133,9 @@ only when the user asked to. Do not evaluate, audit, or invent
 ## End of turn
 
 ### User-facing close
+
+This close applies only after a sync. An unset `policy.skore_mode`
+uses the step-2 stop instead.
 
 Short story: source → destination, whether policy changed, and
 the `skore sync` table or `No reports to synchronize.` Do not

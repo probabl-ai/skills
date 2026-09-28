@@ -117,7 +117,82 @@ def test_cells_run_checks_summarize_does_not_hang_under_vscode_pid(
     assert " object at 0x" not in completed.stdout
 
 
+def test_cells_imports_without_matplotlib_or_pandas() -> None:
+    """Optional plotting and dataframe imports are skipped when absent."""
+    import builtins
+    import importlib
+
+    real_import = builtins.__import__
+
+    def guarded(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "matplotlib" or name.startswith("matplotlib."):
+            raise ImportError(name)
+        if name == "pandas" or name.startswith("pandas."):
+            raise ImportError(name)
+        return real_import(name, globals, locals, fromlist, level)
+
+    builtins.__import__ = guarded
+    try:
+        importlib.reload(cells)
+        assert cells.pd is None
+    finally:
+        builtins.__import__ = real_import
+        importlib.reload(cells)
+
+
 def test_cells_run_missing_file() -> None:
     """Missing source exits non-zero."""
     result = CliRunner().invoke(cli, ["cells", "run", "no-such-notebook.py"])
     assert result.exit_code != 0
+
+
+def test_cells_run_skips_empty_cells_and_captures_stderr(tmp_path: Path) -> None:
+    """An empty cell is not fenced, and stderr is its own section."""
+    src = tmp_path / "notes.py"
+    src.write_text(
+        "# %%\n\n# %%\nimport sys\nsys.stderr.write('warn\\n')\n",
+        encoding="utf-8",
+    )
+    dest = tmp_path / "out" / "digest.md"
+    cells.run(src, dest)
+    digest = dest.read_text(encoding="utf-8")
+    assert "**stderr:**" in digest
+    assert "warn" in digest
+    empty = digest.split("## Cell 0:", maxsplit=1)[1].split("## Cell 1:", maxsplit=1)[0]
+    assert "```python" not in empty
+
+
+def test_cells_run_records_an_execution_result(tmp_path, monkeypatch) -> None:
+    """A cell result object is rendered under ``**output:**``."""
+
+    class Result:
+        result = 4
+        success = True
+        error_in_exec = None
+
+    class Shell:
+        def run_cell(self, body: str, store_history: bool = False) -> Result:
+            return Result()
+
+    src = tmp_path / "expr.py"
+    src.write_text("# %%\n2 + 2\n", encoding="utf-8")
+    monkeypatch.setattr(cells, "make_shell", lambda: Shell())
+    dest = tmp_path / "digest.md"
+    cells.run(src, dest)
+    digest = dest.read_text(encoding="utf-8")
+    assert "**output:**" in digest
+    assert "4" in digest
+
+
+def test_cells_main_usage_and_dest(tmp_path: Path, capsys) -> None:
+    """``main`` rejects the wrong argument count and writes an optional dest."""
+    assert cells.main([]) == 2
+    assert "src.py" in capsys.readouterr().err
+
+    src = tmp_path / "notes.py"
+    src.write_text("# %%\nprint('hi')\n", encoding="utf-8")
+    dest = tmp_path / "nested" / "out.md"
+    assert cells.main([str(src), str(dest)]) == 0
+    assert dest.is_file()
+    assert "hi" in dest.read_text(encoding="utf-8")
+    assert "hi" in capsys.readouterr().out

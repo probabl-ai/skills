@@ -13,9 +13,10 @@
 - `jupytext` and `nbclient` are installed.
 
 **Must do:**
-- Name `python -m skore_skills notebook convert data_analysis/data_analysis.py`.
+- Run `python -m skore_skills notebook convert data_analysis/data_analysis.py`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Rewrite `data_analysis/data_analysis.py` from a `.ipynb`.
 - Run `git commit`.
 - Run `cells run` as a substitute for convert.
@@ -23,7 +24,7 @@
 
 ---
 
-## CASE_02 — Null gate asks then installs
+## CASE_02 — Null flag defaults on then installs
 
 **User prompt:**
 > Make an ipynb from data_analysis/data_analysis.py.
@@ -33,12 +34,13 @@
 - `add-python-package` is installed.
 
 **Must do:**
-- AskUserQuestion executed notebooks (default off).
-- If the user says yes: persist `notebooks true`, load
-  `add-python-package` for `jupytext` and `nbclient`, then convert.
+- Persist `notebooks true`. Do not AskUserQuestion.
+- Load `add-python-package` for `jupytext` and `nbclient`, then
+  convert.
 
 **Must NOT do:**
-- Convert while the gate is still null or false.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Convert while the flag is still null or false.
 - Run `pixi add` / `uv add` from this skill.
 
 ---
@@ -57,7 +59,8 @@
 - Convert the percent file without `--html`.
 
 **Must NOT do:**
-- Name `python -m skore_skills site build`.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Run `python -m skore_skills site build`.
 - Run `git end-turn`.
 
 ---
@@ -77,10 +80,11 @@
 
 **Must do:**
 - Load `add-python-package` for `nbconvert`.
-- Name `python -m skore_skills notebook convert data_analysis/data_analysis.py --html`.
-- Name `python -m skore_skills site build`.
+- Run `python -m skore_skills notebook convert data_analysis/data_analysis.py --html`.
+- Run `python -m skore_skills site build`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `cells run` as a substitute for convert.
 - Run `git end-turn`.
 
@@ -98,4 +102,5 @@
 - Say the executed-notebooks gate is off and offer to turn it on.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `notebook convert` while the flag is false.

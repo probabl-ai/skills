@@ -11,6 +11,12 @@ description: >
 
 # Choose Python Library
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+Present library options as a data-science choice for this job.
+Do not name skill ids or the wrapper CLI in the question.
+
 1. State the job and constraints.
 2. Run `python -m skore_skills env stack`. A job listed under
    `competing` is a genuine choice; anything the policy already

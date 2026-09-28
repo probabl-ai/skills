@@ -5,12 +5,13 @@
       "id": 1,
       "title": "Ask then load children",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.notebooks` is false.\n- `policy.site` is true.\n- `export-ml-notebook` and `export-ml-site` are installed.]\n\nExport the project.",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills status`. - AskUserQuestion `allow_multiple`: notebooks **not** preselected, site preselected. - Load `export-ml-site` if site stays checked. It must NOT: - Run `git end-turn`. - Invent `mkdocs` steps instead of loading the child.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills status`. - AskUserQuestion `allow_multiple`: notebooks **not** preselected, site preselected. - Load `export-ml-site` if site stays checked. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `git end-turn`. - Invent `mkdocs` steps instead of loading the child.",
       "files": [],
       "expectations": [
-        "Name `python -m skore_skills status`.",
+        "Run `python -m skore_skills status`.",
         "AskUserQuestion `allow_multiple`: notebooks **not** preselected, site preselected.",
         "Load `export-ml-site` if site stays checked.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `git end-turn`.",
         "The response does NOT: Invent `mkdocs` steps instead of loading the child."
       ],
@@ -22,13 +23,31 @@
       "id": 2,
       "title": "Missing child skips",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- User checks both boxes.\n- `status.skills.export-ml-notebook` is `false`.\n- `status.skills.export-ml-site` is `true`.]\n\nExport notebooks and the site.",
-      "expected_output": "Behavioural response satisfying: - Skip notebooks in one line because `export-ml-notebook` is not installed. - Load `export-ml-site`. It must NOT: - Invent `notebook convert` from memory. - Treat the missing skill as an error that aborts export.",
+      "expected_output": "Behavioural response satisfying: - Skip notebooks in one line because `export-ml-notebook` is not installed. - Load `export-ml-site`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Invent `notebook convert` from memory. - Treat the missing skill as an error that aborts export.",
       "files": [],
       "expectations": [
         "Skip notebooks in one line because `export-ml-notebook` is not installed.",
         "Load `export-ml-site`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Invent `notebook convert` from memory.",
         "The response does NOT: Treat the missing skill as an error that aborts export."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 3,
+      "title": "Null flags preselect both boxes",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.notebooks` is null.\n- `policy.site` is null.\n- `export-ml-notebook` and `export-ml-site` are installed.]\n\nExport the project.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills status`. - AskUserQuestion `allow_multiple`: notebooks preselected, site preselected (`null` treated as on). It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave either flag `null` after persist. - Run `git end-turn`.",
+      "files": [],
+      "expectations": [
+        "Run `python -m skore_skills status`.",
+        "AskUserQuestion `allow_multiple`: notebooks preselected, site preselected (`null` treated as on).",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Leave either flag `null` after persist.",
+        "The response does NOT: Run `git end-turn`."
       ],
       "tools": false,
       "sandbox": [],

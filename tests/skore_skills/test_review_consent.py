@@ -76,3 +76,13 @@ def test_cli_requires_stem() -> None:
     result = CliRunner().invoke(cli, ["review", "consent"])
 
     assert result.exit_code != 0
+
+
+def test_cli_rejects_blank_stem(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A blank stem is a usage error, not an ask."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["review", "consent", "--stem", "  "])
+    assert result.exit_code != 0
+    assert "stem is required" in result.output

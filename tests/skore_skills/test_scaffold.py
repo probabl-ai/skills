@@ -255,3 +255,23 @@ def test_scaffold_journal_rejects_bad_modes(argv: list[str]) -> None:
     """Journal mode rejects unsafe stems and conflicting options."""
     result = CliRunner().invoke(cli, argv)
     assert result.exit_code != 0
+
+
+def test_specialize_env_skeleton_missing_file(tmp_path: Path) -> None:
+    """Specialization is a no-op when env init has not written pyproject.toml."""
+    from skore_skills.scaffold import specialize_env_skeleton
+
+    assert specialize_env_skeleton(tmp_path / "pyproject.toml", "demo_pkg") is False
+
+
+def test_scaffold_missing_templates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A package without the template tree cannot scaffold."""
+    from skore_skills.scaffold import scaffold
+
+    monkeypatch.setattr(
+        "skore_skills.scaffold.template_root", lambda: tmp_path / "missing-templates"
+    )
+    with pytest.raises(ValueError, match="templates are missing"):
+        scaffold(tmp_path / "proj", "demo_pkg")

@@ -5,9 +5,31 @@ Applies repo-wide.
 ## Workflow
 
 - Read the closest `AGENTS.md` for the area you touch.
-- Run relevant hooks/tests locally before opening a PR.
+- Before committing, run the `lint` task from `pixi.toml`:
+  `pixi run -e lint lint`. That is `pre-commit run --all-files` (ruff,
+  mypy, typos, and the other hooks in `.pre-commit-config.yaml`). Do not
+  call `pre-commit`, `ruff`, or `mypy` directly, and do not use the `ruff`
+  binary from the `test-py311` environment.
+- Run relevant tests locally before opening a PR.
 - PR title: `type(scope): Imperative summary`. All CI checks must pass before merge.
 - Avoid redundant comments that restate what obvious code already expresses.
+
+## Documentation
+
+Ship documentation updates in the same PR as user- or contributor-visible
+changes:
+
+- Update `README.md` when changing workflow packs, default install behavior,
+  breaking or deprecated catalog ids, or model and harness claims.
+- Update `tools/README.md` or `eval/README.md` when changing Pixi tasks, version
+  sources, eval authoring, or CI expectations.
+- Keep a skill's `.catalog.json` `summary` aligned with its `SKILL.md`
+  description and the README skill overview.
+- When `skills/*/SKILL.md` changes required behavior, update
+  `eval/<skill>/prompts.md` and regenerate `skills/<skill>/evals/evals.json`.
+
+Run `pixi run check` after changing catalog, skill, plugin, Pixi, or eval
+metadata.
 
 ## Coding Discipline
 
@@ -68,10 +90,9 @@ Any change under `src/skore_skills/` **ships pytest in the same PR**.
 Do not land a subcommand or helper uncovered, and do not defer tests
 to a follow-up.
 
-Before opening a PR that touches the CLI or its tests:
-
-1. `pixi run -e lint lint`
-2. `pixi run -e test-py311 tests` (pytest with `--cov=skore_skills`)
+Before opening a PR that touches the CLI or its tests, the commit-time
+`pixi run -e lint lint` step above must already be clean. Then run
+`pixi run -e test-py311 tests` (pytest with `--cov=skore_skills`).
 
 New subcommands need tests for the happy path, bad argv / missing
 inputs, and at least one failure mode. Do not merge if the change

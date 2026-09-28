@@ -834,6 +834,29 @@ def ensure_graphviz(root: Path, *, execute: bool = False) -> tuple[str, int]:
     return rendered, 1
 
 
+def resolve_add_skore_mode(root: Path, mode: str | None) -> str:
+    """Return the Skore install mode for ``root``.
+
+    An omitted ``mode`` uses a recorded ``hub`` or ``mlflow``
+    destination and otherwise ``local``. An explicit mode is an
+    override, except ``local`` while ``hub`` or ``mlflow`` is recorded.
+
+    Raises
+    ------
+    ValueError
+        When ``--mode local`` would replace a recorded hub or MLflow
+        destination.
+    """
+    recorded = load_policy(root).get("skore_mode")
+    if mode == "local" and recorded in {"hub", "mlflow"}:
+        raise ValueError(f"recorded destination is {recorded}; refusing --mode local")
+    if mode is None:
+        if recorded in {"hub", "mlflow"}:
+            return recorded
+        return "local"
+    return mode
+
+
 def add_skore(
     root: Path,
     mode: str,

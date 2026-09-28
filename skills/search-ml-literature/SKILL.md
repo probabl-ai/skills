@@ -15,10 +15,16 @@ artifact the user already named. Show a few directions, then write
 one `journal/ideas/<slug>.md` for the direction they confirm.
 `manage-ml-backlog` triages that file later.
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+Directions and the pick question are scientific options for this
+project — not skill ids or the wrapper CLI.
+
 ## Procedure
 
-1. Run `python -m skore_skills status`. Read `JOURNAL.md` Status,
-   the last History headline, and the EDA summary when
+1. Run `python -m skore_skills status`. Read `journal/JOURNAL.md`
+   Status, the last History headline, and the EDA summary when
    `data_analysis/data_analysis.md` exists. If the query is too
    vague to search, ask once.
 2. Rewrite the query as a problem class before any search. Drop
@@ -39,7 +45,10 @@ one `journal/ideas/<slug>.md` for the direction they confirm.
 7. Restate the picked direction and wait for an explicit yes.
    Until yes, that paragraph is the whole message. No or stop
    writes nothing.
-8. On yes, write `journal/ideas/<slug>.md`:
+8. On yes, the only file this skill writes is
+   `journal/ideas/<slug>.md`. Do not create or edit
+   `journal/JOURNAL.md` or a design note. Write
+   `journal/ideas/<slug>.md`:
 
 ```
 # <slug>

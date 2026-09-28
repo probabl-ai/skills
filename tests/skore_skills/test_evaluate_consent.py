@@ -152,3 +152,31 @@ def test_cli_requires_stem() -> None:
 
     assert result.exit_code == 2
     assert "Missing option" in result.output
+
+
+def test_cli_rejects_blank_stem(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A blank stem is a usage error."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["evaluate", "consent", "--stem", "  "])
+    assert result.exit_code != 0
+    assert "stem is required" in result.output
+
+
+def test_history_without_a_section_or_report_column(tmp_path: Path) -> None:
+    """Missing History, other stems, and a header without Report stay first-eval."""
+    stem = "05_new_model"
+    _smoke(tmp_path, stem)
+    _write(tmp_path / "journal" / "JOURNAL.md", "# JOURNAL\n\n## Notes\n\nno history\n")
+    assert evaluate_consent(tmp_path, stem)["reason"] == "first_eval"
+
+    _write(
+        tmp_path / "journal" / "JOURNAL.md",
+        "## History\n\n"
+        "| Stem | Intent | Status |\n"
+        "|---|---|---|\n"
+        "| 01_other | earlier | done |\n"
+        f"| {stem} | try a new model | done |\n",
+    )
+    assert evaluate_consent(tmp_path, stem)["reason"] == "first_eval"

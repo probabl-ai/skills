@@ -20,7 +20,7 @@ SKILLS_DIR = REPO_ROOT / "skills"
 TRANSCRIPT_DIR = REPO_ROOT / ".transcripts"
 
 DEFAULT_TARGET_MODEL = "openrouter/deepseek/deepseek-v4.1-flash"
-DEFAULT_JUDGE_MODEL = "openrouter/deepseek/deepseek-v4.1-flash"
+DEFAULT_JUDGE_MODEL = "~typesafe/jev-latest"
 DEFAULT_PASS_RATIO = 0.7
 MUST_NOT_PREFIX = "The response does NOT"
 NO_TOOLS_NOTE = (
@@ -41,6 +41,8 @@ _PROVIDER_ENV = {
     "vertex_ai": "GOOGLE_API_KEY",
     "groq": "GROQ_API_KEY",
     "mistral": "MISTRAL_API_KEY",
+    "typesafe": "OPENROUTER_API_KEY",
+    "~typesafe": "OPENROUTER_API_KEY",
 }
 
 

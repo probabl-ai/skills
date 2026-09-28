@@ -159,3 +159,13 @@ def test_api_get_skrub_learner_fit(
     assert result.exit_code == 0, result.output
     assert "environment" in result.output
     assert "env-dict" in result.output
+
+
+def test_symbol_card_unavailable_signature() -> None:
+    """Objects without a signature still render a card."""
+    from skore_skills.api import symbol_card
+
+    card = symbol_card("example.thing", 1, "1.2.3")
+    assert "- signature: `(unavailable)`" in card
+    assert "example.thing" in card
+    assert "1.2.3" in card

@@ -1,5 +1,9 @@
 # model-ml-pipeline eval
 
+Unless a case says otherwise, `status.modeling_decisions` is `locked`
+and `frame show` already returned `proceed` with a non-null
+`translation`.
+
 ---
 
 ## CASE_01 — Approved model implementation
@@ -12,7 +16,7 @@
 - Workspace is scaffolded (`has_src` and `has_journal` true).
 
 **Must do:**
-- Name `python -m skore_skills status`.
+- Run `python -m skore_skills status`.
 - Resume the approved stem directly; do not show the starting
   choices menu.
 - Preview the broad sequence as local pipeline preparation, small
@@ -26,17 +30,19 @@
 - Name the post-smoke AskUserQuestion (Evaluate (Recommended) /
   Modify / Stop) before full-dataset evaluation.
 - Preserve the matching experiment stem.
-- Name `python -m skore_skills git end-turn --stage implement`
-  after the implement loop (after HITL, evaluate, audit, and
+- Run `python -m skore_skills git end-turn --stage implement`
+  after the implement loop (after Evaluate / Modify / Stop,
+  evaluate, audit, and
   record-outcome — not before the Evaluate pick).
 - If that command returns `invoke`, load `persist-ml-git`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Duplicate detailed build / smoke / evaluate / audit previews
   from the dispatcher.
 - Load `smoke-test-ml-pipeline` as a sibling dispatcher step.
 - Write `skore.evaluate` or load `evaluate-ml-pipeline` /
-  `audit-ml-pipeline` before the Evaluate HITL pick.
+  `audit-ml-pipeline` before the post-smoke Evaluate question.
 - Replace skrub DataOps with a bare sklearn Pipeline.
 - Mark the experiment done while smoke tests fail.
 - Run `git commit` in this skill or `git push`.
@@ -57,12 +63,13 @@
 - `journal/02_target_transform.md` does not exist.
 
 **Must do:**
-- Name `python -m skore_skills scaffold --journal --stem
+- Run `python -m skore_skills scaffold --journal --stem
   02_target_transform` to create the packaged design-note shell.
 - State that Question, Motivation, Method, and Risks are filled only
   after that command creates the shell, then stop for user approval.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write model or experiment code before the design note is approved.
 - Recreate or fill the design-note shape from memory when the CLI
   command did not run this turn.
@@ -82,18 +89,20 @@
 
 **Must do:**
 - Dispatch `build-ml-pipeline` (`smoke run` inside build).
-- Name the post-smoke HITL before evaluate.
-- Name `python -m skore_skills site build` after the unfitted
+- Name the post-smoke Evaluate / Modify / Stop question before
+  evaluate.
+- Run `python -m skore_skills site build` after the unfitted
   `pipeline.html` snapshot (before Evaluate is fine) so Method
   shows the diagram, and again after the implement loop before
   git end-turn.
-- Name `python -m skore_skills git end-turn --stage implement`.
+- Run `python -m skore_skills git end-turn --stage implement`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Fail the model turn if site build errors; name the error.
 - Run `notebook convert` while the notebooks gate is off.
 - Run `git commit` in this skill or `git push`.
-- Write `skore.evaluate` before the Evaluate HITL pick.
+- Write `skore.evaluate` before the post-smoke Evaluate question.
 
 ---
 
@@ -111,17 +120,18 @@
 
 **Must do:**
 - Dispatch `build-ml-pipeline` (`smoke run` inside build).
-- Name `python -m skore_skills notebook convert
+- Run `python -m skore_skills notebook convert
   experiments/01_baseline.py --html` after the implement loop,
   before site build.
-- Name `python -m skore_skills site build` before git end-turn.
-- Name `python -m skore_skills git end-turn --stage implement`.
+- Run `python -m skore_skills site build` before git end-turn.
+- Run `python -m skore_skills git end-turn --stage implement`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Fail the model turn if convert errors; name the error.
 - Run `cells run` as a substitute for convert.
 - Run `git commit` in this skill or `git push`.
-- Write `skore.evaluate` before the Evaluate HITL pick.
+- Write `skore.evaluate` before the post-smoke Evaluate question.
 
 ---
 
@@ -140,7 +150,11 @@
 - Name that JSON `stop` keeps the loop in build.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Load `evaluate-ml-pipeline` or write `skore.evaluate`.
+  Describing the post-green sequence, and saying it is unreachable
+  while smoke is red, is not starting it. Writing the call this
+  turn is.
 - Load `audit-ml-pipeline`.
 - Loosen the smoke assertion so pytest passes.
 
@@ -163,13 +177,14 @@
   `seasonal_naive` and `last observed week`.
 
 **Must do:**
-- Name `python -m skore_skills status` and
+- Run `python -m skore_skills status` and
   `python -m skore_skills model choices`.
 - Ask one question with, in order: Build the locked baseline;
   Discuss the next step. The baseline description quotes
   `seasonal_naive` and `last observed week`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Offer an EDA-derived proposal.
 - Offer Pick from the Backlog.
 - Write model code before a proposal and design are approved.
@@ -190,12 +205,14 @@
   ids are `eda_proposal`, `backlog`, `discuss`.
 
 **Must do:**
-- Name `python -m skore_skills model choices`.
+- Run `python -m skore_skills model choices`.
 - Ask one question with, in order: Propose a pipeline from the
   EDA; Pick from the Backlog; Discuss the next step.
 
 **Must NOT do:**
 - Offer the locked baseline.
+- Offer a dummy predictor or a standard baseline.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Silently pick B1.
 
 ---
@@ -217,6 +234,7 @@
 - Offer only Discuss the next step.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Treat skipped EDA as recorded findings.
 - Offer an EDA proposal or Backlog.
 
@@ -238,6 +256,7 @@
   before creating a design note.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Claim local model computation is running during the discussion.
 - Force a free-text / artifact entry menu.
 - Emit a proposal or model code before confirmation.
@@ -258,6 +277,7 @@
 - Ask for one selection and preserve the unselected row.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Renumber B3 to B2.
 - Invent a new Backlog item.
 
@@ -287,10 +307,11 @@
   `html/01_baseline.html` instead of the design-note markdown,
   and include locator plus G-AUDIT-FINDING in the user-facing
   close.
-- Name `python -m skore_skills git end-turn --stage implement`
+- Run `python -m skore_skills git end-turn --stage implement`
   last.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `cells run` from this dispatcher before Review.
 - Leave History `planned` in any journal excerpt you author.
 - Convert `audit/01_baseline.py` here — the audit skill did it.
@@ -318,6 +339,7 @@
 - Record before convert, site build, and git end-turn.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run the skore-check audit after Skip.
 - Write `journal/ideas/` files.
 - Drop the locator because there is no audit digest.
@@ -343,6 +365,7 @@
   before code.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Also ask in chat whether the note looks right.
 - Treat "Approve it and implement" as approval before the gate.
 - Write model code while State is still `planned`.
@@ -370,6 +393,7 @@
 - Name `report.html` when each site build runs.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Defer the first `site build` until after `skore.evaluate`.
 - Skip the pre-Evaluate site build because EDA was skipped.
 - Point the user at the design-note markdown instead of
@@ -394,12 +418,13 @@
   `action` `ask` with those facts in its JSON `context`.
 
 **Must do:**
-- Name `python -m skore_skills design consent --stem 01_dummy`.
+- Run `python -m skore_skills design consent --stem 01_dummy`.
 - State the design question, the planned change and files touched,
   and the recorded risk in the approval message itself.
 - Ask Approve / Modify / Stop and stop there.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Ask for approval by only pointing at `journal/01_dummy.md`
   without stating what the note says.
 - Write model, experiment, or pytest code before approval.
@@ -424,6 +449,7 @@
 - Offer to populate Question / Motivation / Method / Risks first.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Treat "approve and build it" as design approval.
 - Fill the note's sections from memory as if they were recorded.
 - Write model or experiment code.
@@ -446,13 +472,56 @@
 - `export-ml-site` is installed.
 
 **Must do:**
-- Name `python -m skore_skills site build` after the note is
+- Run `python -m skore_skills site build` after the note is
   populated and before Approve / Modify / Stop.
 - Name `report.html` and `html/01_dummy.html`.
 - State the design question, planned change, and recorded risk
   inline, then ask Approve / Modify / Stop and stop there.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write model, experiment, or pytest code before approval.
 - Run `notebook convert` or `git end-turn` on this preview rebuild.
 - Fail the approval gate if site build errors; name the error.
+
+---
+
+## CASE_18 — Unlocked framing stops before modeling
+
+**User prompt:**
+> Let us start modeling. What can we do?
+
+**Assumed workspace state:**
+- Scaffolded workspace.
+- `status.modeling_decisions` is `draft`.
+- `frame-ml-problem` is installed.
+
+**Must do:**
+- Run `python -m skore_skills status`.
+- Load `frame-ml-problem` and stop.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Run `python -m skore_skills model choices`.
+- Write a design note or model code.
+
+---
+
+## CASE_19 — A null translation does not start model code
+
+**User prompt:**
+> The modeling decisions are locked. Build the first model.
+
+**Assumed workspace state:**
+- Scaffolded workspace.
+- `status.modeling_decisions` is `locked`.
+- `python -m skore_skills frame show` returns `proceed` with
+  `translation` null.
+
+**Must do:**
+- Run `python -m skore_skills frame show`.
+- Say the lock has no splitter translation and stop.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Offer model choices or dispatch `build-ml-pipeline`.

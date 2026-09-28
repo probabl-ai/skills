@@ -14,10 +14,16 @@ idea, a question, or an artifact. This skill writes
 `journal/ideas/<slug>.md` only after they confirm. The backlog
 triages that file later.
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+Questions and the confirmation paragraph describe this idea in
+data-science terms — not skill ids or the wrapper CLI.
+
 ## Procedure
 
-1. Run `python -m skore_skills status`. Read `JOURNAL.md` Status
-   and History, and `data_analysis/data_analysis.md` when it
+1. Run `python -m skore_skills status`. Read `journal/JOURNAL.md`
+   Status and History, and `data_analysis/data_analysis.md` when it
    exists.
 2. If the entry is not already a concrete idea, question, or
    artifact, **AskUserQuestion**: free-text or artifact. A URL,
@@ -40,13 +46,16 @@ triages that file later.
    - What are we trying to learn?
    - Why now? Quote the user or the artifact.
    - What changes versus the last experiment, in prose?
-7. If the idea changes the project goal in `JOURNAL.md` Status,
-   ask before writing the file. A library the source names and
+7. If the idea changes the project goal in `journal/JOURNAL.md`
+   Status, ask before writing the file. A library the source names and
    the user has not agreed to add stays in Open gaps. A domain
    claim this dataset does not establish stays in Open gaps.
 8. Restate the idea in one short paragraph and wait for an
    explicit yes. "Maybe" is not yes. No or stop writes nothing.
-9. On yes, write `journal/ideas/<slug>.md`:
+9. On yes, the only file this skill writes is
+   `journal/ideas/<slug>.md`. Do not create or edit
+   `journal/JOURNAL.md` or a design note. Write
+   `journal/ideas/<slug>.md`:
 
 ```
 # <slug>

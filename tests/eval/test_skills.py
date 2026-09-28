@@ -28,6 +28,12 @@ from tests.eval.harness import (
     visible_text,
     write_transcript,
 )
+from tests.eval.jev import is_jev_model, judge_with_jev
+from tests.eval.language import (
+    merge_must_not,
+    partition_language,
+    score_user_facing_language,
+)
 from tests.eval.sandbox import (
     TOOLS_NOTE,
     Sandbox,
@@ -313,22 +319,41 @@ def test_skill_case(
             )
         return
 
-    test_case = LLMTestCase(input=eval_case.prompt, actual_output=actual)
-    judge = _judge_model(skill_judge_model)
-    outcomes: list[MetricOutcome] = []
-    if eval_case.must_do:
-        outcomes.append(
-            _run_metric(
-                _must_do_metric(
-                    eval_case.must_do, judge=judge, pass_ratio=skill_pass_ratio
-                ),
-                test_case,
+    language_items, other_must_not = partition_language(eval_case.must_not)
+    outcomes: list[MetricOutcome]
+    if is_jev_model(skill_judge_model):
+        outcomes = judge_with_jev(
+            model=skill_judge_model,
+            actual_output=actual,
+            must_do=eval_case.must_do,
+            must_not=other_must_not,
+            pass_ratio=skill_pass_ratio,
+        )
+    else:
+        test_case = LLMTestCase(input=eval_case.prompt, actual_output=actual)
+        judge = _judge_model(skill_judge_model)
+        outcomes = []
+        if eval_case.must_do:
+            outcomes.append(
+                _run_metric(
+                    _must_do_metric(
+                        eval_case.must_do, judge=judge, pass_ratio=skill_pass_ratio
+                    ),
+                    test_case,
+                )
             )
-        )
-    if eval_case.must_not:
-        outcomes.append(
-            _run_metric(_must_not_metric(eval_case.must_not, judge=judge), test_case)
-        )
+        if other_must_not:
+            outcomes.append(
+                _run_metric(
+                    _must_not_metric(other_must_not, judge=judge), test_case
+                )
+            )
+    if language_items:
+        judged_not = next((item for item in outcomes if item.name == "must_not"), None)
+        others = [item for item in outcomes if item.name != "must_not"]
+        outcomes = others + [
+            merge_must_not(score_user_facing_language(actual), judged_not)
+        ]
 
     payload["metrics"] = _outcomes_payload(outcomes)
     hard_pass, must_do_weak, must_not_judge_error = case_hard_pass(

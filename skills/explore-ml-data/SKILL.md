@@ -46,9 +46,11 @@ them, and a JOURNAL index row.
 Details: `setup-workspace` `references/human_facing_prose.md`.
 Notebook markdown, `data_analysis.md`, JOURNAL text, and `#`
 comments describe **this** dataset — not the skills framework, the
-CLI, or the command that produced an output. `<!-- results-embed:
-… -->` is a site marker. Authoring hints stay in this skill.
-`style` is ruff only.
+CLI, or the command that produced an output. Questions, replies,
+and the close narrative use the same data-science language — not
+skill ids, `G-*` names, or the wrapper CLI.
+`<!-- results-embed: … -->` is a site marker. Authoring hints stay
+in this skill. `style` is ruff only.
 
 ## Artifacts
 
@@ -97,7 +99,14 @@ Details: `references/cell_anatomy.md`. Extra recipes:
   option does. A file link is an addition, never the context.
 - **G-DATA-ANALYSIS run | skip.** AskUserQuestion. "Go fast" does
   not skip. Skip → JOURNAL Status row `skipped — <date>` and stop.
-  Do not run `site build` on skip. The unfitted snapshot build in
+  Skip is valid only when `data_analysis/data_analysis.md` is
+  absent (`status.data_analysis` `missing` or `skipped`). If
+  status is `present`, do not write `skipped`. Say the written
+  analysis stays, and offer to run exploration again (overwrites
+  `data_analysis/data_analysis.*`) or keep it. Do not overwrite
+  until the user accepts the re-run. A named methodology concern
+  while EDA is done still skips this gate. Do not run `site
+  build` on skip. The unfitted snapshot build in
   `build-ml-pipeline` still runs before Evaluate.
 - **IPython on the run path.** Missing → `add-python-package` for
   `ipython` (`env route` agent). Decline → skip path. Do not
@@ -139,7 +148,9 @@ Details: `references/cell_anatomy.md`. Extra recipes:
   notebook = those templates only (plus the matching target
   snippet). Do not add extra histograms, `sns.heatmap` /
   association matrices, unique-ratio (`nunique()/n`),
-  column-dicts, or `report.json()` cells. Leakage is the
+  column-dicts, or `report.json()` cells. The duplicate cell
+  prints the duplicate count only, not a uniqueness percentage
+  and not `nunique()/n`. Leakage is the
   template table, not a comment. Default figures: seaborn
   `displot` for the target only inside
   `templates/target_regression.py` /
@@ -157,7 +168,7 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 
 ```
 - [ ] Detect: status.data_analysis present|skipped|missing
-- [ ] G-DATA-ANALYSIS: run | skip (skip → JOURNAL only, STOP)
+- [ ] G-DATA-ANALYSIS: run | skip when the analysis file is absent (skip → JOURNAL only, STOP). present → keep or re-run; never write skipped
 - [ ] G-TABULAR + add frame lib + skrub + matplotlib + seaborn
 - [ ] Target: inferred | AskUserQuestion | none
 - [ ] Families: one file | AskUserQuestion grouping

@@ -18,12 +18,13 @@
   workspace, editable, git) with **every installed box
   preselected**. Do not auto-run all four before the answer.
 - Leave manager, `env.managed`, and package-name questions to
-  those skills. Do not ask G-TABULAR or G-SKORE-MODE.
+  those skills. Do not ask tabular library or report destination.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Scaffold or ask for the package name before the environment
   manager turn.
-- Ask G-TABULAR or G-SKORE-MODE, or persist `tabular` /
+- Ask tabular library or report destination, or persist `tabular` /
   `skore_mode`, during setup.
 - Run `pip install`.
 - Commit without asking.
@@ -54,10 +55,11 @@
   install sklearn or skrub. If env remains selected,
   `setup-python-env` may install its required plain Skore; this
   coordinator must not install or configure it directly.
-- Do not re-ask G-ENV-MGR in this meta.
+- Do not re-ask which environment manager to use in this meta.
 
 **Must NOT do:**
-- Re-ask G-ENV-MGR.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Re-ask which environment manager to use.
 - Pass `--force` to `scaffold`.
 - Wire the editable install before the layout exists.
 - Uncheck env/workspace/git because env already exists.
@@ -85,6 +87,7 @@
   skill.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `git init`, `git add`, or `git commit` to cover for the
   missing skill.
 - Invent the `setup-git` procedure from memory.
@@ -111,6 +114,7 @@
   env init.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `env init` anyway.
 - Invent the env manager procedure from memory.
 
@@ -132,5 +136,6 @@
   skill. Do not scaffold from this meta.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `python -m skore_skills scaffold`.
 - Run `env add --editable`.

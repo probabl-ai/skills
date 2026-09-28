@@ -366,3 +366,14 @@ def test_notebook_to_html_import_error(
     monkeypatch.setitem(sys.modules, "nbconvert", None)  # type: ignore[arg-type]
     with pytest.raises(ImportError, match="nbconvert"):
         notebook_mod.to_html(src, tmp_path / "out.html")
+
+
+def test_convert_raises_when_source_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``convert`` reports a missing percent-format source."""
+    monkeypatch.setattr(notebook_mod, "jupytext", object())
+    monkeypatch.setattr(notebook_mod, "nbformat", object())
+    monkeypatch.setattr(notebook_mod, "NotebookClient", object())
+    with pytest.raises(FileNotFoundError, match="notebook source not found"):
+        notebook_mod.convert(tmp_path / "missing.py")

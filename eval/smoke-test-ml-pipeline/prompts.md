@@ -39,6 +39,7 @@ violated.
 - Run `python -m skore_skills smoke run --stem 02_load_forecast`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Say the smoke test performs full-dataset cross-validation.
 - Synthesize a fake DataFrame fixture.
 - Import `skore` / `skore.Project` in the test.
@@ -66,6 +67,7 @@ violated.
   to run the model/loop pack or ask triage.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write `tests/smoke/test_03_target_transform.py` even as a stub.
 - Treat the script's existence as resolving the design-note
   requirement.
@@ -93,6 +95,7 @@ violated.
   (Layer 2 + history-as-upstream-reference pattern).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Approve the looser assertion.
 - Add a wrapper that filters NaN rows.
 - Add an `eval_mode` flag to `build_learner` to "skip lag features
@@ -121,6 +124,7 @@ violated.
   fail on the buggy shape and pass on the correct one.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write a synthetic DataFrame fixture.
 - Mock the loader.
 - Patch `build_supervised_frame` to return fake data.
@@ -148,6 +152,7 @@ violated.
   design note for provenance.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Add `from skore import Project` (or any skore symbol) to the
   smoke test.
 - Read `project.summarize()` at test time.
@@ -179,6 +184,7 @@ violated.
   history as additional `apply_func` arg).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Approve the `eval_mode` / `feature_steps=[]` toggle on
   `build_learner`.
 - Wrap the predictor with NaN-handling.
@@ -201,6 +207,7 @@ violated.
 - Do not put pytest on `--feature agent`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - `pip install pytest`.
 - Call `env add` from this skill.
 
@@ -226,9 +233,10 @@ violated.
 **Must do:**
 - Write a complete `tests/smoke/test_01_baseline.py` using those
   facts (hardcoded `0.42`, package `pricing`, no `<FILL_…>`).
-- Name `python -m skore_skills smoke run --stem 01_baseline`.
+- Run `python -m skore_skills smoke run --stem 01_baseline`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Tell the user or CI to run pytest. Naming `smoke run` and
   noting a no-tools turn cannot execute it is allowed.
 - AskUserQuestion Evaluate (Recommended) / Modify / Stop (that gate is build's).

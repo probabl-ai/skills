@@ -1103,3 +1103,94 @@ def test_site_build_unscaffolded(
     result = CliRunner().invoke(cli, ["site", "build"])
     assert result.exit_code != 0
     assert "not scaffolded" in result.output
+
+
+def test_site_helpers_cover_link_suffix_and_empty_nav(tmp_path: Path) -> None:
+    """Link rewriting, bare suffixes, and an empty nav stay stable."""
+    assert site_mod.result_dest("01_x", "plot", "png") == "01_x.plot.png"
+    original = "[docs](https://example.com/a) and [here]()"
+    assert site_mod.rewrite_markdown_links(original, {"a.md"}) == original
+    rendered = site_mod.render_mkdocs_yml([], stub_home=False, site_name="demo")
+    assert rendered.rstrip().endswith("- Home: index.md")
+    _scaffold(tmp_path)
+    site_mod.ensure_site_gitignore(tmp_path)
+    first = (tmp_path / ".gitignore").read_text(encoding="utf-8")
+    site_mod.ensure_site_gitignore(tmp_path)
+    assert (tmp_path / ".gitignore").read_text(encoding="utf-8") == first
+
+
+def test_stage_docs_replaces_a_previous_staging_dir(tmp_path: Path) -> None:
+    """A second stage deletes files left from the previous build."""
+    _scaffold(tmp_path)
+    site_mod.stage_docs(tmp_path)
+    stale = tmp_path / "_build" / "docs" / "stale.md"
+    stale.write_text("gone\n", encoding="utf-8")
+    site_mod.stage_docs(tmp_path)
+    assert not stale.exists()
+
+
+def test_site_build_includes_mkdocs_stdout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Non-empty mkdocs stdout is kept ahead of the launcher path."""
+    _scaffold(tmp_path)
+
+    class Result:
+        returncode = 0
+        stdout = "Documentation built in 1.00 seconds\n"
+        stderr = ""
+
+    def fake_run(argv: list[str], **kwargs: object) -> Result:
+        out = tmp_path / "html"
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "index.html").write_text("<html></html>\n", encoding="utf-8")
+        return Result()
+
+    monkeypatch.setattr(site_mod.subprocess, "run", fake_run)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["site", "build"])
+    assert result.exit_code == 0, result.output
+    assert result.output.startswith("Documentation built in 1.00 seconds\n")
+    assert "report.html" in result.output
+
+
+def test_inject_skips_missing_heading_and_loose_markers(tmp_path: Path) -> None:
+    """Snapshots without a subsection, and loose markers, stay unembedded."""
+    stem = "01_x"
+    results = tmp_path / "scratch" / "results" / stem
+    results.mkdir(parents=True)
+    (results / "report.html").write_text("<p>report</p>\n", encoding="utf-8")
+    (results / "curves.html").write_text("<p>curves</p>\n", encoding="utf-8")
+    (results / "nested").mkdir()
+    (results / "plot.png").write_bytes(b"\x89PNG")
+    page = site_mod.Page(
+        "Trial", tmp_path / "trial.md", f"{stem}.md", section="Experiments"
+    )
+    text = "## Results\n\nProse without a report heading.\n"
+    assert 'src="01_x.report.html"' not in site_mod.inject_results(text, page, tmp_path)
+
+    core = "## Method\n\n<!-- results-embed: report -->\n"
+    assert site_mod._inject_marked_embeds(core, tmp_path, stem, "Trial") == core
+    missing = "## Method\n\n<!-- results-embed: absent -->\n"
+    assert site_mod._inject_marked_embeds(missing, tmp_path, stem, "Trial") == missing
+    loose = "## Method\n\n<!--  results-embed: curves -->\n"
+    assert site_mod._inject_marked_embeds(loose, tmp_path, stem, "Trial") == loose
+
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    site_mod._copy_result_html(tmp_path, docs, page)
+    assert (docs / "01_x.plot.png").is_file()
+    assert not any(path.name.startswith("01_x.nested") for path in docs.iterdir())
+
+
+def test_inject_notebook_adds_a_trailing_newline() -> None:
+    """A page that does not end in a newline still gets a notebook section."""
+    page = site_mod.Page(
+        "Trial",
+        Path("trial.md"),
+        "01_x.md",
+        notebook=Path("01_x.nb.html"),
+    )
+    text = site_mod.inject_notebook("hello", page)
+    assert text.startswith("hello\n")
+    assert "## Notebook" in text

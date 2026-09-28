@@ -5,8 +5,9 @@ description: >
   (default runtime, agent tools, composed dev). Detect with
   `python -m skore_skills env detect`, persist manager and
   `env.managed`, then `env init --manager`, `env sync --execute`,
-  install plain Skore, and `env verify --execute`. Does not add
-  other stage ML libraries.
+  install Skore for a recorded `hub` or `mlflow` destination
+  (plain Skore when that destination is unset or `local`), and
+  `env verify --execute`. Does not add other stage ML libraries.
 
   TRIGGER when the user asks for the env manager, pixi, uv, or a
   Python environment, or when no environment manager is recorded
@@ -16,8 +17,9 @@ description: >
   SKIP scaffolding src/ — that is setup-workspace.
 
   HOW TO USE: detect, ask managed vs user-managed, ask the
-  manager when needed, then env init, env sync, add plain Skore,
-  and env verify.
+  manager when needed, then env init, env sync, add Skore for
+  the recorded hub or mlflow destination (plain Skore when that
+  is unset or local), and env verify.
 ---
 
 # Set Up Python Environment
@@ -26,6 +28,13 @@ Bootstrap only. Direct packages this turn: `ruff`, `ipython`,
 `ipykernel`, and plain `skore`. Skore supplies `skore-skills` as a
 mandatory dependency. Other stage libraries go through
 `add-python-package`.
+
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+Ask which manager to use and whether we manage the env in
+plain language. Do not name `G-ENV-MGR`, skill ids, or the
+wrapper CLI to the user. Do not mention `skore-skills`.
 
 ## Pre-flight
 
@@ -36,8 +45,16 @@ after listing the boxes.
 - [ ] env detect + status
 - [ ] G-ENV-MGR: ask if none / ambiguous / mismatch; else keep recorded
 - [ ] env.managed: ask (default true) and persist
-- [ ] unmanaged → stop | managed → env init, env sync, add-skore local, env verify
+- [ ] unmanaged → stop | managed → env init, env sync, add-skore (no --mode), env verify
 ```
+
+## Not this skill
+
+A request to add a package outside `ruff`, `ipython`, `ipykernel`,
+and plain `skore` is not bootstrap. Do not `env init` and do not
+`pixi add`. Hand that package to the package-install step and
+stop. The close names the package and that step in plain language.
+Do not write the catalog id.
 
 ## Sequence
 
@@ -55,9 +72,12 @@ after listing the boxes.
    ```bash
    python -m skore_skills env init --manager <manager>
    python -m skore_skills env sync --execute
-   python -m skore_skills env add-skore --mode local --execute
+   python -m skore_skills env add-skore --execute
    python -m skore_skills env verify --execute
    ```
+
+   Do not pass `--mode`. Omitting it installs for a recorded
+   `hub` or `mlflow` destination, and plain Skore otherwise.
 
    If the selected manager is pixi and `pixi.toml` already exists,
    skip `env init`; preserve that manifest and continue with
@@ -65,11 +85,12 @@ after listing the boxes.
    `[tool.pixi]` to `pyproject.toml`.
 
    Do not hand-edit TOML. Do not run `pixi init`. Do not create
-   `src/`. Plain Skore is the sole early stage-library exception; do
-   not ask G-SKORE-MODE here. Later, `add-python-package` upgrades it
-   for Hub or MLflow after that gate resolves.
+   `src/`. Do not ask where reports go. Plain Skore is the early
+   install when no destination is recorded; `add-python-package`
+   upgrades it for Hub or MLflow after that choice is recorded.
+   Do not pass `--mode local`.
    If verify reports missing `skore` or `skore_skills`, rerun
-   `env add-skore --mode local --execute`; never add `skore-skills`
+   `env add-skore --execute` the same way; never add `skore-skills`
    directly. If verify reports missing agent tools, load
    `add-python-package` for ruff / ipython / ipykernel (agent feature)
    when that skill is installed, not a second `env init`.
@@ -92,7 +113,9 @@ returns to triage. If persist is missing, name the pending
 Agent context only; do not narrate `skore-skills` to the user.
 
 - **default** — project runtime; bootstrap installs plain `skore`,
-  which supplies `skore-skills`.
+  which supplies `skore-skills`, when the report destination is
+  unset or `local`. A recorded `hub` or `mlflow` destination uses
+  that install instead.
 - **agent** — ruff, ipython, ipykernel.
 - **dev** — default + agent. Every later `python -m skore_skills`
   command uses this composed environment; `env verify --execute`

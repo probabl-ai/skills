@@ -60,9 +60,12 @@ reading the digest. Read-only against the skore Project.
 Details: `setup-workspace` `references/human_facing_prose.md`.
 Audit markdown and `#` comments describe **this** report's findings
 — not the skills framework, the CLI, or the command that produced
-an output. Do not put API tutorials, version floors, or locator
-recipes in `audit/<stem>.py`. `<!-- results-embed: … -->` is a site
-marker. Authoring hints stay in this skill. `style` is ruff only.
+an output. Questions, replies, and the close narrative use the
+same data-science language — not skill ids, `G-*` names, or the
+wrapper CLI. Trailing locator tokens stay index strings. Do not
+put API tutorials, version floors, or locator recipes in
+`audit/<stem>.py`. `<!-- results-embed: … -->` is a site marker.
+Authoring hints stay in this skill. `style` is ruff only.
 
 ## Next-step pointers
 
@@ -499,7 +502,7 @@ audit/NN_<short_name>.py             — audit  ← this skill
 ```
 
 Identical stems, 1:1. By the time the experiment shows `done` in
-`JOURNAL.md`, all four exist.
+`journal/JOURNAL.md`, all four exist.
 
 ## Dispatching in and out
 
@@ -609,7 +612,7 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 - Open or write the skore Project's reports (`evaluate-ml-pipeline`).
 - Install `ipython` (`add-python-package` owns).
 - Write `journal/ideas/` files (`review-ml-experiment` owns that).
-- Write or edit `journal/NN_*.md` or `JOURNAL.md` directly. At end
+- Write or edit `journal/NN_*.md` or `journal/JOURNAL.md` directly. At end
   of turn, dispatch `manage-ml-backlog` record-outcome mode
   instead — that skill owns every journal write.
 - Run pytest / smoke tests (`smoke-test-ml-pipeline`).

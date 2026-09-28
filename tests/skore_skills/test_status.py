@@ -334,6 +334,15 @@ def test_status_skills_catalog_only_target(tmp_path: Path) -> None:
     assert flags == {"alpha-skill": False, "beta-skill": False}
 
 
+def test_first_manager_follows_table_order() -> None:
+    """The first manifest in manager order wins; an empty map is ``none``."""
+    from skore_skills.workspace import first_manager
+
+    assert first_manager({"uv": ["uv.lock"], "pixi": ["pixi.toml"]}) == "pixi"
+    assert first_manager({"conda": ["environment.yml"]}) == "conda"
+    assert first_manager({}) == "none"
+
+
 def test_status_skills_ignores_out_of_bound_depth(tmp_path: Path) -> None:
     """Sidecars deeper than ``<dot-dir>/<sub>/skills`` are not scanned."""
     deep = tmp_path / ".cache" / "a" / "b" / "skills"

@@ -5,12 +5,13 @@
       "id": 1,
       "title": "First key reads one reference",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/JOURNAL.md` exists. Modeling decisions Status is still\n  the empty placeholder.\n- `scratch/data_analysis/extras.json` has `\"task\": \"classification\"`.\n- `python -m skore_skills frame show` returns `ask` /\n  `missing_keys`, `missing` `[\"prediction_goal\"]`, `candidates`\n  `[\"probabilities\", \"point_labels\", \"uncovered\"]`, and `reference`\n  `references/prediction-goal.md`.]\n\nWhich comparison metric should we lock before building?",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills frame show`. - Read `references/prediction-goal.md` and no other file under `references/`. - Ask only `probabilities`, `point_labels`, and `uncovered`. It must NOT: - Write Python, a pipeline, or a splitter constructor. - Ask about horizon, the baseline, or the fold count in this turn. - Open `references/horizon-gap.md` or `references/baseline.md`.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills frame show`. - Read `references/prediction-goal.md` and no other file under `references/`. - Ask only `probabilities`, `point_labels`, and `uncovered`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write Python, a pipeline, or a splitter constructor. - Ask about horizon, the baseline, or the fold count in this turn.",
       "files": [],
       "expectations": [
-        "Name `python -m skore_skills frame show`.",
+        "Run `python -m skore_skills frame show`.",
         "Read `references/prediction-goal.md` and no other file under `references/`.",
         "Ask only `probabilities`, `point_labels`, and `uncovered`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write Python, a pipeline, or a splitter constructor.",
         "The response does NOT: Ask about horizon, the baseline, or the fold count in this turn.",
         "The response does NOT: Open `references/horizon-gap.md` or `references/baseline.md`."
@@ -23,11 +24,12 @@
       "id": 2,
       "title": "Horizon is asked only after a time deployment",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Prediction goal is `point_predictions` and Deployment is `time`.\n  Status is `draft`.\n- `frame show` returns `missing` `[\"horizon\"]`, `reference`\n  `references/horizon-gap.md`, and no `candidates`.]\n\nNew rows arrive later than the fit. Lock that.",
-      "expected_output": "Behavioural response satisfying: - Read `references/horizon-gap.md`. - Explain horizon as the lead time of the target and gap as deployment delay, and ask for the horizon as a number and a unit. It must NOT: - Ask for a generalize-to column. - Write `TimeSeriesSplit` or `gap=` into the journal. - Invent a fold count.",
+      "expected_output": "Behavioural response satisfying: - Read `references/horizon-gap.md`. - Explain horizon as the lead time of the target and gap as deployment delay, and ask for the horizon as a number and a unit. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask for a generalize-to column. - Write `TimeSeriesSplit` or `gap=` into the journal.",
       "files": [],
       "expectations": [
         "Read `references/horizon-gap.md`.",
         "Explain horizon as the lead time of the target and gap as deployment delay, and ask for the horizon as a number and a unit.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Ask for a generalize-to column.",
         "The response does NOT: Write `TimeSeriesSplit` or `gap=` into the journal.",
         "The response does NOT: Invent a fold count."
@@ -40,13 +42,14 @@
       "id": 5,
       "title": "Clustering uses the fallback, not the closed menu",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `scratch/data_analysis/extras.json` has `\"task\": \"clustering\"`.\n- `frame show` returns `ask` / `uncovered`, `reference`\n  `references/fallback.md`, and `context.task` `clustering`.\n  There is no `candidates` list.]\n\nWe are clustering customers. What should we lock?",
-      "expected_output": "Behavioural response satisfying: - Read `references/fallback.md` and no other file under `references/`. - Say the closed menu does not cover clustering. - Ask what a better result means and what the baseline is. It must NOT: - Ask for `probabilities` or `point_labels`. - Write a splitter class or Python.",
+      "expected_output": "Behavioural response satisfying: - Read `references/fallback.md` and no other file under `references/`. - Say the closed menu does not cover clustering. - Ask what a better result means and what the baseline is. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask for `probabilities` or `point_labels`. - Write a splitter class or Python.",
       "files": [],
       "expectations": [
         "Read `references/fallback.md` and no other file under `references/`.",
         "Say the closed menu does not cover clustering.",
         "Ask what a better result means and what the baseline is.",
         "Write Prediction goal `uncovered` plus those two prose cells.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Ask for `probabilities` or `point_labels`.",
         "The response does NOT: Write a splitter class or Python."
       ],
@@ -58,11 +61,12 @@
       "id": 6,
       "title": "A missing command uses the same fallback",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `python -m skore_skills frame show` exits with `No such command\n  'frame'`. There is no JSON.]\n\nLock the comparison metric and the baseline.",
-      "expected_output": "Behavioural response satisfying: - Read `references/fallback.md`. - Record the comparison and the baseline in words, with Prediction goal `uncovered`. It must NOT: - Invent `probabilities`, `iid`, or `KFold`. - Open `references/prediction-goal.md` or `references/metric-role.md`. - Write Python.",
+      "expected_output": "Behavioural response satisfying: - Read `references/fallback.md`. - Record the comparison and the baseline in words, with Prediction goal `uncovered`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Invent `probabilities`, `iid`, or `KFold`. - Open `references/prediction-goal.md` or `references/metric-role.md`.",
       "files": [],
       "expectations": [
         "Read `references/fallback.md`.",
         "Record the comparison and the baseline in words, with Prediction goal `uncovered`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Invent `probabilities`, `iid`, or `KFold`.",
         "The response does NOT: Open `references/prediction-goal.md` or `references/metric-role.md`.",
         "The response does NOT: Write Python."
@@ -75,14 +79,15 @@
       "id": 3,
       "title": "Confirm lock quotes the context",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Every required cell is valid and Status is `draft`.\n- `frame show` returns `ask` / `confirm_lock` with choices\n  `lock`, `modify`, `stop`, and `context.metric` `MAE`.]\n\nThe table is filled. Lock it.",
-      "expected_output": "Behavioural response satisfying: - Quote the JSON context, including MAE, in the question. - Offer only lock, modify, and stop. - On lock, set Status to `locked`. It must NOT: - Write Python or a class constructor. - Treat the user's sentence as the lock before the choice. - Load `build-ml-pipeline`.",
+      "expected_output": "Behavioural response satisfying: - Quote the JSON context, including MAE, in the question. - Offer only lock, modify, and stop, then stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write Python or a class constructor. - Treat \"Lock it\" as the lock choice in this turn.",
       "files": [],
       "expectations": [
         "Quote the JSON context, including MAE, in the question.",
-        "Offer only lock, modify, and stop.",
-        "On lock, set Status to `locked`.",
+        "Offer only lock, modify, and stop, then stop.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write Python or a class constructor.",
-        "The response does NOT: Treat the user's sentence as the lock before the choice.",
+        "The response does NOT: Treat \"Lock it\" as the lock choice in this turn.",
+        "The response does NOT: Set Status to `locked` in this turn.",
         "The response does NOT: Load `build-ml-pipeline`."
       ],
       "tools": false,
@@ -91,16 +96,107 @@
     },
     {
       "id": 4,
-      "title": "Revise edits, then the lock is asked again",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Status is `locked`.\n- `python -m skore_skills frame show --revise` returns `ask` /\n  `revise` with choices `modify`, `keep`, `stop`.]\n\nThe constraint changed: we now need intervals, not point predictions.",
-      "expected_output": "Behavioural response satisfying: - Name `frame show --revise`. - On modify, set Status to `draft` and Revised on to today's date, then stop for the next `frame show`. It must NOT: - Leave Status `locked` after modify. - Treat the locked table as frozen. - Write a model or a splitter.",
+      "title": "Revise blanks the named goal and its metric cells",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Status is `locked`.\n- Prediction goal is `point_predictions`, metric role is\n  `point_error`, metric is `MAE`, deployment is `iid`, and\n  validation is `cv`.\n- `python -m skore_skills frame show --revise` returns `ask` /\n  `revise` with choices `modify`, `keep`, `stop`.\n- The user chooses `modify`.]\n\nThe constraint changed: we now need intervals, not point predictions.",
+      "expected_output": "Behavioural response satisfying: - Name `frame show --revise`. - On modify, run `frame clear --cell prediction_goal`. - That blanks prediction goal, metric role, and metric, and sets Status to `draft` with Revised on today's date. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave Status `locked` after modify. - Blank deployment or validation.",
       "files": [],
       "expectations": [
         "Name `frame show --revise`.",
-        "On modify, set Status to `draft` and Revised on to today's date, then stop for the next `frame show`.",
+        "On modify, run `frame clear --cell prediction_goal`.",
+        "That blanks prediction goal, metric role, and metric, and sets Status to `draft` with Revised on today's date.",
+        "Leave deployment and validation filled.",
+        "Stop for the next `frame show`. Do not write `intervals` in this turn.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Leave Status `locked` after modify.",
-        "The response does NOT: Treat the locked table as frozen.",
+        "The response does NOT: Blank deployment or validation.",
         "The response does NOT: Write a model or a splitter."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 9,
+      "title": "Revise blanks only the named metric",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Status is `locked`.\n- Metric is `MAE`. Metric role is `point_error`. Prediction goal\n  is `point_predictions`. Validation is `cv` with 5 folds.\n- `experiments/01_baseline.py` exists.\n- `python -m skore_skills frame show --revise` returns `ask` /\n  `revise` with choices `modify`, `keep`, `stop`.\n- The user chooses `modify`.]\n\nChange the comparison metric. Keep the rest of the framing.",
+      "expected_output": "Behavioural response satisfying: - Name `frame show --revise`. - On modify, run `frame clear --cell metric`. That blanks only the metric and leaves metric role, prediction goal, validation, and folds filled. - Stop for the next `frame show`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Blank metric role, prediction goal, or folds. - Write the replacement metric in this turn.",
+      "files": [],
+      "expectations": [
+        "Name `frame show --revise`.",
+        "On modify, run `frame clear --cell metric`. That blanks only the metric and leaves metric role, prediction goal, validation, and folds filled.",
+        "Stop for the next `frame show`.",
+        "Say `experiments/01_baseline.py` still uses the previous metric and is not run. The next build or evaluate rewrites it after the table is locked again.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Blank metric role, prediction goal, or folds.",
+        "The response does NOT: Write the replacement metric in this turn.",
+        "The response does NOT: Rewrite an experiment file or a report.",
+        "The response does NOT: Run `experiments/01_baseline.py`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 10,
+      "title": "Draft table blanks the named metric",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Status is `draft`.\n- Metric is `MAE`. Metric role is `point_error`. The other\n  required cells are valid.\n- `frame show` returns `ask` / `confirm_lock`, not `revise`.]\n\nChange the comparison metric. The table is not locked yet.",
+      "expected_output": "Behavioural response satisfying: - Run `frame clear --cell metric` and stop. - Do not write the replacement metric. - Do not name metric role as cleared. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Set Status to `locked`. - Treat `confirm_lock` as the way to make this change.",
+      "files": [],
+      "expectations": [
+        "Run `frame clear --cell metric` and stop.",
+        "Do not write the replacement metric.",
+        "Do not name metric role as cleared.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Set Status to `locked`.",
+        "The response does NOT: Treat `confirm_lock` as the way to make this change."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 11,
+      "title": "Unnamed change asks which decision",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Status is `locked`.\n- Metric is `MAE` and validation is `cv`. The user did not name\n  a cell.]\n\nA problem constraint changed.",
+      "expected_output": "Behavioural response satisfying: - Ask which filled decision to change. Do not run `frame clear`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Set Status to `draft` or blank a cell on this turn. - Leave every cell filled and ask to lock again as if the change were done.",
+      "files": [],
+      "expectations": [
+        "Ask which filled decision to change. Do not run `frame clear`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Set Status to `draft` or blank a cell on this turn.",
+        "The response does NOT: Leave every cell filled and ask to lock again as if the change were done."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 7,
+      "title": "Dispatched lock returns to modeling",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `model-ml-pipeline` dispatched this turn.\n- `frame show` returns `proceed` with a non-null `translation`.]\n\nLock the table.",
+      "expected_output": "Behavioural response satisfying: - Return to `model-ml-pipeline` and stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Load `build-ml-pipeline` or write a design note. - Run `python -m skore_skills git end-turn --stage implement`.",
+      "files": [],
+      "expectations": [
+        "Return to `model-ml-pipeline` and stop.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Load `build-ml-pipeline` or write a design note.",
+        "The response does NOT: Run `python -m skore_skills git end-turn --stage implement`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 8,
+      "title": "Standalone lock still closes the turn",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- This turn was not dispatched by `model-ml-pipeline`.\n- `frame show` returns `proceed` with a non-null `translation`.]\n\nLock the table.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills git end-turn --stage implement`. - If that command returns `invoke`, load `persist-ml-git` when installed. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Load `build-ml-pipeline`.",
+      "files": [],
+      "expectations": [
+        "Run `python -m skore_skills git end-turn --stage implement`.",
+        "If that command returns `invoke`, load `persist-ml-git` when installed.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Load `build-ml-pipeline`."
       ],
       "tools": false,
       "sandbox": [],

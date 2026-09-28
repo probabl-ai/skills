@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -410,3 +411,108 @@ def frame_show(root: Path, *, revise: bool = False) -> dict[str, Any]:
 def render_frame_show(root: Path, *, revise: bool = False) -> str:
     """Serialize the modeling-decisions gate as JSON."""
     return json.dumps(frame_show(root, revise=revise), indent=2) + "\n"
+
+
+def _blank_keys(cell: str, rows: dict[str, str]) -> list[str]:
+    """Return ``cell`` and the dependents a reopen must clear."""
+    extra: list[str] = []
+    if cell == "prediction_goal":
+        extra = ["metric_role", "metric"]
+    elif cell == "deployment":
+        extra = ["horizon", "gap", "time_role", "generalize_to"]
+    elif cell == "known_at_predict" and rows["baseline"] == "group_mean":
+        extra = ["baseline", "baseline_note"]
+    elif cell == "metric_role":
+        extra = ["metric"]
+    elif cell == "baseline":
+        extra = ["baseline_note"]
+    return [cell, *extra]
+
+
+def _section_span(text: str) -> tuple[int, int, str]:
+    match = _SECTION.search(text)
+    if match is None:
+        raise ValueError("modeling decisions section is missing")
+    return match.start(1), match.end(1), match.group(1)
+
+
+def _row_keys(section: str) -> set[str]:
+    found: set[str] = set()
+    for line in section.splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        cells = _cells(line)
+        if len(cells) != 2:
+            continue
+        key = _BY_LABEL.get(cells[0])
+        if key is not None:
+            found.add(key)
+    return found
+
+
+def _apply_updates(section: str, updates: dict[str, str]) -> str:
+    rewritten: list[str] = []
+    for line in section.splitlines():
+        if not line.strip().startswith("|"):
+            rewritten.append(line)
+            continue
+        cells = _cells(line)
+        if len(cells) != 2:
+            rewritten.append(line)
+            continue
+        key = _BY_LABEL.get(cells[0])
+        if key is None or key not in updates:
+            rewritten.append(line)
+            continue
+        rewritten.append(f"| {cells[0]} | {updates[key]} |")
+    return "\n".join(rewritten)
+
+
+def frame_clear(root: Path, cell: str, *, today: date | None = None) -> dict[str, Any]:
+    """Blank one framing cell and its dependents.
+
+    Writes ``journal/JOURNAL.md``. Sets Status to ``draft`` and
+    Revised on to ``today``. Does not write a new value for ``cell``.
+
+    Raises
+    ------
+    ValueError
+        When the journal or the cell cannot be cleared.
+    """
+    decision_keys = {key for _, key in _LABELS if key not in {"status", "revised_on"}}
+    if cell not in decision_keys:
+        raise ValueError(f"unknown framing cell: {cell}")
+    path = root / "journal" / "JOURNAL.md"
+    if not path.is_file():
+        raise ValueError("journal is missing")
+    rows = _raw_rows(root)
+    value = rows[cell].strip()
+    if _empty(value) or value == "n/a":
+        raise ValueError(f"{cell} is empty")
+    blanked = _blank_keys(cell, rows)
+    text = path.read_text(encoding="utf-8")
+    start, end, section = _section_span(text)
+    present = _row_keys(section)
+    required = ("status", "revised_on", *blanked)
+    missing = [key for key in required if key not in present]
+    if missing:
+        joined = ", ".join(missing)
+        raise ValueError(f"modeling decisions table is missing {joined}")
+    revised = (today or date.today()).isoformat()
+    updates = dict.fromkeys(blanked, "")
+    updates["status"] = "draft"
+    updates["revised_on"] = revised
+    cleared = text[:start] + _apply_updates(section, updates) + text[end:]
+    path.write_text(cleared, encoding="utf-8")
+    return {
+        "action": "cleared",
+        "cell": cell,
+        "blanked": blanked,
+        "status": "draft",
+        "revised_on": revised,
+    }
+
+
+def render_frame_clear(root: Path, cell: str) -> str:
+    """Blank one framing cell and serialize the result as JSON."""
+    return json.dumps(frame_clear(root, cell), indent=2) + "\n"

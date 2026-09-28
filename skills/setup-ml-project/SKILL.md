@@ -11,6 +11,13 @@ description: >
 
 Ordering only. Never run a skipped skill's steps from memory.
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+The multi-select uses data-science labels only (Python
+environment, workspace layout, editable install, Git). Do not
+put skill ids, `G-*` names, or the wrapper CLI in the question.
+
 ## Pre-flight
 
 Tick, then immediately run the matching sequence step. Do not stop
@@ -32,14 +39,18 @@ after listing the boxes.
    lines, what the answer authorizes (which pieces run, in which
    order) and the `status` facts each box rests on — detected
    manager, `has_src`, git presence. A file link is an addition,
-   never the context. Include a box only when **that** id is true:
+   never the context. Include a box only when **that** id is true.
+   Option labels (user-visible, no ids):
 
-   - Python environment (`setup-python-env`)
-   - Workspace layout (`setup-workspace`)
-   - Editable install (`add-python-package`) — show when
+   - Python environment
+   - Workspace layout
+   - Editable install — show when
      `status.skills.add-python-package` is true and (`has_src`
      is true **or** workspace is on this board)
-   - Git (`setup-git`)
+   - Git
+
+   Map checked labels to `setup-python-env`, `setup-workspace`,
+   `add-python-package`, `setup-git` when loading.
 
    **Preselect every installed piece** (all boxes on). Do not
    leave a box off because the layout already looks done. The

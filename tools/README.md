@@ -9,19 +9,21 @@ standard-library Python; the recommended entry point is the
 ```bash
 pixi run hash           # refresh per-skill + aggregate hashes in .catalog.json
 pixi run hash-check     # verify hashes match the on-disk skills (no writes)
+pixi run evals-check    # verify generated evals.json files match eval prompts
 pixi run validate       # validate .catalog.json structure (skills, categories, workflows)
 pixi run check-versions # verify the version matches across all declaring sources
 pixi run bump-major     # bump the major version across all version sources
 pixi run bump-minor     # bump the minor version across all version sources
 pixi run bump-patch     # bump the patch version across all version sources
-pixi run check          # composite: hash-check + validate + check-versions (the CI entry point)
+pixi run check          # composite: hash-check + evals-check + validate + check-versions
 ```
 
 `pixi run check` is what CI invokes via `prefix-dev/setup-pixi` — see
 `.github/workflows/validate-catalog.yml`.
 
-Optional LLM skill evals live in a separate pixi environment and are
-**not** part of catalog CI. See [`eval/README.md`](../eval/README.md):
+`evals-check` only verifies generated eval fixtures. Optional LLM skill
+evals live in a separate pixi environment and are **not** run in catalog
+CI. See [`eval/README.md`](../eval/README.md):
 
 ```bash
 pixi install -e eval
@@ -62,9 +64,10 @@ it by hand, so a release bump can't leave one file lagging behind:
 
 1. `.catalog.json` — top-level `version`.
 2. `pixi.toml` — `[workspace] version`.
-3. `.claude-plugin/plugin.json` — `version`.
-4. `.claude-plugin/marketplace.json` — each `plugins[].version`.
-5. `.cursor-plugin/plugin.json` — `version`.
+3. `pyproject.toml` — `[project] version`.
+4. `.claude-plugin/plugin.json` — `version`.
+5. `.claude-plugin/marketplace.json` — each `plugins[].version`.
+6. `.cursor-plugin/plugin.json` — `version`.
 
 Run directly with `python tools/check_versions.py` or via
 `pixi run check-versions`.
@@ -76,9 +79,10 @@ the new version consistently to every source that declares it:
 
 1. `.catalog.json` — top-level `version`.
 2. `pixi.toml` — `[workspace] version`.
-3. `.claude-plugin/plugin.json` — `version`.
-4. `.claude-plugin/marketplace.json` — each `plugins[].version`.
-5. `.cursor-plugin/plugin.json` — `version`.
+3. `pyproject.toml` — `[project] version`.
+4. `.claude-plugin/plugin.json` — `version`.
+5. `.claude-plugin/marketplace.json` — each `plugins[].version`.
+6. `.cursor-plugin/plugin.json` — `version`.
 
 The script refuses to run when those sources disagree. Use `--dry-run`
 to preview the bump without writing files. It does not create git commits

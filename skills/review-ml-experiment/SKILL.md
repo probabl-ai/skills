@@ -13,6 +13,13 @@ description: >
 Optional loop step after evaluate. Record-outcome stays with the
 caller. This skill writes idea files only.
 
+## Human-facing prose
+
+Details: `setup-workspace` `references/human_facing_prose.md`.
+The Review / Skip / Stop question and cost preview describe
+reading this report and writing follow-up ideas — not skill ids,
+`cells run`, or the wrapper CLI.
+
 ## Procedure
 
 1. Run `python -m skore_skills status` and

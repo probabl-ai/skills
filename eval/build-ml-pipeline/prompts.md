@@ -1,5 +1,9 @@
 # build-ml-pipeline eval — golden prompts
 
+Unless a case says otherwise, `status.modeling_decisions` is `locked`
+and `frame show` returned `proceed` with a non-null `translation`
+whose `groups` is null.
+
 Behavioural prompts scored manually against Must / Must NOT bullets.
 
 ## How a case is scored
@@ -14,7 +18,7 @@ so the target can `read_file` the history-dependent JOIN example
 (the same file `SKILL.md` points at). Other cases stay single-turn.
 
 Pass criterion per case: every `Must do` ticked, zero `Must NOT do`
-violated. 19 cases; Must-NOT is all-or-nothing.
+violated.
 
 ---
 
@@ -36,12 +40,13 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   rooted at `skrub.var(...)`.
 - Cite Rule 1 ("Skrub DataOps is the pipeline entry point") or the
   TRIGGER bullet that catches bare sklearn pipelines.
-- Name `python -m skore_skills api get` for the skrub symbols
+- Run `python -m skore_skills api get` for the skrub symbols
   before writing their calls.
 - Propose a `build_learner` function returning
   `predictions.skb.make_learner()` (not a `Pipeline` object).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write `from sklearn.pipeline import Pipeline` as a live import
   in `pipeline.py`.
 - Return a `Pipeline([("scaler", StandardScaler()), ...])` object
@@ -73,6 +78,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Mention the optional `<source>_preview` keyword on `build_learner`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Introduce a `predict_grid` Layer 1 root when no cross-row features
   exist (over-engineering).
 - Use `skrub.X(...)` / `skrub.y(...)` as roots.
@@ -117,6 +123,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   `align_xy` estimator is fine if it joins.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Accept the loader-baked shift as written.
 - Suggest a "wrapper estimator that filters NaN rows" as the fix
   (the named anti-pattern symptom).
@@ -154,6 +161,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Surface that this is a refactor and offer to do it (or ask user).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Continue adding steps to the `skrub.X` / `skrub.y` skeleton
   silently.
 - Auto-rewrite without surfacing the source-bound alternative to
@@ -182,11 +190,12 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Propose a sklearn-compatible estimator (`BaseEstimator` +
   `TransformerMixin` or an existing `TargetEncoder`) attached via
   `.skb.apply`.
-- Name `python -m skore_skills api get
+- Run `python -m skore_skills api get
   sklearn.preprocessing.TargetEncoder` (or equivalent) before
   writing its call.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Accept `apply_func(target_encode)` as written.
 - Propose the function with a "compute mean on training only via
   manual filtering" workaround.
@@ -216,6 +225,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   optional. Do not fail if the flag pattern is present.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Recommend Option 3 (branch the module) for an appendable step.
 - Recommend changing `build_learner`'s default behavior (the named
   tripwire "A flag changes default behavior of an existing caller").
@@ -244,7 +254,12 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   and `groups` (`evaluate-ml-pipeline/references/metadata-routing.md`).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Call `skore.evaluate` from pipeline code.
+- Pick an IID splitter (`KFold`, `TimeSeriesSplit`) at the X
+  marker.
+- Leave `split_kwargs` empty.
+- Ask whether grouping is intended.
 
 ---
 
@@ -263,6 +278,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Keep skrub DataOps as the graph; do not reopen vs Pipeline.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Substitute `sklearn.Pipeline` / `make_pipeline`.
 - Call `env add` from this skill.
 
@@ -287,6 +303,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Treat `measure` as revisit-EDA / open question.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Edit `data_analysis/data_analysis.py`.
 - Drop `customer_id` from raw files under `data/`.
 - Pick a cross-validator in pipeline code.
@@ -323,6 +340,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   computation on the full dataset).
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Present the declaration itself as model training or CV.
 - Author a `skore.evaluate(...)` call site before that
   AskUserQuestion. Naming it in a docstring or "not written
@@ -353,6 +371,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   value.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Substitute a stronger estimator.
 - Add domain feature engineering.
 - Skip `smoke run` because the predictor is trivial.
@@ -374,6 +393,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Name `api get` for the installed skrub entry point and estimator.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Add EDA-specific domain features.
 - Hand-tune per-column preprocessing or run hyperparameter search.
 - Replace the DataOps graph with a bare sklearn Pipeline.
@@ -395,7 +415,10 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   approved Method.
 
 **Must NOT do:**
-- Invent another EDA finding or domain fact.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Invent another EDA finding or domain fact. Using the
+  high-cardinality and temporal-grouping findings named in
+  the assumed Method is required.
 - Re-run or edit EDA from this skill.
 - Add align / join / lag steps not named in the assumed Method.
 
@@ -416,6 +439,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Keep the skrub DataOps graph.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Substitute `sklearn.Pipeline` / `make_pipeline`.
 - Run `pip install graphviz`.
 - Call `env add` or `env graphviz` from this skill.
@@ -445,6 +469,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 **Must NOT do:**
 - Convert the horizon or the gap into a row count.
 - Call `skore.evaluate` from pipeline code.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 
 ---
 
@@ -465,6 +490,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 
 **Must NOT do:**
 - Call `skore.evaluate` from pipeline code.
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 
 ---
 
@@ -483,6 +509,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Name the API lookup for `GroupKFold`.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Set `split_kwargs` without `cv`.
 - Defer the groups through `splitter=` on evaluate.
 
@@ -502,6 +529,7 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 - Use the approved concrete group-aware cross-validator.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Put `cv=5` on the declared `mark_as_X`. Quoting the user's
   integer `cv` in a refusal heading is not a violation.
 - Claim an integer preserves grouped metadata.
@@ -521,13 +549,14 @@ violated. 19 cases; Must-NOT is all-or-nothing.
   baseline?" and `persisted_report` `none`.
 
 **Must do:**
-- Name `python -m skore_skills evaluate consent --stem 01_baseline`.
+- Run `python -m skore_skills evaluate consent --stem 01_baseline`.
 - Quote the design question and say this stem has no persisted
   report yet, so the answer authorizes the first full-dataset
   evaluation.
 - Ask Evaluate (Recommended) / Modify / Stop and stop there.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Open the gate with only a link to `journal/01_baseline.md`.
 - Write `skore.evaluate(...)` before the pick.
 - Invent a metric or a fold count.
@@ -547,12 +576,33 @@ violated. 19 cases; Must-NOT is all-or-nothing.
 
 **Must do:**
 - After the unfitted `scratch/results/01_baseline/pipeline.html`
-  snapshot, name `python -m skore_skills site build` before
+  snapshot, run `python -m skore_skills site build` before
   `smoke run` and before the Evaluate question.
 - In the checkpoint, link `report.html` and
   `html/01_baseline.html` (Method diagram). Do not link the
   design-note markdown instead.
 
 **Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Defer `site build` until after `skore.evaluate`.
 - Skip the site because EDA was skipped.
+
+---
+
+## CASE_21 — Unlocked framing stops before declaration
+
+**User prompt:**
+> Declare the baseline learner.
+
+**Assumed workspace state:**
+- Approved design note.
+- `status.modeling_decisions` is `missing`.
+- `frame-ml-problem` is installed.
+
+**Must do:**
+- Stop before writing pipeline code.
+- Load `frame-ml-problem`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Declare `build_learner` or pick a splitter.

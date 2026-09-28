@@ -182,3 +182,18 @@ def test_style_propagates_ruff_check_exit(
     result = CliRunner().invoke(cli, ["style"])
     assert result.exit_code == 1
     assert calls["n"] == 2
+
+
+def test_style_init_appends_to_existing_pyproject(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``--init`` appends ``[tool.ruff]`` when pyproject.toml already exists."""
+    config = tmp_path / "pyproject.toml"
+    config.write_text('[project]\nname = "demo"\n', encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["style", "--init"])
+    assert result.exit_code == 0, result.output
+    assert "wrote [tool.ruff]" in result.output
+    text = config.read_text(encoding="utf-8")
+    assert 'name = "demo"' in text
+    assert "[tool.ruff]" in text

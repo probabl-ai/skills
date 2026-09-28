@@ -5,12 +5,13 @@
       "id": 1,
       "title": "Init then build",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.site` is true.\n- `mkdocs-material` is installed.\n- The workspace is scaffolded.]\n\nBuild the documentation website.",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills site init`. - Name `python -m skore_skills site build`. - Name `report.html` at the workspace root as the file to open. It must NOT: - Run `notebook convert`. - Run `git commit`. - Load `add-python-package` for `jupytext` or `nbclient`.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills site init`. - Run `python -m skore_skills site build`. - Name `report.html` at the workspace root as the file to open. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `notebook convert`. - Run `git commit`.",
       "files": [],
       "expectations": [
-        "Name `python -m skore_skills site init`.",
-        "Name `python -m skore_skills site build`.",
+        "Run `python -m skore_skills site init`.",
+        "Run `python -m skore_skills site build`.",
         "Name `report.html` at the workspace root as the file to open.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `notebook convert`.",
         "The response does NOT: Run `git commit`.",
         "The response does NOT: Load `add-python-package` for `jupytext` or `nbclient`."
@@ -23,12 +24,13 @@
       "id": 2,
       "title": "Later turns only build",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.site` is true.\n- `site init` already ran.]\n\nRebuild the site.",
-      "expected_output": "Behavioural response satisfying: - Name `python -m skore_skills site build`. - Do not run `site init` again. - Name `report.html` at the workspace root as the file to open. It must NOT: - AskUserQuestion for the site gate again. - Run `notebook convert`. - Run `git end-turn`.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills site build`. - Do not run `site init` again. - Name `report.html` at the workspace root as the file to open. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - AskUserQuestion for the site gate again. - Run `notebook convert`.",
       "files": [],
       "expectations": [
-        "Name `python -m skore_skills site build`.",
+        "Run `python -m skore_skills site build`.",
         "Do not run `site init` again.",
         "Name `report.html` at the workspace root as the file to open.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: AskUserQuestion for the site gate again.",
         "The response does NOT: Run `notebook convert`.",
         "The response does NOT: Run `git end-turn`."
@@ -41,10 +43,11 @@
       "id": 3,
       "title": "Gate off",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.site` is false.]\n\nBuild the MkDocs site.",
-      "expected_output": "Behavioural response satisfying: - Say the documentation-site gate is off and offer to turn it on. It must NOT: - Run `site init` or `site build` while the flag is false.",
+      "expected_output": "Behavioural response satisfying: - Say the documentation-site gate is off and offer to turn it on. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `site init` or `site build` while the flag is false.",
       "files": [],
       "expectations": [
         "Say the documentation-site gate is off and offer to turn it on.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `site init` or `site build` while the flag is false."
       ],
       "tools": false,
@@ -53,14 +56,15 @@
     },
     {
       "id": 4,
-      "title": "Null gate installs mkdocs only",
+      "title": "Null flag installs mkdocs only",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.site` is null.\n- `add-python-package` is installed.]\n\nBuild the documentation website.",
-      "expected_output": "Behavioural response satisfying: - AskUserQuestion documentation site (default off). - If the user says yes: persist `site true`, load `add-python-package` for `mkdocs-material`, then init and build. It must NOT: - Install `jupytext`, `nbclient`, or `nbconvert` for the site gate. - Convert while only turning the site on.",
+      "expected_output": "Behavioural response satisfying: - Persist `site true`. Do not AskUserQuestion. - Load `add-python-package` for `mkdocs-material`, then init and build. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Install `jupytext`, `nbclient`, or `nbconvert` for the site flag. - Convert while only turning the site on.",
       "files": [],
       "expectations": [
-        "AskUserQuestion documentation site (default off).",
-        "If the user says yes: persist `site true`, load `add-python-package` for `mkdocs-material`, then init and build.",
-        "The response does NOT: Install `jupytext`, `nbclient`, or `nbconvert` for the site gate.",
+        "Persist `site true`. Do not AskUserQuestion.",
+        "Load `add-python-package` for `mkdocs-material`, then init and build.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Install `jupytext`, `nbclient`, or `nbconvert` for the site flag.",
         "The response does NOT: Convert while only turning the site on."
       ],
       "tools": false,

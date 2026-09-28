@@ -21,8 +21,11 @@ Do not load `smoke-test-ml-pipeline` as a sibling of evaluate.
 Details: `setup-workspace` `references/human_facing_prose.md`.
 Design notes, JOURNAL text, and `#` comments describe **this**
 experiment — not the skills framework, the CLI, or the command that
-produced an output. `<!-- results-embed: … -->` is a site marker.
-Authoring hints stay in this skill. `style` is ruff only.
+produced an output. Questions, replies, and the close narrative
+use the same data-science language — not skill ids, `G-*` names,
+or the wrapper CLI. Trailing locator tokens stay index strings.
+`<!-- results-embed: … -->` is a site marker. Authoring hints
+stay in this skill. `style` is ruff only.
 
 ## Design note shell
 
@@ -42,7 +45,19 @@ criteria" section. Keep `## Notebooks` with Evaluation then Audit.
 1. Run `python -m skore_skills status`. If `has_src` and
    `has_journal` are both false, STOP: explain and send the user
    to `setup-ml-project` / triage. Do not require `git`.
-2. **Resume beats menu.** If the user names an experiment stem, or
+2. **Framing is mandatory.** If `status.modeling_decisions` is not
+   `locked`, load `frame-ml-problem` only if
+   `status.skills.frame-ml-problem` is true and stop. Do not invent
+   the table, offer model choices, write a design note, or declare
+   a pipeline. Missing skill → stop in one line. This includes an
+   approved-stem resume: do not build until the table is locked.
+   When the table is `locked`, run
+   `python -m skore_skills frame show`. A `proceed` whose
+   `translation` is null has no splitter translation: say so and
+   stop. Do not write model code. Do not present a choice list:
+   no dummy predictor, standard baseline, EDA-driven proposal,
+   Backlog row, or discussion.
+3. **Resume beats menu.** If the user names an experiment stem, or
    `status.policy.loop.stem` / `last_history_stem` identifies a
    current design, run
    `python -m skore_skills design consent --stem <stem>`. Treat
@@ -53,7 +68,7 @@ criteria" section. Keep `## Notebooks` with Evaluation then Audit.
    note: name `scaffold --journal --stem` (or abandoned: explain
    and do not implement). Do not infer approval from "build it".
    Missing shell: no `site build`, no fill from memory.
-3. Otherwise run `python -m skore_skills model choices`. Treat its
+4. Otherwise run `python -m skore_skills model choices`. Treat its
    JSON as authoritative.
    - `action` `stop` / `modeling_decisions_unlocked` — load
      `frame-ml-problem` and stop. Do not offer a model menu.
@@ -77,7 +92,9 @@ empty. Discussion is present only after the lock.
 
 Every approval question carries its own context. Before asking,
 state in 2–4 lines what the answer authorizes, the facts it rests
-on — echoed inline — and what each option does. A file link is an
+on — echoed inline — and what each option does, in data-science
+terms (Approve / Modify / Stop; dummy vs baseline). Do not name
+skill ids or `G-*` tokens in the question. A file link is an
 addition, never the context: "read `journal/<stem>.md` and
 approve" is not an approval request.
 
@@ -143,7 +160,13 @@ duplicate a child's detailed preview.
   → gated review. Then let `build-ml-pipeline`,
   `smoke-test-ml-pipeline`, `evaluate-ml-pipeline`, and
   `review-ml-experiment` each own the single detailed Before
-  execution preview at its actual compute boundary.
+  execution preview at its actual compute boundary. The dispatcher
+  preview is those four phase names only, one short line each. Do
+  not mention `pipeline.html`, a site rebuild, a row-count
+  assertion, `skore.evaluate`, or Review / Skip / Stop. Do not list
+  their commands (`status`, `frame show`, `design consent`,
+  `smoke run`) or a DataOps declaration in this preview. With
+  no shell, that four-phase paragraph is the whole answer.
 
 Do not invent minute estimates at dispatcher level. Name a known
 duration only when explicit measured evidence is available;
@@ -181,6 +204,8 @@ also ask in chat whether the note looks right.
    after the experiment file exists and runs
    `python -m skore_skills smoke run --stem <stem>`. JSON `stop`
    stays in build (modify the pipeline, re-run `smoke run`).
+   Do not tell the user to edit the smoke test's expected row
+   count so it matches the sample.
    `proceed`: build reports the
    design, then
    `python -m skore_skills evaluate consent --stem <stem>`
@@ -205,8 +230,9 @@ also ask in chat whether the note looks right.
 3. After a successful dispatched evaluate (locator returned): run
    `python -m skore_skills review consent --stem <stem>`. Treat
    JSON `action` as authoritative.
-   - `stop` — no `report.html`. Do not review. Name the missing
-     file. Do not record-outcome.
+   - `stop` — no `scratch/results/<stem>/report.html`. Do not
+     review. Name that file. This is the evaluation snapshot, not
+     the site launcher `report.html`. Do not record-outcome.
    - `ask` — the review skill owns the cost preview and
      Review (Recommended) / Skip / Stop question. Load
      `review-ml-experiment` only if
@@ -227,7 +253,7 @@ also ask in chat whether the note looks right.
    mode**, handing it the locator, optional headline, and
    G-AUDIT-FINDING (`n/a — audit not run` when skipped). Else
    one-line skip; do not write History from this meta. It writes
-   the `JOURNAL.md` History row and design-note Status block plus
+   the `journal/JOURNAL.md` History row and design-note Status block plus
    `## Results`, then returns. It does not triage idea files in
    this mode. Never mark `done` while `smoke run` is `stop`.
    Missing headline becomes `n/a`, never an invented metric. Do

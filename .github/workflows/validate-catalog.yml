@@ -5,6 +5,7 @@ on:
     paths:
       - ".catalog.json"
       - "skills/**"
+      - "eval/**"
       - "tools/**"
       - ".claude-plugin/**"
       - ".cursor-plugin/**"
@@ -16,6 +17,7 @@ on:
     paths:
       - ".catalog.json"
       - "skills/**"
+      - "eval/**"
       - "tools/**"
       - ".claude-plugin/**"
       - ".cursor-plugin/**"
