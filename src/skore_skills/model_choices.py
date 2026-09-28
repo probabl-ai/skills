@@ -42,10 +42,7 @@ def _table_rows(section: str, columns: int) -> list[list[str]]:
 
 
 def _journal_facts(root: Path) -> tuple[set[str], list[dict[str, str]]]:
-    path = root / "journal" / "JOURNAL.md"
-    if not path.is_file():
-        return set(), []
-    sections = _sections(path.read_text(encoding="utf-8"))
+    sections = _sections((root / "journal" / "JOURNAL.md").read_text(encoding="utf-8"))
 
     history_stems = {
         row[0]

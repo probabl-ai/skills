@@ -537,6 +537,20 @@ def test_probability_baseline_includes_logistic(tmp_path: Path) -> None:
     ]
 
 
+def test_blank_horizon_segment_stays_missing(tmp_path: Path) -> None:
+    """A trailing comma leaves an empty horizon entry, which is asked again."""
+    _journal(
+        tmp_path,
+        **{
+            "Prediction goal": "point_predictions",
+            "Deployment": "time",
+            "Horizon": "1 hour,",
+        },
+    )
+    payload = frame_show(tmp_path)
+    assert "horizon" in payload["missing"]
+
+
 def test_unparsable_horizon_stays_missing(tmp_path: Path) -> None:
     """A horizon that is not a quantity is asked again."""
     _journal(

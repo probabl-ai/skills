@@ -194,7 +194,7 @@ def _quantity(value: str) -> tuple[float, str] | None:
 
 def _quantities(value: str) -> list[tuple[float, str]] | None:
     parts = [part.strip() for part in value.split(",")]
-    if not parts or any(not part for part in parts):
+    if any(not part for part in parts):
         return None
     parsed: list[tuple[float, str]] = []
     for part in parts:
