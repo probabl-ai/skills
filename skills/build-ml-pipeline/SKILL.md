@@ -104,11 +104,12 @@ Then links. When `site build` ran this turn:
 
 Implement the approved design. Do not silently upgrade it.
 
-- **Locked baseline** — the estimator the journal baseline token
-  names. `dummy` is `DummyClassifier` / `DummyRegressor` in the
+- **Locked baseline** — each token in the journal baseline cell,
+  in order. `dummy` is `DummyClassifier` / `DummyRegressor` in the
   normal DataOps graph; it checks that the path runs.
   `logistic`, `seasonal_naive`, `group_mean`, and `production`
-  are that comparison model. `api get` the class.
+  are comparison models. `api get` the class. Several tokens are
+  several comparison models.
 - **EDA-backed** — only Method-cited findings. A missing choice
   stops for a question. A temporal finding is the locked `cv`,
   not a license for three layers, lags, or `AlignXy` unless
@@ -189,13 +190,14 @@ structure, open `references/custom-splitter.md` and write
 
 - `scheme` `date_time` — open the time series section of
   `references/custom-splitter.md`. `cv=` is the project-local
-  class that section describes. `split_kwargs` carries the
-  timestamp values. The timestamp column is the one the EDA or
-  the text shipped with the data already names. Ask which
-  column holds the timestamps only when those sources do not
-  name one. `time_role` `covariate` keeps that column in the
-  features. `sort_key` drops it from the features and still
-  passes it in `split_kwargs`.
+  class that section describes. Build one of those splitters per
+  entry in `translation.horizons`. Each one is one predictor.
+  `split_kwargs` carries the timestamp values. The timestamp
+  column is the one the EDA or the text shipped with the data
+  already names. Ask which column holds the timestamps only when
+  those sources do not name one. `time_role` `covariate` keeps
+  that column in the features. `sort_key` drops it from the
+  features and still passes it in `split_kwargs`.
 - `splitter` `GroupKFold` — `cv=GroupKFold(n_splits=<folds>)`
   and `split_kwargs={"groups": data["<translation.groups>"]}`.
 - `splitter` `KFold` — `cv=KFold(n_splits=<folds>)` and empty

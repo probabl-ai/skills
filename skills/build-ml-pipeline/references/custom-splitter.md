@@ -59,14 +59,18 @@ and `groups`. Confirm the base class with
 A time deployment scores a fit that has only rows available
 before the forecast. `split` takes the timestamp array as
 `times`, aligned with the rows of `X`. Fold edges are those
-timestamps. `n_splits` is the locked retrain count. The horizon
-is the embargo between the last training label and the first
-test label. The gap is the extra delay before a forecast can be
-issued, on top of that horizon. Both durations come from the
-lock (`decisions.horizon`, `translation.gap`,
-`translation.gap_unit`) and stay in that unit. A gap of 7 days
-drops every row whose timestamp falls in that window, however
-many rows that is.
+timestamps. `n_splits` is the locked retrain count. When that
+count is 1 there is no `cv`.
+
+**Gap** is the delay from the last training row to prediction
+time, the first moment a forecast can be issued. **Horizon** is
+the lead from that prediction time to the target time. For each
+horizon `h`, training ends at least `gap + h` before that
+target. Both durations come from the lock (`translation.horizons`,
+`translation.horizon_unit`, `translation.gap`,
+`translation.gap_unit`) and stay in that unit. A gap of 0 means
+the forecast is issued as soon as training data ends. Build one
+`DateTimeSplit` per horizon. Each one is one predictor.
 
 The sketch below is that deployment as one later test window
 per retrain, with the embargo in neither side. A different time
@@ -88,8 +92,8 @@ class DateTimeSplit:
         # times: datetime values, one per row of X.
         # Yield (train_idx, test_idx) as integer positions.
         # For each retrain, the test window is the next block of
-        # time. Training rows end at least horizon + gap before
-        # that window. Rows inside the embargo are in neither side.
+        # time. Training rows end at least gap + horizon before
+        # that window. Rows inside that embargo are in neither side.
         ...
 
     def get_n_splits(self, X=None, y=None, groups=None):

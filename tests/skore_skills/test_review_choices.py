@@ -68,7 +68,6 @@ def _journal(root: Path) -> None:
                 "| Metric | MAE |",
                 "| Baseline | dummy |",
                 "| Baseline note | global mean |",
-                "| Validation | cv |",
                 "| Folds | 5 |",
                 "",
                 "## History",
@@ -151,23 +150,49 @@ def test_unset_mode_and_missing_frame_are_not_offered(
     assert payload["framing_reason"] == "not framed yet"
 
 
-def test_holdout_frame_does_not_offer_folds(
+def test_one_fold_stays_on_the_board(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Folds stay off the board when validation is not cross-validation."""
+    """A fold count of 1 is a row the user can reopen."""
     _isolate_home(tmp_path, monkeypatch)
     _install(tmp_path, "frame-ml-problem")
     _journal(tmp_path)
     path = tmp_path / "journal" / "JOURNAL.md"
     text = path.read_text(encoding="utf-8")
-    text = text.replace("| Validation | cv |", "| Validation | holdout |")
-    text = text.replace("| Folds | 5 |", "| Folds | n/a |")
+    text = text.replace("| Folds | 5 |", "| Folds | 1 |")
     path.write_text(text, encoding="utf-8")
 
     payload = review_choices(tmp_path)
 
-    assert "folds" not in _ids(payload["framing"])
+    assert "folds" in _ids(payload["framing"])
     assert "metric" in _ids(payload["framing"])
+
+
+def test_horizon_and_baseline_lists_are_one_row_each(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A horizon list and a baseline list each stay one framing row."""
+    _isolate_home(tmp_path, monkeypatch)
+    _install(tmp_path, "frame-ml-problem")
+    _journal(tmp_path)
+    path = tmp_path / "journal" / "JOURNAL.md"
+    text = path.read_text(encoding="utf-8")
+    text = text.replace("| Deployment | iid |", "| Deployment | time |")
+    text = text.replace("| Horizon | 7 day |", "| Horizon | 1 hour, 24 hour |")
+    text = text.replace("| Gap | n/a |", "| Gap | 0 hour |")
+    text = text.replace("| Time role | n/a |", "| Time role | sort_key |")
+    text = text.replace("| Baseline | dummy |", "| Baseline | seasonal_naive, dummy |")
+    text = text.replace(
+        "| Baseline note | global mean |",
+        "| Baseline note | last week; global mean |",
+    )
+    path.write_text(text, encoding="utf-8")
+
+    payload = review_choices(tmp_path)
+    framing = {row["id"]: row for row in payload["framing"]}
+
+    assert framing["horizon"]["value"] == "1 hour, 24 hour"
+    assert framing["baseline"]["value"] == "seasonal_naive, dummy"
 
 
 def test_recorded_mode_without_sync_is_not_offered(
@@ -194,7 +219,6 @@ def test_framing_rows_skip_non_text_values() -> None:
     rows = _framing_rows(
         {
             "deployment": "iid",
-            "validation": "cv",
             "metric": 1,
             "folds": "5",
         }

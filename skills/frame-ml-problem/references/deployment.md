@@ -4,7 +4,8 @@ How a new row arrives, so later evaluation can copy that.
 
 - `iid` — a new row is exchangeable with the rows already seen.
 - `time` — a new row is later than the rows used to fit. The
-  series has a horizon and a gap, recorded separately.
+  series has one or more horizons and one gap, recorded
+  separately.
 - `groups` — a new row belongs to an id that was not in the fit,
   and that id is the one the model must generalize to.
 

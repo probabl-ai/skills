@@ -25,7 +25,7 @@ Details: `setup-workspace` `references/human_facing_prose.md`.
 The board uses data-science labels: where reports go, executed
 notebooks, documentation site, git commits, who manages the
 environment, data analysis, and each filled framing cell
-(prediction goal, deployment, metric, validation, and the
+(prediction goal, deployment, metric, fold count, and the
 others below). Do not put skill
 ids, `G-*` names, or the wrapper CLI in the question.
 

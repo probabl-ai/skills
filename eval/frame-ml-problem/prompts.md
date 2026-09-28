@@ -2,7 +2,7 @@
 
 ---
 
-## CASE_01 — First key reads one reference
+## CASE_01 — A blank journal asks every missing decision
 
 **User prompt:**
 > Which comparison metric should we lock before building?
@@ -12,25 +12,35 @@
   the empty placeholder.
 - `scratch/data_analysis/extras.json` has `"task": "classification"`.
 - `python -m skore_skills frame show` returns `ask` /
-  `missing_keys`, `missing` `["prediction_goal"]`, `candidates`
-  `["probabilities", "point_labels", "uncovered"]`, and `reference`
-  `references/prediction-goal.md`.
+  `missing_keys`. `missing` lists prediction_goal, deployment,
+  horizon, gap, time_role, generalize_to, known_at_predict,
+  metric_role, metric, baseline, baseline_note, and folds.
+- `questions` names a reference for each of those keys.
+  prediction_goal candidates are `probabilities`, `point_labels`,
+  and `uncovered`. The horizon and gap questions cite
+  `references/horizon-gap.md` and have no candidates. The
+  baseline question cites `references/baseline.md`.
 
 **Must do:**
 - Run `python -m skore_skills frame show`.
-- Read `references/prediction-goal.md` and no other file under
-  `references/`.
-- Ask only `probabilities`, `point_labels`, and `uncovered`.
+- Read each named reference once, including
+  `references/prediction-goal.md`, `references/horizon-gap.md`,
+  and `references/baseline.md`.
+- Ask every key in `missing` in one message. Prediction-goal
+  options are only `probabilities`, `point_labels`, and
+  `uncovered`. Say horizon and gap are n/a unless the deployment
+  is time, and generalize-to is n/a unless the deployment is
+  groups.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write Python, a pipeline, or a splitter constructor.
-- Ask about horizon, the baseline, or the fold count in this turn.
-- Open `references/horizon-gap.md` or `references/baseline.md`.
+- Ask only the prediction goal and stop.
+- Invent a horizon, a baseline, or a fold count.
 
 ---
 
-## CASE_02 — Horizon is asked only after a time deployment
+## CASE_02 — A time deployment asks the remaining cells
 
 **User prompt:**
 > New rows arrive later than the fit. Lock that.
@@ -38,13 +48,18 @@
 **Assumed workspace state:**
 - Prediction goal is `point_predictions` and Deployment is `time`.
   Status is `draft`.
-- `frame show` returns `missing` `["horizon"]`, `reference`
-  `references/horizon-gap.md`, and no `candidates`.
+- `frame show` returns `missing` with horizon, gap, time_role,
+  known_at_predict, metric_role, metric, baseline, baseline_note,
+  and folds. The horizon and gap questions cite
+  `references/horizon-gap.md` and have no candidates.
 
 **Must do:**
-- Read `references/horizon-gap.md`.
-- Explain horizon as the lead time of the target and gap as
-  deployment delay, and ask for the horizon as a number and a unit.
+- Read `references/horizon-gap.md` once.
+- Ask every still-missing key in one message.
+- Explain horizon as the lead from prediction time to the target,
+  and gap as the delay from the end of training to when the
+  forecast is issued. Ask for the horizons as numbers in one
+  unit, and for the gap in that same unit. A gap of 0 is allowed.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -134,7 +149,7 @@
 - Status is `locked`.
 - Prediction goal is `point_predictions`, metric role is
   `point_error`, metric is `MAE`, deployment is `iid`, and
-  validation is `cv`.
+  folds is `5`.
 - `python -m skore_skills frame show --revise` returns `ask` /
   `revise` with choices `modify`, `keep`, `stop`.
 - The user chooses `modify`.
@@ -144,14 +159,14 @@
 - On modify, run `frame clear --cell prediction_goal`.
 - That blanks prediction goal, metric role, and metric, and sets
   Status to `draft` with Revised on today's date.
-- Leave deployment and validation filled.
+- Leave deployment and folds filled.
 - Stop for the next `frame show`. Do not write `intervals` in
   this turn.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Leave Status `locked` after modify.
-- Blank deployment or validation.
+- Blank deployment or folds.
 - Write a model or a splitter.
 
 ---
@@ -164,7 +179,7 @@
 **Assumed workspace state:**
 - Status is `locked`.
 - Metric is `MAE`. Metric role is `point_error`. Prediction goal
-  is `point_predictions`. Validation is `cv` with 5 folds.
+  is `point_predictions`. Folds is `5`.
 - `experiments/01_baseline.py` exists.
 - `python -m skore_skills frame show --revise` returns `ask` /
   `revise` with choices `modify`, `keep`, `stop`.
@@ -173,8 +188,8 @@
 **Must do:**
 - Name `frame show --revise`.
 - On modify, run `frame clear --cell metric`. That blanks only
-  the metric and leaves metric role, prediction goal, validation,
-  and folds filled.
+  the metric and leaves metric role, prediction goal, and folds
+  filled.
 - Stop for the next `frame show`.
 - Say `experiments/01_baseline.py` still uses the previous metric
   and is not run. The next build or evaluate rewrites it after
@@ -219,7 +234,7 @@
 
 **Assumed workspace state:**
 - Status is `locked`.
-- Metric is `MAE` and validation is `cv`. The user did not name
+- Metric is `MAE` and folds is `5`. The user did not name
   a cell.
 
 **Must do:**

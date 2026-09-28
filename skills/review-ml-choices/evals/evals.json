@@ -94,7 +94,7 @@
     {
       "id": 6,
       "title": "One framing cell loads frame",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.modeling_decisions` is `locked`.\n- `status.skills.frame-ml-problem` is `true`.\n- `frame show` returns `action` `proceed` and `decisions.metric`\n  `MAE`, `decisions.validation` `cv`, `decisions.folds` `5`.\n- The user picks the metric.]\n\nShow our choices. I want to change the comparison metric.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.modeling_decisions` is `locked`.\n- `status.skills.frame-ml-problem` is `true`.\n- `frame show` returns `action` `proceed` and `decisions.metric`\n  `MAE`, `decisions.folds` `5`.\n- The user picks the metric.]\n\nShow our choices. I want to change the comparison metric.",
       "expected_output": "Behavioural response satisfying: - Use the `review choices` JSON. Do not rebuild which rows are offered. - Offer the metric (MAE) as its own choice, not one \u201cmodeling decisions\u201d row. - Hand off to re-asking that metric, and stop, without a catalog id. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Edit the journal, including blanking the metric, from this skill. - Run `frame show --revise` from this skill.",
       "files": [],
       "expectations": [

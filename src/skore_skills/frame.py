@@ -29,7 +29,6 @@ _LABELS = (
     ("Metric", "metric"),
     ("Baseline", "baseline"),
     ("Baseline note", "baseline_note"),
-    ("Validation", "validation"),
     ("Folds", "folds"),
 )
 _BY_LABEL = dict(_LABELS)
@@ -46,9 +45,15 @@ _REFERENCES = {
     "metric": "references/metric-role.md",
     "baseline": "references/baseline.md",
     "baseline_note": "references/baseline.md",
-    "validation": "references/validation.md",
     "folds": "references/validation.md",
 }
+_BASELINES = (
+    "seasonal_naive",
+    "group_mean",
+    "logistic",
+    "production",
+    "dummy",
+)
 
 _GOALS = (
     "probabilities",
@@ -143,7 +148,17 @@ def _metric_candidates(goal: str) -> list[str]:
     return ["imposed", "proper_score", "ranking", "thresholded", "point_error"]
 
 
+def _baseline_tokens(value: str) -> list[str]:
+    return [part.strip() for part in value.split(",") if part.strip()]
+
+
+def _note_parts(value: str) -> list[str]:
+    return [part.strip() for part in value.split(";") if part.strip()]
+
+
 def _baseline_candidates(rows: dict[str, str]) -> list[str]:
+    if not rows["deployment"]:
+        return list(_BASELINES)
     candidates: list[str] = []
     if rows["deployment"] == "time":
         candidates.append("seasonal_naive")
@@ -167,8 +182,6 @@ def _candidates(root: Path, key: str, rows: dict[str, str]) -> list[str] | None:
         return _metric_candidates(rows["prediction_goal"])
     if key == "baseline":
         return _baseline_candidates(rows)
-    if key == "validation":
-        return ["cv", "holdout"]
     return None
 
 
@@ -177,6 +190,21 @@ def _quantity(value: str) -> tuple[float, str] | None:
     if match is None:
         return None
     return float(match.group("value")), match.group("unit").lower()
+
+
+def _quantities(value: str) -> list[tuple[float, str]] | None:
+    parts = [part.strip() for part in value.split(",")]
+    if not parts or any(not part for part in parts):
+        return None
+    parsed: list[tuple[float, str]] = []
+    for part in parts:
+        item = _quantity(part)
+        if item is None:
+            return None
+        parsed.append(item)
+    if len({unit for _, unit in parsed}) != 1:
+        return None
+    return parsed
 
 
 def _number(value: float) -> int | float:
@@ -191,8 +219,6 @@ def _inapplicable(rows: dict[str, str], key: str) -> bool:
         return deployment in {"iid", "groups"}
     if key == "generalize_to":
         return deployment in {"iid", "time"}
-    if key == "folds":
-        return rows["validation"] == "holdout"
     return False
 
 
@@ -202,16 +228,50 @@ def _valid(root: Path, key: str, rows: dict[str, str]) -> bool:
         return True
     if not value:
         return False
-    if key in {"horizon", "gap"}:
+    if key == "horizon":
+        return _quantities(value) is not None
+    if key == "gap":
         return _quantity(value) is not None
     if key == "folds":
-        return _FOLDS.fullmatch(value) is not None and int(value) >= 2
+        return _FOLDS.fullmatch(value) is not None
     if key == "generalize_to":
         return value != "n/a"
+    if key == "baseline":
+        tokens = _baseline_tokens(value)
+        menu = _baseline_candidates(rows)
+        return bool(tokens) and all(token in menu for token in tokens)
+    if key == "baseline_note":
+        tokens = _baseline_tokens(rows["baseline"])
+        notes = _note_parts(value)
+        if tokens:
+            return len(notes) == len(tokens)
+        return True
     allowed = _candidates(root, key, rows)
     if allowed is None:
         return True
     return value in allowed
+
+
+def _ask_keys(rows: dict[str, str]) -> list[str]:
+    if rows["prediction_goal"] == "uncovered":
+        return ["prediction_goal", "metric", "baseline_note"]
+    deployment = rows["deployment"]
+    keys = ["prediction_goal", "deployment"]
+    if deployment in {"", "time"}:
+        keys.extend(["horizon", "gap", "time_role"])
+    if deployment in {"", "groups"}:
+        keys.append("generalize_to")
+    keys.extend(
+        [
+            "known_at_predict",
+            "metric_role",
+            "metric",
+            "baseline",
+            "baseline_note",
+            "folds",
+        ]
+    )
+    return keys
 
 
 def _required(rows: dict[str, str]) -> list[str]:
@@ -230,11 +290,9 @@ def _required(rows: dict[str, str]) -> list[str]:
             "metric",
             "baseline",
             "baseline_note",
-            "validation",
+            "folds",
         ]
     )
-    if rows["validation"] == "cv":
-        keys.append("folds")
     return keys
 
 
@@ -258,23 +316,19 @@ def _conflict(rows: dict[str, str]) -> str:
     if rows["prediction_goal"] == "uncovered":
         return ""
     if rows["deployment"] == "time":
-        horizon = _quantity(rows["horizon"])
+        horizons = _quantities(rows["horizon"])
         gap = _quantity(rows["gap"])
-        if horizon and gap:
-            if horizon[1] != gap[1]:
-                return "gap_unit_mismatch"
-            if gap[0] < horizon[0]:
-                return "gap_shorter_than_horizon"
+        if horizons and gap and horizons[0][1] != gap[1]:
+            return "gap_unit_mismatch"
     generalize = rows["generalize_to"]
-    if (
-        rows["baseline"] == "group_mean"
-        and generalize not in {"", "n/a"}
-        and (
-            rows["baseline_note"].strip() == generalize
-            or generalize in _note_names(rows["baseline_note"])
-        )
-    ):
-        return "group_mean_on_generalize_to"
+    tokens = _baseline_tokens(rows["baseline"])
+    notes = _note_parts(rows["baseline_note"])
+    if len(tokens) == len(notes) and generalize not in {"", "n/a"}:
+        for token, note in zip(tokens, notes, strict=True):
+            if token == "group_mean" and (
+                note == generalize or generalize in _note_names(note)
+            ):
+                return "group_mean_on_generalize_to"
     return ""
 
 
@@ -282,13 +336,15 @@ def _translation(rows: dict[str, str]) -> dict[str, Any] | None:
     if rows["prediction_goal"] == "uncovered":
         return None
     effective = _effective(rows)
-    gap = _quantity(effective["gap"]) if effective["deployment"] == "time" else None
-    holdout = effective["validation"] == "holdout"
+    time = effective["deployment"] == "time"
+    horizons = _quantities(effective["horizon"]) if time else None
+    gap = _quantity(effective["gap"]) if time else None
+    holdout = effective["folds"] == "1"
     splitter = None
     pattern = None
     scheme = None
     groups = None
-    if not holdout and effective["deployment"] == "time":
+    if not holdout and time:
         pattern, scheme = "B", "date_time"
     elif not holdout and effective["deployment"] == "groups":
         splitter, pattern = "GroupKFold", "B"
@@ -301,6 +357,10 @@ def _translation(rows: dict[str, str]) -> dict[str, Any] | None:
         "pattern": pattern,
         "scheme": scheme,
         "n_splits": None if holdout or not folds.isdigit() else int(folds),
+        "horizons": None
+        if horizons is None
+        else [_number(value) for value, _ in horizons],
+        "horizon_unit": None if horizons is None else horizons[0][1],
         "gap": None if gap is None else _number(gap[0]),
         "gap_unit": None if gap is None else gap[1],
         "groups": groups,
@@ -362,25 +422,32 @@ def frame_show(root: Path, *, revise: bool = False) -> dict[str, Any]:
     if revise and locked and complete and not _conflict(rows):
         return _ask("revise", rows, choices=list(_REVISE), full=True)
 
-    for key in _required(rows):
-        if _valid(root, key, rows):
-            continue
-        reference = _REFERENCES[key]
-        if rows["prediction_goal"] == "uncovered":
-            reference = _FALLBACK
-        payload = _ask(
-            "missing_keys",
-            rows,
-            missing=[key],
-            reference=reference,
-        )
-        candidates = _candidates(root, key, rows)
-        if candidates is not None:
-            payload["candidates"] = candidates
+    pending = [key for key in _ask_keys(rows) if not _valid(root, key, rows)]
+    if pending:
+        questions: list[dict[str, Any]] = []
+        for key in pending:
+            item: dict[str, Any] = {
+                "key": key,
+                "reference": (
+                    _FALLBACK
+                    if rows["prediction_goal"] == "uncovered"
+                    else _REFERENCES[key]
+                ),
+            }
+            candidates = _candidates(root, key, rows)
+            if candidates is not None:
+                item["candidates"] = candidates
+            questions.append(item)
+        payload = _ask("missing_keys", rows, missing=pending)
+        payload["questions"] = questions
+        if len(questions) == 1:
+            payload["reference"] = questions[0]["reference"]
+            if "candidates" in questions[0]:
+                payload["candidates"] = questions[0]["candidates"]
         return payload
 
     conflict = _conflict(rows)
-    if conflict in {"gap_shorter_than_horizon", "gap_unit_mismatch"}:
+    if conflict == "gap_unit_mismatch":
         return _ask(
             conflict,
             rows,
@@ -420,7 +487,9 @@ def _blank_keys(cell: str, rows: dict[str, str]) -> list[str]:
         extra = ["metric_role", "metric"]
     elif cell == "deployment":
         extra = ["horizon", "gap", "time_role", "generalize_to"]
-    elif cell == "known_at_predict" and rows["baseline"] == "group_mean":
+    elif cell == "known_at_predict" and "group_mean" in _baseline_tokens(
+        rows["baseline"]
+    ):
         extra = ["baseline", "baseline_note"]
     elif cell == "metric_role":
         extra = ["metric"]

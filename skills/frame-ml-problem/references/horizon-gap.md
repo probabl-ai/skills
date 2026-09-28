@@ -1,17 +1,16 @@
 # Horizon and gap
 
-Record both, with the same unit. They are equal only when nothing
-arrives later than the label overlap.
+Record both in the same unit. Horizon may be a comma-separated
+list. Gap is one quantity. A gap of `0 <unit>` is allowed.
 
-**Horizon** is how far ahead the target sits. It defines the value
-at `t + h`, and it is the shortest overlap that must be embargoed
-so a training label does not fall inside the period being scored.
+**Horizon** is the lead from the moment a forecast is issued
+(prediction time) to the target time. Each entry is one target
+and one predictor. Write `<number> <unit>`, for example
+`1 hour, 2 hour, 24 hour`. Every entry uses one unit.
 
-**Gap** is the extra delay before a forecast can be issued in
-deployment: features or labels that are not available yet. If data
-arrives late, the gap is longer than the horizon. A gap shorter
-than the horizon, in the same unit, leaves that overlap in the
-training window.
+**Gap** is the delay from the last training row to the first
+moment a forecast can be issued. Write one `<number> <unit>`,
+for example `0 hour`. For each horizon `h`, training ends at
+least `gap + h` before that target.
 
-Write `<number> <unit>`, for example `7 day`. Do not name a
-splitter class or a constructor argument.
+Do not name a splitter class or a constructor argument.

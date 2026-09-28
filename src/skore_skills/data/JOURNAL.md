@@ -25,17 +25,16 @@
 | Revised on | <date or n/a> |
 | Prediction goal | <probabilities \| point_labels \| intervals \| point_predictions> |
 | Deployment | <iid \| time \| groups> |
-| Horizon | <n/a or number and unit> |
+| Horizon | <n/a, or one or more number-and-unit values> |
 | Gap | <n/a or number and unit> |
 | Generalize to | <n/a or column> |
 | Known at predict | <n/a or columns> |
 | Time role | <n/a \| sort_key \| covariate> |
 | Metric role | <imposed \| proper_score \| ranking \| thresholded \| point_error> |
 | Metric | <comparison name> |
-| Baseline | <seasonal_naive \| group_mean \| logistic \| production \| dummy> |
-| Baseline note | <short note> |
-| Validation | <cv \| holdout> |
-| Folds | <integer or n/a> |
+| Baseline | <one or more of seasonal_naive, group_mean, logistic, production, dummy> |
+| Baseline note | <one short note per baseline> |
+| Folds | <integer, at least 1> |
 
 ## History
 

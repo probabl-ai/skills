@@ -19,7 +19,6 @@ def _installed(skills: dict[str, bool | None], skill_id: str) -> bool:
 
 def _framing_rows(source: dict[str, Any]) -> list[dict[str, str]]:
     deployment = source.get("deployment")
-    validation = source.get("validation")
     rows: list[dict[str, str]] = []
     for label, key in _LABELS:
         if key in {"status", "revised_on"}:
@@ -27,8 +26,6 @@ def _framing_rows(source: dict[str, Any]) -> list[dict[str, str]]:
         if key in _TIME_CELLS and deployment != "time":
             continue
         if key == "generalize_to" and deployment != "groups":
-            continue
-        if key == "folds" and validation != "cv":
             continue
         value = source.get(key)
         if not isinstance(value, str):

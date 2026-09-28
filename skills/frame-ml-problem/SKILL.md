@@ -2,19 +2,21 @@
 name: frame-ml-problem
 description: >
   Lock the problem, the deployment setting, the comparison metric,
-  the baseline, and the validation scheme in the journal before any
-  model code. One question per turn, from `frame show`. Does not
-  write Python, estimator hyperparameters, or splitter constructors.
+  the baseline, and the fold count in the journal before any
+  model code. Ask every missing decision in one turn, from
+  `frame show`. Does not write Python, estimator hyperparameters,
+  or splitter constructors.
 
   TRIGGER when the user asks which metric to compare on, how new
   rows should be split, which baseline to use, or says a problem
   constraint changed. Not when they ask to run evaluation or CV.
 
-  HOW TO USE: run `python -m skore_skills frame show`. Read the
-  single `reference` it names, ask `missing[0]`, write that cell,
-  and stop the turn. If that command is missing, or the problem is
-  not classification or regression, read `references/fallback.md`
-  and do not invent the closed menu.
+  HOW TO USE: run `python -m skore_skills frame show`. Read each
+  reference named in `questions` once, ask every key in `missing`
+  in one message, write every answered cell, and stop the turn.
+  If that command is missing, or the problem is not classification
+  or regression, read `references/fallback.md` and do not invent
+  the closed menu.
 ---
 
 # Frame ML Problem
@@ -53,29 +55,32 @@ wrapper CLI.
 4. `ask` / `uncovered` — read `references/fallback.md` only. Write
    Prediction goal `uncovered` and the prose cells it names. Set
    Status to `draft`. Stop this turn.
-5. `ask` / `missing_keys` — if `reference` is set, read that file
-   before asking. Do not open any other file under `references/`.
-   Ask `missing[0]` only. When `candidates` is present, those are
-   the options. When it is absent, ask for the value the reference
-   describes. Draw on three sources, and only what they actually
-   say: the EDA report, free-form text that came with the data if
-   any is present (notes, a dictionary, or a README beside the raw
-   files), and facts the user stated. If none of that text is
-   present, do not invent it. When one of them already states the
-   fact, quote it in the question. Write that Value cell. Do not
-   rename Variable cells.
-   When the deployment or the validation makes other rows
-   inapplicable, set those cells to `n/a` in the same edit. A
-   new `holdout` sets Folds to `n/a`. A new `cv` keeps a valid
-   fold count. Once any decision cell is filled and Status is
-   not `locked`, set Status to `draft`. Stop this turn.
+5. `ask` / `missing_keys` — read each distinct `reference` in
+   `questions` once before asking. Do not open any other file
+   under `references/`. Ask every key in `missing` in one
+   message. For a question that has `candidates`, those are the
+   options. When `candidates` is absent, ask for the value the
+   reference describes. Draw on three sources, and only what they
+   actually say: the EDA report, free-form text that came with
+   the data if any is present (notes, a dictionary, or a README
+   beside the raw files), and facts the user stated. If none of
+   that text is present, do not invent it. When one of them
+   already states the fact, quote it in the question. Write every
+   Value cell the user answered in this turn. Do not rename
+   Variable cells. Do not stop after the first cell.
+   When the deployment makes other rows inapplicable, set those
+   cells to `n/a` in the same edit. Horizon, gap, and time role
+   are `n/a` unless deployment is time. Generalize-to is `n/a`
+   unless deployment is groups. A fold count of `1` is one
+   train/test split. Once any decision cell is filled and Status
+   is not `locked`, set Status to `draft`. Stop this turn.
 6. When the user named one cell and Status is `draft`, do not
    use the lock menu as the change. Run
    `python -m skore_skills frame clear --cell <key>` for that
    cell and stop. Do not write the new value. Do not name any
    other cell as cleared. The command's JSON `blanked` list is
    the record. Status stays `draft`. The next `frame show` asks
-   the first missing cell.
+   only keys that are still empty or invalid.
 7. `ask` / `confirm_lock` or `ask` / `revise` — quote JSON
    `context` inline, then offer JSON `choices` only and stop.
    The user sentence that opened this screen is not a choice.
@@ -84,7 +89,8 @@ wrapper CLI.
    - `modify` on a revise, when the user named one cell: run
      `python -m skore_skills frame clear --cell <key>` and stop.
      Do not write the new value. Do not blank any other cell by
-     hand. The next `frame show` asks the first missing cell.
+     hand. The next `frame show` asks only keys that are still
+     empty or invalid.
      `modify` with no named cell writes nothing and does not
      `frame clear`: ask which filled decision to change and stop.
    - `keep` leaves the locked table unchanged.

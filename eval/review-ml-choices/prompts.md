@@ -130,7 +130,7 @@
 - `status.modeling_decisions` is `locked`.
 - `status.skills.frame-ml-problem` is `true`.
 - `frame show` returns `action` `proceed` and `decisions.metric`
-  `MAE`, `decisions.validation` `cv`, `decisions.folds` `5`.
+  `MAE`, `decisions.folds` `5`.
 - The user picks the metric.
 
 **Must do:**

@@ -59,7 +59,14 @@ def test_first_model_choice_is_the_locked_baseline(tmp_path: Path) -> None:
     assert payload["backlog"] == []
 
 
-def test_existing_experiment_suppresses_first_model_choices(tmp_path: Path) -> None:
+def test_several_baselines_are_quoted_together(tmp_path: Path) -> None:
+    _lock(tmp_path, baseline="seasonal_naive, dummy", note="last week; global mean")
+
+    payload = model_choices(tmp_path)
+
+    assert payload["choices"][0]["reason"] == (
+        "locked baseline is seasonal_naive, dummy: last week; global mean"
+    )
     _lock(tmp_path)
     _write(tmp_path / "experiments" / "01_model.py", "# model\n")
     _write(tmp_path / "experiments" / "__init__.py")

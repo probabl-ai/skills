@@ -26,7 +26,6 @@ _LABELS = (
     "Metric",
     "Baseline",
     "Baseline note",
-    "Validation",
     "Folds",
 )
 
@@ -65,7 +64,6 @@ def _locked_iid(**overrides: str) -> dict[str, str]:
         "Metric": "MAE",
         "Baseline": "dummy",
         "Baseline note": "global mean",
-        "Validation": "cv",
         "Folds": "5",
     }
     rows.update(overrides)
@@ -82,7 +80,13 @@ def test_missing_journal_file_is_stop(tmp_path: Path) -> None:
     assert frame_show(tmp_path)["reason"] == "missing_scaffold"
 
 
-def test_first_key_uses_task_and_names_one_reference(tmp_path: Path) -> None:
+def _question(payload: dict, key: str) -> dict:
+    questions = payload["questions"]
+    assert isinstance(questions, list)
+    return next(item for item in questions if item["key"] == key)
+
+
+def test_blank_journal_asks_every_missing_decision(tmp_path: Path) -> None:
     _journal(tmp_path)
     _write(
         tmp_path / "scratch" / "data_analysis" / "extras.json",
@@ -93,13 +97,35 @@ def test_first_key_uses_task_and_names_one_reference(tmp_path: Path) -> None:
 
     assert payload["action"] == "ask"
     assert payload["reason"] == "missing_keys"
-    assert payload["missing"] == ["prediction_goal"]
-    assert payload["candidates"] == ["probabilities", "point_labels", "uncovered"]
-    assert payload["reference"] == "references/prediction-goal.md"
-    assert "horizon-gap.md" not in payload["reference"]
+    assert payload["missing"] == [
+        "prediction_goal",
+        "deployment",
+        "horizon",
+        "gap",
+        "time_role",
+        "generalize_to",
+        "known_at_predict",
+        "metric_role",
+        "metric",
+        "baseline",
+        "baseline_note",
+        "folds",
+    ]
+    goal = _question(payload, "prediction_goal")
+    assert goal["candidates"] == ["probabilities", "point_labels", "uncovered"]
+    assert goal["reference"] == "references/prediction-goal.md"
+    assert _question(payload, "horizon")["reference"] == "references/horizon-gap.md"
+    assert "candidates" not in _question(payload, "horizon")
+    assert _question(payload, "baseline")["candidates"] == [
+        "seasonal_naive",
+        "group_mean",
+        "logistic",
+        "production",
+        "dummy",
+    ]
 
 
-def test_time_deployment_asks_horizon_without_a_menu(tmp_path: Path) -> None:
+def test_time_deployment_asks_the_remaining_cells(tmp_path: Path) -> None:
     _journal(
         tmp_path,
         **{
@@ -111,9 +137,12 @@ def test_time_deployment_asks_horizon_without_a_menu(tmp_path: Path) -> None:
 
     payload = frame_show(tmp_path)
 
-    assert payload["missing"] == ["horizon"]
-    assert payload["reference"] == "references/horizon-gap.md"
-    assert "candidates" not in payload
+    assert "generalize_to" not in payload["missing"]
+    assert "horizon" in payload["missing"]
+    assert "folds" in payload["missing"]
+    horizon = _question(payload, "horizon")
+    assert horizon["reference"] == "references/horizon-gap.md"
+    assert "candidates" not in horizon
 
 
 def test_complete_draft_asks_to_lock(tmp_path: Path) -> None:
@@ -140,6 +169,8 @@ def test_locked_iid_translates_to_kfold(tmp_path: Path) -> None:
         "pattern": "A",
         "scheme": None,
         "n_splits": 5,
+        "horizons": None,
+        "horizon_unit": None,
         "gap": None,
         "gap_unit": None,
         "groups": None,
@@ -170,6 +201,8 @@ def test_locked_time_translates_to_a_date_splitter(tmp_path: Path) -> None:
     assert payload["translation"]["scheme"] == "date_time"
     assert payload["translation"]["groups"] is None
     assert payload["translation"]["n_splits"] == 4
+    assert payload["translation"]["horizons"] == [7]
+    assert payload["translation"]["horizon_unit"] == "day"
     assert payload["translation"]["gap"] == 7
     assert payload["translation"]["gap_unit"] == "day"
 
@@ -194,8 +227,8 @@ def test_locked_groups_translate_to_group_kfold(tmp_path: Path) -> None:
     assert payload["translation"]["n_splits"] == 5
 
 
-def test_holdout_translates_to_estimator_report(tmp_path: Path) -> None:
-    _journal(tmp_path, **_locked_iid(Validation="holdout", Folds="n/a"))
+def test_one_fold_translates_to_estimator_report(tmp_path: Path) -> None:
+    _journal(tmp_path, **_locked_iid(Folds="1"))
 
     payload = frame_show(tmp_path)
 
@@ -204,13 +237,56 @@ def test_holdout_translates_to_estimator_report(tmp_path: Path) -> None:
     assert payload["translation"]["n_splits"] is None
 
 
-def test_gap_shorter_than_horizon_does_not_proceed(tmp_path: Path) -> None:
+def test_horizon_list_and_baseline_list_lock(tmp_path: Path) -> None:
+    _journal(
+        tmp_path,
+        **_locked_iid(
+            Deployment="time",
+            Horizon="1 hour, 24 hour",
+            Gap="0 hour",
+            **{"Time role": "sort_key"},
+            Baseline="seasonal_naive, dummy",
+            **{"Baseline note": "last week; global mean"},
+        ),
+    )
+
+    payload = frame_show(tmp_path)
+
+    assert payload["action"] == "proceed"
+    assert payload["translation"]["horizons"] == [1, 24]
+    assert payload["translation"]["horizon_unit"] == "hour"
+    assert payload["translation"]["gap"] == 0
+    assert payload["decisions"]["baseline"] == "seasonal_naive, dummy"
+
+
+def test_mismatched_baseline_notes_stay_open(tmp_path: Path) -> None:
+    """Each baseline token needs its own note."""
+    _journal(
+        tmp_path,
+        **_locked_iid(
+            Baseline="seasonal_naive, dummy",
+            **{"Baseline note": "last week"},
+            Deployment="time",
+            Horizon="1 hour, 2 day",
+            Gap="0 hour",
+            **{"Time role": "sort_key"},
+        ),
+    )
+
+    payload = frame_show(tmp_path)
+
+    assert "horizon" in payload["missing"]
+    assert "baseline_note" in payload["missing"]
+    assert "baseline" not in payload["missing"]
+
+
+def test_zero_gap_with_a_longer_horizon_proceeds(tmp_path: Path) -> None:
     _journal(
         tmp_path,
         **_locked_iid(
             Deployment="time",
             Horizon="7 day",
-            Gap="3 day",
+            Gap="0 day",
             **{"Time role": "sort_key"},
             Baseline="seasonal_naive",
             **{"Baseline note": "last observed week"},
@@ -219,9 +295,9 @@ def test_gap_shorter_than_horizon_does_not_proceed(tmp_path: Path) -> None:
 
     payload = frame_show(tmp_path)
 
-    assert payload["action"] == "ask"
-    assert payload["reason"] == "gap_shorter_than_horizon"
-    assert payload["reference"] == "references/horizon-gap.md"
+    assert payload["action"] == "proceed"
+    assert payload["translation"]["gap"] == 0
+    assert payload["translation"]["horizons"] == [7]
 
 
 def test_mismatched_gap_units_ask_instead_of_converting(tmp_path: Path) -> None:
@@ -260,6 +336,16 @@ def test_group_mean_on_the_generalize_to_column_does_not_lock(tmp_path: Path) ->
     assert "group_mean" in payload["candidates"]
 
 
+def test_iid_rejects_a_seasonal_baseline(tmp_path: Path) -> None:
+    """A time-only baseline is asked again once deployment is iid."""
+    _journal(tmp_path, **_locked_iid(Baseline="seasonal_naive"))
+
+    payload = frame_show(tmp_path)
+
+    assert payload["missing"] == ["baseline"]
+    assert payload["candidates"] == ["production", "dummy"]
+
+
 def test_iid_baseline_omits_seasonal_naive(tmp_path: Path) -> None:
     rows = _locked_iid(Status="draft")
     rows["Baseline"] = ""
@@ -268,9 +354,9 @@ def test_iid_baseline_omits_seasonal_naive(tmp_path: Path) -> None:
 
     payload = frame_show(tmp_path)
 
-    assert payload["missing"] == ["baseline"]
-    assert payload["candidates"] == ["production", "dummy"]
-    assert payload["reference"] == "references/baseline.md"
+    assert "baseline" in payload["missing"]
+    assert _question(payload, "baseline")["candidates"] == ["production", "dummy"]
+    assert _question(payload, "baseline")["reference"] == "references/baseline.md"
 
 
 def test_revise_asks_and_draft_blocks_proceed(tmp_path: Path) -> None:
@@ -367,8 +453,8 @@ def test_alignment_row_and_corrupt_task_file(tmp_path: Path) -> None:
     _write(tmp_path / "scratch" / "data_analysis" / "extras.json", "{")
     payload = frame_show(tmp_path)
     assert payload["reason"] == "missing_keys"
-    assert payload["missing"] == ["prediction_goal"]
-    assert payload["candidates"] == [
+    assert payload["missing"][0] == "prediction_goal"
+    assert _question(payload, "prediction_goal")["candidates"] == [
         "probabilities",
         "point_labels",
         "intervals",
@@ -385,7 +471,11 @@ def test_regression_task_offers_interval_goals(tmp_path: Path) -> None:
         json.dumps({"task": "regression"}) + "\n",
     )
     payload = frame_show(tmp_path)
-    assert payload["candidates"] == ["intervals", "point_predictions", "uncovered"]
+    assert _question(payload, "prediction_goal")["candidates"] == [
+        "intervals",
+        "point_predictions",
+        "uncovered",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -409,8 +499,8 @@ def test_metric_role_candidates_follow_the_goal(
         },
     )
     payload = frame_show(tmp_path)
-    assert payload["missing"] == ["metric_role"]
-    assert payload["candidates"] == expected
+    assert "metric_role" in payload["missing"]
+    assert _question(payload, "metric_role")["candidates"] == expected
 
 
 def test_uncovered_goal_metric_menu_is_the_full_list() -> None:
@@ -439,8 +529,12 @@ def test_probability_baseline_includes_logistic(tmp_path: Path) -> None:
         },
     )
     payload = frame_show(tmp_path)
-    assert payload["missing"] == ["baseline"]
-    assert payload["candidates"] == ["logistic", "production", "dummy"]
+    assert "baseline" in payload["missing"]
+    assert _question(payload, "baseline")["candidates"] == [
+        "logistic",
+        "production",
+        "dummy",
+    ]
 
 
 def test_unparsable_horizon_stays_missing(tmp_path: Path) -> None:
@@ -454,15 +548,16 @@ def test_unparsable_horizon_stays_missing(tmp_path: Path) -> None:
         },
     )
     payload = frame_show(tmp_path)
-    assert payload["missing"] == ["horizon"]
+    assert "horizon" in payload["missing"]
+    assert "candidates" not in _question(payload, "horizon")
 
 
 def test_partial_uncovered_block_uses_the_fallback(tmp_path: Path) -> None:
     """An uncovered goal with a blank metric cites the fallback note."""
     _journal(tmp_path, **{"Prediction goal": "uncovered"})
     payload = frame_show(tmp_path)
-    assert payload["missing"] == ["metric"]
-    assert payload["reference"] == "references/fallback.md"
+    assert payload["missing"] == ["metric", "baseline_note"]
+    assert _question(payload, "metric")["reference"] == "references/fallback.md"
 
 
 def test_frame_clear_metric_reopens_only_that_cell(tmp_path: Path) -> None:
@@ -496,7 +591,7 @@ def test_frame_clear_goal_blanks_metric_dependents(tmp_path: Path) -> None:
     assert payload["blanked"] == ["prediction_goal", "metric_role", "metric"]
     assert payload["status"] == "draft"
     shown = frame_show(tmp_path)
-    assert shown["missing"] == ["prediction_goal"]
+    assert shown["missing"] == ["prediction_goal", "metric_role", "metric"]
 
 
 def test_frame_clear_group_mean_baseline_follows_known_at_predict(
