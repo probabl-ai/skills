@@ -47,6 +47,7 @@
   the check line and the design-note gap.
 - Source the check file as `audit:01_baseline:checks.SKD003` and
   the gap as `design:01_baseline`.
+- Write `Triage: open` on each new idea file.
 - Return the digest, `audit finding` JSON, `loop locator` JSON,
   and the idea paths.
 
@@ -88,14 +89,19 @@
 - `python -m skore_skills review consent --stem 01_baseline`
   returns `proceed`.
 - `scratch/audit/01_baseline/audit.md` already exists.
+- `journal/ideas/01_baseline-calibration.md` exists with
+  `Triage: discarded`.
 - The user did not ask to re-audit.
 
 **Must do:**
 - Refresh `journal/ideas/` from the existing digest.
+- Keep that file's `Triage: discarded`.
 - Skip `cells run`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Reset that file's `Triage` to `open`.
+- Delete that idea file.
 - Re-run the skore checks.
 - Write `JOURNAL.md`.
 

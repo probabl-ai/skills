@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "13bbd0bc2d8b6675ea6babb69186bdc387c88157d4f0fac71be7685d2d622506",
+  "catalog_hash": "5ae2c708b012bf96c7a6ecb09af5824f0536a9e147299b49f11badd4aac9e23b",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -63,10 +63,10 @@
       "id": "manage-ml-backlog",
       "path": "skills/manage-ml-backlog",
       "title": "Manage ML Backlog",
-      "summary": "Record experiment outcomes and triage idea files into backlog rows.",
+      "summary": "Record experiment outcomes and triage idea files into backlog rows, keeping each file with a triage flag.",
       "category": "action",
       "subcategory": null,
-      "hash": "e2640214dce16c493ad6104c9b7ed49f6552097a66e04e4089200e0a870d1df2"
+      "hash": "7af8f788b6c747779a18eb871a3d5494c3b97e60bbd05a41a59146461051a30f"
     },
     {
       "id": "organize-ml-workspace",
@@ -93,7 +93,7 @@
       "summary": "Session owner: list installed entry skills and ask which to run.",
       "category": "meta",
       "subcategory": null,
-      "hash": "acbdac7903980caab03634bf38449928d9e0f1fb6b402752490efc8e2fcbbdfc"
+      "hash": "2c61c5476668886e90b059585029b49d5c6c3f4930a9a527c9e6148b8518f338"
     },
     {
       "id": "review-ml-choices",
@@ -111,7 +111,7 @@
       "summary": "Gate the skore-check audit, then write one idea file per candidate.",
       "category": "meta",
       "subcategory": null,
-      "hash": "bf5a904409a79a1d7f25588ebcfe9f614e73ae324655821cb1d2b4ada98bcd7d"
+      "hash": "521e69eee58bec20a96f8888b7b9ba711d5250429adb01639647720e6e88990e"
     },
     {
       "id": "shape-user-idea",
@@ -120,7 +120,7 @@
       "summary": "Shape a user idea or a named artifact into one idea file after they confirm.",
       "category": "meta",
       "subcategory": null,
-      "hash": "eed8bfc6e988ef46a8e0f94b1e025a3383467148060417b770eb517610df6acc"
+      "hash": "53a4189adebaae8d4a070d20152adcb92bb24c8d3d5cdd88699161138cbd6114"
     },
     {
       "id": "search-ml-literature",
@@ -129,7 +129,7 @@
       "summary": "Search scientific and technical sources and write one idea file for the direction the user confirms.",
       "category": "meta",
       "subcategory": null,
-      "hash": "66559d06c9164e794f5b3d8db27cf6b0f63f5cdab895d1dfac66fac87403da0a"
+      "hash": "f13c281f07d91f50d98d3a6ee29e40926b31651b4953089e117573252ccba14c"
     },
     {
       "id": "setup-ml-project",

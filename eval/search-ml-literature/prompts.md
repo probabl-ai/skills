@@ -41,8 +41,8 @@
 - Restate the direction and wait for yes. The user already said
   yes in this prompt, so write the file.
 - Write `journal/ideas/<slug>.md` with Source
-  `literature: https://example.invalid/censored-models` and
-  Experiment `01_baseline`.
+  `literature: https://example.invalid/censored-models`,
+  Experiment `01_baseline`, and `Triage: open`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).

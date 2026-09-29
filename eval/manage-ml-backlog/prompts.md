@@ -45,10 +45,12 @@
 **Must do:**
 - Append a stable `B3` row. Item comes from the file's Question.
   Source is copied verbatim.
-- Delete `journal/ideas/01_baseline-calibration.md`.
+- Set `Triage: promoted` on
+  `journal/ideas/01_baseline-calibration.md` and keep the file.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Delete `journal/ideas/01_baseline-calibration.md`.
 - Silently pick an existing Backlog row.
 - Start `build-ml-pipeline`.
 - Write a design note in this turn.
@@ -261,3 +263,154 @@
 - Start a literature search or a shaping questionnaire. Offering
   to shape an idea or search the literature, without loading
   either skill, is required.
+
+---
+
+## CASE_10 — Discard keeps the file and adds no row
+
+**User prompt:**
+> What should we try next?
+
+**Assumed workspace state:**
+- `journal/ideas/01_baseline-calibration.md` exists.
+- Its `Triage` line is missing, so it is open.
+- Its Source is `audit:01_baseline:checks.SKD003`.
+- That Source is not already a Backlog row.
+- The highest Backlog index is `B2`.
+- The user answers discard.
+
+**Must do:**
+- Set `Triage: discarded` on
+  `journal/ideas/01_baseline-calibration.md`.
+- Keep that file.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Append a Backlog row.
+- Delete the idea file.
+- Write a design note.
+
+---
+
+## CASE_11 — Set aside keeps the file and adds no row
+
+**User prompt:**
+> What should we try next?
+
+**Assumed workspace state:**
+- `journal/ideas/01_baseline-calibration.md` exists.
+- Its `Triage` line is `open`.
+- Its Source is `audit:01_baseline:checks.SKD003`.
+- That Source is not already a Backlog row.
+- The highest Backlog index is `B2`.
+- The user answers set aside.
+
+**Must do:**
+- Set `Triage: aside` on
+  `journal/ideas/01_baseline-calibration.md`.
+- Keep that file.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Append a Backlog row.
+- Delete the idea file.
+- Write a design note.
+
+---
+
+## CASE_12 — Already-backlogged Source is marked promoted
+
+**User prompt:**
+> What should we try next?
+
+**Assumed workspace state:**
+- `journal/ideas/01_baseline-calibration.md` exists.
+- Its `Triage` line is missing, so it is open.
+- Its Source is `audit:01_baseline:checks.SKD003`.
+- That Source is already Backlog row `B2`.
+
+**Must do:**
+- Set `Triage: promoted` on
+  `journal/ideas/01_baseline-calibration.md`.
+- Keep that file.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask promote / discard / set aside for this file.
+- Append another Backlog row.
+- Delete the idea file.
+
+---
+
+## CASE_13 — Default pass skips a discarded file
+
+**User prompt:**
+> What should we try next?
+
+**Assumed workspace state:**
+- `journal/ideas/01_baseline-calibration.md` has `Triage: discarded`.
+- `journal/ideas/monotonic.md` has `Triage: open`.
+- Neither Source is already a Backlog row.
+- The user has not answered yet.
+
+**Must do:**
+- Ask promote / discard / set aside only for
+  `journal/ideas/monotonic.md`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask that question for `journal/ideas/01_baseline-calibration.md`.
+- Delete either idea file.
+- Append a Backlog row before the user answers.
+
+---
+
+## CASE_14 — Revisiting a discarded idea can promote it
+
+**User prompt:**
+> Look again at the discarded calibration idea and promote it.
+
+**Assumed workspace state:**
+- `journal/ideas/01_baseline-calibration.md` has `Triage: discarded`.
+- No idea file is `open`.
+- Its Source is `audit:01_baseline:checks.SKD003`.
+- That Source is not already a Backlog row.
+- The highest Backlog index is `B2`.
+
+**Must do:**
+- Set `Triage: promoted` on
+  `journal/ideas/01_baseline-calibration.md`.
+- Keep that file.
+- Append a stable `B3` row. Item comes from the file's Question.
+  Source is copied verbatim.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Delete the idea file.
+- Leave `Triage` as `discarded`.
+- Renumber `B1` or `B2`.
+
+---
+
+## CASE_15 — No open ideas names the tagged counts
+
+**User prompt:**
+> What should we try next?
+
+**Assumed workspace state:**
+- `journal/ideas/01_baseline-calibration.md` has `Triage: promoted`.
+- `journal/ideas/monotonic.md` has `Triage: discarded`.
+- `journal/ideas/split.md` has `Triage: aside`.
+- No idea file is `open`.
+- The user has not picked a file to revisit.
+
+**Must do:**
+- Say in one line how many ideas are promoted, discarded, and
+  set aside.
+- Offer to revisit. Do not retag until the user picks a file.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask promote / discard / set aside before the user picks a file.
+- Delete any idea file.
+- Append a Backlog row.

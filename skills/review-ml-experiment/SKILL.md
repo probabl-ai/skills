@@ -57,8 +57,10 @@ reading this report and writing follow-up ideas — not skill ids,
    not invent papers, metrics, or a winner.
 6. Write one file per candidate at
    `journal/ideas/<stem>-<slug>.md` with Experiment, Source
-   (`audit:<stem>:checks.<code>` or `design:<stem>`), Question,
-   Why now, What changes, Open gaps. No acceptance criteria.
+   (`audit:<stem>:checks.<code>` or `design:<stem>`), Triage
+   `open`, Question, Why now, What changes, Open gaps. No
+   acceptance criteria. On a refresh, keep an existing file's
+   `Triage` value. A new candidate is `open`.
 7. Return the digest, JSON `finding` from
    `python -m skore_skills audit finding --stem <stem>`, the
    locator from `python -m skore_skills loop locator --stem <stem>`,

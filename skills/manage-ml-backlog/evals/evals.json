@@ -26,12 +26,13 @@
       "id": 2,
       "title": "Promote one idea file",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/ideas/01_baseline-calibration.md` exists.\n- Its Source is `audit:01_baseline:checks.SKD003`.\n- That Source is not already a Backlog row.\n- The highest Backlog index is `B2`.\n- The user answers promote.]\n\nWhat should we try next?",
-      "expected_output": "Behavioural response satisfying: - Append a stable `B3` row. Item comes from the file's Question. Source is copied verbatim. - Delete `journal/ideas/01_baseline-calibration.md`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Silently pick an existing Backlog row. - Start `build-ml-pipeline`.",
+      "expected_output": "Behavioural response satisfying: - Append a stable `B3` row. Item comes from the file's Question. Source is copied verbatim. - Set `Triage: promoted` on `journal/ideas/01_baseline-calibration.md` and keep the file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Delete `journal/ideas/01_baseline-calibration.md`. - Silently pick an existing Backlog row.",
       "files": [],
       "expectations": [
         "Append a stable `B3` row. Item comes from the file's Question. Source is copied verbatim.",
-        "Delete `journal/ideas/01_baseline-calibration.md`.",
+        "Set `Triage: promoted` on `journal/ideas/01_baseline-calibration.md` and keep the file.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Delete `journal/ideas/01_baseline-calibration.md`.",
         "The response does NOT: Silently pick an existing Backlog row.",
         "The response does NOT: Start `build-ml-pipeline`.",
         "The response does NOT: Write a design note in this turn.",
@@ -179,6 +180,114 @@
         "The response does NOT: Fabricate a `B1` row.",
         "The response does NOT: Write a design note.",
         "The response does NOT: Start a literature search or a shaping questionnaire. Offering to shape an idea or search the literature, without loading either skill, is required."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 10,
+      "title": "Discard keeps the file and adds no row",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/ideas/01_baseline-calibration.md` exists.\n- Its `Triage` line is missing, so it is open.\n- Its Source is `audit:01_baseline:checks.SKD003`.\n- That Source is not already a Backlog row.\n- The highest Backlog index is `B2`.\n- The user answers discard.]\n\nWhat should we try next?",
+      "expected_output": "Behavioural response satisfying: - Set `Triage: discarded` on `journal/ideas/01_baseline-calibration.md`. - Keep that file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Append a Backlog row. - Delete the idea file.",
+      "files": [],
+      "expectations": [
+        "Set `Triage: discarded` on `journal/ideas/01_baseline-calibration.md`.",
+        "Keep that file.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Append a Backlog row.",
+        "The response does NOT: Delete the idea file.",
+        "The response does NOT: Write a design note."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 11,
+      "title": "Set aside keeps the file and adds no row",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/ideas/01_baseline-calibration.md` exists.\n- Its `Triage` line is `open`.\n- Its Source is `audit:01_baseline:checks.SKD003`.\n- That Source is not already a Backlog row.\n- The highest Backlog index is `B2`.\n- The user answers set aside.]\n\nWhat should we try next?",
+      "expected_output": "Behavioural response satisfying: - Set `Triage: aside` on `journal/ideas/01_baseline-calibration.md`. - Keep that file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Append a Backlog row. - Delete the idea file.",
+      "files": [],
+      "expectations": [
+        "Set `Triage: aside` on `journal/ideas/01_baseline-calibration.md`.",
+        "Keep that file.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Append a Backlog row.",
+        "The response does NOT: Delete the idea file.",
+        "The response does NOT: Write a design note."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 12,
+      "title": "Already-backlogged Source is marked promoted",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/ideas/01_baseline-calibration.md` exists.\n- Its `Triage` line is missing, so it is open.\n- Its Source is `audit:01_baseline:checks.SKD003`.\n- That Source is already Backlog row `B2`.]\n\nWhat should we try next?",
+      "expected_output": "Behavioural response satisfying: - Set `Triage: promoted` on `journal/ideas/01_baseline-calibration.md`. - Keep that file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask promote / discard / set aside for this file. - Append another Backlog row.",
+      "files": [],
+      "expectations": [
+        "Set `Triage: promoted` on `journal/ideas/01_baseline-calibration.md`.",
+        "Keep that file.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Ask promote / discard / set aside for this file.",
+        "The response does NOT: Append another Backlog row.",
+        "The response does NOT: Delete the idea file."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 13,
+      "title": "Default pass skips a discarded file",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/ideas/01_baseline-calibration.md` has `Triage: discarded`.\n- `journal/ideas/monotonic.md` has `Triage: open`.\n- Neither Source is already a Backlog row.\n- The user has not answered yet.]\n\nWhat should we try next?",
+      "expected_output": "Behavioural response satisfying: - Ask promote / discard / set aside only for `journal/ideas/monotonic.md`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask that question for `journal/ideas/01_baseline-calibration.md`. - Delete either idea file.",
+      "files": [],
+      "expectations": [
+        "Ask promote / discard / set aside only for `journal/ideas/monotonic.md`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Ask that question for `journal/ideas/01_baseline-calibration.md`.",
+        "The response does NOT: Delete either idea file.",
+        "The response does NOT: Append a Backlog row before the user answers."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 14,
+      "title": "Revisiting a discarded idea can promote it",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/ideas/01_baseline-calibration.md` has `Triage: discarded`.\n- No idea file is `open`.\n- Its Source is `audit:01_baseline:checks.SKD003`.\n- That Source is not already a Backlog row.\n- The highest Backlog index is `B2`.]\n\nLook again at the discarded calibration idea and promote it.",
+      "expected_output": "Behavioural response satisfying: - Set `Triage: promoted` on `journal/ideas/01_baseline-calibration.md`. - Keep that file. - Append a stable `B3` row. Item comes from the file's Question. Source is copied verbatim. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Delete the idea file. - Leave `Triage` as `discarded`.",
+      "files": [],
+      "expectations": [
+        "Set `Triage: promoted` on `journal/ideas/01_baseline-calibration.md`.",
+        "Keep that file.",
+        "Append a stable `B3` row. Item comes from the file's Question. Source is copied verbatim.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Delete the idea file.",
+        "The response does NOT: Leave `Triage` as `discarded`.",
+        "The response does NOT: Renumber `B1` or `B2`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 15,
+      "title": "No open ideas names the tagged counts",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `journal/ideas/01_baseline-calibration.md` has `Triage: promoted`.\n- `journal/ideas/monotonic.md` has `Triage: discarded`.\n- `journal/ideas/split.md` has `Triage: aside`.\n- No idea file is `open`.\n- The user has not picked a file to revisit.]\n\nWhat should we try next?",
+      "expected_output": "Behavioural response satisfying: - Say in one line how many ideas are promoted, discarded, and set aside. - Offer to revisit. Do not retag until the user picks a file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask promote / discard / set aside before the user picks a file. - Delete any idea file.",
+      "files": [],
+      "expectations": [
+        "Say in one line how many ideas are promoted, discarded, and set aside.",
+        "Offer to revisit. Do not retag until the user picks a file.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Ask promote / discard / set aside before the user picks a file.",
+        "The response does NOT: Delete any idea file.",
+        "The response does NOT: Append a Backlog row."
       ],
       "tools": false,
       "sandbox": [],

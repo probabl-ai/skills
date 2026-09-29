@@ -2,7 +2,8 @@
 name: manage-ml-backlog
 description: >
   Canonical backlog loop step. Record an experiment outcome in
-  History and triage idea files into Backlog rows. Also
+  History and triage idea files into Backlog rows. Keep each
+  idea file and mark it promoted, discarded, or aside. Also
   supports the model-entry selection mode: show real B<N> rows
   supplied by the deterministic CLI and consume one into a
   proposal. Trigger after audit, when a run finishes, when the
@@ -156,15 +157,30 @@ locator.
    `*.html`, and do not paste iframes (site build injects those). If
    no subsection has a source, skip the Results section.
 4. Idea triage, separate from record-outcome. Read
-   `journal/ideas/*.md`. Drop a file whose Source is already a
-   Backlog row. For each remaining file, ask promote / dismiss /
-   leave. Promote appends a stable `B<N>` row (Item from Question,
-   Source copied verbatim) and deletes the file. Dismiss deletes
-   the file. Leave keeps it. Do not create a design note here.
-   An empty folder is a one-line skip: there are no idea files to
-   triage, and it does not fabricate `B1`. The only follow-up is
-   offering to shape an idea or search the literature when those
-   skills are installed. Do not load either skill, and do not start
+   `journal/ideas/*.md`. A file's `Triage` line is `open`,
+   `promoted`, `discarded`, or `aside`. A missing line is
+   `open`. An `open` file whose Source is already a Backlog
+   row is set to `promoted` without asking, and no duplicate
+   row is appended. Ask the other `open` files: promote /
+   discard / set aside. Write that value on the `Triage`
+   line and keep the file. Promote appends a stable `B<N>`
+   row (Item from Question, Source copied verbatim) and sets
+   `promoted`. Discard sets `discarded` and adds no row. Set
+   aside sets `aside` and adds no row.
+   `promoted`, `discarded`, and `aside` leave the default
+   queue; a later pass does not ask about them. Do not
+   create a design note here. Do not delete an idea file.
+   Changing `Triage` does not remove or renumber a Backlog
+   row. An empty folder is a one-line skip: there are no
+   idea files to triage, and it does not fabricate `B1`.
+   When no file is `open` and tagged files remain, say in
+   one line how many are promoted, discarded, and set aside,
+   and offer to revisit. Do not retag until the user picks a
+   file. On revisit, the same three choices apply. Promoting
+   then appends `B<N>` only when its Source is not already a
+   row. The only other follow-up is offering to shape an
+   idea or search the literature when those skills are
+   installed. Do not load either skill, and do not start
    a search or a shaping menu, until the user picks one. Missing
    skill → one-line skip; do not invent that skill's search or
    shaping steps. After the user picks, that skill writes the idea
@@ -192,6 +208,7 @@ locator.
 - Do not paste a `JOURNAL.md` body or recreate the index from
   memory.
 - Do not mark `done` while smoke is red.
+- Do not delete an idea file. Triage writes its `Triage` line.
 - Design approval is owned by `model-ml-pipeline`; this skill only
   returns a confirmed proposal or selected Backlog row.
 

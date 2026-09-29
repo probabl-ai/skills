@@ -61,6 +61,7 @@ data-science terms — not skill ids or the wrapper CLI.
 # <slug>
 - Experiment: <last History stem, or n/a>
 - Source: user
+- Triage: open
 - Question:
 - Why now:
 - What changes:

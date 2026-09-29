@@ -17,8 +17,8 @@
 - Walk what to learn, why now, and what changes.
 - Restate the idea and wait for an explicit yes before writing.
 - On yes, write `journal/ideas/<slug>.md` with Source `user`,
-  Experiment `01_baseline`, Question, Why now, What changes, and
-  Open gaps.
+  Experiment `01_baseline`, `Triage: open`, Question, Why now,
+  What changes, and Open gaps.
 - Return that path.
 
 **Must NOT do:**

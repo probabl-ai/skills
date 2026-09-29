@@ -140,7 +140,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 
 | Skill | Description |
 | --- | --- |
-| [manage-ml-backlog](skills/manage-ml-backlog/SKILL.md) | Record experiment outcomes and triage idea files into backlog rows. |
+| [manage-ml-backlog](skills/manage-ml-backlog/SKILL.md) | Record experiment outcomes and triage idea files into backlog rows, keeping each file with a triage flag. |
 | [shape-user-idea](skills/shape-user-idea/SKILL.md) | Shape a user idea or a named artifact into one idea file after they confirm. |
 | [search-ml-literature](skills/search-ml-literature/SKILL.md) | Search scientific and technical sources and write one idea file for the direction the user confirms. |
 
