@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "4c229cd018d15b6bc8a6a920fa0248d928736125d51e9684e6ee4a7f589500ef",
+  "catalog_hash": "ab326c10c672038598758e469b1b4f8e505aa6e541f5c0bfbfb756888681b7ea",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -30,7 +30,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "32c09652db38ca020e2925c20210810ff7a87b07b7b5c3eab71fa0f1e570c62d"
+      "hash": "5b190d9a7dbaa49323d068c37cfcd4e4e1f0a6eaea439cf115416eb2a4e78e9d"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "ee7244cf9de53ba3982cce989120b2a005e9b87ce72f676806ebf055d97b0959"
+      "hash": "f69b915e04c69bdce859c92ffa7aa7284f6f21e9fc0723bab4ad3b7af9f75db5"
     },
     {
       "id": "smoke-test-ml-pipeline",

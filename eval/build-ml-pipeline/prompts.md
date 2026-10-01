@@ -607,3 +607,50 @@ violated.
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Declare `build_learner` or pick a splitter.
+
+---
+
+## CASE_22 — Locked F2 attaches with_scoring
+
+**User prompt:**
+> Write the baseline learner. The comparison metric is F2.
+
+**Assumed workspace state:**
+- `frame show` returned `proceed`. `translation.metric` is `F2`.
+  Binary classification, IID, `translation.splitter` `KFold`,
+  `n_splits` 5. No row-aligned metric kwargs.
+- No existing `src/<pkg>/pipeline.py`.
+
+**Must do:**
+- Attach `.skb.with_scoring(...)` on the prediction DataOp after
+  prediction and before `.skb.make_learner()`.
+- Tick the pre-flight box for the non-default score.
+- Keep `cv=KFold(n_splits=5)` on `mark_as_X`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Defer the F2 scorer to evaluate.
+- Call `report.metrics.add`.
+- Pass `scoring=` to `skore.evaluate`.
+- Skip `with_scoring` because F2 has no `sample_weight`.
+
+---
+
+## CASE_23 — Default MAE attaches no scorer
+
+**User prompt:**
+> Write the baseline learner. Compare on MAE.
+
+**Assumed workspace state:**
+- `frame show` returned `proceed`. `translation.metric` is `MAE`.
+  Tabular regression, IID, `KFold`, `n_splits` 5.
+- No existing `src/<pkg>/pipeline.py`.
+
+**Must do:**
+- Declare the graph and `cv=KFold(n_splits=5)` on `mark_as_X`.
+- Mark the non-default-score pre-flight box n/a.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Call `.skb.with_scoring`.
+- Register a scorer for MAE.

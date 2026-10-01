@@ -116,10 +116,16 @@ to `KFold`.
 No `Stratified*` for class imbalance. It compresses across-fold
 variance.
 
-The headline is `translation.metric`. If build attached
-`.skb.with_scoring(...)`, inspect `report.metrics.score()`.
-`skore.evaluate` has no `scoring=` argument. A metric or a
-`sample_weight` that belongs on the DataOp goes back to build
+The headline is `translation.metric`. A name on the skore
+default list in `build-ml-pipeline` needs no scorer. Any other
+name on a `SkrubLearner` must already be
+`.skb.with_scoring(...)` on the prediction DataOp. If it is
+not, return to `build-ml-pipeline` before `skore.evaluate`.
+Do not cover that headline with `report.metrics.add`. When
+the scorer is attached, inspect `report.metrics.score()`.
+`report.metrics.add` is for a sklearn-style report, or for an
+extra metric the user asks for on that kind of report.
+`skore.evaluate` has no `scoring=` argument
 (`references/custom-metrics.md`).
 
 An extra check the user asks for after the lock:

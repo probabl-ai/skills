@@ -327,6 +327,8 @@ Pre-flight (build-ml-pipeline):
 - [ ] Layer 1 has no horizon, lag, or task filter
 - [ ] cv on mark_as_X matches translation
       (date class | GroupKFold | KFold | no cv on holdout)
+- [ ] Non-default translation.metric uses with_scoring
+      before make_learner (n/a for a listed skore default)
 - [ ] data_dir_preview=None; no path literal in pipeline.py
 ```
 

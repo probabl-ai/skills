@@ -105,11 +105,12 @@ installed skore version — the dispatch table can evolve.
 
 ## Custom metrics on a SkrubLearner
 
-When a custom metric needs DataOp-derived metadata such as
-per-row sample weights, attach it to the prediction node with
-`.skb.with_scoring(...)` before `.skb.make_learner()`. The metric
-kwargs must be DataOps aligned with the marked X rows. They are
-not CV `split_kwargs`.
+A locked comparison metric that is not a skore default attaches
+with `.skb.with_scoring(...)` before `.skb.make_learner()`,
+whether or not it needs row metadata. Row-aligned kwargs such
+as per-row sample weights are DataOps aligned with the marked X
+rows. They are not CV `split_kwargs`, and they do not choose
+the route. See `references/custom-metrics.md`.
 
 After `skore.evaluate`, inspect these scorers through
 `report.metrics.score()`. They do not become custom rows in

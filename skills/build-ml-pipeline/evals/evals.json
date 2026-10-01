@@ -398,6 +398,43 @@
       "tools": false,
       "sandbox": [],
       "expect_files": []
+    },
+    {
+      "id": 22,
+      "title": "Locked F2 attaches with_scoring",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `frame show` returned `proceed`. `translation.metric` is `F2`.\n  Binary classification, IID, `translation.splitter` `KFold`,\n  `n_splits` 5. No row-aligned metric kwargs.\n- No existing `src/<pkg>/pipeline.py`.]\n\nWrite the baseline learner. The comparison metric is F2.",
+      "expected_output": "Behavioural response satisfying: - Attach `.skb.with_scoring(...)` on the prediction DataOp after prediction and before `.skb.make_learner()`. - Tick the pre-flight box for the non-default score. - Keep `cv=KFold(n_splits=5)` on `mark_as_X`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Defer the F2 scorer to evaluate. - Call `report.metrics.add`.",
+      "files": [],
+      "expectations": [
+        "Attach `.skb.with_scoring(...)` on the prediction DataOp after prediction and before `.skb.make_learner()`.",
+        "Tick the pre-flight box for the non-default score.",
+        "Keep `cv=KFold(n_splits=5)` on `mark_as_X`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Defer the F2 scorer to evaluate.",
+        "The response does NOT: Call `report.metrics.add`.",
+        "The response does NOT: Pass `scoring=` to `skore.evaluate`.",
+        "The response does NOT: Skip `with_scoring` because F2 has no `sample_weight`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 23,
+      "title": "Default MAE attaches no scorer",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `frame show` returned `proceed`. `translation.metric` is `MAE`.\n  Tabular regression, IID, `KFold`, `n_splits` 5.\n- No existing `src/<pkg>/pipeline.py`.]\n\nWrite the baseline learner. Compare on MAE.",
+      "expected_output": "Behavioural response satisfying: - Declare the graph and `cv=KFold(n_splits=5)` on `mark_as_X`. - Mark the non-default-score pre-flight box n/a. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Call `.skb.with_scoring`. - Register a scorer for MAE.",
+      "files": [],
+      "expectations": [
+        "Declare the graph and `cv=KFold(n_splits=5)` on `mark_as_X`.",
+        "Mark the non-default-score pre-flight box n/a.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Call `.skb.with_scoring`.",
+        "The response does NOT: Register a scorer for MAE."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
     }
   ]
 }

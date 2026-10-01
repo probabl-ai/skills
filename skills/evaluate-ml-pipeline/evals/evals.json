@@ -455,6 +455,42 @@
       "tools": false,
       "sandbox": [],
       "expect_files": []
+    },
+    {
+      "id": 24,
+      "title": "Missing locked F2 returns to build",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The post-smoke answer was Evaluate in this turn.\n- The learner is a SkrubLearner. `pipeline.py` has no\n  `with_scoring`.\n- `frame show` returned `proceed` with `translation.metric` `F2`.\n- Binary classification. The X marker has `cv=KFold(n_splits=5)`.]\n\nEvaluate 09_classifier. The locked comparison metric is F2.",
+      "expected_output": "Behavioural response satisfying: - Return to build before `skore.evaluate` so F2 is attached with `.skb.with_scoring(...)` before `.skb.make_learner()`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Call `skore.evaluate` while the locked scorer is missing. - Cover the locked F2 with `report.metrics.add`.",
+      "files": [],
+      "expectations": [
+        "Return to build before `skore.evaluate` so F2 is attached with `.skb.with_scoring(...)` before `.skb.make_learner()`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Call `skore.evaluate` while the locked scorer is missing.",
+        "The response does NOT: Cover the locked F2 with `report.metrics.add`.",
+        "The response does NOT: Pass `scoring=` to `skore.evaluate`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 25,
+      "title": "Attached F2 is read with metrics.score",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The post-smoke answer was Evaluate in this turn.\n- The learner is a SkrubLearner. The prediction DataOp already\n  has `.skb.with_scoring(...)` for F2, before `make_learner`.\n- `frame show` returned `proceed` with `translation.metric` `F2`.\n- Binary classification. The X marker has `cv=KFold(n_splits=5)`.\n- `policy.skore_mode` is `local`.]\n\nEvaluate 09_classifier. The locked comparison metric is F2.",
+      "expected_output": "Behavioural response satisfying: - Call `skore.evaluate(learner, data={...})` without `splitter=`. - Inspect the scorer with `report.metrics.score()`, then `project.put(...)`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Send the learner back to build. - Call `report.metrics.add` for the locked F2.",
+      "files": [],
+      "expectations": [
+        "Call `skore.evaluate(learner, data={...})` without `splitter=`.",
+        "Inspect the scorer with `report.metrics.score()`, then `project.put(...)`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Send the learner back to build.",
+        "The response does NOT: Call `report.metrics.add` for the locked F2.",
+        "The response does NOT: Pass `scoring=` to `skore.evaluate`.",
+        "The response does NOT: Claim the DataOp scorer appears in `metrics.summarize()`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
     }
   ]
 }

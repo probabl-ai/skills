@@ -699,5 +699,56 @@ violated.
 - Write a `skore.evaluate` call. Naming it in a STOP sentence
   is allowed.
 
+---
+
+## CASE_24 — Missing locked F2 returns to build
+
+**User prompt:**
+> Evaluate 09_classifier. The locked comparison metric is F2.
+
+**Assumed workspace state:**
+- The post-smoke answer was Evaluate in this turn.
+- The learner is a SkrubLearner. `pipeline.py` has no
+  `with_scoring`.
+- `frame show` returned `proceed` with `translation.metric` `F2`.
+- Binary classification. The X marker has `cv=KFold(n_splits=5)`.
+
+**Must do:**
+- Return to build before `skore.evaluate` so F2 is attached with
+  `.skb.with_scoring(...)` before `.skb.make_learner()`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Call `skore.evaluate` while the locked scorer is missing.
+- Cover the locked F2 with `report.metrics.add`.
+- Pass `scoring=` to `skore.evaluate`.
+
+---
+
+## CASE_25 — Attached F2 is read with metrics.score
+
+**User prompt:**
+> Evaluate 09_classifier. The locked comparison metric is F2.
+
+**Assumed workspace state:**
+- The post-smoke answer was Evaluate in this turn.
+- The learner is a SkrubLearner. The prediction DataOp already
+  has `.skb.with_scoring(...)` for F2, before `make_learner`.
+- `frame show` returned `proceed` with `translation.metric` `F2`.
+- Binary classification. The X marker has `cv=KFold(n_splits=5)`.
+- `policy.skore_mode` is `local`.
+
+**Must do:**
+- Call `skore.evaluate(learner, data={...})` without `splitter=`.
+- Inspect the scorer with `report.metrics.score()`, then
+  `project.put(...)`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Send the learner back to build.
+- Call `report.metrics.add` for the locked F2.
+- Pass `scoring=` to `skore.evaluate`.
+- Claim the DataOp scorer appears in `metrics.summarize()`.
+
 
 ---

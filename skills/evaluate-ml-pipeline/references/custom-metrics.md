@@ -1,18 +1,21 @@
 # Custom metric routing
 
-Custom metrics have two supported routes. Pick by estimator and by
-where any extra keyword arguments come from. Confirm every signature
-with `python -m skore_skills api get`.
+Custom metrics have two supported routes. Pick by estimator.
+Extra keyword arguments travel with that route; they do not
+choose it. Confirm every signature with
+`python -m skore_skills api get`.
 
 | Need | Route | Read the result with |
 |---|---|---|
-| Metric computed from a sklearn-style report | `report.metrics.add(...)` | `report.metrics.summarize(...)` |
-| `SkrubLearner` metric, especially with row-aligned metadata | prediction DataOp `.skb.with_scoring(...)` | `report.metrics.score()` |
+| sklearn-style report, or an extra metric asked for on that report | `report.metrics.add(...)` | `report.metrics.summarize(...)` |
+| `SkrubLearner`, including the locked comparison metric | prediction DataOp `.skb.with_scoring(...)` before `make_learner` | `report.metrics.score()` |
 
 Neither route is a `scoring=` argument to `skore.evaluate`; that
 argument does not exist. CV metadata is separate:
 `split_kwargs` belongs on `mark_as_X`, while metric kwargs belong
-to `metrics.add` or `with_scoring`.
+to `metrics.add` or `with_scoring`. On a `SkrubLearner`, the
+locked comparison metric uses `with_scoring` whether or not it
+needs those kwargs.
 
 ## Report registry — add before `Project.put`
 
