@@ -1,42 +1,28 @@
 ---
 name: smoke-test-ml-pipeline
 description: >
-  Owns the smoke test contract for an ML experiment: a small,
-  diagnostic-by-construction pytest that fits the experiment's
-  learner on a portion of the real `data/` source and predicts
-  on a *disjoint* portion that deliberately carries **no
-  pre-history buffer**. The assertion is structural — the number
-  of predictions must equal the number of rows in the predict
-  grid. A pipeline that loads-then-features-then-splits will
-  silently drop the cold-start rows of the predict slice and the
-  test will fail with a row-count mismatch; a pipeline that marks
-  X early and references upstream history nodes from feature
-  steps will pass trivially. The smoke test is the executable
-  proof of the X-marker placement rule from `build-ml-pipeline`.
+  Owns one experiment's smoke test: a small pytest that fits on
+  part of real `data/` and predicts on a disjoint slice with no
+  pre-history buffer. Prediction count must equal predict-grid
+  rows.
 
-  TRIGGER when: an approved experiment needs its smoke test;
-  `pytest tests/smoke/`
-  is failing on row count; the user asks "why is the smoke test
-  failing?"; a pipeline edit in `build-ml-pipeline` needs an
-  executable proof; an experiment script changes the pipeline
-  shape and the matching smoke test needs revisiting.
+  TRIGGER when an approved experiment needs its smoke test,
+  `pytest tests/smoke/` fails on row count, the user asks why
+  the smoke test is failing, a pipeline edit needs proof, or
+  the experiment script changes pipeline shape.
 
-  STOP when `python -m skore_skills status` shows no scaffold
-  (`has_src` and `has_journal` both false), no approved design,
-  or no matching experiment script: explain the missing fact and
-  send the user to setup/triage or stay in `build-ml-pipeline`.
-  Do not require `git`. Parent skill is `build-ml-pipeline`
-  (loaded after the declaration). Direct "why is smoke failing?"
-  still this skill. This action does not cover regression tests
-  or CV interpretation. Do not write `skore.evaluate`.
+  STOP when status shows no scaffold, no approved design, or no
+  matching experiment script: explain and send the user to
+  setup/triage or stay in `build-ml-pipeline`. Do not require
+  git. "Why is smoke failing?" stays here. This action does not
+  cover regression tests or CV interpretation. Do not write
+  `skore.evaluate`.
 
-  HOW TO USE: run `status` first. Read the matching experiment's
-  `journal/NN_*.md` and `experiments/NN_*.py` for env-dict keys.
-  Write or update `tests/smoke/test_NN_*.py`, then run
-  `python -m skore_skills smoke run --stem <stem>`. Red JSON is the
-  signal to modify the pipeline
-  in `build-ml-pipeline`; do not loosen the assertion. Do not
-  write the design note or run CV.
+  HOW TO USE: `status`, read the journal and experiment, write
+  `tests/smoke/test_NN_*.py`, then
+  `python -m skore_skills smoke run --stem <stem>`. Red JSON
+  means fix the pipeline in `build-ml-pipeline`. Do not loosen
+  the assertion.
 ---
 
 # Smoke Test ML Pipeline

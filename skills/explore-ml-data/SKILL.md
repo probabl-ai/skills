@@ -1,38 +1,27 @@
 ---
 name: explore-ml-data
 description: >
-  Owns data understanding BEFORE any model is designed. Places
-  `data_analysis/data_analysis.py` (TableReport plus duplicates,
-  target, bivariate, leakage), runs `python -m skore_skills cells
-  run`, dumps agent facts under `scratch/data_analysis/`, then
-  writes `data_analysis/data_analysis.md` and JOURNAL § Data
-  understanding. Never designs the model, never edits `src/<pkg>/`,
-  never modifies raw data files.
+  Owns data understanding before any model is designed. Place
+  `data_analysis/data_analysis.py`, run
+  `python -m skore_skills cells run`, dump facts under
+  `scratch/data_analysis/`, then write `data_analysis.md` and
+  JOURNAL § Data understanding. Never design the model, edit
+  `src/<pkg>/`, or modify raw data files.
 
-  TRIGGER — any of:
-  - The user asks to "explore the data", "do an EDA", "profile the
-    dataset", "what does the data look like", "understand the data".
-  - Triage sent the user here before modeling
-    (`status.data_analysis` missing).
-  - A new or changed data source needs (re-)understanding.
-  - The user asks to add analysis to an already-recorded EDA
-    (refresh: edit the `.py`, re-run, overwrite the `.md`).
-  - A methodology concern on the table (“is this leakage”,
-    “research this”) while EDA is already recorded.
+  TRIGGER when the user asks to explore, profile, or understand
+  the data; triage sent them here (`status.data_analysis`
+  missing); a data source changed; they want to refresh a
+  recorded EDA; or a methodology concern (leakage, research)
+  arises on a recorded EDA.
 
-  STOP when `python -m skore_skills status` shows no scaffold or no
-  data: explain and send the user to setup or triage. Also stop when
-  the request is not raw-data exploration, or when exploratory data
-  analysis is already recorded and no refresh and no methodology
-  concern was requested.
+  STOP when status shows no scaffold or no data (send to setup
+  or triage), the request is not raw-data exploration, or EDA
+  is recorded with no refresh and no methodology concern.
 
-  HOW TO USE: G-TABULAR then add pandas/polars + skrub + matplotlib
-  + seaborn via `add-python-package`. Infer or ask the target.
-  Load `plot-ml-figure` if installed, copy
-  `templates/data_analysis.py` if it fits then edit (only the
-  live path), `cells run`, copy `templates/facts.py` to scratch,
-  author `data_analysis.md`, then ask keep-exploring vs close.
-  Resolve symbols via `api get`.
+  HOW TO USE: G-TABULAR, add the tabular stack via
+  `add-python-package`, infer or ask the target, load
+  `plot-ml-figure` if installed, copy the template, `cells run`,
+  write facts and the markdown, then ask keep-exploring vs close.
 ---
 
 # Explore ML Data

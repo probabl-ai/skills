@@ -3,25 +3,23 @@ name: setup-python-env
 description: >
   Bootstrap a Python environment manager and three named envs
   (default runtime, agent tools, composed dev). Detect with
-  `python -m skore_skills env detect`, persist manager and
+  `python -m skore_skills env detect`, persist the manager and
   `env.managed`, then `env init --manager`, `env sync --execute`,
-  install Skore for a recorded `hub` or `mlflow` destination
-  (plain Skore when that destination is unset or `local`), and
-  `env verify --execute`. Does not add other stage ML libraries.
+  install Skore for a recorded hub or mlflow destination (plain
+  Skore when unset or local), and `env verify --execute`. Does
+  not add other stage ML libraries.
 
   TRIGGER when the user asks for the env manager, pixi, uv, or a
-  Python environment, or when no environment manager is recorded
-  yet.
+  Python environment, or when none is recorded yet.
 
-  SKIP adding later packages — load add-python-package.
-  SKIP scaffolding src/ — that is setup-workspace.
+  SKIP later packages (add-python-package). SKIP scaffolding
+  src/ (setup-workspace).
 
   HOW TO USE: detect, ask managed vs user-managed, ask the
-  manager when needed, then env init, env sync, add Skore for
-  the recorded hub or mlflow destination (plain Skore when that
-  is unset or local), and env verify. When setup-ml-project
-  dispatched this turn, skip each ask whose answer is already
-  recorded. One recorded answer does not make the other ask.
+  manager when needed, then env init, env sync, add Skore, and
+  env verify. When setup-ml-project dispatched this turn, skip
+  each ask whose answer is already recorded. One recorded
+  answer does not skip the other ask.
 ---
 
 # Set Up Python Environment

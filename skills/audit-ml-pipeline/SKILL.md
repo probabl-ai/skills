@@ -1,52 +1,26 @@
 ---
 name: audit-ml-pipeline
 description: >
-  Owns the `audit/` folder: one `# %%` (jupytext percent) Python file
-  per experiment, aligned 1:1 with `experiments/NN_<short_name>.py` and
-  `journal/NN_<short_name>.md`, that loads the experiment's skore
-  report **read-only** and uses bare-last-expression cells whose
-  `__repr__` carries the audit's signal.   The agent executes the audit
-  file via `python -m skore_skills cells run`, which streams a
-  markdown digest of each cell's stdout + last-expression repr to
-  stdout (optionally also to a file). The digest fuels narrative work
-  (the `JOURNAL.md` Status + History update, follow-up questions
-  about a past experiment, cross-experiment comparison). After each
-  digest it asks a deterministic continue-or-close gate; it stops
-  after Close audit with the digest and G-AUDIT-FINDING available.
-  Never calls `skore.evaluate(...)` or `project.put(...)`.
+  Read-only audit of one persisted skore report: `audit/NN_<stem>.py`
+  (jupytext percent), 1:1 with `experiments/` and `journal/`. Run
+  `python -m skore_skills cells run`; the digest feeds narrative
+  work. Never call `skore.evaluate` or `project.put`.
 
-  TRIGGER — any of:
-  - A completed run needs a read-only audit for outcome recording.
-  - The user asks "audit experiment 02", "show me what 03 looks
-    like", "re-audit 04 against the new report".
-  - An experiment was re-run (same `put()` key overwritten) and the
-    matching audit file needs re-execution.
-  - The user wants a human-readable narrative of a past experiment
-    without writing `journal/ideas/` files.
+  TRIGGER when a completed run needs an audit, the user asks to
+  audit, show, or re-audit an experiment, a re-run overwrote the
+  same `put()` key, or they want a narrative of a past experiment
+  without `journal/ideas/` files.
 
-  STOP when `python -m skore_skills status` shows no scaffold
-  (`has_src` and `has_journal` both false), no approved design,
-  no experiment report, or no agent feature. Explain the missing
-  fact and send the user to setup/triage, `evaluate-ml-pipeline`,
-  or `model-ml-pipeline`. Do not require `git`. Do not call
-  `skore.evaluate` or `project.put`. Also stop when the request
-  concerns raw-data exploration or sourcing a future experiment.
-  Do not require another action skill to be installed.
+  STOP when status shows no scaffold, no approved design, no
+  report, or no agent feature: explain and send the user to
+  setup/triage, `evaluate-ml-pipeline`, or `model-ml-pipeline`.
+  Do not require git or another action skill. Also stop for
+  raw-data exploration or sourcing a future experiment.
 
-  HOW TO USE: confirm the four-way stem pairing exists (`journal/NN_*.md`
-  approved + `experiments/NN_*.py` exists + smoke test passed +
-  report under that key in the Project), then place
-  `audit/NN_<short_name>.py` from `templates/audit.py`, substituting
-  the package name + the literal Project init block copied from
-  `experiments/<stem>.py`. Execute via
-  `python -m skore_skills cells run audit/<stem>.py`.
-  Derive G-AUDIT-FINDING from that digest, then ask the fixed
-  Additional report view / Custom query / Custom plot / Close audit
-  gate. Additional work reruns the same file and gate.
-  **Read the Stop conditions and emit the Pre-flight
-  checklist before any write or shell command.** Always invoke
-  `python -m skore_skills api get` for skore symbol signatures — never write them from
-  memory.
+  HOW TO USE: confirm journal, experiment, smoke, and report;
+  place the file from `templates/audit.py`; `cells run`; derive
+  G-AUDIT-FINDING; then the continue-or-close gate. Resolve
+  skore symbols with `api get`.
 ---
 
 # Audit ML Pipeline

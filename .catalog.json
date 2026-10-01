@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "37ef8948577522dee37beeeb08e2653b0ddbfb8a1236063048f3fbd05dc7d887",
+  "catalog_hash": "62fc43c0b7932d60924f9842b245a1a72079a2969f154dfa300e2d9d4d76b1cf",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "5ad5351ef6118f5b2d023d05841190a7a717b64859883236a72be219400a2ca0"
+      "hash": "d77e76f71781797efd503f58f0f5c4ddebf89002a05ebd552a559367d1131774"
     },
     {
       "id": "frame-ml-problem",
@@ -48,7 +48,7 @@
       "summary": "Structural pytest: prediction count must match the predict-grid row count.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "fdf795d0696399dab57285ed16abff83b56c37b74203d7e6f0021d278e80c57d"
+      "hash": "23053f711aebf2b2044433e5b7c237eaf63b2fda491d6256b84f9da9ce6297a8"
     },
     {
       "id": "audit-ml-pipeline",
@@ -57,7 +57,7 @@
       "summary": "Audit a persisted skore report read-only and produce a reusable digest.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "322f69ebac126c37482c8357ee36e438997fdb0f70e1b05b574b212dd95f53dd"
+      "hash": "284ebb7392ee5d425961d69e725a553d16c7a45d7971e2e9ca11e893192a4eed"
     },
     {
       "id": "manage-ml-backlog",
@@ -219,7 +219,7 @@
       "summary": "Detect the env manager and bootstrap the runtime, agent-tools, and composed development environments.",
       "category": "action",
       "subcategory": null,
-      "hash": "9d2d9e47baf31f9dad5a0580f22c09de53748330b6d04245b40436ecab37a5ca"
+      "hash": "46c4f9a53073345a6a9cb6504b2c56cc282c9a6099b96974d2c8dc2554246d05"
     },
     {
       "id": "export-ml-notebook",
