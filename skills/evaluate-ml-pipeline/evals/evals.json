@@ -11,6 +11,7 @@
         "After all evaluation gates and before writing/running `skore.evaluate`, give a 1\u20133 sentence preview: local full-dataset CV with the selected splitter, report persistence, and the `experiments/01_baseline.py` / `scratch/results/01_baseline/` outputs.",
         "Name the fold count when known; otherwise explain that timing depends on rows, folds/repeats, and learner cost. Do not invent a minute estimate.",
         "Pick **`skore.evaluate(learner, data={...})`** as the entry point, with no `splitter=` (not `cross_val_score`, not `cross_validate`). The `KFold` already on the marker is reused.",
+        "Score that one learner with one `skore.evaluate` and one `project.put`.",
         "Name `python -m skore_skills frame show` and `python -m skore_skills api get` for `skore.evaluate` (or Read the matching caches already listed).",
         "Mention `data={...}` (env-dict) for `SkrubLearner`, NOT positional `X, y`.",
         "Run `python -m skore_skills git end-turn --stage evaluate` at the end of the turn.",

@@ -11,6 +11,7 @@
         "Run `python -m skore_skills frame show`.",
         "Read each named reference once, including `references/prediction-goal.md`, `references/horizon-gap.md`, and `references/baseline.md`.",
         "Ask every key in `missing` in one message. Prediction-goal options are only `probabilities`, `point_labels`, and `uncovered`. Say horizon and gap are n/a unless the deployment is time, and generalize-to is n/a unless the deployment is groups.",
+        "Ask for one baseline token for the Baseline cell.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write Python, a pipeline, or a splitter constructor.",
         "The response does NOT: Ask only the prediction goal and stop.",

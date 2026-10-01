@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "62fc43c0b7932d60924f9842b245a1a72079a2969f154dfa300e2d9d4d76b1cf",
+  "catalog_hash": "4c229cd018d15b6bc8a6a920fa0248d928736125d51e9684e6ee4a7f589500ef",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -21,7 +21,7 @@
       "summary": "Lock the problem, deployment setting, metric, baseline, and fold count before any model code.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "1740bece2be46a7b4caad15dd84eac89f61dc52a2bd67380ea2565ae3ad27968"
+      "hash": "1fa5d6bc87ee8dbb6a3119ff74a00990609c519162f75e77f4b5f07737886764"
     },
     {
       "id": "build-ml-pipeline",
@@ -30,7 +30,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "a6cb503d58f43cc90523e195f3b3cd46ea1ee572c797126abeb9cdaa2a6b05eb"
+      "hash": "32c09652db38ca020e2925c20210810ff7a87b07b7b5c3eab71fa0f1e570c62d"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "4711918bcca7146d82c237a155b285d5b847a03a565ebdbaa97c7ff531ed4c2c"
+      "hash": "ee7244cf9de53ba3982cce989120b2a005e9b87ce72f676806ebf055d97b0959"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, then coordinate modeling choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "8506228b0f3663f910417ff279161bff97d68bd015d5b22c2949bee81efe8506"
+      "hash": "23700a49d873a8baf32674611b759dc982b5fd7ff1438e62b9aba812f66a38e6"
     },
     {
       "id": "choose-python-library",

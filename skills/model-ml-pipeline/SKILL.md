@@ -52,7 +52,8 @@ criteria" section. Keep `## Notebooks` with Evaluation then Audit.
    a pipeline. Missing skill → stop in one line. This includes an
    approved-stem resume: do not build until the table is locked.
    When the table is `locked`, run
-   `python -m skore_skills frame show`. A `proceed` whose
+   `python -m skore_skills frame show`. Anything other than
+   `proceed` loads `frame-ml-problem` and stops. A `proceed` whose
    `translation` is null has no splitter translation: say so and
    stop. Do not write model code. Do not present a choice list:
    no dummy predictor, standard baseline, EDA-driven proposal,
@@ -117,14 +118,14 @@ is approved only by Design approval below. No branch writes model
 code before that gate is `proceed`. Use the next available numeric
 stem; never overwrite an existing note.
 
-- **Locked baseline (`baseline`).** The comparison model is the
-  one the journal already locked. A `dummy` token is a
+- **Locked baseline (`baseline`).** The note names the one
+  comparison model the journal already locked. A `dummy` token is a
   `DummyClassifier` or `DummyRegressor` inside the normal skrub
   DataOps declaration: it proves loading, fit/predict, and pytest
   smoke, and it is not expected to add predictive value. Any
   other token (`logistic`, `seasonal_naive`, `group_mean`,
-  `production`) is that comparison model, named in the note. Do
-  not upgrade it to another estimator. Confirm the proposal,
+  `production`) is that one comparison model. Do not upgrade it
+  to another estimator. Confirm the proposal,
   write the note, then Design approval, before build. Keep the
   normal post-smoke Evaluate (Recommended) / Modify / Stop gate.
 - **EDA proposal (`eda_proposal`).** Read

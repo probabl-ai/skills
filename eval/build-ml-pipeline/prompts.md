@@ -363,8 +363,9 @@ violated.
 - No prior model exists.
 
 **Must do:**
-- Use `DummyClassifier` as the predictor in the skrub DataOps
-  graph and name `api get` for its installed signature.
+- Declare that one `DummyClassifier` as the predictor in the
+  skrub DataOps graph and name `api get` for its installed
+  signature.
 - Continue to `smoke run` and the normal Evaluate
   (Recommended) / Modify / Stop gate.
 - State that this validates the operational path, not predictive

@@ -32,8 +32,8 @@
 | Time role | <n/a \| sort_key \| covariate> |
 | Metric role | <imposed \| proper_score \| ranking \| thresholded \| point_error> |
 | Metric | <comparison name> |
-| Baseline | <one or more of seasonal_naive, group_mean, logistic, production, dummy> |
-| Baseline note | <one short note per baseline> |
+| Baseline | <one of seasonal_naive, group_mean, logistic, production, dummy> |
+| Baseline note | <one short phrase> |
 | Folds | <integer, at least 1> |
 
 ## History

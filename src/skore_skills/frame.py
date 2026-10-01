@@ -239,13 +239,13 @@ def _valid(root: Path, key: str, rows: dict[str, str]) -> bool:
     if key == "baseline":
         tokens = _baseline_tokens(value)
         menu = _baseline_candidates(rows)
-        return bool(tokens) and all(token in menu for token in tokens)
+        return len(tokens) == 1 and tokens[0] in menu
     if key == "baseline_note":
         tokens = _baseline_tokens(rows["baseline"])
         notes = _note_parts(value)
         if tokens:
-            return len(notes) == len(tokens)
-        return True
+            return len(tokens) == 1 and len(notes) == 1
+        return len(notes) == 1
     allowed = _candidates(root, key, rows)
     if allowed is None:
         return True

@@ -1,16 +1,14 @@
 # Report escalation
 
 `skore.evaluate(...)` is the default entry point. It returns the
-right report class based on the inputs (single learner vs. list, CV
-vs. no CV). Escalate to an explicit report class only when you need
-something the dispatcher doesn't expose.
+report for this one learner. Escalate to an explicit report class
+only when you need something the dispatcher doesn't expose.
 
 | Need                                          | Use                       | Why                                   |
 |-----------------------------------------------|---------------------------|---------------------------------------|
 | One score / one report, default metrics       | `evaluate(learner, data={...})` | One call, no boilerplate. Omit `splitter=`. |
 | Per-fold predictions / per-fold artifacts     | `CrossValidationReport(...)` | Holds fold-level objects              |
 | Single fit on a held-out set (no CV)          | `EstimatorReport(...)`    | Skips the fold loop                   |
-| Side-by-side of ≥ 2 learners                  | `ComparisonReport([...])` | Aligned metric tables and plots       |
 
 For exact signatures and what each report exposes (metrics,
 inspection accessors, diagnostic plots), see `python -m skore_skills api get`.
@@ -22,6 +20,3 @@ inspection accessors, diagnostic plots), see `python -m skore_skills api get`.
   `CrossValidationReport` for a robust score.
 - Don't manually loop folds and aggregate scores — that's what
   `CrossValidationReport` does, with the right per-fold accounting.
-- Don't reach for `ComparisonReport` for a single learner; the
-  side-by-side machinery is overhead when there's nothing to
-  compare.

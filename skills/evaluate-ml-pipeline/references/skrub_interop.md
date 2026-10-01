@@ -6,9 +6,8 @@ the `SkrubLearner` fit shape, see the workspace's
 `scratch/api/<lib>/<version>/` cache populated by `python -m skore_skills api get`
 Shape 0/1/2/3.*
 
-`skore.evaluate(...)` is a dispatcher: depending on the
-`estimator`/`splitter` combination it returns an `EstimatorReport`,
-a `CrossValidationReport`, or a `ComparisonReport`. Feeding it a
+`skore.evaluate(...)` is a dispatcher: for this one learner it
+returns an `EstimatorReport` or a `CrossValidationReport`. Feeding it a
 `SkrubLearner` (the learner returned by `make_learner()` on a skrub
 DataOps graph) requires the **env-dict-style** fit shape, not the
 sklearn-style `(X, y)`.
@@ -95,7 +94,6 @@ The return type depends on `splitter`:
 | A scikit-learn or project cross-validator (`KFold`, `GroupKFold`, custom) | `CrossValidationReport` — multi-fold |
 | omitted, DataOp has `mark_as_X(cv=...)` | `CrossValidationReport` — reuses the DataOp `cv` and `split_kwargs` |
 | omitted, no DataOp `cv` | `EstimatorReport` — single 80/20 holdout |
-| Multi-key comparison | `ComparisonReport` |
 
 An explicit `splitter=` always overrides a DataOp `cv` and drops
 `split_kwargs`. Omit `splitter=` when the locked `cv` is on the
@@ -312,8 +310,8 @@ Note the clean separation:
 ## When `evaluate` is too coarse — escalate
 
 If the default `evaluate(...)` dispatch doesn't fit (you need
-explicit `train_data=` / `test_data=` on `EstimatorReport`, or a
-multi-key `ComparisonReport`), construct the report class directly.
+explicit `train_data=` / `test_data=` on `EstimatorReport` for
+this one learner), construct that report class directly.
 Look up the signatures via `python -m skore_skills api get` against the installed skore
 version — the kwargs differ between `EstimatorReport` (uses
 `train_data` / `test_data`) and `CrossValidationReport` (uses

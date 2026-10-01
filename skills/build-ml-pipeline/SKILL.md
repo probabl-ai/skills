@@ -104,12 +104,11 @@ Then links. When `site build` ran this turn:
 
 Implement the approved design. Do not silently upgrade it.
 
-- **Locked baseline** — each token in the journal baseline cell,
-  in order. `dummy` is `DummyClassifier` / `DummyRegressor` in the
+- **Locked baseline** — the one token in the journal baseline
+  cell. `dummy` is `DummyClassifier` / `DummyRegressor` in the
   normal DataOps graph; it checks that the path runs.
   `logistic`, `seasonal_naive`, `group_mean`, and `production`
-  are comparison models. `api get` the class. Several tokens are
-  several comparison models.
+  are that one comparison model. `api get` the class.
 - **EDA-backed** — only Method-cited findings. A missing choice
   stops for a question. A temporal finding is the locked `cv`,
   not a license for three layers, lags, or `AlignXy` unless

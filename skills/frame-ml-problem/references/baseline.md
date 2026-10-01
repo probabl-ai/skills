@@ -1,8 +1,8 @@
 # Baseline
 
 The baseline is the comparison point, named in words. It is not an
-estimator configuration. Several comparisons are a comma-separated
-list of the tokens below, for example `seasonal_naive, dummy`.
+estimator configuration. Ask for one of the tokens below. A later
+comparison is the next experiment.
 
 - `seasonal_naive` — on a time-series forecast, repeat the last
   observed season (for example the last week), not the mean of the
@@ -17,6 +17,5 @@ list of the tokens below, for example `seasonal_naive, dummy`.
 - `dummy` — a global mean or majority class, when none of the
   above fits
 
-The note is one short phrase per baseline, in the same order,
-separated by `;`. A single baseline keeps one phrase: the season,
-the known column, or the production system.
+The note is one short phrase: the season, the known column, or the
+production system.

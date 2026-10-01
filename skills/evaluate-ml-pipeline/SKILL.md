@@ -131,9 +131,9 @@ checks. Do not invent a check. Do not register one from
 
 Escalate past `evaluate` only when the dispatcher is too coarse
 (`references/reports.md`): `EstimatorReport` for one held-out
-fit, `CrossValidationReport` for per-fold artifacts,
-`ComparisonReport` for two or more learners. Holdout uses
-`EstimatorReport`.
+fit, `CrossValidationReport` for per-fold artifacts. Holdout uses
+`EstimatorReport`. This loop scores that one learner with one
+`skore.evaluate` and one `project.put`.
 
 CV is necessary but not sufficient for any pipeline with
 history-dependent features. `skore.evaluate` materializes the

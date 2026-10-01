@@ -40,6 +40,8 @@ violated.
 - Pick **`skore.evaluate(learner, data={...})`** as the entry
   point, with no `splitter=` (not `cross_val_score`, not
   `cross_validate`). The `KFold` already on the marker is reused.
+- Score that one learner with one `skore.evaluate` and one
+  `project.put`.
 - Name `python -m skore_skills frame show` and
   `python -m skore_skills api get` for `skore.evaluate` (or Read
   the matching caches already listed).

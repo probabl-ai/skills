@@ -237,7 +237,7 @@ def test_one_fold_translates_to_estimator_report(tmp_path: Path) -> None:
     assert payload["translation"]["n_splits"] is None
 
 
-def test_horizon_list_and_baseline_list_lock(tmp_path: Path) -> None:
+def test_horizon_list_locks_with_one_baseline(tmp_path: Path) -> None:
     _journal(
         tmp_path,
         **_locked_iid(
@@ -245,8 +245,8 @@ def test_horizon_list_and_baseline_list_lock(tmp_path: Path) -> None:
             Horizon="1 hour, 24 hour",
             Gap="0 hour",
             **{"Time role": "sort_key"},
-            Baseline="seasonal_naive, dummy",
-            **{"Baseline note": "last week; global mean"},
+            Baseline="seasonal_naive",
+            **{"Baseline note": "last week"},
         ),
     )
 
@@ -256,28 +256,23 @@ def test_horizon_list_and_baseline_list_lock(tmp_path: Path) -> None:
     assert payload["translation"]["horizons"] == [1, 24]
     assert payload["translation"]["horizon_unit"] == "hour"
     assert payload["translation"]["gap"] == 0
-    assert payload["decisions"]["baseline"] == "seasonal_naive, dummy"
+    assert payload["decisions"]["baseline"] == "seasonal_naive"
 
 
-def test_mismatched_baseline_notes_stay_open(tmp_path: Path) -> None:
-    """Each baseline token needs its own note."""
+def test_several_baselines_stay_open(tmp_path: Path) -> None:
+    """The baseline cell and its note are one token and one phrase."""
     _journal(
         tmp_path,
         **_locked_iid(
-            Baseline="seasonal_naive, dummy",
-            **{"Baseline note": "last week"},
-            Deployment="time",
-            Horizon="1 hour, 2 day",
-            Gap="0 hour",
-            **{"Time role": "sort_key"},
+            Baseline="dummy, logistic",
+            **{"Baseline note": "majority class; logistic probabilities"},
         ),
     )
 
     payload = frame_show(tmp_path)
 
-    assert "horizon" in payload["missing"]
+    assert "baseline" in payload["missing"]
     assert "baseline_note" in payload["missing"]
-    assert "baseline" not in payload["missing"]
 
 
 def test_zero_gap_with_a_longer_horizon_proceeds(tmp_path: Path) -> None:
