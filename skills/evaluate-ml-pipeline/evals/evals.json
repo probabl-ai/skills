@@ -490,6 +490,26 @@
       "tools": false,
       "sandbox": [],
       "expect_files": []
+    },
+    {
+      "id": 26,
+      "title": "Attached metric missing because the mixin is absent",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The prediction DataOp already has\n  `.skb.with_scoring(...)` for `within_10pct`, before\n  `make_learner`.\n- `CommuneMeanRegressor` subclasses `BaseEstimator` only.\n  It implements `fit` and `predict`.\n- `frame show` returned `proceed`. Tabular regression.]\n\n`within_10pct` is on the learner with `with_scoring`, but\n`summarize()` has no such row. The predictor is\n`class CommuneMeanRegressor(BaseEstimator)`.",
+      "expected_output": "Behavioural response satisfying: - Return to build before treating the report as complete. - Change the bases to `RegressorMixin, BaseEstimator`. - The mixin is the first base. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave the class as `BaseEstimator` only. - Write `class CommuneMeanRegressor(BaseEstimator, RegressorMixin)`.",
+      "files": [],
+      "expectations": [
+        "Return to build before treating the report as complete.",
+        "Change the bases to `RegressorMixin, BaseEstimator`.",
+        "The mixin is the first base.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Leave the class as `BaseEstimator` only.",
+        "The response does NOT: Write `class CommuneMeanRegressor(BaseEstimator, RegressorMixin)`.",
+        "The response does NOT: Call `report.metrics.add`.",
+        "The response does NOT: Drop `with_scoring` as if the scorer were missing."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
     }
   ]
 }

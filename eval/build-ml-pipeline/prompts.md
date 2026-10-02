@@ -187,9 +187,9 @@ violated.
   **leakage rule** (uses statistics learned from data → must be
   stateful) — target encoding learns category → mean from training
   y.
-- Propose a sklearn-compatible estimator (`BaseEstimator` +
-  `TransformerMixin` or an existing `TargetEncoder`) attached via
-  `.skb.apply`.
+- Propose a sklearn-compatible estimator (`TransformerMixin`,
+  then `BaseEstimator`, or an existing `TargetEncoder`) attached
+  via `.skb.apply`. The mixin is the first base.
 - Run `python -m skore_skills api get
   sklearn.preprocessing.TargetEncoder` (or equivalent) before
   writing its call.
@@ -199,6 +199,7 @@ violated.
 - Accept `apply_func(target_encode)` as written.
 - Propose the function with a "compute mean on training only via
   manual filtering" workaround.
+- Inherit `BaseEstimator` before `TransformerMixin`.
 
 ---
 
@@ -654,3 +655,27 @@ violated.
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Call `.skb.with_scoring`.
 - Register a scorer for MAE.
+
+---
+
+## CASE_24 — Custom predictor is mixin, then BaseEstimator
+
+**User prompt:**
+> The baseline predictor is a commune mean. Write
+> `CommuneMeanRegressor` with `fit` and `predict`.
+
+**Assumed workspace state:**
+- `frame show` returned `proceed`. Tabular regression.
+- No existing estimator class.
+
+**Must do:**
+- Declare `class CommuneMeanRegressor(RegressorMixin, BaseEstimator)`.
+- The mixin is the first base.
+- Implement `fit` and `predict`.
+- Attach with `.skb.apply(..., y=y)`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Declare `class CommuneMeanRegressor(BaseEstimator, RegressorMixin)`.
+- Subclass `BaseEstimator` alone.
+- Omit the mixin.

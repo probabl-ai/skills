@@ -95,16 +95,17 @@
       "id": 5,
       "title": "Stateful step misclassified as stateless (leakage)",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- skrub installed at 0.9.0.\n- An existing skrub DataOps graph with `mark_as_X` / `mark_as_y`\n  in place.]\n\nAdd target encoding for the `category` column. Just write a\n`def target_encode(df): ...` that computes the mean target per\ncategory and replaces the column. Attach it with `.skb.apply_func`.",
-      "expected_output": "Behavioural response satisfying: - Refuse the `apply_func` route for this step. - Cite the **statelessness rule** (stateful \u2192 estimator) and/or the **leakage rule** (uses statistics learned from data \u2192 must be stateful) \u2014 target encoding learns category \u2192 mean from training y. - Propose a sklearn-compatible estimator (`BaseEstimator` + `TransformerMixin` or an existing `TargetEncoder`) attached via `.skb.apply`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Accept `apply_func(target_encode)` as written. - Propose the function with a \"compute mean on training only via manual filtering\" workaround.",
+      "expected_output": "Behavioural response satisfying: - Refuse the `apply_func` route for this step. - Cite the **statelessness rule** (stateful \u2192 estimator) and/or the **leakage rule** (uses statistics learned from data \u2192 must be stateful) \u2014 target encoding learns category \u2192 mean from training y. - Propose a sklearn-compatible estimator (`TransformerMixin`, then `BaseEstimator`, or an existing `TargetEncoder`) attached via `.skb.apply`. The mixin is the first base. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Accept `apply_func(target_encode)` as written. - Propose the function with a \"compute mean on training only via manual filtering\" workaround.",
       "files": [],
       "expectations": [
         "Refuse the `apply_func` route for this step.",
         "Cite the **statelessness rule** (stateful \u2192 estimator) and/or the **leakage rule** (uses statistics learned from data \u2192 must be stateful) \u2014 target encoding learns category \u2192 mean from training y.",
-        "Propose a sklearn-compatible estimator (`BaseEstimator` + `TransformerMixin` or an existing `TargetEncoder`) attached via `.skb.apply`.",
+        "Propose a sklearn-compatible estimator (`TransformerMixin`, then `BaseEstimator`, or an existing `TargetEncoder`) attached via `.skb.apply`. The mixin is the first base.",
         "Run `python -m skore_skills api get sklearn.preprocessing.TargetEncoder` (or equivalent) before writing its call.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Accept `apply_func(target_encode)` as written.",
-        "The response does NOT: Propose the function with a \"compute mean on training only via manual filtering\" workaround."
+        "The response does NOT: Propose the function with a \"compute mean on training only via manual filtering\" workaround.",
+        "The response does NOT: Inherit `BaseEstimator` before `TransformerMixin`."
       ],
       "tools": false,
       "sandbox": [],
@@ -431,6 +432,26 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Call `.skb.with_scoring`.",
         "The response does NOT: Register a scorer for MAE."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 24,
+      "title": "Custom predictor is mixin, then BaseEstimator",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `frame show` returned `proceed`. Tabular regression.\n- No existing estimator class.]\n\nThe baseline predictor is a commune mean. Write\n`CommuneMeanRegressor` with `fit` and `predict`.",
+      "expected_output": "Behavioural response satisfying: - Declare `class CommuneMeanRegressor(RegressorMixin, BaseEstimator)`. - The mixin is the first base. - Implement `fit` and `predict`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Declare `class CommuneMeanRegressor(BaseEstimator, RegressorMixin)`. - Subclass `BaseEstimator` alone.",
+      "files": [],
+      "expectations": [
+        "Declare `class CommuneMeanRegressor(RegressorMixin, BaseEstimator)`.",
+        "The mixin is the first base.",
+        "Implement `fit` and `predict`.",
+        "Attach with `.skb.apply(..., y=y)`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Declare `class CommuneMeanRegressor(BaseEstimator, RegressorMixin)`.",
+        "The response does NOT: Subclass `BaseEstimator` alone.",
+        "The response does NOT: Omit the mixin."
       ],
       "tools": false,
       "sandbox": [],

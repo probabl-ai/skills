@@ -123,7 +123,12 @@ DataOp. If it is not, return to `build-ml-pipeline` before
 `skore.evaluate`. Do not call `report.metrics.add`. When the
 scorer is attached, that name is a row in
 `report.metrics.summarize().frame()`. `skore.evaluate` has no
-`scoring=` argument (`references/custom-metrics.md`).
+`scoring=` argument (`references/custom-metrics.md`). If the
+name is attached and still missing from that frame, the
+predictor class is wrong: it must be the mixin, then
+`BaseEstimator` (`RegressorMixin` or `ClassifierMixin` first).
+Return to `build-ml-pipeline`. `BaseEstimator` alone, and
+`BaseEstimator` before the mixin, both fail.
 
 An extra check the user asks for after the lock:
 `references/custom-checks.md`. Subclass `skore.Check` at module

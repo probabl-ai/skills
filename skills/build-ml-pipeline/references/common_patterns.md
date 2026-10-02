@@ -104,11 +104,14 @@ The tuning skill discovers the knobs by walking the graph.
 ## 6. Custom sklearn transformer
 
 Author one **only when** (a) no built-in fits and (b) the
-operation is stateful. Subclass `TransformerMixin` + `BaseEstimator`
-(Mixin first — sklearn convention so the mixin's `fit_transform`
-wins MRO; see SKILL.md Rule 3). Implement `fit(self, X, y=None)` to
-learn state and `transform(self, X)` to apply it; add
-`get_feature_names_out` if downstream consumers need feature names.
+operation is stateful. The class line is the mixin, then
+`BaseEstimator`, as in the example below. That order matters.
+`class QuantileRankEncoder(BaseEstimator, TransformerMixin)` is
+wrong: `BaseEstimator.__sklearn_tags__` is found before the
+mixin and does not call through, so the mixin's tags never
+apply. Implement `fit(self, X, y=None)` to learn state and
+`transform(self, X)` to apply it; add `get_feature_names_out`
+if downstream consumers need feature names.
 
 For a stateless op, write a function and use `.skb.apply_func` —
 don't author a transformer.
@@ -140,6 +143,41 @@ class QuantileRankEncoder(TransformerMixin, BaseEstimator):
 ```
 
 Attach via `.skb.apply(QuantileRankEncoder(), cols=s.numeric())`.
+
+## 7. Custom sklearn predictor
+
+Author one **only when** no built-in estimator fits. Same base
+order as the transformer: the mixin, then `BaseEstimator`.
+The mixin is the first base.
+
+```python
+from sklearn.base import BaseEstimator, RegressorMixin
+
+class MeanRegressor(RegressorMixin, BaseEstimator):
+    def fit(self, X, y):
+        self.mean_ = float(np.mean(y))
+        return self
+
+    def predict(self, X):
+        return np.full(len(X), self.mean_)
+```
+
+Classification is `ClassifierMixin, BaseEstimator`, mixin
+first. `class MeanRegressor(BaseEstimator, RegressorMixin)` is
+the wrong order. `class MeanRegressor(BaseEstimator)` drops
+the mixin. `BaseEstimator` before the mixin hides it: method
+resolution finds `BaseEstimator.__sklearn_tags__` first, and
+that method does not call through, so `estimator_type` stays
+unset. `BaseEstimator` alone has no `score`.
+
+Implement `fit` and `predict`. The mixin supplies `score`.
+skrub exposes `SkrubLearner.score` only when the applied
+estimator has `score`. skore copies each `with_scoring` name
+into `summarize()` through that method. The mixin's own R² or
+accuracy is not the row: skrub routes `learner.score()` to the
+scoring node.
+
+Attach with `.skb.apply(MeanRegressor(), y=y)`.
 
 ## When the pattern you need isn't here
 

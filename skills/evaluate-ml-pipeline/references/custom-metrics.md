@@ -11,6 +11,19 @@ Do not call `report.metrics.add`. Do not pass `scoring=` to
 separate: `split_kwargs` belongs on `mark_as_X`. Metric kwargs
 belong on `with_scoring`.
 
+`with_scoring` is read through the estimator's `score`. A custom
+predictor is the mixin, then `BaseEstimator`:
+`RegressorMixin, BaseEstimator` or
+`ClassifierMixin, BaseEstimator`. The mixin is the first base.
+That order matters. `BaseEstimator` first hides the mixin,
+because `BaseEstimator.__sklearn_tags__` does not call through.
+`BaseEstimator` alone has no `score`, so skrub does not expose
+`SkrubLearner.score` and the attached name is not a
+`summarize()` row. The mixin's own R² or accuracy is not that
+row: skrub routes `learner.score()` to the scoring node. The
+class shape is
+`build-ml-pipeline/references/common_patterns.md`.
+
 ## The scorer
 
 Pass a scikit-learn metric name `with_scoring` accepts, or a

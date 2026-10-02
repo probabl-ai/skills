@@ -750,5 +750,33 @@ violated.
 - Call `report.metrics.add`.
 - Pass `scoring=` to `skore.evaluate`.
 
+---
+
+## CASE_26 — Attached metric missing because the mixin is absent
+
+**User prompt:**
+> `within_10pct` is on the learner with `with_scoring`, but
+> `summarize()` has no such row. The predictor is
+> `class CommuneMeanRegressor(BaseEstimator)`.
+
+**Assumed workspace state:**
+- The prediction DataOp already has
+  `.skb.with_scoring(...)` for `within_10pct`, before
+  `make_learner`.
+- `CommuneMeanRegressor` subclasses `BaseEstimator` only.
+  It implements `fit` and `predict`.
+- `frame show` returned `proceed`. Tabular regression.
+
+**Must do:**
+- Return to build before treating the report as complete.
+- Change the bases to `RegressorMixin, BaseEstimator`.
+- The mixin is the first base.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Leave the class as `BaseEstimator` only.
+- Write `class CommuneMeanRegressor(BaseEstimator, RegressorMixin)`.
+- Call `report.metrics.add`.
+- Drop `with_scoring` as if the scorer were missing.
 
 ---

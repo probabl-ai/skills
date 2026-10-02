@@ -226,6 +226,17 @@ Do not write `skore.evaluate(...)` here. Do not call
   and no skrub joiner fits. Default is `apply_func`.
   Details: `references/source-binding.md`.
 
+A custom class is the mixin, then `BaseEstimator`. The mixin
+is the first base. That order matters: `BaseEstimator` first
+hides the mixin, because `BaseEstimator.__sklearn_tags__` is
+resolved before it and does not call through. A transformer is
+`TransformerMixin, BaseEstimator`. A predictor is
+`RegressorMixin, BaseEstimator` or
+`ClassifierMixin, BaseEstimator`. `BaseEstimator` alone has no
+`score`, so skrub never exposes `SkrubLearner.score` and a
+`with_scoring` name never appears in `summarize()`.
+Details: `references/common_patterns.md`.
+
 Would the output change on the training subset versus the whole
 frame? Yes → `.skb.apply`. Means, medians, quantiles,
 vocabularies, target encoding, TF-IDF: stateful.
@@ -234,7 +245,7 @@ vocabularies, target encoding, TF-IDF: stateful.
 STOP — target encoding / apply_func. When the user asks for
 `def target_encode` + `.skb.apply_func`: refuse. Do not paste
 the leaky function body and then the fix. Propose sklearn
-TargetEncoder (or BaseEstimator + TransformerMixin) via
+TargetEncoder (or TransformerMixin, then BaseEstimator) via
 `.skb.apply`. Name `api get` for the signature.
 ```
 
@@ -343,7 +354,8 @@ Re-emit it with evidence before the final message.
 - `references/source-binding.md` — identifier versus materialized
   roots.
 - `references/reproducibility_mechanics.md` — Option 1 / 2 / 3.
-- `references/common_patterns.md` — tabular shapes with code.
+- `references/common_patterns.md` — tabular shapes with code,
+  including a custom predictor (mixin, then `BaseEstimator`).
 - `references/custom-splitter.md` — the split copies the locked
   deployment. The time series section is the date splitter when
   `translation.scheme` is `date_time`.
