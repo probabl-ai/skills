@@ -106,17 +106,18 @@ after listing the boxes.
    Load `add-python-package` only if
    `status.skills.add-python-package` is true **and**
    `policy.env.managed` is true. Else one-line skip: name
-   `jupytext` / `nbclient` / `nbconvert` / `mkdocs-material`; do
+   `jupytext` / `nbclient` / `ipywidgets` / `nbconvert` /
+   `mkdocs-material`; do
    not invent `pixi add` / `uv add`; skip `site init`. Do not
    invent that skill's steps.
 
    When that load is allowed:
 
-   - notebooks true → `add-python-package` for `jupytext` and
-     `nbclient` (both `env route` **agent**), plus `nbconvert`
-     when site is also true — stage turns write the notebook
-     viewer with `--html`. Do not leave them as `ask`. Do not
-     convert.
+   - notebooks true → `add-python-package` for `jupytext`,
+     `nbclient`, and `ipywidgets` (all `env route` **agent**),
+     plus `nbconvert` when site is also true — stage turns write
+     the notebook viewer with `--html`. Do not leave them as
+     `ask`. Do not convert.
    - site true → `add-python-package` for `mkdocs-material`
      (agent), then `python -m skore_skills site init`.
 
@@ -136,7 +137,8 @@ after listing the boxes.
 - Do not ask env manager, tabular library, or skore mode.
 - Do not run `pixi init` / `uv init`.
 - Do not env-bootstrap or editable-install. Export toolchain
-  (`jupytext`, `nbclient`, `nbconvert`, `mkdocs-material`) only
+  (`jupytext`, `nbclient`, `ipywidgets`, `nbconvert`,
+  `mkdocs-material`) only
   via `add-python-package` after persisting notebooks/site.
   Never `pixi add` / `uv add` from this skill.
 - Do not write experiment or exploratory data analysis bodies.

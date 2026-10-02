@@ -4,7 +4,7 @@
     {
       "id": 1,
       "title": "Convert EDA percent file",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.py` exists.\n- `policy.notebooks` is true.\n- `jupytext` and `nbclient` are installed.]\n\nGive me an executed notebook of the EDA.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.py` exists.\n- `policy.notebooks` is true.\n- `jupytext`, `nbclient`, and `ipywidgets` are installed.]\n\nGive me an executed notebook of the EDA.",
       "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills notebook convert data_analysis/data_analysis.py`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Rewrite `data_analysis/data_analysis.py` from a `.ipynb`. - Run `git commit`.",
       "files": [],
       "expectations": [
@@ -23,11 +23,11 @@
       "id": 2,
       "title": "Null flag defaults on then installs",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.notebooks` is null.\n- `add-python-package` is installed.]\n\nMake an ipynb from data_analysis/data_analysis.py.",
-      "expected_output": "Behavioural response satisfying: - Persist `notebooks true`. Do not AskUserQuestion. - Load `add-python-package` for `jupytext` and `nbclient`, then convert. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Convert while the flag is still null or false. - Run `pixi add` / `uv add` from this skill.",
+      "expected_output": "Behavioural response satisfying: - Persist `notebooks true`. Do not AskUserQuestion. - Load `add-python-package` for `jupytext`, `nbclient`, and `ipywidgets`, then convert. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Convert while the flag is still null or false. - Run `pixi add` / `uv add` from this skill.",
       "files": [],
       "expectations": [
         "Persist `notebooks true`. Do not AskUserQuestion.",
-        "Load `add-python-package` for `jupytext` and `nbclient`, then convert.",
+        "Load `add-python-package` for `jupytext`, `nbclient`, and `ipywidgets`, then convert.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Convert while the flag is still null or false.",
         "The response does NOT: Run `pixi add` / `uv add` from this skill."
@@ -55,7 +55,7 @@
     {
       "id": 4,
       "title": "Notebook page on the site on explicit request",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.py` exists.\n- `policy.notebooks` is true.\n- `jupytext` and `nbclient` are installed.\n- `add-python-package` is installed.\n- `policy.site` is true.\n- `export-ml-site` is installed.]\n\nPut the executed EDA notebook on the site.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.py` exists.\n- `policy.notebooks` is true.\n- `jupytext`, `nbclient`, and `ipywidgets` are installed.\n- `add-python-package` is installed.\n- `policy.site` is true.\n- `export-ml-site` is installed.]\n\nPut the executed EDA notebook on the site.",
       "expected_output": "Behavioural response satisfying: - Load `add-python-package` for `nbconvert`. - Run `python -m skore_skills notebook convert data_analysis/data_analysis.py --html`. - Run `python -m skore_skills site build`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `cells run` as a substitute for convert. - Run `git end-turn`.",
       "files": [],
       "expectations": [

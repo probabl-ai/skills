@@ -14,6 +14,13 @@ from skore_skills.cli import cli
 INLINE = "%matplotlib inline"
 
 
+@pytest.fixture(autouse=True)
+def _ipywidgets_installed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Happy-path converts assume the notebook kernel package is present."""
+    if notebook_mod.ipywidgets is None:
+        monkeypatch.setattr(notebook_mod, "ipywidgets", object())
+
+
 def _stub_nbformat(write=None) -> SimpleNamespace:
     """nbformat stand-in with ``v4.new_code_cell`` for the inline setup."""
 
@@ -125,6 +132,23 @@ def test_notebook_convert_import_error(
     result = CliRunner().invoke(cli, ["notebook", "convert", str(src)])
     assert result.exit_code != 0
     assert "jupytext" in result.output
+
+
+def test_notebook_convert_missing_ipywidgets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Missing ipywidgets is a Click error that names the package."""
+    src = tmp_path / "data_analysis.py"
+    src.write_text("# %%\n1\n", encoding="utf-8")
+    monkeypatch.setattr(notebook_mod, "jupytext", SimpleNamespace(read=lambda path: {}))
+    monkeypatch.setattr(notebook_mod, "nbformat", _stub_nbformat())
+    monkeypatch.setattr(notebook_mod, "NotebookClient", object())
+    monkeypatch.setattr(notebook_mod, "ipywidgets", None)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["notebook", "convert", str(src)])
+    assert result.exit_code != 0
+    assert "ipywidgets" in result.output
+    assert "jupytext" not in result.output
 
 
 def test_notebook_convert_out_path(

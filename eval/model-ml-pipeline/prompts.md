@@ -116,7 +116,7 @@ and `frame show` already returned `proceed` with a non-null
   `01_baseline`.
 - `policy.notebooks` is true. `policy.site` is true.
 - `export-ml-notebook` and `export-ml-site` are installed.
-- `jupytext`, `nbclient`, and `nbconvert` are installed.
+- `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are installed.
 
 **Must do:**
 - Dispatch `build-ml-pipeline` (`smoke run` inside build).

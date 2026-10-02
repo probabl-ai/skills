@@ -13,6 +13,7 @@
     "export": [
         "jupytext",
         "nbclient",
+        "ipywidgets",
         "nbconvert",
         "mkdocs-material"
     ],

@@ -126,7 +126,7 @@
     {
       "id": 7,
       "title": "Notebook and site on after EDA",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is true.\n- `export-ml-notebook` and `export-ml-site` are installed.\n- `jupytext`, `nbclient`, and `nbconvert` are installed.]\n\nEDA is done. Close the turn.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is true.\n- `export-ml-notebook` and `export-ml-site` are installed.\n- `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are installed.]\n\nEDA is done. Close the turn.",
       "expected_output": "Behavioural response satisfying: - Write 2\u20136 sentences of EDA findings. - Name `report.html` and `html/data_analysis.html` in the user-facing close. Do not send the user to `data_analysis/data_analysis.md` instead. - Run `python -m skore_skills notebook convert data_analysis/data_analysis.py --html` before site build. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Paste the full `data_analysis.md` into chat. - Fail the data-analysis turn if site build errors; name the error.",
       "files": [],
       "expectations": [
@@ -166,7 +166,7 @@
     {
       "id": 9,
       "title": "Notebooks on, site off converts without HTML",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is false.\n- `export-ml-notebook` is installed.\n- `jupytext` and `nbclient` are installed.]\n\nEDA is done. Close the turn.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is false.\n- `export-ml-notebook` is installed.\n- `jupytext`, `nbclient`, and `ipywidgets` are installed.]\n\nEDA is done. Close the turn.",
       "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills notebook convert data_analysis/data_analysis.py`. - Run `python -m skore_skills git end-turn --stage data_analysis`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Pass `--html` when the site gate is off. - Run `python -m skore_skills site build`.",
       "files": [],
       "expectations": [

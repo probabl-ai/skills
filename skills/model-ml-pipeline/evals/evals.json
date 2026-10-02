@@ -73,7 +73,7 @@
     {
       "id": 4,
       "title": "Notebooks on converts the experiment script",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Approved design note and experiment shell exist with stem\n  `01_baseline`.\n- `policy.notebooks` is true. `policy.site` is true.\n- `export-ml-notebook` and `export-ml-site` are installed.\n- `jupytext`, `nbclient`, and `nbconvert` are installed.]\n\nThe baseline design is approved. Implement and test the model.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Approved design note and experiment shell exist with stem\n  `01_baseline`.\n- `policy.notebooks` is true. `policy.site` is true.\n- `export-ml-notebook` and `export-ml-site` are installed.\n- `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are installed.]\n\nThe baseline design is approved. Implement and test the model.",
       "expected_output": "Behavioural response satisfying: - Dispatch `build-ml-pipeline` (`smoke run` inside build). - Run `python -m skore_skills notebook convert experiments/01_baseline.py --html` after the implement loop, before site build. - Run `python -m skore_skills site build` before git end-turn. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Fail the model turn if convert errors; name the error. - Run `cells run` as a substitute for convert.",
       "files": [],
       "expectations": [

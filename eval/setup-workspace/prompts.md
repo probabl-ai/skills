@@ -288,9 +288,9 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 - After scaffold, persist `policy set notebooks true` and
   `policy set site true`. Do not AskUserQuestion for notebooks
   or site.
-- Load `add-python-package` for `jupytext`, `nbclient`, and
-  `nbconvert` (agent) — stage turns write the notebook viewer
-  with `--html`.
+- Load `add-python-package` for `jupytext`, `nbclient`,
+  `ipywidgets`, and `nbconvert` (agent) — stage turns write the
+  notebook viewer with `--html`.
 - Load `add-python-package` for `mkdocs-material` (agent).
 - Run `python -m skore_skills site init`.
 - Name `env add` with the agent feature (do not leave `env route`
@@ -325,7 +325,8 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - AskUserQuestion for notebooks or site.
 - Load `add-python-package` for `jupytext`, `nbclient`,
-  `nbconvert`, or `mkdocs-material` from this persist step.
+  `ipywidgets`, `nbconvert`, or `mkdocs-material` from this
+  persist step.
 - Run `python -m skore_skills site init`.
 
 ---
@@ -346,9 +347,9 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
 **Must do:**
 - Persist `policy set notebooks true` and `policy set site true`.
   Do not AskUserQuestion for notebooks or site.
-- Load `add-python-package` for `jupytext`, `nbclient`, and
-  `nbconvert` (agent) — stage turns write the notebook viewer
-  with `--html`.
+- Load `add-python-package` for `jupytext`, `nbclient`,
+  `ipywidgets`, and `nbconvert` (agent) — stage turns write the
+  notebook viewer with `--html`.
 - Run `python -m skore_skills site init`.
 
 **Must NOT do:**

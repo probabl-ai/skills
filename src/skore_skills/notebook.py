@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 MISSING = "jupytext and nbclient are required; add them with add-python-package"
+MISSING_IPYWIDGETS = "ipywidgets is required; add it with add-python-package"
 MISSING_NBCONVERT = "nbconvert is required; add it with add-python-package"
 TEMPLATE_DIR = Path(__file__).with_name("site_assets")
 INLINE_SETUP = "%matplotlib inline"
@@ -18,6 +19,11 @@ except ImportError:  # pragma: no cover - exercised by hiding modules in tests
     jupytext = None
     nbformat = None
     NotebookClient = None
+
+try:
+    import ipywidgets
+except ImportError:  # pragma: no cover - exercised by hiding the module in tests
+    ipywidgets = None
 
 
 def convert(src: Path, out: Path | None = None, *, html: bool = False) -> Path:
@@ -44,13 +50,15 @@ def convert(src: Path, out: Path | None = None, *, html: bool = False) -> Path:
     Raises
     ------
     ImportError
-        When jupytext, nbclient, or (if ``html``) nbconvert is not
-        importable.
+        When jupytext, nbclient, ipywidgets, or (if ``html``) nbconvert
+        is not importable.
     FileNotFoundError
         When ``src`` is missing.
     """
     if jupytext is None or nbformat is None or NotebookClient is None:
         raise ImportError(MISSING)
+    if ipywidgets is None:
+        raise ImportError(MISSING_IPYWIDGETS)
     assert jupytext is not None
     assert nbformat is not None
     assert NotebookClient is not None

@@ -311,7 +311,9 @@ installed, run
 `python -m skore_skills notebook convert experiments/<stem>.py`
 only when the experiment script already exists, with `--html`
 when `policy.site` is also true. Convert re-executes the
-script; say so when it is slow. Missing jupytext / nbclient /
+script; say so when it is slow. If convert fails because
+`ipywidgets` is missing, load `add-python-package` for it
+(agent) and convert again. Missing jupytext / nbclient /
 nbconvert → one-line skip naming `add-python-package`; do not
 fail the turn.
 

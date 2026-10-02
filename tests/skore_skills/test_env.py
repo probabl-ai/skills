@@ -661,6 +661,7 @@ def test_env_sync_execute_runs_subprocess(
         ("jupyterlab", "ask", None),
         ("jupytext", "agent", "agent"),
         ("nbclient", "agent", "agent"),
+        ("ipywidgets", "agent", "agent"),
         ("nbconvert", "agent", "agent"),
         ("mkdocs-material", "agent", "agent"),
         ("pandas", "default", None),

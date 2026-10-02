@@ -405,8 +405,10 @@ summary (optional md / site link); it never reaches convert /
 If `policy.notebooks` is true, `export-ml-notebook` is installed,
 run `python -m skore_skills notebook convert
 data_analysis/data_analysis.py`, with `--html` when `policy.site`
-is also true. Skip in one line otherwise. Missing jupytext /
-nbclient / nbconvert → one-line skip naming `add-python-package`;
+is also true. Skip in one line otherwise. If convert fails
+because `ipywidgets` is missing, load `add-python-package` for
+it (agent) and convert again. Missing jupytext / nbclient /
+nbconvert → one-line skip naming `add-python-package`;
 do not fail the turn, do not `pixi add`.
 
 Then, if `policy.site` is true, `export-ml-site` is installed, run

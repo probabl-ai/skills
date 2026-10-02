@@ -448,8 +448,9 @@ installed, run `python -m skore_skills notebook convert
 audit/<stem>.py` after **Close audit**, with `--html` when
 `policy.site` is also true. The audit has no page of its own: the
 site places its viewer under the matching design note's
-`## Notebooks` section, after the evaluation notebook. Missing
-jupytext / nbclient →
+`## Notebooks` section, after the evaluation notebook. If convert
+fails because `ipywidgets` is missing, load `add-python-package`
+for it (agent) and convert again. Missing jupytext / nbclient →
 one-line skip naming `add-python-package`; do not fail the audit,
 do not `pixi add`.
 

@@ -104,4 +104,5 @@ module = [
     "nbclient",
     "nbformat",
     "nbconvert",
+    "ipywidgets",
 ]

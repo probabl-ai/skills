@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "4083dfb8d20b705e75365e1bb19f109be0bb51ddd28d3d1576e8ca1297389130",
+  "catalog_hash": "53eeb9784d2953cad99e2e44147b547d239ae306ec58b907502a9c01b71bfb42",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "d77e76f71781797efd503f58f0f5c4ddebf89002a05ebd552a559367d1131774"
+      "hash": "1f14dd17dbe6486366370b263ac3610f1075df0b67827c920ffebc68930780c0"
     },
     {
       "id": "frame-ml-problem",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "2c33496ffd3d03b5e23d2ecd9abbc07dc691ea02d8d5314081c1947545cfa039"
+      "hash": "1c230a70912c0164be0246c0ca29cae7f228e9982ba481b6baacb50a88bd4c68"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -57,7 +57,7 @@
       "summary": "Audit a persisted skore report read-only and produce a reusable digest.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "284ebb7392ee5d425961d69e725a553d16c7a45d7971e2e9ca11e893192a4eed"
+      "hash": "7d6a68e831759bbab18cf7776a9e86e54618954d59ccdcad9bc6405714b64001"
     },
     {
       "id": "manage-ml-backlog",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, then coordinate modeling choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "23700a49d873a8baf32674611b759dc982b5fd7ff1438e62b9aba812f66a38e6"
+      "hash": "a29e2d8c80d571d28668cc05f490b120916a6e32964afc1f2ab01803a6132854"
     },
     {
       "id": "choose-python-library",
@@ -210,7 +210,7 @@
       "summary": "Detect or scaffold the standard ML workspace layout.",
       "category": "action",
       "subcategory": null,
-      "hash": "89ccd88145091d67ef2b3313e65a782bcb2d81e1c251cce7d93f26f663f260f5"
+      "hash": "ab1de1a8aa73abc9cb30473054814f018712bfb1e37bfccc9922f29cd7c80fa0"
     },
     {
       "id": "setup-python-env",
@@ -228,7 +228,7 @@
       "summary": "Convert a jupytext percent file into an executed notebook.",
       "category": "tooling",
       "subcategory": "code-quality",
-      "hash": "3fefd56f1f4955be48b119bdd23e9c7d23d08a189b2b8043f883f3fb78d6d5d1"
+      "hash": "1c180bdf2bd83e4907cb74d9fa91e483a1e60dac7fcaabbec7249b5371748fbb"
     },
     {
       "id": "export-ml-site",

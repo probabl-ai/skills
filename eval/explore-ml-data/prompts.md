@@ -180,7 +180,7 @@
 - `data_analysis/data_analysis.md` was just written.
 - `policy.notebooks` is true. `policy.site` is true.
 - `export-ml-notebook` and `export-ml-site` are installed.
-- `jupytext`, `nbclient`, and `nbconvert` are installed.
+- `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are installed.
 
 **Must do:**
 - Write 2–6 sentences of EDA findings.
@@ -233,7 +233,7 @@
 - `data_analysis/data_analysis.md` was just written.
 - `policy.notebooks` is true. `policy.site` is false.
 - `export-ml-notebook` is installed.
-- `jupytext` and `nbclient` are installed.
+- `jupytext`, `nbclient`, and `ipywidgets` are installed.
 
 **Must do:**
 - Run `python -m skore_skills notebook convert
