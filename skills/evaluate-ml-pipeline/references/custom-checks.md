@@ -68,7 +68,6 @@ The ordering is mandatory:
 
 ```python
 report = skore.evaluate(...)
-# optional report.metrics.add(...) first, if requested
 report.checks.add([HighFeatureCount()])
 report.checks.summarize()
 project.put(STEM, report)

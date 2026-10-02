@@ -560,7 +560,7 @@ violated.
 
 ---
 
-## CASE_19 — Register report custom metric before persistence
+## CASE_19 — F2 with beta goes through with_scoring
 
 **User prompt:**
 > Evaluate 06_classifier with an F2 score using beta=2, show it,
@@ -568,24 +568,25 @@ violated.
 
 **Assumed workspace state:**
 - The post-smoke answer was Evaluate in this turn.
-- This is a sklearn-style classifier, not a SkrubLearner.
+- The learner is a SkrubLearner. `pipeline.py` has no
+  `with_scoring`.
 - `python -m skore_skills api get` confirmed the installed
-  `skore.evaluate`, `make_scorer`, and metric-registry signatures.
+  `with_scoring`, `make_scorer`, and `skore.evaluate` signatures.
 
 **Must do:**
-- Load `references/custom-metrics.md` and use the report-registry
-  route.
-- Define a named scorer with `make_scorer(..., beta=2)`.
-- Order the implementation as `skore.evaluate(...)`, then
-  `report.metrics.add(...)`, then
-  `report.metrics.summarize(...)`, then `project.put(...)`.
+- Load `references/custom-metrics.md`.
+- Route back through build and attach
+  `.skb.with_scoring(...)` before `.skb.make_learner()`, with a
+  named scorer from `make_scorer(..., beta=2)`.
+- After that attachment, call `skore.evaluate(learner, data={...})`
+  and read the F2 row from `report.metrics.summarize().frame()`
+  before `project.put(...)`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Call `report.metrics.add`.
 - Pass `scoring=` to `skore.evaluate`.
-- Call `project.put` before registering and computing the F2
-  metric.
-- Use a lambda for the persisted metric.
+- Use a lambda for the persisted scorer.
 
 ---
 
@@ -610,15 +611,15 @@ violated.
   prediction and before `.skb.make_learner()`.
 - Call `skore.evaluate(learner, data={...})` without
   `splitter=`.
-- Inspect the custom scorer with `report.metrics.score()`, then
-  call `project.put(...)`.
+- Read the attached name from `report.metrics.summarize().frame()`,
+  then call `project.put(...)`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Call `report.metrics.add`.
 - Pass `scoring=` to `skore.evaluate`.
 - Put `sample_weight` in `mark_as_X(..., split_kwargs=...)`.
 - Derive scoring weights from the unsplit raw frame.
-- Claim the DataOp scorer appears in `metrics.summarize()`.
 
 ---
 
@@ -675,7 +676,7 @@ violated.
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Define a `Check` subclass or call `report.checks.add`.
 - Pass `scoring=` to `skore.evaluate`.
-- Call `report.metrics.add` without an explicit metric request.
+- Call `report.metrics.add`.
 
 ---
 
@@ -725,7 +726,7 @@ violated.
 
 ---
 
-## CASE_25 — Attached F2 is read with metrics.score
+## CASE_25 — Attached F2 is a summarize row
 
 **User prompt:**
 > Evaluate 09_classifier. The locked comparison metric is F2.
@@ -740,15 +741,14 @@ violated.
 
 **Must do:**
 - Call `skore.evaluate(learner, data={...})` without `splitter=`.
-- Inspect the scorer with `report.metrics.score()`, then
+- Read the F2 row from `report.metrics.summarize().frame()`, then
   `project.put(...)`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Send the learner back to build.
-- Call `report.metrics.add` for the locked F2.
+- Call `report.metrics.add`.
 - Pass `scoring=` to `skore.evaluate`.
-- Claim the DataOp scorer appears in `metrics.summarize()`.
 
 
 ---

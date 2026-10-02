@@ -105,18 +105,15 @@ installed skore version — the dispatch table can evolve.
 
 ## Custom metrics on a SkrubLearner
 
-A locked comparison metric that is not a skore default attaches
-with `.skb.with_scoring(...)` before `.skb.make_learner()`,
-whether or not it needs row metadata. Row-aligned kwargs such
-as per-row sample weights are DataOps aligned with the marked X
-rows. They are not CV `split_kwargs`, and they do not choose
-the route. See `references/custom-metrics.md`.
+A comparison metric that is not a skore default attaches with
+`.skb.with_scoring(...)` before `.skb.make_learner()`, whether
+or not it needs row metadata. Row-aligned kwargs such as
+per-row sample weights are DataOps aligned with the marked X
+rows. They are not CV `split_kwargs`. See
+`references/custom-metrics.md`.
 
-After `skore.evaluate`, inspect these scorers through
-`report.metrics.score()`. They do not become custom rows in
-`report.metrics.summarize()`. For sklearn-style report registry
-metrics, including the required ordering before `Project.put`,
-see `references/custom-metrics.md`.
+After `skore.evaluate`, the attached name is a row in
+`report.metrics.summarize().frame()`.
 
 ## Persisting to the Project store
 
@@ -269,8 +266,8 @@ report = skore.evaluate(
 )
 report
 
-# Custom metrics or checks register here, before the report is stored.
-# DataOp `with_scoring` was attached in build_learner.
+# Custom checks register here, before the report is stored.
+# A non-default metric was attached with `with_scoring` in build.
 
 # %%
 _results = PROJECT_ROOT / "scratch" / "results" / "01_baseline"
