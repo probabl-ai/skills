@@ -1,0 +1,48 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+const buttonVariants = cva(
+  'group relative isolate overflow-hidden inline-flex items-center justify-center gap-2.5 rounded-sm font-sans whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default:
+          'bg-orange text-black duration-600 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black hover:text-white before:absolute before:-inset-y-px before:-inset-x-[66px] before:-z-10 before:origin-right before:scale-x-0 before:bg-[linear-gradient(to_right,transparent,#121212_64px,#121212_calc(100%_-_64px),transparent)] before:transition-transform before:duration-600 before:ease-[cubic-bezier(0.22,1,0.36,1)] hover:before:origin-left hover:before:scale-x-100',
+        inverted:
+          'bg-orange text-black duration-600 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white before:absolute before:-inset-y-px before:-inset-x-[66px] before:-z-10 before:origin-right before:scale-x-0 before:bg-[linear-gradient(to_right,transparent,#ffffff_64px,#ffffff_calc(100%_-_64px),transparent)] before:transition-transform before:duration-600 before:ease-[cubic-bezier(0.22,1,0.36,1)] hover:before:origin-left hover:before:scale-x-100',
+        dark:
+          'bg-black text-white duration-600 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-orange hover:text-black before:absolute before:-inset-y-px before:-inset-x-[66px] before:-z-10 before:origin-right before:scale-x-0 before:bg-[linear-gradient(to_right,transparent,#FF7900_64px,#FF7900_calc(100%_-_64px),transparent)] before:transition-transform before:duration-600 before:ease-[cubic-bezier(0.22,1,0.36,1)] hover:before:origin-left hover:before:scale-x-100',
+        ghost: 'bg-transparent text-black hover:bg-black/5',
+      },
+      size: {
+        default: 'h-11 px-4 text-15',
+        lg: 'h-11 px-4 text-17',
+        sm: 'h-9 px-4 text-15',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+);
+
+interface Props extends HTMLAttributes<'a'>, VariantProps<typeof buttonVariants> {
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  arrow?: boolean;
+}
+
+const { href, type = 'button', variant, size, arrow = true, class: className, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  class:list={[buttonVariants({ variant, size }), className]}
+  {...rest}
+>
+  <slot />
+  {arrow && <span class="relative top-[-0.5px]" aria-hidden="true">→</span>}
+</Tag>

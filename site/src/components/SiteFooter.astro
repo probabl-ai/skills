@@ -1,0 +1,51 @@
+---
+import { Image } from 'astro:assets';
+import iconDiscord from '../assets/images/icon-discord.svg';
+import iconGithub from '../assets/images/icon-github.svg';
+import iconLinkedin from '../assets/images/icon-linkedin.svg';
+import iconLivestorm from '../assets/images/icon-livestorm.svg';
+import iconYoutube from '../assets/images/icon-youtube.svg';
+import logo from '../assets/images/logo.svg';
+import Container from './Container.astro';
+
+const socials = [
+  { label: 'YouTube', icon: iconYoutube, href: 'https://www.youtube.com/@probabl_ai' },
+  { label: 'LinkedIn', icon: iconLinkedin, href: 'https://www.linkedin.com/company/probabl' },
+  { label: 'GitHub', icon: iconGithub, href: 'https://github.com/probabl-ai' },
+  { label: 'Discord', icon: iconDiscord, href: 'https://discord.com/invite/f3j8hBSWM7' },
+  { label: 'Livestorm', icon: iconLivestorm, href: 'https://app.livestorm.co/probabl/' },
+];
+---
+<footer class="bg-beige">
+  <Container class="py-10">
+    <a href="https://www.probabl.ai/" class="inline-block">
+      <Image src={logo} alt="Probabl" width={123} height={35} />
+    </a>
+    <p class="mt-6 max-w-sm text-17">The Tabular AI Company</p>
+    <ul class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-15">
+      <li>
+        <a href="https://www.probabl.ai/" class="link-underline-hover">probabl.ai</a>
+      </li>
+      <li>
+        <a href="https://github.com/probabl-ai/skills" class="link-underline-hover">GitHub</a>
+      </li>
+    </ul>
+    <ul class="mt-8 flex items-center gap-3.5 border-t border-black/10 pt-4">
+      {
+        socials.map((social) => (
+          <li>
+            <a
+              href={social.href}
+              target="_blank"
+              rel="noopener"
+              class="inline-flex rounded-sm transition-opacity hover:opacity-70"
+              aria-label={`Probabl on ${social.label}`}
+            >
+              <Image src={social.icon} alt="" class="block size-4.5" />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</footer>

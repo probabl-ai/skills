@@ -1,0 +1,144 @@
+---
+import ArrowLink from '../components/ArrowLink.astro';
+import Button from '../components/Button.astro';
+import Container from '../components/Container.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Layout from '../layouts/Layout.astro';
+import { FULL_COMPANION_ID, activeSkillGroups, deprecatedSkills, loadCatalog } from '../lib/catalog';
+
+const catalog = loadCatalog();
+const groups = activeSkillGroups(catalog);
+const deprecated = deprecatedSkills(catalog);
+
+const description =
+  'Skills that keep machine learning methodology in place while agents implement with scikit-learn, skrub, skore, pandas, and polars.';
+---
+<Layout title="Probabl Skills" description={description}>
+  <SiteHeader />
+  <main id="main">
+    <section aria-labelledby="hero-heading" class="bg-white">
+      <Container class="py-16 text-center md:py-24">
+        <div class="mx-auto max-w-4xl">
+          <Eyebrow highlight size="12">Probabl Skills</Eyebrow>
+          <h1 id="hero-heading" class="mx-auto mt-7 max-w-4xl text-64 text-balance">
+            Focus on the science. The companion organizes the rest.
+          </h1>
+          <p class="mx-auto mt-7 max-w-2xl text-17">
+            Agents implement with scikit-learn, skrub, skore, pandas, and polars. The skills keep the methodology.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+            <Button href="#install">Install</Button>
+            <ArrowLink href="https://skore.probabl.ai/" external size="sm">Skore Hub</ArrowLink>
+          </div>
+        </div>
+      </Container>
+    </section>
+
+    <section id="install" aria-labelledby="install-heading" class="bg-beige">
+      <Container class="py-16 md:py-20">
+        <Eyebrow>Install</Eyebrow>
+        <h2 id="install-heading" class="mt-4 max-w-3xl text-40">Install the companion, or a smaller pack.</h2>
+        <div class="mt-10 grid gap-10 md:grid-cols-3">
+          <div>
+            <h3 class="text-25">skore CLI</h3>
+            <p class="mt-3 text-15">
+              Install <a href="https://github.com/probabl-ai/skore-cli" class="link-underline-hover">skore-cli</a>, then install every active skill.
+            </p>
+            <pre class="mt-4 overflow-x-auto rounded-sm bg-white p-4 font-mono text-13"><code>pip install skore-cli
+uv tool install skore-cli
+pixi global install skore-cli
+
+skore skills install</code></pre>
+          </div>
+          <div>
+            <h3 class="text-25">Workflow packs</h3>
+            <p class="mt-3 text-15">
+              Install a smaller pack when you do not need the full companion. <code class="font-mono text-13">ml-experimentation</code> is that full pack, and it is what <code class="font-mono text-13">skore skills install</code> installs.
+            </p>
+            <pre class="mt-4 overflow-x-auto rounded-sm bg-white p-4 font-mono text-13"><code>skore skills install setup
+skore skills install data_analysis
+skore skills install model
+skore skills install loop
+skore skills install export</code></pre>
+          </div>
+          <div>
+            <h3 class="text-25">Other installers</h3>
+            <p class="mt-3 text-15">Add the repo with npx, or install the Claude Code plugin marketplace.</p>
+            <pre class="mt-4 overflow-x-auto rounded-sm bg-white p-4 font-mono text-13"><code>npx skills add probabl-ai/skills
+
+/plugin marketplace add probabl-ai/skills
+/plugin install probabl-skills@probabl-skills</code></pre>
+          </div>
+        </div>
+      </Container>
+    </section>
+
+    <section id="packs" aria-labelledby="packs-heading" class="bg-white">
+      <Container class="py-16 md:py-20">
+        <Eyebrow>Workflow packs</Eyebrow>
+        <h2 id="packs-heading" class="mt-4 max-w-3xl text-40">Six packs, from setup to the full companion.</h2>
+        <ul class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {
+            catalog.workflows.map((workflow) => (
+              <li class="flex flex-col rounded-sm border border-black/10 p-6">
+                {workflow.id === FULL_COMPANION_ID && (
+                  <Eyebrow highlight class="mb-3">Full companion</Eyebrow>
+                )}
+                <h3 class="text-25">{workflow.title}</h3>
+                <p class="mt-3 text-15">{workflow.summary}</p>
+                <p class="mt-auto pt-6 font-mono text-11 uppercase tracking-[0.5px] text-black/50">
+                  {workflow.includes.length} skills
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </Container>
+    </section>
+
+    <section id="skills" aria-labelledby="skills-heading" class="bg-beige">
+      <Container class="py-16 md:py-20">
+        <Eyebrow>Catalog</Eyebrow>
+        <h2 id="skills-heading" class="mt-4 max-w-3xl text-40">What the skills do.</h2>
+        <div class="mt-12 space-y-14">
+          {
+            groups.map((group) => (
+              <div>
+                <h3 class="text-32">{group.label}</h3>
+                <ul class="mt-4 divide-y divide-black/10 border-y border-black/10">
+                  {group.skills.map((skill) => (
+                    <li class="grid gap-2 py-4 md:grid-cols-12 md:gap-6">
+                      <p class="text-17 font-medium md:col-span-4">{skill.title}</p>
+                      <p class="text-15 md:col-span-8">{skill.summary}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+        {
+          deprecated.length > 0 && (
+            <div class="mt-14 text-black/60">
+              <h3 class="text-25">Compatibility</h3>
+              <p class="mt-3 max-w-2xl text-15">
+                These skills stay in the catalog for existing installs. They are not part of a workflow pack.
+              </p>
+              <ul class="mt-4 divide-y divide-black/10 border-y border-black/10">
+                {deprecated.map((skill) => (
+                  <li class="grid gap-2 py-4 md:grid-cols-12 md:gap-6">
+                    <p class="text-17 font-medium md:col-span-4">{skill.title}</p>
+                    <p class="text-15 md:col-span-8">{skill.summary}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+      </Container>
+    </section>
+  </main>
+  <SiteFooter />
+</Layout>

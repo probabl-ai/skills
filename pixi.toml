@@ -107,6 +107,14 @@ pre-commit = "*"
 [feature.lint.tasks]
 lint = { cmd = "pre-commit run --all-files", description = "Run pre-commit hooks (ruff, mypy, typos)." }
 
+[feature.site.dependencies]
+nodejs = "22.*"
+
+[feature.site.tasks]
+site-install = { cmd = "npm ci", cwd = "site", description = "Install the website dependencies from site/package-lock.json." }
+site-build = { cmd = "npm run build", cwd = "site", depends-on = ["site-install"], description = "Build the website into site/dist/." }
+site-dev = { cmd = "npm run dev", cwd = "site", depends-on = ["site-install"], description = "Serve the website locally with live reload." }
+
 [feature.py311.dependencies]
 python = "3.11.*"
 
@@ -122,6 +130,7 @@ python = "3.14.*"
 [environments]
 eval = { features = ["eval"] }
 lint = { features = ["lint"] }
+site = { features = ["site"], no-default-feature = true }
 test-py311 = { features = ["test", "py311"] }
 test-py312 = { features = ["test", "py312"] }
 test-py313 = { features = ["test", "py313"] }

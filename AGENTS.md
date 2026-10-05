@@ -102,3 +102,10 @@ beyond the 1% auto threshold in `codecov.yml`).
 Catalog-only edits (`skills/`, `.catalog.json`, plugin manifests):
 run `pixi run check`. Do not run the LLM eval suite unless the PR
 touches `eval/` or `skills/*/SKILL.md`.
+
+## Website (`site/`)
+
+`site/` is an Astro app. The `site` Pixi environment provides Node.js
+and nothing else. Build with `pixi run -e site site-build`.
+The page reads `../.catalog.json`. Catalog edits still go through
+`pixi run check`. Do not run the LLM eval suite for site-only changes.

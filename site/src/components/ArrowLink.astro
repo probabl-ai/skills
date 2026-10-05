@@ -1,0 +1,53 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'a'> {
+  href: string;
+  size?: 'default' | 'sm' | 'md' | 'lg';
+  underline?: boolean;
+  external?: boolean;
+  arrowHover?: boolean;
+  class?: string;
+}
+
+const {
+  href,
+  size = 'default',
+  underline = false,
+  external = false,
+  arrowHover = true,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const gap = {
+  default: 'gap-3',
+  sm: 'gap-2.5',
+  md: 'gap-2.5',
+  lg: 'gap-3',
+}[size];
+
+const textSize = {
+  default: 'text-inherit',
+  sm: 'text-15',
+  md: 'text-17',
+  lg: 'text-17',
+}[size];
+---
+<a
+  href={href}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener' : undefined}
+  class:list={['group inline-flex items-center text-inherit', gap, textSize, className]}
+  {...rest}
+>
+  <span class:list={['tracking-[-0.12px]', underline && 'link-underline']}>
+    <slot />
+  </span>
+  <span
+    aria-hidden="true"
+    class:list={['relative top-[-0.5px]', arrowHover && 'transition-transform duration-200 group-hover:translate-x-0.5']}
+  >
+    {external ? '↗' : '→'}
+  </span>
+</a>

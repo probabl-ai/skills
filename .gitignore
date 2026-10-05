@@ -22,3 +22,8 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 .spec/
+
+# Skills site (Astro). Built in CI; see site/README.md.
+site/node_modules/
+site/dist/
+site/.astro/

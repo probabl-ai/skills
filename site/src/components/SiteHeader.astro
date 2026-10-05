@@ -1,0 +1,20 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/images/logo.svg';
+import ArrowLink from './ArrowLink.astro';
+import Button from './Button.astro';
+import Container from './Container.astro';
+---
+<header class="bg-white">
+  <nav aria-label="Main">
+    <Container class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-6">
+      <a href="https://www.probabl.ai/" class="shrink-0">
+        <Image class="h-8 w-auto md:h-9" src={logo} alt="Probabl" loading="eager" />
+      </a>
+      <div class="flex items-center gap-6">
+        <ArrowLink href="https://github.com/probabl-ai/skills" external size="sm">GitHub</ArrowLink>
+        <Button href="#install">Install</Button>
+      </div>
+    </Container>
+  </nav>
+</header>

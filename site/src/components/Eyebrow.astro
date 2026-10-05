@@ -1,0 +1,16 @@
+---
+import type { HTMLTag } from 'astro/types';
+
+interface Props {
+  as?: HTMLTag;
+  class?: string;
+  id?: string;
+  highlight?: boolean;
+  size?: '11' | '12';
+}
+
+const { as: Tag = 'p', class: className, id, highlight = false, size = '11' } = Astro.props;
+---
+<Tag class:list={['font-mono uppercase', highlight && 'text-orange', size === '12' ? 'text-xs' : 'text-11', className]} id={id}>
+  <slot />
+</Tag>
