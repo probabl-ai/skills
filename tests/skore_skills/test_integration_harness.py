@@ -207,6 +207,47 @@ def test_timeout_kills_the_process_group(tmp_path: Path) -> None:
                 os.kill(pid, 9)
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows uses taskkill, not killpg")
+def test_timeout_kills_the_pid_when_killpg_is_denied(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pids: list[int] = []
+
+    def deny_group(pid: int, sig: int) -> None:
+        raise PermissionError(1, "Operation not permitted")
+
+    def popen(argv, **kwargs):
+        import subprocess
+
+        process = subprocess.Popen(argv, **kwargs)
+        pids.append(process.pid)
+        return process
+
+    monkeypatch.setattr(integration_harness.os, "killpg", deny_group)
+    launch = PreparedLaunch(
+        argv=[sys.executable, "-c", "import time; time.sleep(60)"],
+        cwd=tmp_path,
+        env=os.environ.copy(),
+        cleanup=lambda: None,
+    )
+    try:
+        status = execute_launch(
+            launch,
+            interactive=False,
+            timeout=0.2,
+            stdout_path=tmp_path / "logs" / "stdout.txt",
+            stderr_path=tmp_path / "logs" / "stderr.txt",
+            popen=popen,
+        )
+        assert status == EXIT_TIMEOUT
+        with pytest.raises(OSError):
+            os.kill(pids[0], 0)
+    finally:
+        for pid in pids:
+            with suppress(OSError):
+                os.kill(pid, 9)
+
+
 def test_interrupt_returns_130() -> None:
     killed: list[int] = []
 

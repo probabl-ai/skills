@@ -216,3 +216,8 @@ def _terminate_process_group(pid: int) -> None:
             os.killpg(pid, sig)
         except ProcessLookupError:
             return
+        except PermissionError:
+            try:
+                os.kill(pid, sig)
+            except ProcessLookupError:
+                return
