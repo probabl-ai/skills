@@ -362,8 +362,8 @@ Re-emit it with evidence before the final message.
 
 ## References
 
-- `references/snapshot.md` — unfitted HTML, experiment cells,
-  optional site build.
+- `references/snapshot.md` — unfitted Method report, experiment
+  cells, optional site build.
 - `references/layer_examples.md` — three layers. Read before
   proposing Layer 2.
 - `references/source-binding.md` — identifier versus materialized

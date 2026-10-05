@@ -16,7 +16,7 @@
         "The response does NOT: Write `from sklearn.pipeline import Pipeline` as a live import in `pipeline.py`.",
         "The response does NOT: Return a `Pipeline([(\"scaler\", StandardScaler()), ...])` object from `build_learner` / `build_pipeline`. A docstring that only names the forbidden equivalent is not a violation.",
         "The response does NOT: Use `skrub.X(...)` / `skrub.y(...)` as graph roots.",
-        "The response does NOT: Call `learner.report(...)` or `full_report` to snapshot the Method diagram (that fits; use `_repr_html_` / `estimator_html_repr`)."
+        "The response does NOT: Call `learner.report(...)` or `full_report` without `eval=False` (that fits). When `eval` is a parameter, a Method snapshot is `learner.report(eval=False, open=False, overwrite=True, output_dir=...)`. When `eval` is absent, use `_repr_html_` / `estimator_html_repr`."
       ],
       "tools": false,
       "sandbox": [],
@@ -371,11 +371,11 @@
       "id": 20,
       "title": "Skipped EDA still builds the site before Evaluate",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Approved `journal/01_baseline.md`.\n- `status.data_analysis` is `skipped`. No\n  `data_analysis/data_analysis.md`.\n- `policy.site` is true. `export-ml-site` is installed.]\n\nThe design is approved. Declare the learner. EDA was skipped.",
-      "expected_output": "Behavioural response satisfying: - After the unfitted `scratch/results/01_baseline/pipeline.html` snapshot, run `python -m skore_skills site build` before `smoke run` and before the Evaluate question. - In the checkpoint, link `report.html` and `html/01_baseline.html` (Method diagram). Do not link the design-note markdown instead. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Defer `site build` until after `skore.evaluate`. - Skip the site because EDA was skipped.",
+      "expected_output": "Behavioural response satisfying: - After the unfitted Method snapshot (`scratch/results/01_baseline/pipeline/` when `DataOp.skb.report` accepts `eval`, otherwise `pipeline.html`), run `python -m skore_skills site build` before `smoke run` and before the Evaluate question. - In the checkpoint, link `report.html` and `html/01_baseline.html` (Method DataOp report). Do not link the design-note markdown instead. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Defer `site build` until after `skore.evaluate`. - Skip the site because EDA was skipped.",
       "files": [],
       "expectations": [
-        "After the unfitted `scratch/results/01_baseline/pipeline.html` snapshot, run `python -m skore_skills site build` before `smoke run` and before the Evaluate question.",
-        "In the checkpoint, link `report.html` and `html/01_baseline.html` (Method diagram). Do not link the design-note markdown instead.",
+        "After the unfitted Method snapshot (`scratch/results/01_baseline/pipeline/` when `DataOp.skb.report` accepts `eval`, otherwise `pipeline.html`), run `python -m skore_skills site build` before `smoke run` and before the Evaluate question.",
+        "In the checkpoint, link `report.html` and `html/01_baseline.html` (Method DataOp report). Do not link the design-note markdown instead.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Defer `site build` until after `skore.evaluate`.",
         "The response does NOT: Skip the site because EDA was skipped."
@@ -480,16 +480,17 @@
       "id": 26,
       "title": "SVG format error is not a pipeline rewrite",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Design note approved; `import skrub` succeeds.\n- Smoke is green.]\n\nThe learner cell printed Format: \"svg\" not recognized instead of\na figure.",
-      "expected_output": "Behavioural response satisfying: - Load `add-python-package` for `skrub`, then redraw once. - Keep the skrub DataOps graph. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Substitute `sklearn.Pipeline` / `make_pipeline`. - Run `pip install graphviz`.",
+      "expected_output": "Behavioural response satisfying: - Load `add-python-package` for `skrub`, then run `learner.report(eval=False, open=False, overwrite=True, output_dir=...)` once more. - Keep the skrub DataOps graph. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Substitute `sklearn.Pipeline` / `make_pipeline`. - Run `pip install graphviz`.",
       "files": [],
       "expectations": [
-        "Load `add-python-package` for `skrub`, then redraw once.",
+        "Load `add-python-package` for `skrub`, then run `learner.report(eval=False, open=False, overwrite=True, output_dir=...)` once more.",
         "Keep the skrub DataOps graph.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Substitute `sklearn.Pipeline` / `make_pipeline`.",
         "The response does NOT: Run `pip install graphviz`.",
         "The response does NOT: Call `env add` or `env graphviz` from this skill.",
-        "The response does NOT: Skip the figure because `pipeline.html` already exists or because the SVG step was marked optional."
+        "The response does NOT: Skip the report because `pipeline.html` already exists or because `draw_graph` was optional.",
+        "The response does NOT: Call `full_report`, or `learner.report` without `eval=False`."
       ],
       "tools": false,
       "sandbox": [],

@@ -95,9 +95,9 @@ and `frame show` already returned `proceed` with a non-null
 - Name the post-smoke Evaluate / Modify / Stop question before
   evaluate.
 - Run `python -m skore_skills site build` after the unfitted
-  `pipeline.html` snapshot (before Evaluate is fine) so Method
-  shows the diagram, and again after the implement loop before
-  git end-turn.
+  Method snapshot (`pipeline/` or `pipeline.html`; before
+  Evaluate is fine) so Method shows the DataOp report, and again
+  after the implement loop before git end-turn.
 - Run `python -m skore_skills git end-turn --stage implement`.
 
 **Must NOT do:**
@@ -415,9 +415,9 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - Dispatch `build-ml-pipeline`.
 - Require `python -m skore_skills site build` after the unfitted
-  `pipeline.html` snapshot and before the Evaluate question,
-  inside that build.
-- Keep the post-loop `site build` for the fitted diagram.
+  Method snapshot (`pipeline/` or `pipeline.html`) and before
+  the Evaluate question, inside that build.
+- Keep the post-loop `site build` for the same unevaluated report.
 - Name `report.html` when each site build runs.
 
 **Must NOT do:**

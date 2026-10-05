@@ -236,12 +236,19 @@ JSON `locator` verbatim. Missing locator is
 
 The script writes `report._repr_html_()` to
 `scratch/results/<stem>/report.html` and `repr(report)` to
-`report.txt`. It overwrites `pipeline.html` from a fitted
-estimator: `report.estimator_` on `EstimatorReport`,
+`report.txt`. It regenerates the Method viewer from the stored
+learner: `report.estimator_` on `EstimatorReport`,
 `report.reports_[0].estimator_` on `CrossValidationReport`.
-Prefer `_repr_html_` when the fitted object defines it.
-Confirm with `api get`. Do not call `SkrubLearner.report` or
-`full_report`.
+Confirm `eval` on `DataOp.skb.report` with `api get`.
+`learner.report` forwards it. When `eval` is a parameter, call
+`learner.report` with `eval=False`, `open=False`,
+`overwrite=True`, and `output_dir` set to
+`scratch/results/<stem>/pipeline`. No `environment`. That does
+not fit. Do not call `full_report`, and do not call `report`
+without `eval=False`. If `eval` is absent, or Graphviz still
+fails after one `add-python-package` retry for `skrub`, write
+`pipeline.html` from `_repr_html_` or
+`sklearn.utils.estimator_html_repr`.
 
 ## End of turn
 

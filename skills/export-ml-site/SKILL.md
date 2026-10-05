@@ -31,7 +31,8 @@ Checks / Metrics. `### Metrics` is a heading; the scores are the
 embedded `metrics.html` viewer, not a second markdown table.
 Extra slugs use `<!-- results-embed: <slug> -->` under
 `## Results` **or** `## Method` (`pipeline` is the Method
-diagram: unfitted after construct, fitted after evaluate).
+DataOp report when `pipeline/index.html` exists, otherwise
+the graph file `pipeline.html`).
 Only Markdown and already-generated notebook/HTML viewers are
 exported. The gitignored serialized Skore `reports/` directory is
 private runtime state and is never copied into the site.

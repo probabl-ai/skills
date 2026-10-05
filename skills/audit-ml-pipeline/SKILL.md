@@ -62,8 +62,8 @@ and never dispatches audit back.
 |---|---|---|---|
 | `audit/<NN>_<short_name>.py` | **Durable** (in git) | This skill, once per experiment | The bare-expression cells. Source of truth. Can be opened as a notebook in JupyterLab / VS Code for the rich HTML view |
 | `scratch/audit/<stem>/audit.md` | Ephemeral (gitignored), optional | `cells run` when given a 2nd arg | Per-cell markdown digest: source + stdout + last-expression `repr`. Same content as stdout |
-| `scratch/results/<stem>/snapshot.py` | Ephemeral (gitignored) | Evaluate, from `templates/snapshot.py` | Re-opens the stored report and writes `report.html`, `report.txt`, `locator.txt`, fitted `pipeline.html` |
-| `scratch/results/<stem>/report.html` `report.txt` `locator.txt` `pipeline.html` | Ephemeral (gitignored) | `snapshot.py` | Full-report viewer, text fallback, locator, fitted Method diagram |
+| `scratch/results/<stem>/snapshot.py` | Ephemeral (gitignored) | Evaluate, from `templates/snapshot.py` | Re-opens the stored report and writes `report.html`, `report.txt`, `locator.txt`, and the Method viewer (`pipeline/` or `pipeline.html`) |
+| `scratch/results/<stem>/report.html` `report.txt` `locator.txt` `pipeline/` or `pipeline.html` | Ephemeral (gitignored) | `snapshot.py` | Full-report viewer, text fallback, locator, DataOp report or graph fallback |
 | `scratch/audit/<stem>/viewers.py` | Ephemeral (gitignored) | This skill, from `templates/viewers.py` | Re-opens the report. Writes checks, metrics, and extra viewers, plus `accessors.txt` |
 | `scratch/audit/<stem>/accessors.txt` | Ephemeral (gitignored) | `viewers.py` | `help()` trees. Additional report view labels come from the `Displays` groups here, not from the notebook |
 | `scratch/results/<stem>/checks.html` `metrics.html` and extra `<slug>.html` / `.png` | Ephemeral (gitignored) | `viewers.py` | Per-item viewers the site embeds under `## Results`. The digest already carries the text, so no extra `.txt` is written here |

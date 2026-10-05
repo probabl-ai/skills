@@ -57,9 +57,12 @@ violated.
   `report.txt` from `repr(report)`, and `locator.txt` with the
   normalized G-REPORT-LOCATOR. The experiment file ends at `put`
   and a bare `report`.
-- Overwrite `scratch/results/01_baseline/pipeline.html` from a
-  fitted `estimator_` (`reports_[0].estimator_` on a CV report)
-  inside `snapshot.py`, not `SkrubLearner.report`.
+- When `DataOp.skb.report` accepts `eval`, `snapshot.py` writes
+  `scratch/results/01_baseline/pipeline/` with
+  `learner.report(eval=False, open=False, overwrite=True, output_dir=...)`
+  on the stored learner (`reports_[0].estimator_` on a CV report).
+  No `environment`. That does not fit. If `eval` is absent, write
+  `pipeline.html` from `_repr_html_` or `estimator_html_repr`.
 - Run `python -m skore_skills loop locator --stem 01_baseline` and
   `python -m skore_skills loop artifacts --stem 01_baseline`.
 
@@ -75,8 +78,10 @@ violated.
   The locked comparison is `MAE`.
 - Run `git commit` in this skill or `git push`.
 - Put `write_text` of `report.html`, `report.txt`, `locator.txt`,
-  or `pipeline.html` in `experiments/01_baseline.py`. Those writes
-  belong in `scratch/results/01_baseline/snapshot.py`.
+  or `pipeline.html`, or `learner.report(...)`, in
+  `experiments/01_baseline.py`. Those writes belong in
+  `scratch/results/01_baseline/snapshot.py`.
+- Call `learner.report` or `full_report` without `eval=False`.
 
 ---
 

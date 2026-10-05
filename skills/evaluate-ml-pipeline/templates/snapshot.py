@@ -2,10 +2,15 @@
 
 Do not commit. Re-open the stored report after ``put``. Do not call
 ``skore.evaluate`` or ``project.put``. Writes ``report.html``,
-``report.txt``, ``locator.txt``, and fitted ``pipeline.html``.
-Prefer ``_repr_html_`` on the fitted estimator. Do not call
-``SkrubLearner.report`` or ``full_report``.
+``report.txt``, ``locator.txt``, and the Method viewer. When
+``DataOp.skb.report`` accepts ``eval``, write
+``scratch/results/<stem>/pipeline/`` with ``eval=False`` (no fit).
+Otherwise write ``pipeline.html`` from ``_repr_html_`` or
+``estimator_html_repr``. Do not call ``full_report``. Do not call
+``report`` without ``eval=False``.
 """
+
+import inspect
 
 import skore
 from sklearn.utils import estimator_html_repr
@@ -30,11 +35,23 @@ results.mkdir(parents=True, exist_ok=True)
 (results / "report.txt").write_text(repr(report) + "\n", encoding="utf-8")
 (results / "locator.txt").write_text(LOCATOR + "\n", encoding="utf-8")
 
-fitted = (
+learner = (
     report.estimator_
     if hasattr(report, "estimator_")
     else report.reports_[0].estimator_
 )
-render = getattr(fitted, "_repr_html_", None)
-pipeline_html = render() if callable(render) else estimator_html_repr(fitted)
-(results / "pipeline.html").write_text(pipeline_html, encoding="utf-8")
+data_op = getattr(getattr(learner, "data_op", None), "skb", None)
+method = getattr(data_op, "report", None)
+if callable(method) and "eval" in inspect.signature(method).parameters:
+    learner.report(
+        eval=False,
+        open=False,
+        overwrite=True,
+        output_dir=results / "pipeline",
+    )
+else:
+    render = getattr(learner, "_repr_html_", None)
+    (results / "pipeline.html").write_text(
+        render() if callable(render) else estimator_html_repr(learner),
+        encoding="utf-8",
+    )

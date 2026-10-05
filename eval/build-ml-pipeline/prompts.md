@@ -54,8 +54,10 @@ violated.
   from `build_learner` / `build_pipeline`. A docstring that only
   names the forbidden equivalent is not a violation.
 - Use `skrub.X(...)` / `skrub.y(...)` as graph roots.
-- Call `learner.report(...)` or `full_report` to snapshot the Method
-  diagram (that fits; use `_repr_html_` / `estimator_html_repr`).
+- Call `learner.report(...)` or `full_report` without `eval=False`
+  (that fits). When `eval` is a parameter, a Method snapshot is
+  `learner.report(eval=False, open=False, overwrite=True, output_dir=...)`.
+  When `eval` is absent, use `_repr_html_` / `estimator_html_repr`.
 
 ---
 
@@ -597,11 +599,13 @@ violated.
 - `policy.site` is true. `export-ml-site` is installed.
 
 **Must do:**
-- After the unfitted `scratch/results/01_baseline/pipeline.html`
-  snapshot, run `python -m skore_skills site build` before
-  `smoke run` and before the Evaluate question.
+- After the unfitted Method snapshot
+  (`scratch/results/01_baseline/pipeline/` when `DataOp.skb.report`
+  accepts `eval`, otherwise `pipeline.html`), run
+  `python -m skore_skills site build` before `smoke run` and
+  before the Evaluate question.
 - In the checkpoint, link `report.html` and
-  `html/01_baseline.html` (Method diagram). Do not link the
+  `html/01_baseline.html` (Method DataOp report). Do not link the
   design-note markdown instead.
 
 **Must NOT do:**
@@ -747,7 +751,9 @@ violated.
 - Smoke is green.
 
 **Must do:**
-- Load `add-python-package` for `skrub`, then redraw once.
+- Load `add-python-package` for `skrub`, then run
+  `learner.report(eval=False, open=False, overwrite=True, output_dir=...)`
+  once more.
 - Keep the skrub DataOps graph.
 
 **Must NOT do:**
@@ -755,5 +761,6 @@ violated.
 - Substitute `sklearn.Pipeline` / `make_pipeline`.
 - Run `pip install graphviz`.
 - Call `env add` or `env graphviz` from this skill.
-- Skip the figure because `pipeline.html` already exists or
-  because the SVG step was marked optional.
+- Skip the report because `pipeline.html` already exists or
+  because `draw_graph` was optional.
+- Call `full_report`, or `learner.report` without `eval=False`.

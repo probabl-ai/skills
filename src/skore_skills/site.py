@@ -53,9 +53,16 @@ RESULT_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".svg", ".gif"}
 # viewer fits the report exactly. Reading the document from the parent is
 # blocked under ``file://``; postMessage is not. Measure the body box, not
 # the root: the root stretches to the frame and would never shrink back.
+# A skrub node page sizes itself with ``100vh``. Measuring that and
+# resizing the frame shrinks the iframe on every click, so those pages
+# ask the viewer to drop the inline height and use its own CSS height.
 HEIGHT_REPORTER = """<script>
 (() => {
   const post = () => {
+    if (document.querySelector(".data_op-node")) {
+      parent.postMessage({ type: "skore-embed-height", fill: true }, "*");
+      return;
+    }
     const style = getComputedStyle(document.body);
     parent.postMessage(
       {
@@ -146,6 +153,17 @@ def result_source(
 ) -> Path | None:
     """Return the scratch snapshot when it exists."""
     path = root / "scratch" / "results" / stem / f"{kind}{suffix}"
+    return path if path.is_file() else None
+
+
+def result_report_dest(stem: str, kind: str) -> str:
+    """Return the staged iframe path of a multi-page report."""
+    return f"{stem}.{kind}/index.html"
+
+
+def result_report_source(root: Path, stem: str, kind: str) -> Path | None:
+    """Return ``kind/index.html`` when that report directory exists."""
+    path = root / "scratch" / "results" / stem / kind / "index.html"
     return path if path.is_file() else None
 
 
@@ -422,6 +440,8 @@ def _append_after_embed_marker(section: str, slug: str, embed: str) -> str:
 
 def _result_embed(root: Path, stem: str, slug: str, title: str) -> str | None:
     """Return an HTML or image embed for a scratch snapshot."""
+    if result_report_source(root, stem, slug) is not None:
+        return render_embed(result_report_dest(stem, slug), title, autosize=True)
     html = result_source(root, stem, slug, ".html")
     if html is not None:
         name = result_dest(stem, slug, ".html")
@@ -443,6 +463,7 @@ def _inject_marked_embeds(section: str, root: Path, stem: str, title: str) -> st
         if embed is None:
             continue
         names = [
+            result_report_dest(stem, slug),
             result_dest(stem, slug, ".html"),
             *(result_dest(stem, slug, suffix) for suffix in RESULT_IMAGE_SUFFIXES),
         ]
@@ -469,7 +490,11 @@ def inject_results(text: str, page: Page, root: Path) -> str:
         embed = _result_embed(root, stem, kind, f"{page.title} {heading.lower()}")
         if embed is None:
             continue
-        name = result_dest(stem, kind)
+        name = (
+            result_report_dest(stem, kind)
+            if result_report_source(root, stem, kind) is not None
+            else result_dest(stem, kind)
+        )
         if f'src="{name}"' in section:
             continue
         section = _append_under_heading(section, heading, embed)
@@ -552,6 +577,21 @@ def _copy_result_html(root: Path, docs: Path, page: Page) -> None:
     if not directory.is_dir():
         return
     for path in directory.iterdir():
+        if path.is_dir() and (path / "index.html").is_file():
+            dest_dir = docs / f"{stem}.{path.name}"
+            for item in path.rglob("*"):
+                if not item.is_file():
+                    continue
+                target = dest_dir / item.relative_to(path)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if item.suffix.lower() == ".html":
+                    target.write_text(
+                        as_embed_document(item.read_text(encoding="utf-8")),
+                        encoding="utf-8",
+                    )
+                else:
+                    shutil.copy2(item, target)
+            continue
         if not path.is_file():
             continue
         suffix = path.suffix.lower()

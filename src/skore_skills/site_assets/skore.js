@@ -193,6 +193,11 @@
     if (!data || data.type !== "skore-embed-height") return;
     document.querySelectorAll("iframe[data-skore-autosize]").forEach((frame) => {
       if (frame.contentWindow !== event.source) return;
+      if (data.fill) {
+        frame.style.removeProperty("height");
+        frame.style.removeProperty("min-height");
+        return;
+      }
       frame.style.height = `${data.height}px`;
       frame.style.minHeight = "0";
     });

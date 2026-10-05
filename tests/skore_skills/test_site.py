@@ -848,6 +848,53 @@ def test_inject_results_embeds_pipeline_under_method(tmp_path: Path) -> None:
     assert "## Risks" in once
 
 
+def test_inject_results_prefers_pipeline_report_directory(tmp_path: Path) -> None:
+    """A DataOp report hugs the graph, and node pages fill the viewer."""
+    stem = "01_x"
+    results = tmp_path / "scratch" / "results" / stem
+    report = results / "pipeline"
+    report.mkdir(parents=True)
+    (report / "index.html").write_text(
+        '<!DOCTYPE html><html><body><a href="node_0.html">step</a></body></html>\n',
+        encoding="utf-8",
+    )
+    (report / "node_0.html").write_text(
+        '<!DOCTYPE html><html><body><a href="index.html">top</a></body></html>\n',
+        encoding="utf-8",
+    )
+    (results / "pipeline.html").write_text("<html>pipeline</html>\n", encoding="utf-8")
+    page = site_mod.Page(
+        stem,
+        tmp_path / f"{stem}.md",
+        f"{stem}.md",
+        None,
+        "Experiments",
+        None,
+    )
+    source = (
+        "# design\n\n## Method\n\n"
+        "Ridge on the skrub graph.\n"
+        "<!-- results-embed: pipeline -->\n\n"
+        "## Risks\n\nLeakage.\n"
+    )
+    once = site_mod.inject_results(source, page, tmp_path)
+    twice = site_mod.inject_results(once, page, tmp_path)
+    assert twice == once
+    assert '<iframe src="01_x.pipeline/index.html"' in once
+    assert '<iframe src="01_x.pipeline.html"' not in once
+    assert "data-skore-autosize" in once
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    site_mod._copy_result_html(tmp_path, docs, page)
+    index = (docs / "01_x.pipeline" / "index.html").read_text(encoding="utf-8")
+    node = (docs / "01_x.pipeline" / "node_0.html").read_text(encoding="utf-8")
+    assert 'href="node_0.html"' in index
+    assert 'href="index.html"' in node
+    assert "skore-embed-height" in index
+    assert ".data_op-node" in index
+    assert "fill: true" in node
+
+
 def test_inject_results_skips_method_without_pipeline_marker(
     tmp_path: Path,
 ) -> None:

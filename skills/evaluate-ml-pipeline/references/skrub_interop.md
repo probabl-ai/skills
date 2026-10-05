@@ -292,6 +292,8 @@ Agent snapshot, not a notebook cell. Copy
 and run it after `put` has stored the report:
 
 ```python
+import inspect
+
 import skore
 from sklearn.utils import estimator_html_repr
 
@@ -312,13 +314,26 @@ results.mkdir(parents=True, exist_ok=True)
 (results / "report.html").write_text(report._repr_html_(), encoding="utf-8")
 (results / "report.txt").write_text(repr(report) + "\n", encoding="utf-8")
 (results / "locator.txt").write_text(LOCATOR + "\n", encoding="utf-8")
-fitted = report.reports_[0].estimator_
-# Prefer `_repr_html_` when the fitted object defines it (DataOps
-# graph); else `sklearn.utils.estimator_html_repr`. Confirm with
-# `api get`. Do not call `SkrubLearner.report` / `full_report`.
-render = getattr(fitted, "_repr_html_", None)
-pipeline_html = render() if callable(render) else estimator_html_repr(fitted)
-(results / "pipeline.html").write_text(pipeline_html, encoding="utf-8")
+learner = report.reports_[0].estimator_
+# Confirm `eval` on `DataOp.skb.report` with `api get`.
+# `learner.report` forwards it. `eval=False` does not fit.
+# Do not call `full_report` or `report` without `eval=False`.
+# If `eval` is absent, write `pipeline.html` instead.
+data_op = getattr(getattr(learner, "data_op", None), "skb", None)
+method = getattr(data_op, "report", None)
+if callable(method) and "eval" in inspect.signature(method).parameters:
+    learner.report(
+        eval=False,
+        open=False,
+        overwrite=True,
+        output_dir=results / "pipeline",
+    )
+else:
+    render = getattr(learner, "_repr_html_", None)
+    (results / "pipeline.html").write_text(
+        render() if callable(render) else estimator_html_repr(learner),
+        encoding="utf-8",
+    )
 ```
 
 Note the clean separation:
