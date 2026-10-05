@@ -862,6 +862,8 @@ def test_inject_results_prefers_pipeline_report_directory(tmp_path: Path) -> Non
         '<!DOCTYPE html><html><body><a href="index.html">top</a></body></html>\n',
         encoding="utf-8",
     )
+    (report / "assets").mkdir()
+    (report / "assets" / "mark.svg").write_bytes(b"<svg/>")
     (results / "pipeline.html").write_text("<html>pipeline</html>\n", encoding="utf-8")
     page = site_mod.Page(
         stem,
@@ -893,6 +895,7 @@ def test_inject_results_prefers_pipeline_report_directory(tmp_path: Path) -> Non
     assert "skore-embed-height" in index
     assert ".data_op-node" in index
     assert "fill: true" in node
+    assert (docs / "01_x.pipeline" / "assets" / "mark.svg").read_bytes() == b"<svg/>"
 
 
 def test_inject_results_skips_method_without_pipeline_marker(
