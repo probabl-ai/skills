@@ -70,25 +70,13 @@
 **Must do:**
 - Ask the review gate again before `cells run`, because a re-audit
   re-runs the checks.
-- Run `python -m skore_skills loop artifacts --stem 03_*`
-  (`record` expected) and `loop locator --stem 03_*`.
-- Write 2–6 sentences from Checks + Metrics in the digest and
-  link `journal/03_*.md`.
-- Surface JSON `locator` verbatim (first among tokens, after the
-  narrative) and G-AUDIT-FINDING verbatim.
-- Run audit, then call `manage-ml-backlog` record-outcome with the
-  digest and locator.
-- Build the site only after record-outcome when enabled.
-- When notebooks are on, convert `audit/<stem>.py` on this direct
-  close (`--html` when the site is on). Do not add
-  `<!-- results-embed: audit -->`.
-- Close with `git end-turn --stage evaluate`.
+- Stop at that question. Do not close on this turn.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Paste `scratch/audit/<stem>/audit.md` wholesale into chat.
-- Open idea triage from record-outcome mode.
-- Call record-outcome before audit.
+- Run `loop notebooks` before Close audit.
+- Call record-outcome before the re-audit gate is answered.
 - Run `git commit`.
 
 ---
@@ -108,16 +96,16 @@
   `local workspace: [reports/](../reports/) · id: local-report-id`.
 
 **Must do:**
-- Return the digest, G-AUDIT-FINDING from `audit finding`, locator
-  from `loop locator`, and optional headline to
-  `model-ml-pipeline`.
-- State that the dispatcher owns record-outcome, notebook convert,
-  site, and git close.
-- Name both caller commands: `notebook convert
-  experiments/<stem>.py` and `notebook convert audit/<stem>.py`
-  (`--html` when the site is on), then the caller's `git end-turn`
-  (`--stage implement` from model, `--stage evaluate` from
-  evaluate).
+- Return to `model-ml-pipeline`. Naming `audit finding` and
+  `loop locator`, plus the digest path, counts when the digest
+  body is not in the prompt. Do not invent Checks or Metrics.
+- State that the dispatcher owns record-outcome, the notebook
+  gate, site, and git close.
+- Tell the caller to run `python -m skore_skills loop notebooks
+  --stem <stem>` and obey `convert` before record-outcome, then
+  the caller's `git end-turn` (`--stage implement` from model,
+  `--stage evaluate` from evaluate). Naming `notebook convert`
+  is not that close.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -127,7 +115,8 @@
   them as the **dispatcher's** close is allowed).
 - Load `triage-ml-task` from this skill.
 - Dispatch `manage-ml-backlog` from this skill.
-- Run `notebook convert` on `audit/<stem>.py` here.
+- Run `loop notebooks` or `notebook convert` here.
+- Treat naming `notebook convert` as finishing the close.
 - Treat the close as finished after converting only
   `audit/<stem>.py`.
 - Add `<!-- results-embed: audit -->`.

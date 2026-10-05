@@ -21,10 +21,11 @@ hash-check = { cmd = "python tools/hash_skills.py --check", description = "Verif
 evals-check = { cmd = "python eval/convert_to_evals_json.py --check", description = "Verify skills/*/evals/evals.json match eval/*/prompts.md (non-zero exit on drift)." }
 validate = { cmd = "python tools/validate_catalog.py", description = "Validate .catalog.json structure: skill/folder symmetry, categories, workflow references." }
 check-versions = { cmd = "python tools/check_versions.py", description = "Verify the version matches across .catalog.json, pixi.toml, pyproject.toml, and the Claude/Cursor plugin manifests." }
+integration-validate = { cmd = "python tools/integration_scenario.py validate", description = "Validate integration scenario files and the untouched seed snapshot." }
 bump-major = { cmd = "python tools/bump_version.py major", description = "Bump the major version across all version sources." }
 bump-minor = { cmd = "python tools/bump_version.py minor", description = "Bump the minor version across all version sources." }
 bump-patch = { cmd = "python tools/bump_version.py patch", description = "Bump the patch version across all version sources." }
-check = { depends-on = ["hash-check", "evals-check", "validate", "check-versions"], description = "Run every CI check: hash verification + evals.json drift + catalog structure validation + version consistency." }
+check = { depends-on = ["hash-check", "evals-check", "validate", "check-versions", "integration-validate"], description = "Run every CI check: hash verification + evals.json drift + catalog structure validation + version consistency + integration scenarios." }
 
 # Optional LLM evals (DeepEval). Not part of `pixi run check` / catalog CI.
 [feature.eval.pypi-dependencies]

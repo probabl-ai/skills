@@ -253,57 +253,61 @@ fails after one `add-python-package` retry for `skrub`, write
 ## End of turn
 
 When `model-ml-pipeline` dispatched this turn, pass JSON
-`locator` up and return. Do not run `loop artifacts`, audit,
-record-outcome, convert, site, or `git end-turn`.
+`locator` up and return. Do not run `loop notebooks`,
+`loop artifacts`, audit, record-outcome, convert, site, or
+`git end-turn`.
 
-Otherwise this skill owns the close. When both `policy.notebooks`
-and `policy.site` are true, the turn is unfinished until
-record-outcome, `notebook convert --html`, `site build`, and
-`git end-turn` have run, in that order, after the locator is in
-the close. A stop at an earlier gate still names `notebook convert`
-then `site build` in that order. Do not leave them as a conditional
-aside, and do not stop after the narrative. Run
+Otherwise this skill owns the close. First run
 `python -m skore_skills loop artifacts --stem <stem>`.
 `stop` / `evaluate_incomplete` → name the missing file and do
 not audit. `audit` → load `audit-ml-pipeline` when installed.
-`record` → skip audit.
+`record` → skip audit. `record` is that command's action, not
+the notebook gate. Do not convert in the audit skill.
 
-Then the checkpoint. If audit ran, wait for its close and pass
-its digest and G-AUDIT-FINDING into `manage-ml-backlog`
-record-outcome when that skill is installed. If audit did not
-run, call record-outcome with the user's headline, if any, and
-`n/a — audit not run`. Missing backlog skill → one line. Do
-not write History here. Never mark `done` while smoke is red.
-Record-outcome runs before convert and site build.
+Then this order. Do not reorder it. `loop notebooks` continues
+only on `skip`.
 
-If `policy.notebooks` is true and `export-ml-notebook` is
-installed, run `python -m skore_skills notebook convert
-experiments/<stem>.py`, and the same command on
-`audit/<stem>.py` when that file exists, with `--html` when
-`policy.site` is also true. The unfitted-snapshot ban (do not
-convert when the file already contains `skore.evaluate`) does
-not apply to this close. Convert the experiment script even
-though this turn wrote `skore.evaluate`. Converting only
-`audit/<stem>.py` is not the close. `audit-ml-pipeline` does
-not convert on this path. Site build embeds
-`audit/<stem>.nb.html` under `## Notebooks`; do not add
-`<!-- results-embed: audit -->`.
-Convert re-executes the script. If convert fails because
-`ipywidgets` is missing, load `add-python-package` for it
-(agent) and convert again. Missing jupytext / nbclient /
-nbconvert → one line naming `add-python-package`. Then, if
-`policy.site` is true and `export-ml-site` is installed, run
-`python -m skore_skills site build`. If `site build` errors
-with `mkdocs-material is required`, load `add-python-package`
-for `mkdocs-material` (agent) and build once more. Do not
-`pixi add` / `uv add`. If that skill is missing, or the retry
-still fails, name the error in one line. A build error does not
-fail the turn.
-
-Run `python -m skore_skills git end-turn --stage evaluate`.
-If JSON `action` is `invoke`, load `persist-ml-git` when
-installed and stop. Otherwise load `triage-ml-task` when
-installed. Do not run `git commit` here.
+1. `python -m skore_skills loop notebooks --stem <stem>`. Treat
+   JSON `action` as authoritative. Do not record-outcome,
+   `site build`, or `git end-turn` while `action` is `convert`.
+   `not_evaluated` does not convert.
+2. On `convert`, run
+   `python -m skore_skills notebook convert <source>` for every
+   `sources` entry, with `--html` when `html` is true. Converting
+   only `audit/<stem>.py` is not the close. The unfitted-snapshot
+   ban does not apply: convert the experiment script even though
+   this turn wrote `skore.evaluate`. If `experiments/<stem>.py`
+   was in `sources`, re-run
+   `scratch/results/<stem>/snapshot.py` and
+   `python -m skore_skills loop locator --stem <stem>`. Re-run
+   step 1 until `action` is `skip`. Convert re-executes the
+   script. If convert fails because `ipywidgets` is missing,
+   load `add-python-package` for it (agent) and convert again.
+   Missing jupytext / nbclient / nbconvert → one line naming
+   `add-python-package`.
+3. record-outcome, only once step 1 is `skip`, and before site
+   build. If audit ran, pass its digest and G-AUDIT-FINDING into
+   `manage-ml-backlog` when that skill is installed, with the
+   locator from step 2 when the experiment script was converted.
+   If audit did not run, call record-outcome with that locator,
+   the user's headline, if any, and `n/a — audit not run`.
+   Missing backlog skill → one line. Do not write History here.
+   Never mark `done` while smoke is red.
+4. Checkpoint, below. Link `report.html` only when `policy.site`
+   is true.
+5. `site build` only when `policy.site` is true and
+   `export-ml-site` is installed:
+   `python -m skore_skills site build`. It embeds
+   `audit/<stem>.nb.html` under `## Notebooks`; do not add
+   `<!-- results-embed: audit -->`. If `site build` errors with
+   `mkdocs-material is required`, load `add-python-package` for
+   `mkdocs-material` (agent) and build once more. Do not
+   `pixi add` / `uv add`. Name a build error; do not fail the
+   turn.
+6. `python -m skore_skills git end-turn --stage evaluate`. If
+   JSON `action` is `invoke`, load `persist-ml-git` when
+   installed and stop. Otherwise load `triage-ml-task` when
+   installed. Do not run `git commit` here.
 
 ### Checkpoint
 
@@ -312,9 +316,8 @@ headline or, when audit was skipped, `report.txt`. If audit
 ran, ground the story in its Checks and Metrics. Do not invent
 a metric.
 
-Links: when site build ran or is about to,
-`[report.html](<workspace>/report.html)` and
-`html/<stem>.html`. Otherwise
+Links: `[report.html](<workspace>/report.html)` and
+`html/<stem>.html` only when `policy.site` is true. Otherwise
 `[journal/<stem>.md](journal/<stem>.md)`.
 
 Tokens after the narrative: JSON `locator` first, then

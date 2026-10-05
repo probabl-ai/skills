@@ -7,6 +7,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from skore_skills.policy import load_policy
+
 MISSING_LOCATOR = "n/a — backend did not expose a locator"
 _PERSISTED = re.compile(
     r"^# %% \[markdown\]\s*\n# ## Persisted report\s*\n#\s*\n# (.+)$",
@@ -100,6 +102,56 @@ def loop_locator(root: Path, stem: str) -> dict[str, Any]:
         "reason": "missing",
         "locator": MISSING_LOCATOR,
     }
+
+
+def _missing_notebook_sources(root: Path, stem: str, *, html: bool) -> list[str]:
+    sources: list[str] = []
+    for folder in ("experiments", "audit"):
+        src = root / folder / f"{stem}.py"
+        if not src.is_file():
+            continue
+        ipynb = src.with_suffix(".ipynb")
+        nb_html = src.with_name(f"{stem}.nb.html")
+        if not ipynb.is_file() or (html and not nb_html.is_file()):
+            sources.append(f"{folder}/{stem}.py")
+    return sources
+
+
+def loop_notebooks(root: Path, stem: str) -> dict[str, Any]:
+    """Return whether ``stem`` still needs ``notebook convert``.
+
+    ``policy.notebooks`` must be true and a persisted report must exist.
+    Unevaluated scripts stay ``.py`` only. ``sources`` lists repo-relative
+    percent files whose ``.ipynb`` (and ``.nb.html`` when ``policy.site``
+    is true) is missing.
+    """
+    cleaned = stem.strip()
+    if not cleaned:
+        raise ValueError("stem is required")
+    policy = load_policy(root)
+    html = policy.get("site") is True
+    payload: dict[str, Any] = {
+        "stem": cleaned,
+        "html": html,
+        "sources": [],
+    }
+    if policy.get("notebooks") is not True:
+        payload["action"] = "skip"
+        payload["reason"] = "policy_off"
+        return payload
+    if not (_results_dir(root, cleaned) / "report.html").is_file():
+        payload["action"] = "skip"
+        payload["reason"] = "not_evaluated"
+        return payload
+    sources = _missing_notebook_sources(root, cleaned, html=html)
+    if sources:
+        payload["action"] = "convert"
+        payload["reason"] = "notebook_missing"
+        payload["sources"] = sources
+        return payload
+    payload["action"] = "skip"
+    payload["reason"] = "already_present"
+    return payload
 
 
 def render_loop(payload: dict[str, Any]) -> str:

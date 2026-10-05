@@ -79,7 +79,7 @@ and `frame show` already returned `proceed` with a non-null
 
 ---
 
-## CASE_03 — Site on rebuilds after implement
+## CASE_03 — Site on stays a four-phase preview
 
 **User prompt:**
 > The baseline design is approved. Implement and test the model.
@@ -91,25 +91,22 @@ and `frame show` already returned `proceed` with a non-null
 - `export-ml-site` is installed.
 
 **Must do:**
-- Dispatch `build-ml-pipeline` (`smoke run` inside build).
-- Name the post-smoke Evaluate / Modify / Stop question before
-  evaluate.
-- Run `python -m skore_skills site build` after the unfitted
-  Method snapshot (`pipeline/` or `pipeline.html`; before
-  Evaluate is fine) so Method shows the DataOp report, and again
-  after the implement loop before git end-turn.
-- Run `python -m skore_skills git end-turn --stage implement`.
+- With no shell, the answer is the four-phase preview only:
+  local pipeline preparation, small real-data smoke fit/predict,
+  optional full-dataset evaluation, gated review.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Fail the model turn if site build errors; name the error.
-- Run `notebook convert` while the notebooks gate is off.
+- Name the post-smoke Evaluate / Modify / Stop question, an
+  unfitted `site build`, or `pipeline.html` in this preview.
+- Name `loop notebooks` or `notebook convert` on this preview.
+  Notebooks stay off until a report exists.
 - Run `git commit` in this skill or `git push`.
-- Write `skore.evaluate` before the post-smoke Evaluate question.
+- Write `skore.evaluate` in this preview.
 
 ---
 
-## CASE_04 — Notebooks on converts the experiment script
+## CASE_04 — Notebooks stay off until a report exists
 
 **User prompt:**
 > The baseline design is approved. Implement and test the model.
@@ -123,21 +120,20 @@ and `frame show` already returned `proceed` with a non-null
 - `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are installed.
 
 **Must do:**
-- Dispatch `build-ml-pipeline` (`smoke run` inside build).
-- Run `python -m skore_skills notebook convert
-  experiments/01_baseline.py --html` after the implement loop,
-  before site build.
-- Also convert `audit/01_baseline.py --html` when that file exists.
-  Do not add `<!-- results-embed: audit -->`.
-- Run `python -m skore_skills site build` before git end-turn.
-- Run `python -m skore_skills git end-turn --stage implement`.
+- With no shell, the answer is the four-phase preview only:
+  local pipeline preparation, small real-data smoke fit/predict,
+  optional full-dataset evaluation, gated review.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Fail the model turn if convert errors; name the error.
-- Run `cells run` as a substitute for convert.
+- Name the post-smoke Evaluate / Modify / Stop question, an
+  unfitted `site build`, or `pipeline.html` in this preview.
+- Name `loop notebooks` or `notebook convert` on this preview.
+  Notebooks stay off until a report exists.
+- Convert while there is no persisted report
+  (`not_evaluated`).
 - Run `git commit` in this skill or `git push`.
-- Write `skore.evaluate` before the post-smoke Evaluate question.
+- Write `skore.evaluate` in this preview.
 
 ---
 
@@ -313,34 +309,14 @@ and `frame show` already returned `proceed` with a non-null
 - Run evaluate, then `review consent`.
 - On `ask`, let `review-ml-experiment` preview the audit cost and
   ask Review / Skip / Stop. Do not load `audit-ml-pipeline` from
-  this dispatcher.
-- After Review, load `manage-ml-backlog` in record-outcome mode
-  with the returned digest, locator, and G-AUDIT-FINDING.
-- Record before `notebook convert` and `site build`.
-- Run `python -m skore_skills notebook convert
-  experiments/01_baseline.py --html` after record-outcome and
-  before site build.
-- Convert `audit/01_baseline.py --html` here, after
-  record-outcome and before site build, together with the
-  experiment script.
-- Write 2–6 sentences from the digest, name `report.html` and
-  `html/01_baseline.html` instead of the design-note markdown,
-  and include locator plus G-AUDIT-FINDING in the user-facing
-  close.
-- Run `python -m skore_skills git end-turn --stage implement`
-  last.
+  this dispatcher. Stop at that question.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `cells run` from this dispatcher before Review.
+- Run `loop notebooks`, record-outcome, or `site build` while
+  `review consent` is `ask`.
 - Leave History `planned` in any journal excerpt you author.
-- Skip `audit/01_baseline.py` because the audit skill was supposed
-  to convert it.
-- Skip `experiments/01_baseline.py` because it already contains
-  `skore.evaluate`, or because the unfitted-snapshot reference
-  forbids `notebook convert`.
-- Add `<!-- results-embed: audit -->`.
-- Open idea triage inside record-outcome mode.
 - Write the journal files directly instead of dispatching.
 
 ---
@@ -357,12 +333,24 @@ and `frame show` already returned `proceed` with a non-null
 - The user answered Skip at the review gate.
 
 **Must do:**
-- Pass the exact locator to `manage-ml-backlog` record-outcome.
-- Pass G-AUDIT-FINDING `n/a — audit not run`.
-- Write 2–6 sentences of the result and link `journal/<stem>.md`.
-- Include the same locator in the user-facing close (first among
+- Name this order. A no-tools turn that lists each command
+  satisfies the step. Do not reorder it.
+- Name `python -m skore_skills loop notebooks --stem <stem>`
+  first. It continues only on `skip`. `record` is not this gate.
+- On `convert`, name `notebook convert` for every `sources`
+  entry (`--html` when `html` is true), then
+  `scratch/results/<stem>/snapshot.py` and `loop locator` when
+  the experiment script was converted, then `loop notebooks`
+  again until `skip`.
+- Name record-outcome next, with the exact locator
+  `[Open report](https://example.invalid/report/42) · hub · id: 42`
+  and G-AUDIT-FINDING `n/a — audit not run`, before site build.
+- Write 2–6 sentences of the result and link `journal/<stem>.md`,
+  because this workspace does not set `policy.site`.
+- Include that locator in the user-facing close (first among
   tokens).
-- Record before convert, site build, and git end-turn.
+- Name `git end-turn --stage implement` last. Do not name
+  `site build`: `policy.site` is not true here.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).

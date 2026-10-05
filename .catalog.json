@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "80f00f4b981ce02e0a364340ffb83dee6d50e96c770bff5e9bcdcb7d23e7f619",
+  "catalog_hash": "8b7f1bfca0441597066b865febedb61b109997d94363e5cbbb00383b90494d02",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "1ee9296e4336338fcf28497ea588cb9f4cb587f5bf641723465bdf567bd662f4"
+      "hash": "3fb159ee14c31534a93afc0213877f11269a638ee54bb4764c2f1120b9c63cfa"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -57,7 +57,7 @@
       "summary": "Audit a persisted skore report read-only and produce a reusable digest.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "699a3d35c3271de67b7f891c7d081f1469a1d12ae1eca76acb5e991729f252ad"
+      "hash": "128d6b030ca61790bebdb91df80cd78dc5c06036a53751beaf688eee4a75a466"
     },
     {
       "id": "manage-ml-backlog",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, then coordinate modeling choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "247926ac7234f97a4f690f5e6feb435bfb54d4d2a16837bba8f1e93b71c801ac"
+      "hash": "ec871bf853a27d073a4c8a0924d857bb93beb4240aeab89071d7a417ab33b9a8"
     },
     {
       "id": "choose-python-library",

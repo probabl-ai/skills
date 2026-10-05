@@ -358,36 +358,66 @@ violated.
 
 **Assumed workspace state:**
 - `status.setup.pending` is empty.
-- Same as CASE_01; smoke is green.
-- `model-ml-pipeline` did NOT dispatch this turn.
+- `journal/01_baseline.md` is approved.
+  `experiments/01_baseline.py` exists. Smoke is green. No
+  history-dependent step.
+- `frame show` is `proceed`. `translation.splitter` is `KFold`,
+  `n_splits` 5, `metric` `MAE`.
+- `evaluate consent --stem 01_baseline` is `proceed`.
+- `policy.skore_mode` is `local`. The `skore.evaluate` API cache
+  is a hit.
+- `project.put("01_baseline", report)` already succeeded.
+  `scratch/results/01_baseline/report.txt` says the locked MAE
+  is 12.4.
+- `loop artifacts --stem 01_baseline` is `record`. No audit ran.
+  `audit/01_baseline.py` does not exist.
+- `loop notebooks --stem 01_baseline` is `convert`, `html` true,
+  `sources` `experiments/01_baseline.py`. After that convert,
+  the same command is `skip`.
+- The post-convert `loop locator --stem 01_baseline` is
+  `local workspace: [reports/](../reports/) · id: local-report-id`.
+- `model-ml-pipeline` did not dispatch this turn.
 - `policy.notebooks` and `policy.site` are both true.
 - `export-ml-notebook` and `export-ml-site` are installed.
+- `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are
+  installed.
+- These results are already known. Name the close from them.
+  Do not stop for another lookup, and do not invent a second
+  metric.
 
 **Must do:**
 - Write 2–6 sentences of the evaluation result.
 - Name `report.html` and `html/01_baseline.html` in the
-  user-facing close after site build. Do not send the user to
-  the design-note markdown instead.
+  user-facing close, because `policy.site` is true. Do not send
+  the user to the design-note markdown instead.
 - Include the G-REPORT-LOCATOR value (or
   `n/a — backend did not expose a locator`) in the user-facing
-  close before convert (first among tokens, after the narrative).
-- Load `manage-ml-backlog` in record-outcome mode before the
-  convert, since no audit ran this turn, and hand it the locator.
-- Run `python -m skore_skills notebook convert
-  experiments/01_baseline.py --html` after the evaluation.
-- Run `python -m skore_skills site build` after the convert.
-- Run `python -m skore_skills git end-turn --stage evaluate`.
-- If that command returns `invoke`, load `persist-ml-git`.
+  close (first among tokens, after the narrative). When the
+  experiment script was converted, that locator is the one from
+  the post-convert `loop locator`.
+- Name this order. A no-tools turn that lists each command
+  satisfies the step. Saying the command was not executed does
+  not fail it.
+- Name `loop artifacts`, then `python -m skore_skills loop
+  notebooks`. A placeholder stem is enough. The notebook gate
+  continues only on `skip`. `record` is the artifacts action,
+  not this gate.
+- On `convert`, name `notebook convert` for every `sources`
+  entry with `--html`, then snapshot and `loop locator` when
+  the experiment script was converted, before record-outcome.
+- Name record-outcome next, after the notebook gate is `skip`,
+  since no audit ran this turn, and hand it that locator.
+- Name `python -m skore_skills site build` after record-outcome.
+- Name `python -m skore_skills git end-turn --stage evaluate`
+  last. If it returns `invoke`, name `persist-ml-git`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Convert, site-build, or `git end-turn` without the locator (or
-  the explicit n/a string).
-- End the turn without convert or site build while both gates are
-  true. This turn has no tools, so naming `notebook convert` and
-  then `site build` in that order is the close, including inside a
-  later-turn list. Omitting those two names is the violation.
-- Run `site build` before the journal is recorded.
+- Name record-outcome, `site build`, or `git end-turn` without
+  the locator (or the explicit n/a string).
+- End the turn, or name only the audit file, while `action` is
+  `convert`.
+- Name `site build` before record-outcome.
 - Write `journal/JOURNAL.md` or the design note directly.
 - Run `git commit` in this skill.
 - Convert `audit/01_baseline.py`: no audit file exists this turn.
@@ -546,20 +576,30 @@ violated.
 **Must do:**
 - After `put`, write a 2–6 sentence narrative, then surface
   G-REPORT-LOCATOR first among tokens. Name `report.html` and
-  `html/<stem>.html` when site build ran. Do not send the user
-  to the design-note markdown instead.
-- Run audit when available, then record-outcome with locator and
-  optional digest/headline.
-- Order the remaining close as notebook convert, site build, then
-  `git end-turn --stage evaluate`. Convert `experiments/<stem>.py`
-  and, when `audit/<stem>.py` exists, that file too (`--html` when
-  the site is on). Do not add `<!-- results-embed: audit -->`.
-- If git returns `invoke`, stop after loading `persist-ml-git`
+  `html/<stem>.html` because the site is enabled. Do not send
+  the user to the design-note markdown instead.
+- Name this order. A no-tools turn that lists each command
+  satisfies the step. Saying the command was not executed does
+  not fail it. `loop notebooks` continues only on `skip`.
+  `record` is `loop artifacts`, not this gate.
+- Name `python -m skore_skills loop notebooks --stem <stem>`
+  before record-outcome. On `convert`, name `notebook convert`
+  on every `sources` entry (`--html` when `html` is true),
+  including `experiments/<stem>.py` and `audit/<stem>.py` when
+  that file exists. Do not add `<!-- results-embed: audit -->`.
+- If the experiment script was converted, name snapshot and
+  `loop locator` before record-outcome.
+- Name audit when available, then record-outcome with that
+  locator, then `site build`, then
+  `git end-turn --stage evaluate`.
+- If git returns `invoke`, name `persist-ml-git` and stop,
   because it returns to triage.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Record before the locator exists.
+- End the turn, or convert only the audit file, while `action`
+  is `convert`.
 - Skip `notebook convert` on `experiments/<stem>.py` because the
   script already contains `skore.evaluate`.
 - Build the site before record-outcome.

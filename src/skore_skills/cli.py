@@ -346,7 +346,7 @@ def audit_finding_cmd(digest: Path | None, stem: str | None) -> None:
 
 @cli.group("loop")
 def loop_group() -> None:
-    """Filesystem close-gates for evaluate and audit."""
+    """Filesystem close-gates for evaluate, audit, and notebooks."""
 
 
 @loop_group.command("artifacts")
@@ -372,6 +372,19 @@ def loop_locator_cmd(stem: str) -> None:
 
     try:
         payload = loop_locator(Path.cwd(), stem)
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
+    click.echo(render_loop(payload), nl=False)
+
+
+@loop_group.command("notebooks")
+@click.option("--stem", required=True, help="Experiment stem, e.g. 01_baseline.")
+def loop_notebooks_cmd(stem: str) -> None:
+    """Print whether notebook convert is still due for ``stem``."""
+    from skore_skills.loop import loop_notebooks, render_loop
+
+    try:
+        payload = loop_notebooks(Path.cwd(), stem)
     except ValueError as exc:
         raise click.UsageError(str(exc)) from exc
     click.echo(render_loop(payload), nl=False)

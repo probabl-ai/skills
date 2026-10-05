@@ -183,8 +183,12 @@ duplicate a child's detailed preview.
   not mention the Method viewer, a site rebuild, a row-count
   assertion, `skore.evaluate`, or Review / Skip / Stop. Do not list
   their commands (`status`, `frame show`, `design consent`,
-  `smoke run`) or a DataOps declaration in this preview. With
-  no shell, that four-phase paragraph is the whole answer.
+  `smoke run`) or a DataOps declaration in this preview. Do not
+  name `loop notebooks` or `notebook convert`. Notebooks stay
+  off until a report exists. With no shell, that four-phase
+  paragraph is the whole answer: do not name the post-smoke
+  Evaluate / Modify / Stop question, an unfitted `site build`,
+  or `pipeline.html`.
 
 Do not invent minute estimates at dispatcher level. Name a known
 duration only when explicit measured evidence is available;
@@ -238,8 +242,8 @@ also ask in chat whether the note looks right.
    The post-loop rebuild refreshes the same unevaluated report;
    it does not replace this one. Do not convert
    `experiments/<stem>.py` at this unfitted snapshot if it
-   already contains `skore.evaluate`. That ban ends here. The
-   close still converts the experiment script.
+   already contains `skore.evaluate`. That ban ends when
+   `loop notebooks` returns `convert`.
 2. Only if the user chose **Evaluate** and `smoke run` is `proceed`: load
    `evaluate-ml-pipeline` only if `status.skills.evaluate-ml-pipeline`
    is true. It reuses the DataOp `cv` and writes
@@ -254,32 +258,24 @@ also ask in chat whether the note looks right.
    - `stop` — no `scratch/results/<stem>/report.html`. Do not
      review. Name that file. This is the evaluation snapshot, not
      the site launcher `report.html`. Do not record-outcome.
-   - `ask` — the review skill owns the cost preview and
-     Review (Recommended) / Skip / Stop question. Load
+   - `ask` — stop at the question. The review skill owns the
+     cost preview and Review (Recommended) / Skip / Stop. Load
      `review-ml-experiment` only if
      `status.skills.review-ml-experiment` is true so it can ask.
-     Missing skill → one-line skip and record-outcome with
-     `n/a — audit not run`.
+     Do not run `loop notebooks`, record-outcome, or `site build`
+     while `action` is `ask`. Do not name that close in the
+     question. Missing skill → one-line skip and run § Close
+     with `n/a — audit not run`.
    - **Review** or `proceed` — load `review-ml-experiment` (same
      gate). It returns the digest, G-AUDIT-FINDING, locator, and
      idea paths. Do not load `audit-ml-pipeline` from this
-     dispatcher.
-   - **Skip** — no idea files. Record-outcome with
+     dispatcher. Then § Close, in that order.
+   - **Skip** — no idea files. Then § Close, in that order, with
      `n/a — audit not run`.
-   - **Stop** — do not record-outcome and do not audit. Return
-     to triage when `status.skills.triage-ml-task` is true.
-4. After **Review** or `proceed`, or after **Skip** / a missing
-   review skill: load `manage-ml-backlog` only if
-   `status.skills.manage-ml-backlog` is true, in **record-outcome
-   mode**, handing it the locator, optional headline, and
-   G-AUDIT-FINDING (`n/a — audit not run` when skipped). Else
-   one-line skip; do not write History from this meta. It writes
-   the `journal/JOURNAL.md` History row and design-note Status block plus
-   `## Results`, then returns. It does not triage idea files in
-   this mode. Never mark `done` while `smoke run` is `stop`.
-   Missing headline becomes `n/a`, never an invented metric. Do
-   not claim History remains `planned` because a child was not
-   executed in-process.
+   - **Stop** — do not record-outcome and do not audit. Run
+     § Close steps 1–2 only. `not_evaluated` does not convert.
+     After `loop notebooks` is `skip`, run steps 5 and 6, then
+     return to triage when `status.skills.triage-ml-task` is true.
 
 Do not duplicate child-skill methodology. Before new library
 symbols are written, children use
@@ -321,89 +317,76 @@ symbols are written, children use
   is true). Else one-line skip. Do not distill research
   here; do not invent papers from memory.
 
-After **Stop**, or while smoke is red: skip evaluate, audit, and
-record-outcome. This is an explicit no-result close: do not mark
-the experiment done, but still run § Close — notebooks and site
-when applicable, then return to triage.
+## Close
 
-After **Review** or **Skip** (or a missing review skill),
-implement-loop step 4 (record-outcome) runs first, so the journal
-files are on disk before anything is staged. **Stop** skips
-record-outcome. This dispatcher owns the User-facing close.
-Children return locator / digest / finding and do not preview
-this close. The User-facing close below names the two
-`notebook convert` commands; run them after that narrative.
+Reached only after **Review**, **Skip**, a missing review skill,
+**Stop**, or red smoke. The four-phase preview does not enter
+here, and neither does `review consent` `ask`. Run the steps in
+this order. Do not reorder them. `loop notebooks` continues only
+on `skip`. `record` is the `loop artifacts` action, not this
+gate. **Stop** and red smoke skip steps 3 and 4: do not mark the
+experiment done. This dispatcher owns the user-facing close.
+Children return locator / digest / finding and do not preview it.
 
-### User-facing close
-
-The user-facing message is a short story plus links. It is not
-Pre-flight, not a dump of the digest or design note, and not
-locator/finding alone.
-
-1. **Narrative first** — 2–6 sentences of the result, grounded in
+1. `python -m skore_skills loop notebooks --stem <stem>`. Treat
+   JSON `action` as authoritative. Do not record-outcome,
+   `site build`, or `git end-turn` while `action` is `convert`.
+2. On `convert`, run
+   `python -m skore_skills notebook convert <source>` for every
+   `sources` entry, with `--html` when `html` is true.
+   `audit-ml-pipeline` does not convert on this path. Converting
+   only `audit/<stem>.py` does not finish the close. If
+   `experiments/<stem>.py` was in `sources`, re-run
+   `scratch/results/<stem>/snapshot.py` and
+   `python -m skore_skills loop locator --stem <stem>`. Re-run
+   step 1 until `action` is `skip`. Convert re-executes the
+   script; say so when it is slow. If convert fails because
+   `ipywidgets` is missing, load `add-python-package` for it
+   (agent) and convert again. Missing jupytext / nbclient /
+   nbconvert → one-line skip naming `add-python-package`; do not
+   fail the turn. `skip` / `not_evaluated` means the report is
+   missing: do not convert an unfitted script. When `action` is
+   `convert`, the unfitted-snapshot ban does not apply, including
+   when `experiments/<stem>.py` already contains `skore.evaluate`.
+3. record-outcome, only once step 1 is `skip`. Load
+   `manage-ml-backlog` only if
+   `status.skills.manage-ml-backlog` is true, in **record-outcome
+   mode**, handing it the locator from step 2 when the experiment
+   script was converted, otherwise the locator already returned,
+   plus the optional headline and G-AUDIT-FINDING
+   (`n/a — audit not run` when skipped). Else one-line skip; do
+   not write History from this meta. It writes the
+   `journal/JOURNAL.md` History row and design-note Status block
+   plus `## Results`, then returns. It does not triage idea
+   files. Never mark `done` while `smoke run` is `stop`. Missing
+   headline becomes `n/a`, never an invented metric.
+4. User-facing close. 2–6 sentences of the result, grounded in
    the audit digest when present (Checks + Metrics), else the
-   user's headline / `report.txt`. Do not invent a metric.
-2. **Open these** — resolved absolute paths. When `site build`
-   ran or is about to, link the site and not the design note:
+   user's headline / `report.txt`. Do not invent a metric. Link
    `[report.html](<workspace>/report.html)` and
-   `html/<stem>.html`. Otherwise
-   `[journal/<stem>.md](journal/<stem>.md)`.
-3. **Normalized tokens second** — G-REPORT-LOCATOR evaluate
-   passed up (or `n/a — backend did not expose a locator`) first
-   among tokens, then G-AUDIT-FINDING (`n/a — audit not run`
-   when skipped). Index strings, not the narrative.
-
-Then run § Close — notebooks and site. That is both
-`python -m skore_skills notebook convert experiments/<stem>.py`
-when that file exists and the same command on
-`audit/<stem>.py` when that file exists, with `--html` when
-`policy.site` is also true. The audit skill did not convert
-either file. Converting only the audit file does not finish the
-close. The site appends the audit viewer to the experiment
-design note's `## Notebooks` section after the evaluation
-notebook.
-
-### Close — notebooks and site
-
-This close applies to **Stop**, red smoke, **Review**, **Skip**,
-and a missing review skill. The unfitted-snapshot ban in
-`build-ml-pipeline/references/snapshot.md` does not apply,
-including when `experiments/<stem>.py` already contains
-`skore.evaluate`. Converting only `audit/<stem>.py` does not
-finish the close.
-
-If `policy.notebooks` is true and `export-ml-notebook` is
-installed, run
-`python -m skore_skills notebook convert experiments/<stem>.py`
-when the experiment script already exists, and the same command
-on `audit/<stem>.py` when that file exists, with `--html` when
-`policy.site` is also true. `audit-ml-pipeline` does not convert
-on this path. Site build embeds `audit/<stem>.nb.html` under
-`## Notebooks`; do not add `<!-- results-embed: audit -->`.
-Convert re-executes the script; say so when it is slow. If
-convert fails because `ipywidgets` is missing, load
-`add-python-package` for it (agent) and convert again. Missing
-jupytext / nbclient / nbconvert → one-line skip naming
-`add-python-package`; do not fail the turn.
-
-Then, if `policy.site` is true, `export-ml-site` is installed, run
-`python -m skore_skills site build` so the Method DataOp report
-(and Results) replace the construct-time snapshot. Skip in
-one line otherwise. If `site build` errors with `mkdocs-material
-is required`, load `add-python-package` for `mkdocs-material`
-(agent) and build once more. Do not `pixi add` / `uv add`. If
-that skill is missing, or the retry still fails, name the error
-in one line. Name a build error; do not fail the model turn. Name
-`report.html` (and `html/<stem>.html`) in the User-facing
-close when the build ran. Do not also send the user to the
-markdown.
-
-Then run
-`python -m skore_skills git end-turn --stage implement`. If JSON
-`action` is `invoke`, load `persist-ml-git` only if
-`status.skills.persist-ml-git` is true and stop; that skill
-returns to triage. If persist is missing, name the pending
-`staged` paths and stop. Otherwise load `triage-ml-task` only if
-`status.skills.triage-ml-task` is true; else stop. Do not run
-`git commit` in this skill.
-Never mark `done` while smoke is red.
+   `html/<stem>.html` only when `policy.site` is true. Otherwise
+   link `[journal/<stem>.md](journal/<stem>.md)`. Then
+   G-REPORT-LOCATOR (the step-2 locator when the experiment
+   script was converted, otherwise the locator evaluate passed
+   up, or `n/a — backend did not expose a locator`) first among
+   tokens, then G-AUDIT-FINDING. Index strings, not the narrative.
+5. `site build` only when `policy.site` is true and
+   `export-ml-site` is installed:
+   `python -m skore_skills site build`, so the Method DataOp
+   report and Results replace the construct-time snapshot. Skip
+   in one line otherwise. Site build embeds
+   `audit/<stem>.nb.html` under `## Notebooks`; do not add
+   `<!-- results-embed: audit -->`. If `site build` errors with
+   `mkdocs-material is required`, load `add-python-package` for
+   `mkdocs-material` (agent) and build once more. Do not
+   `pixi add` / `uv add`. Name a build error; do not fail the
+   turn. When this step runs, the user-facing close names
+   `report.html` and `html/<stem>.html` and does not also send
+   the user to the markdown.
+6. `python -m skore_skills git end-turn --stage implement`. If
+   JSON `action` is `invoke`, load `persist-ml-git` only if
+   `status.skills.persist-ml-git` is true and stop; that skill
+   returns to triage. If persist is missing, name the pending
+   `staged` paths and stop. Otherwise load `triage-ml-task` only
+   if `status.skills.triage-ml-task` is true; else stop. Do not
+   run `git commit` in this skill.

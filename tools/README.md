@@ -12,10 +12,11 @@ pixi run hash-check     # verify hashes match the on-disk skills (no writes)
 pixi run evals-check    # verify generated evals.json files match eval prompts
 pixi run validate       # validate .catalog.json structure (skills, categories, workflows)
 pixi run check-versions # verify the version matches across all declaring sources
+pixi run integration-validate # verify integration scenario files and the seed snapshot
 pixi run bump-major     # bump the major version across all version sources
 pixi run bump-minor     # bump the minor version across all version sources
 pixi run bump-patch     # bump the patch version across all version sources
-pixi run check          # composite: hash-check + evals-check + validate + check-versions
+pixi run check          # composite: hash-check + evals-check + validate + check-versions + integration-validate
 ```
 
 `pixi run check` is what CI invokes via `prefix-dev/setup-pixi` — see
@@ -74,6 +75,38 @@ it by hand, so a release bump can't leave one file lagging behind:
 
 Run directly with `python tools/check_versions.py` or via
 `pixi run check-versions`.
+
+## integration_scenario.py
+
+Validates, copies, prints, checks, and runs the scenarios under
+`integration/scenarios/`. A scenario is a seed workspace, ordered
+replies, filesystem snapshots, and a driver file. Manual checks stay
+available. `run` launches Pi.
+See [`integration/README.md`](../integration/README.md).
+
+`validate` checks ids, the driver, fork links, expect keys, relative
+paths, and that the seed matches the `setup-open` snapshot. `pixi run
+check` includes this step.
+
+```bash
+python tools/integration_scenario.py materialize california-housing --dest ../housing
+python tools/integration_scenario.py prompt california-housing --turn setup-open
+python tools/integration_scenario.py check california-housing --workspace ../housing --turn setup-open
+python tools/integration_scenario.py run california-housing --workspace ../housing
+python tools/integration_scenario.py run california-housing --workspace ../housing --interactive
+```
+
+`run` launches Pi. It does not install Pi. `--interactive` shows the TUI.
+Pi defaults to OpenRouter `~deepseek/deepseek-flash-latest`; `--model`
+overrides that, and `--harness-arg` forwards any other token. Headless
+output is streamed and stored under `.transcripts/integration/<run-id>/`
+with `result.json`. `--approve` applies to that workspace only. The
+journey can run `pixi`. Pi requires `pi install npm:@probabl/pi-skore`.
+Before Pi starts, the runner stages the workflow sidecars, passes the
+checkout skill paths with `--skill`, and prepends this checkout's `src`
+to `PYTHONPATH`. The copied `SCENARIO.md` requires extension `skill(...)`
+calls and adds this checkout's `skore-skills` as an editable pixi
+dependency after pixi is initialized.
 
 ## bump_version.py
 

@@ -1,0 +1,465 @@
+{
+  "id": "california-housing",
+  "workflow": "ml-experimentation",
+  "seed": "seed",
+  "driver": "SCENARIO.md",
+  "turns": [
+    {
+      "id": "setup-open",
+      "say": "Set up this folder as a machine-learning project for the California housing table in `data/raw/housing.csv`. The facts are in `DATA.md`.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".skore",
+          ".git"
+        ]
+      }
+    },
+    {
+      "id": "setup-pieces",
+      "say": "Keep all four selected: Python environment, workspace layout, editable install, and Git.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".skore",
+          ".git"
+        ]
+      }
+    },
+    {
+      "id": "setup-manager",
+      "say": "Use pixi.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          ".skore"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".git"
+        ],
+        "contains": {
+          ".skore": [
+            "\"env_manager\": \"pixi\""
+          ]
+        }
+      }
+    },
+    {
+      "id": "setup-managed",
+      "say": "Yes, manage the Python environment.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          ".skore"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".git"
+        ],
+        "contains": {
+          ".skore": [
+            "\"env_manager\": \"pixi\"",
+            "\"managed\": true"
+          ]
+        }
+      }
+    },
+    {
+      "id": "setup-package",
+      "say": "The import name is housing.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          ".skore"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".git"
+        ],
+        "contains": {
+          ".skore": [
+            "\"env_manager\": \"pixi\"",
+            "\"managed\": true",
+            "\"package\": \"housing\""
+          ]
+        }
+      }
+    },
+    {
+      "id": "setup-autocommit",
+      "checkpoint": true,
+      "say": "Automatic commits off.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          "pyproject.toml",
+          "pixi.toml",
+          ".skore",
+          ".git",
+          "src/housing/pipeline.py",
+          "journal/JOURNAL.md",
+          "experiments/README.md"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py"
+        ],
+        "contains": {
+          ".skore": [
+            "\"package\": \"housing\"",
+            "\"env_manager\": \"pixi\"",
+            "\"managed\": true",
+            "\"autocommit\": \"off\"",
+            "\"env\": \"done\"",
+            "\"workspace\": \"done\"",
+            "\"editable\": \"done\"",
+            "\"git\": \"done\""
+          ]
+        }
+      }
+    },
+    {
+      "id": "eda-run",
+      "checkpoint": true,
+      "say": "Run the data analysis on `data/raw/housing.csv`. Use pandas. The target is MedHouseVal and the task is regression. There is one table, so do not ask how to group files. When the analysis is written, close this stage. Do not add another analysis.",
+      "expect": {
+        "files": [
+          "data/raw/housing.csv",
+          "data_analysis/data_analysis.py",
+          "data_analysis/data_analysis.md",
+          "data_analysis/data_analysis_*.html",
+          "scratch/data_analysis/extras.json",
+          "journal/JOURNAL.md",
+          "src/housing/pipeline.py"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | done"
+          ]
+        }
+      }
+    },
+    {
+      "id": "frame-open",
+      "say": "Frame the modeling problem from the facts in `DATA.md` and the written data analysis. Do not explore again.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          "data_analysis/data_analysis.md",
+          "pyproject.toml",
+          "pixi.toml",
+          ".skore",
+          ".git",
+          "src/housing/pipeline.py",
+          "journal/JOURNAL.md",
+          "experiments/README.md"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py"
+        ]
+      }
+    },
+    {
+      "id": "frame-fill",
+      "say": "Prediction goal: point_predictions. Deployment: iid. Horizon: n/a. Gap: n/a. Generalize to: n/a. Known at predict: n/a. Time role: n/a. Metric role: point_error. Metric: RMSE. Baseline: dummy. Baseline note: mean house value. Folds: 2.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          "src/housing/pipeline.py",
+          "journal/JOURNAL.md"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | draft |",
+            "| Prediction goal | point_predictions |",
+            "| Deployment | iid |",
+            "| Horizon | n/a |",
+            "| Gap | n/a |",
+            "| Generalize to | n/a |",
+            "| Known at predict | n/a |",
+            "| Time role | n/a |",
+            "| Metric role | point_error |",
+            "| Metric | RMSE |",
+            "| Baseline | dummy |",
+            "| Folds | 2 |"
+          ]
+        }
+      }
+    },
+    {
+      "id": "frame-lock",
+      "checkpoint": true,
+      "say": "Lock these decisions.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          "data_analysis/data_analysis.md",
+          "src/housing/pipeline.py",
+          "journal/JOURNAL.md"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | done",
+            "| Status | locked |",
+            "| Prediction goal | point_predictions |",
+            "| Deployment | iid |",
+            "| Metric role | point_error |",
+            "| Metric | RMSE |",
+            "| Baseline | dummy |",
+            "| Folds | 2 |"
+          ]
+        }
+      }
+    },
+    {
+      "id": "baseline-choose",
+      "say": "Build the locked baseline.",
+      "expect": {
+        "files": [
+          "journal/JOURNAL.md",
+          "journal/01_*.md",
+          "src/housing/pipeline.py"
+        ],
+        "absent": [
+          "experiments/*.py",
+          "tests/smoke/test_01_*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | locked |"
+          ]
+        },
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** planned"
+          ]
+        }
+      }
+    },
+    {
+      "id": "baseline-approve",
+      "say": "Yes, that proposal.\n\nApprove the design note.",
+      "expect": {
+        "files": [
+          "journal/01_*.md",
+          "experiments/01_*.py",
+          "tests/smoke/test_01_*.py",
+          "src/housing/pipeline.py"
+        ],
+        "absent": [
+          "scratch/results/01_*/report.html",
+          "journal/02_*.md"
+        ],
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** approved"
+          ]
+        }
+      }
+    },
+    {
+      "id": "baseline-evaluate",
+      "say": "Evaluate. Keep the report local.",
+      "expect": {
+        "files": [
+          "experiments/01_*.py",
+          "tests/smoke/test_01_*.py",
+          "scratch/results/01_*/report.html",
+          ".skore"
+        ],
+        "absent": [
+          "journal/ideas/*.md",
+          "scratch/results/02_*/report.html"
+        ],
+        "contains": {
+          ".skore": [
+            "\"skore_mode\": \"local\""
+          ]
+        },
+        "contains_any": {
+          "experiments/01_*.py": [
+            "skore.evaluate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "baseline-review",
+      "checkpoint": true,
+      "say": "Review.",
+      "expect": {
+        "files": [
+          "scratch/results/01_*/report.html",
+          "journal/ideas/*.md",
+          "journal/01_*.md",
+          "experiments/01_*.py"
+        ],
+        "absent": [
+          "journal/02_*.md",
+          "experiments/02_*.py"
+        ],
+        "contains_any": {
+          "journal/ideas/*.md": [
+            "Triage: open"
+          ],
+          "journal/01_*.md": [
+            "**State:** done"
+          ]
+        }
+      }
+    },
+    {
+      "id": "backlog-promote",
+      "checkpoint": true,
+      "say": "Triage the open follow-up ideas. Promote the first one into the backlog and set every other open idea aside.",
+      "expect": {
+        "files": [
+          "journal/JOURNAL.md",
+          "journal/ideas/*.md",
+          "journal/01_*.md",
+          "scratch/results/01_*/report.html"
+        ],
+        "absent": [
+          "journal/02_*.md",
+          "experiments/02_*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| B1 |"
+          ]
+        },
+        "contains_any": {
+          "journal/ideas/*.md": [
+            "Triage: promoted"
+          ]
+        }
+      }
+    },
+    {
+      "id": "iterate-choose",
+      "say": "Take the promoted backlog item as the next experiment.",
+      "expect": {
+        "files": [
+          "journal/JOURNAL.md",
+          "journal/ideas/*.md",
+          "journal/01_*.md"
+        ],
+        "absent": [
+          "journal/02_*.md",
+          "experiments/02_*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| B1 |"
+          ]
+        },
+        "contains_any": {
+          "journal/ideas/*.md": [
+            "Triage: promoted"
+          ]
+        }
+      }
+    },
+    {
+      "id": "iterate-approve",
+      "say": "Yes, that proposal.\n\nApprove the design note.",
+      "expect": {
+        "files": [
+          "journal/01_*.md",
+          "journal/02_*.md",
+          "experiments/01_*.py",
+          "experiments/02_*.py",
+          "tests/smoke/test_02_*.py",
+          "scratch/results/01_*/report.html"
+        ],
+        "absent": [
+          "scratch/results/02_*/report.html"
+        ],
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** done"
+          ],
+          "journal/02_*.md": [
+            "**State:** approved"
+          ]
+        }
+      }
+    },
+    {
+      "id": "iterate-stop",
+      "say": "Stop. Do not evaluate this second experiment.",
+      "expect": {
+        "files": [
+          "journal/01_*.md",
+          "journal/02_*.md",
+          "experiments/01_*.py",
+          "experiments/02_*.py",
+          "tests/smoke/test_01_*.py",
+          "tests/smoke/test_02_*.py",
+          "scratch/results/01_*/report.html",
+          "journal/ideas/*.md",
+          "data_analysis/data_analysis.py",
+          "data_analysis/data_analysis.md"
+        ],
+        "absent": [
+          "scratch/results/02_*/report.html"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | done"
+          ]
+        },
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** done"
+          ],
+          "journal/02_*.md": [
+            "**State:** approved"
+          ],
+          "journal/ideas/*.md": [
+            "Triage: promoted"
+          ]
+        }
+      }
+    }
+  ]
+}

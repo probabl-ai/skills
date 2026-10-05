@@ -46,7 +46,7 @@ Authoring hints stay in this skill. `style` is ruff only.
 
 | Came here from… | After audit, next is… |
 |---|---|
-| `model-ml-pipeline` (implement loop) | → Return. The caller runs `notebook convert experiments/<stem>.py` and `notebook convert audit/<stem>.py` (`--html` when the site is on), then site build and `git end-turn --stage implement`. Do not convert here. |
+| `model-ml-pipeline` (implement loop) | → Return. The caller runs `python -m skore_skills loop notebooks --stem <stem>` and obeys `convert` (every `sources` entry, `--html` when `html` is true) before record-outcome, then site build and `git end-turn --stage implement`. Do not convert here. |
 | User free-text ("audit 02", "re-audit 04") | → Surface metrics, then own the close (see § End of turn) |
 | Re-run of an existing experiment | → Re-execute the existing audit file; surface diff if metrics changed |
 
@@ -411,9 +411,9 @@ After an edit: run `style`, then `cells run` to overwrite
 G-AUDIT-FINDING again
 with `python -m skore_skills audit finding --stem <stem>`
 (from checks + metrics only), and re-present this same gate. Do
-not convert notebooks, build the site, run `git end-turn`,
-record-outcome, or return to the dispatcher while an additional
-step is active. The audit remains read-only: no `evaluate`, no
+not run `loop notebooks`, convert notebooks, build the site,
+run `git end-turn`, record-outcome, or return to the dispatcher
+before Close audit. The audit remains read-only: no `evaluate`, no
 `put`, and no workspace-data mutation.
 
 ### Extra Display cells
@@ -473,25 +473,17 @@ Paste JSON `finding` verbatim. The CLI streams the digest to stdout when the des
 
 Direct close only. When `model-ml-pipeline` or
 `evaluate-ml-pipeline` owns this turn, do not convert here. That
-caller runs `python -m skore_skills notebook convert
-experiments/<stem>.py` and the same command on
-`audit/<stem>.py`, with `--html` when `policy.site` is true.
-Converting only the audit file does not finish the close. The
-unfitted-snapshot ban does not apply.
+caller runs `python -m skore_skills loop notebooks --stem <stem>`
+and obeys `convert`. Naming `notebook convert` is not that
+close. Converting only the audit file does not finish it.
 
-On a direct close, if `policy.notebooks` is true and
-`export-ml-notebook` is installed, run
-`python -m skore_skills notebook convert audit/<stem>.py` after
-**Close audit**, with `--html` when `policy.site` is also true.
-The audit has no page of its own. Site build embeds
-`audit/<stem>.nb.html` under the design note's `## Notebooks`
-section, after the evaluation notebook, whenever that file
-exists. Do not add `<!-- results-embed: audit -->`. A marker does
-not create the viewer, and a missing `.nb.html` omits it. If
-convert fails because `ipywidgets` is missing, load
-`add-python-package` for it (agent) and convert again. Missing
-jupytext / nbclient → one-line skip naming `add-python-package`;
-do not fail the audit, do not `pixi add`.
+On a direct close, run the notebook gate in § End of turn before
+record-outcome. The audit has no page of its own. Site build
+embeds `audit/<stem>.nb.html` under the design note's
+`## Notebooks` section, after the evaluation notebook, whenever
+that file exists. Do not add `<!-- results-embed: audit -->`. A
+marker does not create the viewer, and a missing `.nb.html`
+omits it.
 
 ### Re-execution semantics
 
@@ -535,7 +527,8 @@ Identical stems, 1:1. By the time the experiment shows `done` in
 |---|---|
 | `python -m skore_skills audit finding` | After `cells run`. Paste JSON `finding` verbatim |
 | `python -m skore_skills loop locator` | G-REPORT-LOCATOR from `locator.txt` or the audit file |
-| `python -m skore_skills loop artifacts` | Direct-audit close: `record` before site / `git end-turn` |
+| `python -m skore_skills loop artifacts` | Direct-audit close: `record` before the notebook gate |
+| `python -m skore_skills loop notebooks` | Before record-outcome. Obey `convert`; `skip` continues |
 | `add-python-package` | When `ipython` is missing |
 | `manage-ml-backlog` (record-outcome mode) | End of turn on a direct free-text audit — hands over the digest so the History row and design-note Status block get written |
 | `python -m skore_skills style` | After writing / editing `audit/<stem>.py` — bundled `ruff.toml` carries `audit/**` per-file ignores. Ruff only; it does not rewrite comments. Do not write workflow/process prose in the audit file |
@@ -548,75 +541,71 @@ Identical stems, 1:1. By the time the experiment shows `done` in
 `python -m skore_skills loop locator --stem <stem>`. Return the
 digest, JSON `finding`, JSON `locator`, and an optional
 headline to that caller. Stop. Do not run record-outcome,
-`notebook convert`, `site build`, `git end-turn`, or triage
-here. When the caller is `model-ml-pipeline` or
-`evaluate-ml-pipeline`, tell it to run both when
-`policy.notebooks` is true: `python -m skore_skills notebook
-convert experiments/<stem>.py` and `python -m skore_skills
-notebook convert audit/<stem>.py` (`--html` when `policy.site`
-is true), then `site build` and that caller's `git end-turn`
+`loop notebooks`, `notebook convert`, `site build`,
+`git end-turn`, or triage here. When the caller is
+`model-ml-pipeline` or `evaluate-ml-pipeline`, tell it to run
+`python -m skore_skills loop notebooks --stem <stem>` and obey
+`convert` before record-outcome. That gate continues on `skip`.
+`record` is `loop artifacts`, not the notebook gate. Then
+`site build` and that caller's `git end-turn`
 (`--stage implement` from model, `--stage evaluate` from
-evaluate). Converting only the audit file does not finish that
-close. The unfitted-snapshot ban does not apply. Do not paste
-the direct-audit close as a preview of what the dispatcher
-will run.
+evaluate). Naming the convert commands is not the close.
+Converting only the audit file does not finish that close. Do
+not paste the direct-audit close as a preview of what the
+dispatcher will run.
 
-**Direct free-text audit, after Close audit:** this skill owns the close. Run
-`python -m skore_skills loop artifacts --stem <stem>` (`record`
-expected) and `loop locator --stem <stem>`. Then User-facing
-close. The JSON `locator` **must** appear in that message
-before site build or `git end-turn`.
+**Direct free-text audit, after Close audit:** this skill owns the close. Do not start it before Close audit. Run
+`python -m skore_skills loop artifacts --stem <stem>` first
+(`record` expected). `record` is that command's action, not the
+notebook gate. Then this order. Do not reorder it.
+`loop notebooks` continues only on `skip`.
 
-### User-facing close
-
-Direct free-text only. The user-facing message is a short story
-plus links. It is not Pre-flight, not a dump of
-`scratch/audit/<stem>/audit.md`, and not finding/locator alone.
-Dispatched audit never writes this block.
-
-1. **Narrative first** — 2–6 sentences from Checks + Metrics in
-   the digest (issues/tips that matter, headline metric). Do not
-   invent a metric. Do not paste the digest wholesale.
-2. **Open these** — resolved absolute paths. When `site build`
-   ran or is about to, link the site and not the design note:
+1. `python -m skore_skills loop notebooks --stem <stem>`. Treat
+   JSON `action` as authoritative. Do not record-outcome,
+   `site build`, or `git end-turn` while `action` is `convert`.
+   `not_evaluated` does not convert.
+2. On `convert`, run `notebook convert` for every `sources`
+   entry, with `--html` when `html` is true. If
+   `experiments/<stem>.py` was in `sources`, re-run
+   `scratch/results/<stem>/snapshot.py` and
+   `python -m skore_skills loop locator --stem <stem>`. Re-run
+   step 1 until `action` is `skip`. If convert fails because
+   `ipywidgets` is missing, load `add-python-package` for it
+   (agent) and convert again. Missing jupytext / nbclient →
+   one-line skip naming `add-python-package`; do not fail the
+   audit, do not `pixi add`.
+3. User-facing close, then record-outcome, before site build.
+   The message is 2–6 sentences from Checks + Metrics. Do not
+   invent a metric or paste the digest. Link
    `[report.html](<workspace>/report.html)` and
-   `html/<stem>.html`. Otherwise
-   `[journal/<stem>.md](journal/<stem>.md)`.
-3. **Normalized tokens second** — JSON `locator` verbatim first
-   among tokens (local: also the absolute `reports/` path), then
-   G-AUDIT-FINDING verbatim. Index strings, not the narrative.
-
-Load `manage-ml-backlog` in **record-outcome mode** only if
-`status.skills.manage-ml-backlog` is true and hand it
-the digest, G-AUDIT-FINDING, and locator, so the run reaches
-`journal/JOURNAL.md` History and
-the design-note Status block. Missing skill → one-line skip; do
-not write History from this skill. That mode records and returns; it
-does not re-dispatch this skill and does not open the sourcing
-menu. Never mark `done` while smoke is red. This runs **before**
-site build so the updated journal files are on disk when the site
-is staged and `git end-turn` stages the turn.
-
-The `notebook convert` for `audit/<stem>.py` already ran above.
-If `policy.site` is true, `export-ml-site` is installed, run
-`python -m skore_skills site build` so the audit viewer reaches
-the experiment page. Skip in one line otherwise. If `site build`
-errors with `mkdocs-material is required`, load
-`add-python-package` for `mkdocs-material` (agent) and build
-once more. Do not `pixi add` / `uv add`. If that skill is
-missing, or the retry still fails, name the error in one line.
-Name a build error; do not fail the audit turn. Name `report.html` (and
-`html/<stem>.html`) in the User-facing close when the build ran.
-Do not also send the user to the markdown.
-
-Run `python -m skore_skills git end-turn --stage evaluate` — the
-audit continues the evaluate stage; there is no `audit` stage on
-that command. If JSON `action` is `invoke`, load `persist-ml-git`
-only if `status.skills.persist-ml-git` is true and stop; that
-skill returns to triage. If persist is missing, name the pending
-`staged` paths and stop. Otherwise load `triage-ml-task` only if
-`status.skills.triage-ml-task` is true; else stop. Do not run
-`git commit` in this skill.
+   `html/<stem>.html` only when `policy.site` is true. Otherwise
+   link `[journal/<stem>.md](journal/<stem>.md)`. Then JSON
+   `locator` from step 2 verbatim (local: also the absolute
+   `reports/` path), then G-AUDIT-FINDING. Index strings, not
+   the narrative. Dispatched audit never writes this message.
+   Then load `manage-ml-backlog` in **record-outcome mode** only
+   if `status.skills.manage-ml-backlog` is true and hand it the
+   digest, G-AUDIT-FINDING, and that locator. Missing skill →
+   one-line skip; do not write History here. That mode records
+   and returns; it does not re-dispatch this skill. Never mark
+   `done` while smoke is red.
+4. `site build` only when `policy.site` is true and
+   `export-ml-site` is installed:
+   `python -m skore_skills site build`. If it errors with
+   `mkdocs-material is required`, load `add-python-package` for
+   `mkdocs-material` (agent) and build once more. Do not
+   `pixi add` / `uv add`. Name a build error; do not fail the
+   audit. When this step runs, the user-facing close names
+   `report.html` and `html/<stem>.html` and does not also send
+   the user to the markdown.
+5. `python -m skore_skills git end-turn --stage evaluate`. The
+   audit continues the evaluate stage; there is no `audit` stage.
+   If JSON `action` is `invoke`, load `persist-ml-git` only if
+   `status.skills.persist-ml-git` is true and stop; that skill
+   returns to triage. If persist is missing, name the pending
+   `staged` paths and stop. Otherwise load `triage-ml-task` only
+   if `status.skills.triage-ml-task` is true; else stop. Do not
+   run `git commit` in this skill.
 
 ## Failure modes and recovery
 

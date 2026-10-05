@@ -1,0 +1,251 @@
+{
+  "forks": [
+    {
+      "id": "decline-workspace",
+      "after": "setup-open",
+      "say": "Uncheck the workspace layout. Keep the Python environment, the editable install, and Git.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".git"
+        ]
+      }
+    },
+    {
+      "id": "decline-git",
+      "after": "setup-open",
+      "say": "Uncheck Git. Keep the Python environment, the workspace layout, and the editable install.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          ".skore"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".git"
+        ],
+        "contains": {
+          ".skore": [
+            "\"git\": \"declined\""
+          ]
+        }
+      }
+    },
+    {
+      "id": "you-pick-name",
+      "after": "setup-managed",
+      "say": "You pick the import name.",
+      "expect": {
+        "files": [
+          "DATA.md",
+          "data/raw/housing.csv",
+          ".skore"
+        ],
+        "absent": [
+          "src",
+          "journal",
+          "experiments",
+          ".git"
+        ],
+        "contains": {
+          ".skore": [
+            "\"env_manager\": \"pixi\"",
+            "\"managed\": true"
+          ]
+        }
+      }
+    },
+    {
+      "id": "skip-eda",
+      "after": "setup-autocommit",
+      "say": "Skip the data analysis.",
+      "expect": {
+        "files": [
+          "journal/JOURNAL.md",
+          "src/housing/pipeline.py",
+          "data/raw/housing.csv"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py",
+          "data_analysis/data_analysis.md"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | skipped"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lock-same-turn",
+      "after": "frame-open",
+      "say": "Prediction goal: point_predictions. Deployment: iid. Horizon: n/a. Gap: n/a. Generalize to: n/a. Known at predict: n/a. Time role: n/a. Metric role: point_error. Metric: RMSE. Baseline: dummy. Baseline note: mean house value. Folds: 2. Lock these decisions.",
+      "expect": {
+        "files": [
+          "journal/JOURNAL.md",
+          "src/housing/pipeline.py"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | draft |",
+            "| Prediction goal | point_predictions |",
+            "| Deployment | iid |",
+            "| Baseline | dummy |",
+            "| Folds | 2 |"
+          ]
+        }
+      }
+    },
+    {
+      "id": "discuss-baseline",
+      "after": "frame-lock",
+      "say": "Discuss the next step.",
+      "expect": {
+        "files": [
+          "journal/JOURNAL.md",
+          "src/housing/pipeline.py"
+        ],
+        "absent": [
+          "journal/01_*.md",
+          "experiments/*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| Status | locked |"
+          ]
+        }
+      }
+    },
+    {
+      "id": "stop-design",
+      "after": "baseline-choose",
+      "say": "Stop.",
+      "expect": {
+        "files": [
+          "journal/01_*.md",
+          "journal/JOURNAL.md"
+        ],
+        "absent": [
+          "experiments/*.py",
+          "tests/smoke/test_01_*.py"
+        ],
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** planned"
+          ]
+        }
+      }
+    },
+    {
+      "id": "modify-design",
+      "after": "baseline-choose",
+      "say": "Modify the method, then ask me again.",
+      "expect": {
+        "files": [
+          "journal/01_*.md"
+        ],
+        "absent": [
+          "experiments/*.py",
+          "tests/smoke/test_01_*.py"
+        ],
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** planned"
+          ]
+        }
+      }
+    },
+    {
+      "id": "stop-after-smoke",
+      "after": "baseline-approve",
+      "say": "Stop.",
+      "expect": {
+        "files": [
+          "experiments/01_*.py",
+          "tests/smoke/test_01_*.py",
+          "journal/01_*.md"
+        ],
+        "absent": [
+          "scratch/results/01_*/report.html",
+          "journal/ideas/*.md"
+        ]
+      }
+    },
+    {
+      "id": "skip-review",
+      "after": "baseline-evaluate",
+      "say": "Skip the review.",
+      "expect": {
+        "files": [
+          "scratch/results/01_*/report.html",
+          "experiments/01_*.py",
+          "journal/01_*.md"
+        ],
+        "absent": [
+          "journal/ideas/*.md"
+        ],
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** done"
+          ]
+        }
+      }
+    },
+    {
+      "id": "discard-ideas",
+      "after": "baseline-review",
+      "say": "Discard every open idea.",
+      "expect": {
+        "files": [
+          "journal/ideas/*.md",
+          "journal/JOURNAL.md",
+          "scratch/results/01_*/report.html"
+        ],
+        "absent": [
+          "journal/02_*.md",
+          "experiments/02_*.py"
+        ],
+        "contains_any": {
+          "journal/ideas/*.md": [
+            "Triage: discarded"
+          ]
+        }
+      }
+    },
+    {
+      "id": "discuss-iterate",
+      "after": "backlog-promote",
+      "say": "Discuss what to try instead.",
+      "expect": {
+        "files": [
+          "journal/JOURNAL.md",
+          "journal/ideas/*.md",
+          "journal/01_*.md"
+        ],
+        "absent": [
+          "journal/02_*.md",
+          "experiments/02_*.py"
+        ],
+        "contains": {
+          "journal/JOURNAL.md": [
+            "| B1 |"
+          ]
+        }
+      }
+    }
+  ]
+}
