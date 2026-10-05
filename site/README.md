@@ -20,6 +20,10 @@ The `site` Pixi environment provides Node.js. From the repository root:
 
 Headings use IBM Plex Serif, licensed under the SIL Open Font License (`src/fonts/OFL.txt`). Body text uses Suisse Intl and mono text uses Suisse Intl Mono, the same commercial faces as probabl.ai.
 
+## Continuous integration
+
+`.github/workflows/site.yml` builds the site on pull requests that change `site/`, `.catalog.json`, the Pixi manifest or lock, or that workflow. It uses the same `site-build` task as the production publish and does not deploy.
+
 ## GitHub Pages
 
 `.github/workflows/pages.yml` sets up the `site` Pixi environment, runs `site-build`, and publishes `dist/`. It runs on pushes to `main` that change `site/`, `.catalog.json`, or the Pixi manifest and lock, and when someone runs the workflow by hand.

@@ -107,5 +107,6 @@ touches `eval/` or `skills/*/SKILL.md`.
 
 `site/` is an Astro app. The `site` Pixi environment provides Node.js
 and nothing else. Build with `pixi run -e site site-build`.
+Pull requests that change the site are built by `.github/workflows/site.yml`.
 The page reads `../.catalog.json`. Catalog edits still go through
 `pixi run check`. Do not run the LLM eval suite for site-only changes.

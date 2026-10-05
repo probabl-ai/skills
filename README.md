@@ -180,8 +180,8 @@ Build it with the `site` Pixi environment, which provides Node.js:
 pixi run -e site site-build
 ```
 
-GitHub Pages builds it from `main` when `site/`, `.catalog.json`, or the Pixi
-manifest changes.
+Pull requests that change `site/`, `.catalog.json`, or the Pixi manifest build
+the site in CI. GitHub Pages builds it from `main` when those same paths change.
 A repo admin turns this on once: Settings → Pages → Source **GitHub Actions**.
 If Pages is enabled after that workflow is already on `main`, run the **Pages**
 workflow with **Run workflow**. Catalog edits still go through `pixi run check`.
