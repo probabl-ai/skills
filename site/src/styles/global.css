@@ -1,4 +1,29 @@
+@import "locomotive-scroll/dist/locomotive-scroll.css";
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'Suisse Intl';
+  src: url('../fonts/SuisseIntl-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suisse Intl';
+  src: url('../fonts/SuisseIntl-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suisse Intl Mono';
+  src: url('../fonts/SuisseIntlMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @font-face {
   font-family: 'IBM Plex Serif';
@@ -41,9 +66,9 @@
 }
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Suisse Intl', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'IBM Plex Serif', ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-mono: 'Suisse Intl Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --font-heading: var(--font-serif);
 
   --duration-600: 600ms;
@@ -65,6 +90,8 @@
   --text-13--letter-spacing: 0px;
   --text-15: 15px;
   --text-15--line-height: 1.3667;
+  --text-16: 16px;
+  --text-16--line-height: 1.375;
   --text-base--line-height: 1.4375;
   --text-17: 17px;
   --text-17--line-height: 1.4118;
@@ -175,5 +202,24 @@
   .group:hover .link-underline-hover::before {
     transform: scaleX(1);
     transform-origin: left;
+  }
+}
+
+.lenis.lenis-smooth dialog iframe {
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.lenis .reveal {
+    transition:
+      opacity 0.55s ease-out,
+      transform 0.55s ease-out,
+      filter 0.55s ease-out;
+  }
+
+  html.lenis .reveal:not(.is-inview) {
+    opacity: 0;
+    transform: translateY(1rem);
+    filter: blur(4px);
   }
 }

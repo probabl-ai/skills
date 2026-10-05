@@ -15,37 +15,143 @@ const socials = [
   { label: 'Discord', icon: iconDiscord, href: 'https://discord.com/invite/f3j8hBSWM7' },
   { label: 'Livestorm', icon: iconLivestorm, href: 'https://app.livestorm.co/probabl/' },
 ];
+
+const columns = [
+  {
+    id: 'footer-product',
+    title: 'Product',
+    links: [
+      { label: 'Skore', href: 'https://www.probabl.ai/skore/' },
+      { label: 'For enterprises', href: 'https://www.probabl.ai/for-enterprises/' },
+      { label: 'Demo', href: 'https://www.probabl.ai/contact/' },
+      { label: 'Skore documentation', href: 'https://docs.skore.probabl.ai/', external: true },
+    ],
+  },
+  {
+    id: 'footer-company',
+    title: 'Company',
+    links: [
+      { label: 'About us', href: 'https://www.probabl.ai/about-us/' },
+      { label: 'Mission', href: 'https://blog.probabl.ai/mission-alignement-committee', external: true },
+      { label: 'Events', href: 'https://www.probabl.ai/events/' },
+      { label: 'Join us', href: 'https://join.probabl.ai/', external: true },
+      { label: 'Contact', href: 'https://www.probabl.ai/contact/' },
+    ],
+  },
+  {
+    id: 'footer-resources',
+    title: 'Resources',
+    links: [
+      { label: 'AI Data Scientist Blog', href: 'https://blog.probabl.ai/', external: true },
+      { label: 'Training', href: 'https://skolar.probabl.ai/en/', external: true },
+      { label: 'Scikit-learn Central', href: 'https://scikit-learn-central.probabl.ai/', external: true },
+    ],
+  },
+];
 ---
 <footer class="bg-beige">
   <Container class="py-10">
-    <a href="https://www.probabl.ai/" class="inline-block">
-      <Image src={logo} alt="Probabl" width={123} height={35} />
+    <a href="https://www.probabl.ai/" class="inline-block shrink-0">
+      <Image src={logo} alt="Probabl — home" width={123} height={35} />
     </a>
-    <p class="mt-6 max-w-sm text-17">The Tabular AI Company</p>
-    <ul class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-15">
-      <li>
-        <a href="https://www.probabl.ai/" class="link-underline-hover">probabl.ai</a>
-      </li>
-      <li>
-        <a href="https://github.com/probabl-ai/skills" class="link-underline-hover">GitHub</a>
-      </li>
-    </ul>
-    <ul class="mt-8 flex items-center gap-3.5 border-t border-black/10 pt-4">
-      {
-        socials.map((social) => (
-          <li>
-            <a
-              href={social.href}
-              target="_blank"
-              rel="noopener"
-              class="inline-flex rounded-sm transition-opacity hover:opacity-70"
-              aria-label={`Probabl on ${social.label}`}
-            >
-              <Image src={social.icon} alt="" class="block size-4.5" />
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <div class="mt-10 grid grid-cols-12 gap-6">
+      <div class="col-span-12 lg:col-span-6">
+        <p class="text-17 font-medium">The Tabular AI Company</p>
+        <p class="mt-2.5 max-w-sm text-17">
+          We build software that helps companies make reliable predictions and better decisions based on their data — not just faster ones.
+        </p>
+      </div>
+      <nav aria-label="Footer" class="col-span-12 sm:contents">
+        {
+          columns.map((column) => (
+            <div class="group/col border-t border-black/10 sm:col-span-4 sm:border-0 lg:col-span-2" data-footer-column>
+              <button
+                type="button"
+                class="flex w-full items-center justify-between gap-4 py-3.5 text-left sm:pointer-events-none sm:py-0"
+                aria-controls={column.id}
+                aria-expanded="false"
+                data-footer-toggle
+              >
+                <span class="font-mono text-11 uppercase sm:text-black/50">{column.title}</span>
+                <span class="relative block size-3 shrink-0 sm:hidden [&_span]:bg-black" aria-hidden="true">
+                  <span class="absolute top-1/2 left-0 block h-[1.5px] w-full -translate-y-1/2 rounded-full" />
+                  <span class="absolute top-1/2 left-0 block h-[1.5px] w-full -translate-y-1/2 rotate-90 rounded-full transition-transform duration-200 ease-in-out in-aria-expanded:rotate-0 motion-reduce:transition-none" />
+                </span>
+              </button>
+              <ul id={column.id} class="hidden space-y-[0.5px] pb-3.5 text-13 group-data-[open]/col:block sm:mt-4 sm:block sm:pb-0">
+                {column.links.map((link) => (
+                  <li>
+                    <a
+                      href={link.href}
+                      class="link-underline-hover"
+                      target={link.external ? '_blank' : undefined}
+                      rel={link.external ? 'noopener' : undefined}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </div>
+    <div class="grid grid-cols-[1fr_auto] items-center gap-6 border-t border-black/10 pt-3.5 sm:mt-11 sm:grid-cols-12">
+      <ul class="flex items-center gap-3.5 sm:col-span-4 lg:col-span-6">
+        {
+          socials.map((social) => (
+            <li>
+              <a
+                href={social.href}
+                target="_blank"
+                rel="noopener"
+                class="inline-flex rounded-sm transition-opacity hover:opacity-70"
+                aria-label={`Probabl on ${social.label}`}
+              >
+                <Image src={social.icon} alt="" class="block size-4.5" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="text-xs tracking-normal sm:col-span-6">
+        <a href="https://www.probabl.ai/legal/" class="link-underline-hover">Legal Center</a>
+      </p>
+    </div>
   </Container>
 </footer>
+
+<script>
+  const columns = document.querySelectorAll('[data-footer-column]');
+  const desktop = window.matchMedia('(min-width: 640px)');
+
+  const sync = () => {
+    columns.forEach((column) => {
+      const button = column.querySelector('[data-footer-toggle]');
+      if (!(button instanceof HTMLButtonElement)) return;
+      if (desktop.matches) {
+        button.tabIndex = -1;
+        button.removeAttribute('aria-expanded');
+        column.removeAttribute('data-open');
+      } else {
+        button.tabIndex = 0;
+        const open = column.hasAttribute('data-open');
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+    });
+  };
+
+  columns.forEach((column) => {
+    const button = column.querySelector('[data-footer-toggle]');
+    button?.addEventListener('click', () => {
+      if (!(button instanceof HTMLButtonElement) || desktop.matches) return;
+      const open = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', open ? 'false' : 'true');
+      column.toggleAttribute('data-open', !open);
+    });
+  });
+
+  sync();
+  desktop.addEventListener('change', sync);
+</script>

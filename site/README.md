@@ -18,7 +18,7 @@ The `site` Pixi environment provides Node.js. From the repository root:
 
 ## Fonts
 
-Headings use IBM Plex Serif, licensed under the SIL Open Font License (`src/fonts/OFL.txt`). Body and mono text use the system fallbacks from the Probabl marketing type stack. Suisse Intl is a commercial face and is not vendored in this public repository.
+Headings use IBM Plex Serif, licensed under the SIL Open Font License (`src/fonts/OFL.txt`). Body text uses Suisse Intl and mono text uses Suisse Intl Mono, the same commercial faces as probabl.ai.
 
 ## GitHub Pages
 

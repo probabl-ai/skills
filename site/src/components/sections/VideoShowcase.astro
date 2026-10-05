@@ -1,0 +1,80 @@
+---
+import Button from '../Button.astro';
+import Container from '../Container.astro';
+
+const filmTitle = 'Why methodology belongs in the workflow';
+const filmSrc = 'https://www.youtube-nocookie.com/embed/AfCAq0y5Cxo?autoplay=1';
+---
+<section aria-label={filmTitle} class="bg-linear-to-b from-beige from-60% to-white pb-16 md:pb-24">
+  <Container>
+    <div data-film>
+      <div class="hero-item relative overflow-hidden rounded-lg shadow-xl" style="--hero-index: 3">
+        <img
+          class="aspect-video w-full object-cover"
+          src="https://i.ytimg.com/vi/AfCAq0y5Cxo/maxresdefault.jpg"
+          alt=""
+          width="1280"
+          height="720"
+        />
+        <div class="absolute bottom-4 left-1/6 -translate-x-1/2 sm:bottom-8">
+          <Button type="button" arrow={false} data-film-open>
+            <svg class="size-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5.5v13l11-6.5-11-6.5Z" />
+            </svg>
+            Watch
+          </Button>
+        </div>
+      </div>
+
+      <dialog
+        aria-label={filmTitle}
+        class="inset-auto top-1/2 left-1/2 m-0 w-[min(64rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 border-0 bg-transparent p-0 text-white backdrop:bg-black/72"
+      >
+        <div class="mb-3 flex justify-end">
+          <button type="button" data-film-close class="text-15">Close</button>
+        </div>
+        <div data-film-player class="aspect-video overflow-hidden rounded-lg bg-black"></div>
+      </dialog>
+    </div>
+  </Container>
+</section>
+
+<script define:vars={{ filmSrc, filmTitle }}>
+  document.querySelectorAll('[data-film]').forEach((root) => {
+    const openButton = root.querySelector('[data-film-open]');
+    const closeButton = root.querySelector('[data-film-close]');
+    const dialog = root.querySelector('dialog');
+    const player = root.querySelector('[data-film-player]');
+    if (!openButton || !closeButton || !dialog || !player) return;
+
+    const mountPlayer = () => {
+      const iframe = document.createElement('iframe');
+      iframe.className = 'size-full';
+      iframe.src = filmSrc;
+      iframe.title = filmTitle;
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+      player.replaceChildren(iframe);
+    };
+
+    openButton.addEventListener('click', () => {
+      mountPlayer();
+      dialog.showModal();
+    });
+
+    closeButton.addEventListener('click', () => {
+      dialog.close();
+    });
+
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+
+    dialog.addEventListener('close', () => {
+      player.replaceChildren();
+      openButton.focus();
+    });
+  });
+</script>

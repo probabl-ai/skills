@@ -1,0 +1,240 @@
+<canvas data-pixel-grid aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 size-full"></canvas>
+
+<script>
+  const MAX_DPR = 2;
+
+  const params = {
+    cell: 14,
+    fade: 150,
+    fadeMaxFraction: 0.12,
+    edgeShrink: 0.3,
+    sizeMin: 0.14,
+    sizeRange: 0.34,
+    alphaMin: 0.55,
+    fieldScale: 70,
+    fieldSpeed: 1.8,
+    fieldWeight: 0.7,
+    glareWidth: 340,
+    glareSpeed: 180,
+    glareWeight: 0.6,
+    pointerRadius: 110,
+    pointerSwell: 0.3,
+  };
+
+  const VERT_SRC = `
+attribute vec2 a_pos;
+void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+`;
+
+  // highp matters: with mediump (a real 16-bit float on Apple and mobile GPUs) the
+  // time-dependent terms lose sub-pixel resolution within seconds and the motion steps.
+  const FRAG_SRC = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+
+uniform vec2  uRes;
+uniform float uDpr;
+uniform float uFieldTime;
+uniform float uGlarePhase;
+uniform vec3  uColor;
+uniform vec2  uMouse;
+uniform float uMouseActive;
+
+uniform float uCell, uFadeX, uFadeY, uEdgeShrink;
+uniform float uSizeMin, uSizeRange, uAlphaMin;
+uniform float uFieldScale, uFieldWeight;
+uniform float uGlareWidth, uGlareWeight;
+uniform float uPointerRadius, uPointerSwell;
+
+void main() {
+  float cs = uCell * uDpr;
+  vec2 cell = floor(gl_FragCoord.xy / cs);
+  vec2 centre = (cell + 0.5) * cs;
+  vec2 p = centre / uDpr;
+  vec2 size = uRes / uDpr;
+
+  vec2 q = p / uFieldScale;
+  float t = uFieldTime;
+  float field = sin(q.x + t) * cos(q.y * 1.33 + t)
+              + 0.5 * sin(q.x * 0.55 - q.y * 0.85 + t * 0.7);
+  float base = 0.5 + 0.5 * (field / 1.5);
+
+  float sweep = dot(p, normalize(vec2(1.0, 0.6)));
+  float glare = exp(-pow(sweep - uGlarePhase, 2.0) / (2.0 * uGlareWidth * uGlareWidth));
+
+  float w = smoothstep(0.0, 1.0, base * uFieldWeight + glare * uGlareWeight);
+
+  float fx = smoothstep(0.0, uFadeX, p.x) * smoothstep(0.0, uFadeX, size.x - p.x);
+  float fy = smoothstep(0.0, uFadeY, p.y) * smoothstep(0.0, uFadeY, size.y - p.y);
+  float fade = fx * fy;
+
+  vec2 md = p - uMouse;
+  float m = uMouseActive * exp(-dot(md, md) / (2.0 * uPointerRadius * uPointerRadius));
+
+  float side = uCell * (uSizeMin + uSizeRange * w + uPointerSwell * m) * mix(uEdgeShrink, 1.0, fade) * uDpr;
+  vec2 d = abs(gl_FragCoord.xy - centre);
+  float coverage = 1.0 - smoothstep(side * 0.5 - 0.75, side * 0.5 + 0.75, max(d.x, d.y));
+  float alpha = coverage * fade * min(1.0, uAlphaMin + (1.0 - uAlphaMin) * w + 0.4 * m);
+
+  gl_FragColor = vec4(uColor * alpha, alpha);
+}
+`;
+
+  function compile(gl: WebGLRenderingContext, type: number, src: string) {
+    const shader = gl.createShader(type);
+    if (!shader) return null;
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error('PixelGrid shader:', gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);
+      return null;
+    }
+    return shader;
+  }
+
+  function parseHex(input: string): [number, number, number] | null {
+    const hex = input.trim().replace('#', '');
+    const full = hex.length === 3 ? hex.replace(/./g, (c) => c + c) : hex;
+    if (!/^[0-9a-f]{6}$/i.test(full)) return null;
+    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255) as [number, number, number];
+  }
+
+  function mount(canvas: HTMLCanvasElement) {
+    // The canvas is inert to pointer events, so listen on the positioned section it fills.
+    const host = (canvas.offsetParent as HTMLElement | null) ?? canvas.parentElement ?? canvas;
+    const gl = canvas.getContext('webgl', { alpha: true, antialias: false, depth: false });
+    if (!gl) return;
+
+    const vs = compile(gl, gl.VERTEX_SHADER, VERT_SRC);
+    const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG_SRC);
+    const program = gl.createProgram();
+    if (!vs || !fs || !program) return;
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error('PixelGrid link:', gl.getProgramInfoLog(program));
+      return;
+    }
+    gl.useProgram(program);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(program, 'a_pos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const u = (name: string) => gl.getUniformLocation(program, name);
+    const rgb =
+      parseHex(getComputedStyle(canvas).getPropertyValue('--color-beige-dark')) ?? parseHex('#E4E1DD')!;
+    gl.uniform3f(u('uColor'), rgb[0], rgb[1], rgb[2]);
+
+    const paramUniforms: [keyof typeof params, string][] = [
+      ['cell', 'uCell'],
+      ['edgeShrink', 'uEdgeShrink'],
+      ['sizeMin', 'uSizeMin'],
+      ['sizeRange', 'uSizeRange'],
+      ['alphaMin', 'uAlphaMin'],
+      ['fieldScale', 'uFieldScale'],
+      ['fieldWeight', 'uFieldWeight'],
+      ['glareWidth', 'uGlareWidth'],
+      ['glareWeight', 'uGlareWeight'],
+      ['pointerRadius', 'uPointerRadius'],
+      ['pointerSwell', 'uPointerSwell'],
+    ];
+
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const pointer = { x: -1e4, y: -1e4, targetX: -1e4, targetY: -1e4, active: 0, targetActive: 0 };
+    let visible = false;
+    let raf = 0;
+    let last = 0;
+    let dpr = 1;
+    // The field clock wraps at the common period of its sine terms (rates 1 and 0.7 → 20π).
+    const FIELD_PERIOD = 20 * Math.PI;
+    let fieldTime = 0;
+    let glareDistance = 0;
+
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    };
+
+    const render = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const animate = !reducedMotion.matches;
+      const cssWidth = canvas.width / dpr;
+      const cssHeight = canvas.height / dpr;
+      const sweepLength = (cssWidth + 0.6 * cssHeight) / Math.hypot(1, 0.6);
+      const margin = params.glareWidth * 2;
+      const travel = sweepLength + margin * 2;
+      if (animate) {
+        fieldTime = (fieldTime + dt * params.fieldSpeed) % FIELD_PERIOD;
+        glareDistance = (glareDistance + dt * params.glareSpeed) % travel;
+      }
+
+      const posLerp = Math.min(1, dt * 12);
+      const activeLerp = Math.min(1, dt * 6);
+      pointer.x += (pointer.targetX - pointer.x) * posLerp;
+      pointer.y += (pointer.targetY - pointer.y) * posLerp;
+      pointer.active += (pointer.targetActive - pointer.active) * activeLerp;
+
+      for (const [key, name] of paramUniforms) gl.uniform1f(u(name), params[key]);
+      // On phones there is no room to fade sideways, so the horizontal fade grows back between 440px and 1440px.
+      const fadeY = Math.min(params.fade, cssWidth * params.fadeMaxFraction);
+      const fadeX = Math.min(fadeY, params.fade * Math.min(1, Math.max(0, (cssWidth - 440) / 1000)));
+      gl.uniform1f(u('uFadeY'), fadeY);
+      gl.uniform1f(u('uFadeX'), Math.max(1, fadeX));
+      gl.uniform2f(u('uRes'), canvas.width, canvas.height);
+      gl.uniform1f(u('uDpr'), dpr);
+      gl.uniform1f(u('uFieldTime'), fieldTime);
+      gl.uniform1f(u('uGlarePhase'), glareDistance - margin);
+      gl.uniform2f(u('uMouse'), pointer.x, pointer.y);
+      gl.uniform1f(u('uMouseActive'), animate ? pointer.active : 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+
+    const tick = (now: number) => {
+      raf = 0;
+      render(now);
+      if (visible && !reducedMotion.matches) raf = requestAnimationFrame(tick);
+    };
+    const wake = () => {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
+    };
+
+    host.addEventListener('pointermove', (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.targetX = event.clientX - rect.left;
+      pointer.targetY = rect.height - (event.clientY - rect.top);
+      pointer.targetActive = 1;
+      wake();
+    });
+    host.addEventListener('pointerleave', () => {
+      pointer.targetActive = 0;
+    });
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) wake();
+    }).observe(canvas);
+    new ResizeObserver(() => {
+      resize();
+      wake();
+    }).observe(canvas);
+    reducedMotion.addEventListener('change', wake);
+
+    resize();
+  }
+
+  document.querySelectorAll<HTMLCanvasElement>('[data-pixel-grid]').forEach(mount);
+</script>

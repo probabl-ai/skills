@@ -1,0 +1,113 @@
+---
+import Container from '../Container.astro';
+import Eyebrow from '../Eyebrow.astro';
+import InstallerTabs from '../InstallerTabs.astro';
+import PixelGrid from '../PixelGrid.astro';
+
+const installers = [
+  { id: 'pip', label: 'pip', command: 'pip install skore-cli' },
+  { id: 'conda', label: 'conda', command: 'conda install -c conda-forge skore-cli' },
+  { id: 'uv', label: 'uv', command: 'uv tool install skore-cli' },
+  { id: 'pixi', label: 'pixi', command: 'pixi global install skore-cli' },
+];
+
+const agents = [
+  { id: 'pi', label: 'pi', command: 'pi' },
+  { id: 'opencode', label: 'opencode', command: 'opencode' },
+  { id: 'claude', label: 'claude', command: 'claude' },
+  { id: 'codex', label: 'codex', command: 'codex' },
+];
+---
+<section id="get-started" aria-labelledby="get-started-heading" class="relative isolate scroll-mt-6 bg-linear-to-b from-white to-beige">
+  <script is:inline>
+    document.currentScript.closest('section').setAttribute('data-command-ready', '');
+  </script>
+  <PixelGrid />
+  <Container class="py-20 text-center md:py-28">
+    <Eyebrow>How to get started</Eyebrow>
+    <h2 id="get-started-heading" class="mx-auto mt-3.5 text-40">
+      Your agent and your model.<br />Our skills.
+    </h2>
+    <ol class="mx-auto mt-12 grid gap-4 text-left xl:grid-cols-3 xl:grid-rows-[auto_auto_auto_1fr] xl:gap-y-0">
+      <li data-command-card style="--i: 0" class="flex min-w-0 flex-col rounded-lg bg-white p-6 xl:row-span-4 xl:grid xl:grid-rows-subgrid xl:p-7">
+        <InstallerTabs items={installers} label="Package manager" idPrefix="installer">
+          <svg slot="icon" class="size-5 shrink-0 text-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m4 17 6-6-6-6" />
+            <path d="M12 19h8" />
+          </svg>
+          <h3 class="mt-5 font-sans text-20">Install our CLI</h3>
+          <p class="mt-1.5 text-15 text-black/60">Use the package manager you already have.</p>
+        </InstallerTabs>
+      </li>
+      <li data-command-card style="--i: 1" class="flex min-w-0 flex-col rounded-lg bg-white p-6 xl:row-span-4 xl:grid xl:grid-rows-subgrid xl:p-7">
+        <div class="flex items-center">
+          <svg class="size-5 text-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3c.5 4.5 4.5 8.5 9 9-4.5.5-8.5 4.5-9 9-.5-4.5-4.5-8.5-9-9 4.5-.5 8.5-4.5 9-9Z" />
+          </svg>
+        </div>
+        <h3 class="mt-5 font-sans text-20">Install our skills</h3>
+        <p class="mt-1.5 text-15 text-black/60">Add our skills to your coding agent.</p>
+        <div class="mt-auto pt-6 xl:mt-0 xl:self-end">
+          <div class="overflow-x-auto rounded-sm bg-blue px-4 py-3.5 font-mono text-13 text-white">
+            <pre><span class="select-none text-orange">❯ </span><code>skore skills install</code></pre>
+          </div>
+        </div>
+      </li>
+      <li data-command-card style="--i: 2" class="flex min-w-0 flex-col rounded-lg bg-white p-6 xl:row-span-4 xl:grid xl:grid-rows-subgrid xl:p-7">
+        <InstallerTabs items={agents} label="Coding agent" idPrefix="agent">
+          <svg slot="icon" class="size-5 shrink-0 text-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M8 5v14l11-7-11-7Z" />
+          </svg>
+          <h3 class="mt-5 font-sans text-20">Start your agent</h3>
+          <p class="mt-1.5 text-15 text-black/60">Open the coding agent you already use.</p>
+        </InstallerTabs>
+      </li>
+    </ol>
+  </Container>
+</section>
+
+<style>
+  [data-command-ready] {
+    --command-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-command-ready] [data-command-card]:not([data-active]) {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translate3d(0, 28px, 0) scale(0.985);
+  }
+
+  [data-command-ready] [data-command-card][data-active] {
+    transition:
+      opacity 480ms var(--command-ease),
+      filter 640ms var(--command-ease),
+      transform 760ms var(--command-ease);
+    transition-delay: calc(80ms + var(--i, 0) * 90ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-command-ready] [data-command-card] {
+      filter: none !important;
+      transform: none !important;
+      transition: opacity 200ms ease !important;
+      transition-delay: 0s !important;
+    }
+  }
+</style>
+
+<script>
+  const section = document.getElementById('get-started');
+  if (section) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.setAttribute('data-active', '');
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.35 },
+    );
+    section.querySelectorAll('[data-command-card]').forEach((card) => observer.observe(card));
+  }
+</script>

@@ -1,0 +1,229 @@
+---
+import backlogImage from '../../assets/images/capability-experiment-backlog.webp';
+import exploreDataImage from '../../assets/images/capability-data-exploration.webp';
+import pipelineImage from '../../assets/images/capability-pipeline-evaluation.webp';
+import projectSetupImage from '../../assets/images/capability-project-setup.webp';
+import Container from '../Container.astro';
+import Eyebrow from '../Eyebrow.astro';
+import VisualPlaceholder from '../VisualPlaceholder.astro';
+
+const capabilities = [
+  {
+    eyebrow: 'Do it right from the start',
+    headline: 'Setup up your project',
+    body: 'We do the heavy lifting for you: scaffolding a proven data science workspace, managing a reproducible Python environment with your favorite package manager, recording every dependency, and keeping the project under version control.',
+    points: [
+      { icon: 'workspace', text: 'A structured workspace ready for new experiments and production' },
+      { icon: 'git', text: 'Dependencies and experiment history preserved with Git' },
+    ],
+    imageLabel: 'Workspace and environment',
+    image: projectSetupImage,
+    imageAlt:
+      'Terminal showing project setup choices for a Python environment, workspace layout, and git',
+  },
+  {
+    eyebrow: 'Get the right insights',
+    headline: 'Explore your data',
+    body: 'We dig into every data table: inspecting, analyzing, and exploring it to surface insights and catch issues early, researching ideas from the literature, and turning every finding into code for a detailed report you can return to.',
+    points: [
+      { icon: 'inspect', text: 'Insights and data issues caught before any modeling' },
+      { icon: 'frame', text: 'A detailed report with code you can come back to' },
+    ],
+    imageLabel: 'Data exploration',
+    image: exploreDataImage,
+    imageAlt:
+      'Browser window showing an exploratory data analysis report with a California housing value map',
+  },
+  {
+    eyebrow: 'Get evidence you can trust',
+    headline: 'Build and evaluate models',
+    body: [
+      'We take it from data source to prediction: connecting the tables with ',
+      { label: 'skrub', href: 'https://skrub-data.org/' },
+      ', modeling with a ',
+      { label: 'scikit-learn', href: 'https://scikit-learn.org/' },
+      '-compatible library, and evaluating in ',
+      { label: 'skore', href: 'https://docs.skore.probabl.ai/' },
+      ' with a structured report of the right metrics, issue checks, and insights on the data, pipeline, and results.',
+    ],
+    points: [
+      {
+        icon: 'graph',
+        text: [
+          'Any data source, one ',
+          { label: 'scikit-learn', href: 'https://scikit-learn.org/' },
+          '-compatible pipeline',
+        ],
+      },
+      {
+        icon: 'results',
+        text: [
+          'A ',
+          { label: 'skore', href: 'https://docs.skore.probabl.ai/' },
+          ' report of metrics, checks, and insights',
+        ],
+      },
+    ],
+    imageLabel: 'Pipeline evaluation',
+    image: pipelineImage,
+    imageAlt:
+      'Browser window showing a linear regression report with a SkrubLearner pipeline diagram',
+  },
+  {
+    eyebrow: 'Keep learning',
+    headline: 'Iterate on new ideas',
+    body: 'We turn the reports into the next experiment: collecting what the evaluation already showed, deciding what to do next, and searching the literature for ideas that build on what you know and what is still worth exploring.',
+    points: [
+      { icon: 'ready', text: 'Next steps drawn from the reports and the evaluation' },
+      { icon: 'literature', text: 'Literature research on what you know and could explore' },
+    ],
+    imageLabel: 'Experiment backlog',
+    image: backlogImage,
+    imageAlt: 'Browser window showing a housing project home page with an experiment backlog and ideas table',
+  },
+];
+---
+<section id="how-it-works" aria-labelledby="how-it-works-heading" class="scroll-mt-6 bg-white">
+  <Container class="py-20 md:py-28">
+    <header class="text-center">
+      <Eyebrow>How it works</Eyebrow>
+      <h2 id="how-it-works-heading" class="mx-auto mt-3.5 text-40">
+        From your data science problem.<br />To deeper experiments.
+      </h2>
+    </header>
+    <ul class="mt-16 flex flex-col gap-y-28 md:mt-20 md:gap-y-40">
+      {
+        capabilities.map((capability, index) => {
+          const reverse = index % 2 === 1;
+          return (
+            <li class="reveal grid gap-x-6 gap-y-10 lg:grid-cols-12" data-scroll>
+              <div
+                class:list={[
+                  'flex flex-col lg:col-span-5',
+                  reverse ? 'lg:col-start-8 lg:row-start-1' : '',
+                ]}
+              >
+                <Eyebrow>{`${String(index + 1).padStart(2, '0')} ${capability.eyebrow}`}</Eyebrow>
+                <h2 class="mt-3.5 text-40 text-balance">{capability.headline}</h2>
+                <p class="mt-6 text-16 text-black/60">
+                  {
+                    typeof capability.body === 'string'
+                      ? capability.body
+                      : capability.body.map((part) =>
+                          typeof part === 'string' ? (
+                            part
+                          ) : (
+                            <a
+                              href={part.href}
+                              class="font-mono text-[0.9em] underline decoration-black/30 underline-offset-3 transition-colors hover:text-orange hover:decoration-orange"
+                            >
+                              {part.label}
+                            </a>
+                          ),
+                        )
+                  }
+                </p>
+                <div class="mt-auto">
+                  <ul class="mt-12 grid grid-cols-2 gap-6">
+                    {
+                      capability.points.map((point) => (
+                        <li>
+                          <svg class="size-6 text-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            {point.icon === 'workspace' && <path d="M3.75 7.5A1.5 1.5 0 0 1 5.25 6h4.19l1.5 1.5h7.81a1.5 1.5 0 0 1 1.5 1.5v8.25a1.5 1.5 0 0 1-1.5 1.5h-13.5a1.5 1.5 0 0 1-1.5-1.5V7.5Z" />}
+                            {point.icon === 'git' && (
+                              <>
+                                <circle cx="6" cy="6" r="2" />
+                                <circle cx="6" cy="18" r="2" />
+                                <circle cx="18" cy="12" r="2" />
+                                <path d="M6 8v8" />
+                                <path d="M8 6.8c3.2.4 7.2 1.5 8 5.2" />
+                              </>
+                            )}
+                            {point.icon === 'inspect' && (
+                              <>
+                                <path d="M4 19V9" />
+                                <path d="M10 19V5" />
+                                <path d="M16 19v-7" />
+                                <circle cx="18.5" cy="6.5" r="2.25" />
+                              </>
+                            )}
+                            {point.icon === 'frame' && (
+                              <>
+                                <path d="M8 4.75h8" />
+                                <path d="M9.25 4.75V4a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 .75.75v.75" />
+                                <rect x="5" y="4.75" width="14" height="15.5" rx="1.5" />
+                                <path d="M8.5 10h7" />
+                                <path d="M8.5 13.5h5" />
+                              </>
+                            )}
+                            {point.icon === 'graph' && (
+                              <>
+                                <circle cx="6" cy="7" r="2" />
+                                <circle cx="18" cy="7" r="2" />
+                                <circle cx="12" cy="17" r="2" />
+                                <path d="M8 7h8" />
+                                <path d="M7.6 8.6 10.6 15.2" />
+                                <path d="M16.4 8.6 13.4 15.2" />
+                              </>
+                            )}
+                            {point.icon === 'results' && (
+                              <>
+                                <path d="M4.5 19V5" />
+                                <path d="M4.5 19H20" />
+                                <path d="M8 15.5 11.2 11l2.6 2.4L18.5 8" />
+                              </>
+                            )}
+                            {point.icon === 'literature' && (
+                              <>
+                                <path d="M6.5 4.5h8.75A2.25 2.25 0 0 1 17.5 6.75V19.5H8.75A2.25 2.25 0 0 0 6.5 21.75V4.5Z" />
+                                <path d="M6.5 4.5A2.25 2.25 0 0 0 4.25 6.75V19" />
+                                <path d="M9.5 9h5" />
+                                <path d="M9.5 12.5h5" />
+                              </>
+                            )}
+                            {point.icon === 'ready' && <path d="M5 12.5 9.2 16.5 19 6.5" />}
+                          </svg>
+                          <p class="mt-3.5 text-15 text-balance">
+                            {
+                              typeof point.text === 'string'
+                                ? point.text
+                                : point.text.map((part) =>
+                                    typeof part === 'string' ? (
+                                      part
+                                    ) : (
+                                      <a
+                                        href={part.href}
+                                        class="font-mono text-[0.9em] underline decoration-black/30 underline-offset-3 transition-colors hover:text-orange hover:decoration-orange"
+                                      >
+                                        {part.label}
+                                      </a>
+                                    ),
+                                  )
+                            }
+                          </p>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+              </div>
+              <div
+                class:list={[
+                  'lg:col-span-6',
+                  reverse ? 'lg:col-start-1 lg:row-start-1' : 'lg:col-start-7',
+                ]}
+              >
+                <VisualPlaceholder
+                  label={capability.imageLabel}
+                  number={capability.image ? undefined : String(index + 1).padStart(2, '0')}
+                  image={capability.image}
+                  alt={capability.imageAlt}
+                />
+              </div>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </Container>
+</section>

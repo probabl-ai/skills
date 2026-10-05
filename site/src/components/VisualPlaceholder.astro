@@ -1,0 +1,55 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  label: string;
+  number?: string;
+  image?: ImageMetadata;
+  alt?: string;
+}
+
+const { label, number, image, alt } = Astro.props;
+---
+{
+  image ? (
+    <Image
+      src={image}
+      alt={alt ?? label}
+      class="h-auto w-full rounded-lg"
+      widths={[640, 960, 1280]}
+      sizes="(min-width: 1024px) 42vw, 100vw"
+      quality={95}
+    />
+  ) : (
+    <div
+      role="img"
+      aria-label={`${label} image placeholder`}
+      class="relative aspect-[10/8] overflow-hidden rounded-lg bg-blue"
+    >
+      <div class="absolute inset-5 rounded-sm border border-black/10 bg-white p-5 sm:inset-8">
+        <div class="flex items-center justify-between border-b border-black/10 pb-4">
+          <div class="flex gap-1.5" aria-hidden="true">
+            <span class="size-2 rounded-full bg-orange"></span>
+            <span class="size-2 rounded-full bg-beige-dark"></span>
+            <span class="size-2 rounded-full bg-beige-dark"></span>
+          </div>
+          {number && <span class="font-mono text-11 text-black/40">{number}</span>}
+        </div>
+        <div class="grid h-[calc(100%_-_2.25rem)] place-items-center">
+          <div class="w-full max-w-xs">
+            <div class="h-2 w-2/3 rounded-full bg-blue/15"></div>
+            <div class="mt-3 h-2 w-full rounded-full bg-blue/8"></div>
+            <div class="mt-2 h-2 w-5/6 rounded-full bg-blue/8"></div>
+            <div class="mt-6 grid grid-cols-3 gap-2" aria-hidden="true">
+              <div class="h-14 rounded-sm bg-orange/80"></div>
+              <div class="h-14 rounded-sm bg-blue"></div>
+              <div class="h-14 rounded-sm bg-blue-light"></div>
+            </div>
+            <p class="mt-5 text-center font-mono text-11 uppercase text-black/45">{label}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -14,6 +14,8 @@ const buttonVariants = cva(
         dark:
           'bg-black text-white duration-600 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-orange hover:text-black before:absolute before:-inset-y-px before:-inset-x-[66px] before:-z-10 before:origin-right before:scale-x-0 before:bg-[linear-gradient(to_right,transparent,#FF7900_64px,#FF7900_calc(100%_-_64px),transparent)] before:transition-transform before:duration-600 before:ease-[cubic-bezier(0.22,1,0.36,1)] hover:before:origin-left hover:before:scale-x-100',
         ghost: 'bg-transparent text-black hover:bg-black/5',
+        outline:
+          'border border-black/25 bg-transparent text-black duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-black/40 hover:bg-white',
       },
       size: {
         default: 'h-11 px-4 text-15',
@@ -32,9 +34,10 @@ interface Props extends HTMLAttributes<'a'>, VariantProps<typeof buttonVariants>
   href?: string;
   type?: 'button' | 'submit' | 'reset';
   arrow?: boolean;
+  external?: boolean;
 }
 
-const { href, type = 'button', variant, size, arrow = true, class: className, ...rest } = Astro.props;
+const { href, type = 'button', variant, size, arrow = true, external = false, class: className, ...rest } = Astro.props;
 const Tag = href ? 'a' : 'button';
 ---
 <Tag
@@ -44,5 +47,5 @@ const Tag = href ? 'a' : 'button';
   {...rest}
 >
   <slot />
-  {arrow && <span class="relative top-[-0.5px]" aria-hidden="true">→</span>}
+  {arrow && <span class="relative top-[-0.5px]" aria-hidden="true">{external ? '↗' : '→'}</span>}
 </Tag>
