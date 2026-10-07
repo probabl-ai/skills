@@ -1,26 +1,25 @@
 ---
 name: review-ml-experiment
 description: >
-  Post-evaluate review. Gate the expensive skore-check audit, then
-  write one markdown idea file and one Ideas row per candidate.
-  Trigger after a successful evaluate, on "review this stem", or
-  when review consent is Review or proceed. Do not write History,
-  Backlog, or a design note. Do not run cells run until the user
-  accepts the audit cost.
+  Post-evaluate review. Read the stored report, then write one
+  markdown idea file and one Ideas row per candidate. Trigger
+  after a successful evaluate, on "review this stem", or when
+  review consent is audit or proceed. Do not write History,
+  Backlog, or a design note.
 ---
 
 # Review ML Experiment
 
 Optional loop step after evaluate. Record-outcome stays with the
 caller. This skill writes idea files and their Ideas rows. The
-stem is whichever experiment was reviewed.
+stem is whichever experiment was reviewed. Check results were
+stored with the report, so the audit reads them.
 
 ## Human-facing prose
 
 Details: `setup-workspace` `references/human_facing_prose.md`.
-The Review / Skip / Stop question and cost preview describe
-reading this report and writing follow-up ideas — not skill ids,
-`cells run`, or the wrapper CLI.
+Idea files describe this report and the follow-up — not skill
+ids, `cells run`, or the wrapper CLI.
 
 ## Procedure
 
@@ -28,26 +27,18 @@ reading this report and writing follow-up ideas — not skill ids,
    `python -m skore_skills review consent --stem <stem>`. Treat
    JSON `action` as authoritative.
    - `stop` — no `scratch/results/<stem>/report.html`. Name that
-     file and stop. Do not audit.
-   - `ask` — report exists, digest does not. Emit the cost preview
-     below, then **AskUserQuestion**: Review (Recommended) / Skip /
-     Stop. "Audit it" on a first run is not consent. If this turn
-     already answered **Review**, do not ask again.
-   - `proceed` — digest already on disk. Do not re-run checks.
-     Refresh idea files from the existing digest.
-2. **Skip** — write no idea files. Return
-   `n/a — audit not run` so the caller can record-outcome.
-3. **Stop** — do not audit and do not record-outcome. The persisted
-   report stays. Load `triage-ml-task` when
-   `status.skills.triage-ml-task` is true.
-4. **Review**, or `proceed` for idea refresh: load
-   `audit-ml-pipeline` only if `status.skills.audit-ml-pipeline`
-   is true. On **Review**, that skill runs `cells run` (consent
-   stays `ask` until the digest exists; the Review answer is what
-   starts it). On `proceed`, do not `cells run`. Missing audit
-   skill → one-line skip; return `n/a — audit not run` and write
-   no idea files. Do not open the Project or call `report.*` here.
-5. Read the design note, the EDA summary, the last History row,
+     file and stop. Do not audit. Do not record-outcome.
+   - `audit` — report exists, digest does not. Load
+     `audit-ml-pipeline` when installed. That skill runs
+     `cells run`.
+   - `proceed` — digest already on disk. Do not `cells run`
+     unless the user asked to re-audit. A re-audit loads
+     `audit-ml-pipeline`; that skill runs `cells run`.
+     Otherwise refresh idea files from the existing digest.
+2. Missing audit skill → one-line skip. Return
+   `n/a — audit not run` and write no idea files. Do not open
+   the Project or call `report.*` here.
+3. Read the design note, the EDA summary, the last History row,
    and the digest. One candidate per `Issues:` / `Tips:` line.
    A methodological gap the design note named and this run did
    not test is another candidate. A user idea or a literature
@@ -57,7 +48,7 @@ reading this report and writing follow-up ideas — not skill ids,
    `status.skills.research-ml-practice` is true and an audit or
    design candidate needs sources; otherwise one-line skip. Do
    not invent papers, metrics, or a winner.
-6. Write one file per candidate at
+4. Write one file per candidate at
    `journal/ideas/<stem>-<slug>.md` with Experiment, Source
    (`audit:<stem>:checks.<code>` or `design:<stem>`), Triage
    `open`, Question, Why now, What changes, Open gaps. No
@@ -66,33 +57,22 @@ reading this report and writing follow-up ideas — not skill ids,
    recommendation in What changes. On a refresh, keep an existing file's
    `Triage` value and the matching Ideas status. A new candidate
    is `open`.
-7. Upsert one `## Ideas` row per file in `journal/JOURNAL.md`.
+5. Upsert one `## Ideas` row per file in `journal/JOURNAL.md`.
    If that table is missing, insert it between History and
    Backlog. Columns: Question, Status, Experiment, Source.
    Question is the file's Question as plain text, not a link.
    Status is `open`, `discarded`, or `aside`, matching `Triage`.
    A `promoted` file has no Ideas row. Experiment is this run's
    stem. Source is copied verbatim. Edit only that table.
-8. Return the digest, JSON `finding` from
+6. Return the digest, JSON `finding` from
    `python -m skore_skills audit finding --stem <stem>`, the
    locator from `python -m skore_skills loop locator --stem <stem>`,
    and the idea paths.
 
-An explicit re-audit asks the gate again before `cells run`, even
-when a digest exists, because it re-runs the checks.
-
-## Cost preview
-
-On `ask`, before the question, emit 1–3 sentences. This is a
-**local read of the persisted report**, not another fit. The audit
-template runs every skore check, writes `audit/<stem>.py` and
-`scratch/audit/<stem>/audit.md`, and can be slow on a large
-report. Name the stem and those paths. Do not invent minutes.
-
 ## Stop conditions
 
-- Do not run `cells run` before **Review** or an explicit re-audit
-  confirmation.
+- On `proceed`, do not `cells run` unless the user asked to
+  re-audit.
 - Do not write History, Backlog, Status, or a design note.
   The Ideas table is the only `JOURNAL.md` edit.
 - Do not call `skore.evaluate` or `project.put`.

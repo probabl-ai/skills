@@ -447,16 +447,10 @@ cell that produced it.
 Before the first `cells run` for a stem, run
 `python -m skore_skills review consent --stem <stem>`.
 - `stop` — name the missing `report.html` and stop.
-- `ask` — emit the cost preview (local read of the persisted
-  report; every skore check; can be slow; name
-  `audit/<stem>.py`, `scratch/audit/<stem>/audit.md`, and
-  `scratch/audit/<stem>/viewers.py`; do not
-  invent minutes) and **AskUserQuestion** Review (Recommended) /
-  Skip / Stop. Do not `cells run` until **Review**. If this turn
-  already answered **Review** (including from
-  `review-ml-experiment`), do not ask again.
+- `audit` — write `audit/<stem>.py` and `cells run`.
+  Check results were stored with the report; this read uses them.
 - `proceed` — digest exists. Do not `cells run` unless the user
-  explicitly asked to re-audit; that re-audit asks the gate again.
+  explicitly asked to re-audit. A re-audit runs `cells run`.
 
 ```bash
 python -m skore_skills cells run audit/<stem>.py scratch/audit/<stem>/audit.md
@@ -519,7 +513,7 @@ Identical stems, 1:1. By the time the experiment shows `done` in
 
 | Caller | When |
 |---|---|
-| `review-ml-experiment` | After Review, before idea files and record-outcome |
+| `review-ml-experiment` | When review consent is `audit`, before idea files |
 | `model-ml-pipeline` | Does not load this skill; it loads `review-ml-experiment` |
 | `evaluate-ml-pipeline` | Standalone evaluate may run audit before its close |
 | User free-text | "audit experiment 02", "show me what 03", "re-audit 04" — resolves directly |

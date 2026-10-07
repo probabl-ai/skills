@@ -97,7 +97,9 @@ Details: `references/cell_anatomy.md`. Extra recipes:
   candidate columns, the proposed family slugs — and what each
   option does. A file link is an addition, never the context.
 - **G-DATA-ANALYSIS run | skip.** AskUserQuestion. "Go fast" does
-  not skip. Skip → JOURNAL Status row `skipped — <date>` and stop.
+  not skip. Skip →
+  `python -m skore_skills eda stamp --status skipped`
+  and stop. Do not type the date.
   Skip is valid only when `data_analysis/data_analysis.md` is
   absent (`status.data_analysis` `missing` or `skipped`). If
   status is `present`, do not write `skipped`. Say the written
@@ -260,12 +262,14 @@ not write or execute the notebook.
    figure that earns no such sentence.
    Ground claims in both JSON files and the HTML. Do not invent
    columns.
-5. JOURNAL § Data understanding table: Status `done — <date>`,
-   short summary (shape, target balance/skew, one or two findings
-   that shape modelling), Report
+5. JOURNAL § Data understanding table: run
+   `python -m skore_skills eda stamp --status done` for the Status
+   cell. Do not type the date. Write the short summary (shape,
+   target balance/skew, one or two findings that shape modelling)
+   and Report
    `[data_analysis/data_analysis.md](../data_analysis/data_analysis.md)`.
-   Skip path: Status row only. Do not convert or `git end-turn` on
-   skip.
+   Skip path: `eda stamp --status skipped` only. Do not convert or
+   `git end-turn` on skip.
 6. **Continuation board** — unless the user already closed
    the turn (“EDA is done”, “close the turn”): if `policy.site`
    is true and `export-ml-site` is installed, run

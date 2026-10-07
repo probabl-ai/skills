@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "e294e55f8df0778412180fd99d2881b86f858d46bb1c4979a9ddaa61202daf42",
+  "catalog_hash": "2e91fca8ad1da3c29005d6c8c0aaea58445ba3ac8b1fd35fba058c257119e21a",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "6081b0c7a42b8db36a6ab983103f2a50d88f9a2436816d87e2df490d5c2acdc9"
+      "hash": "53a72a37bd1dd196def2b63b129241b46fa79e41ac7464156cbbf5a1f3186130"
     },
     {
       "id": "frame-ml-problem",
@@ -21,7 +21,7 @@
       "summary": "Lock the problem, deployment setting, metric, baseline, and fold count before any model code.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "bd6dca500e3d64170640c7c6ef7cfa0713bada609e8d53ca6fb0eef1f1238a76"
+      "hash": "01592ba9e2f73bf10980e193a4e29eaf1cf1ce5697e7648b0a511cf39739ce9f"
     },
     {
       "id": "build-ml-pipeline",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "00b2bc5a5d8069b3dadb0d94bab0e504019b2331d7861e42b62496095661b65c"
+      "hash": "c96775ed8f39239955aa22a3f2d0733de6826a3b62f6626b5275fcaae6aeeb7d"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -57,7 +57,7 @@
       "summary": "Audit a persisted skore report read-only and produce a reusable digest.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "b7d82f27be1a5fd23e17545922a61ebb5ed393f798cab5fb0ff1c232ce7e1600"
+      "hash": "d66b5d354f506fafbd6eb1fea1a671d101cd39ff97eed85da447168e11ae765a"
     },
     {
       "id": "manage-ml-backlog",
@@ -66,7 +66,7 @@
       "summary": "Record experiment outcomes and triage idea files. A promoted idea moves from the Ideas table into a Backlog row.",
       "category": "action",
       "subcategory": null,
-      "hash": "004fdc8b7d3f98577ae4a6b6944647b7cdd2dd36417fcb1b169213052abd4271"
+      "hash": "ba1b1b137887c3f915b99359937e3acbe5db3febd94360a464ee2e01b84245bf"
     },
     {
       "id": "organize-ml-workspace",
@@ -108,10 +108,10 @@
       "id": "review-ml-experiment",
       "path": "skills/review-ml-experiment",
       "title": "Review ML Experiment",
-      "summary": "Gate the skore-check audit, then write one idea file and one Ideas row per candidate.",
+      "summary": "Read the stored report, then write one idea file and one Ideas row per candidate.",
       "category": "meta",
       "subcategory": null,
-      "hash": "9cb674fa794f33a0b999e5aec1d4be91d29d778e63bfcc021c6ff2f4fd89c648"
+      "hash": "4f91092c4fb8aac7f99327c277f8b78f4133e936a655b02517c3ea1889fd6bb1"
     },
     {
       "id": "shape-user-idea",
@@ -147,7 +147,7 @@
       "summary": "Initialize safe version control for an ML workspace.",
       "category": "action",
       "subcategory": null,
-      "hash": "8fbc9735a787e214cd05242c8d380f34bdcf1850440fd769ed0fcf9d280261dd"
+      "hash": "944f8fc68f638785fd8f0c35cb7ab3356fb6e6d1799262e07549860e36751e13"
     },
     {
       "id": "persist-ml-git",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, then coordinate modeling choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "ec871bf853a27d073a4c8a0924d857bb93beb4240aeab89071d7a417ab33b9a8"
+      "hash": "846744b05504a2702696d5888ebc1e566c8c1580561cce06d799921e7d7609b1"
     },
     {
       "id": "choose-python-library",

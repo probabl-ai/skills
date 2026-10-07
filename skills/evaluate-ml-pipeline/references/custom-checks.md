@@ -73,9 +73,14 @@ report.checks.summarize()
 project.put(STEM, report)
 ```
 
-`Project.put` stores a point-in-time snapshot. Adding a check
-after `put` changes only the in-memory report until another `put`.
-`add` does not replace built-in SKD checks.
+`report.checks.summarize()` with no arguments is required before
+every `project.put`, including when no custom check is added.
+Do not pass `fast_mode` or `ignore`. Call it after `add` so the
+custom check is in the stored results. `Project.put` stores that
+cache. A later audit reads it and does not recompute those
+checks. Adding a check after `put` changes only the in-memory
+report until another `put`. `add` does not replace built-in SKD
+checks.
 
 Audit reads the bare `report.checks.summarize()` Display; do not call
 `checks.add` from `audit/` (no `put` there).

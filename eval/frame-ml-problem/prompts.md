@@ -166,7 +166,8 @@
 - Name `frame show --revise`.
 - On modify, run `frame clear --cell prediction_goal`.
 - That blanks prediction goal, metric role, and metric, and sets
-  Status to `draft` with Revised on today's date.
+  Status to `draft`. `frame clear` stamps Revised on. Do not type
+  the date.
 - Leave deployment and folds filled.
 - Stop for the next `frame show`. Do not write `intervals` in
   this turn.
@@ -176,6 +177,7 @@
 - Leave Status `locked` after modify.
 - Blank deployment or folds.
 - Write a model or a splitter.
+- Invent a calendar date for Revised on.
 
 ---
 

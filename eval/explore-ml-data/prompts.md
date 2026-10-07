@@ -68,14 +68,14 @@
 - No `data_analysis/data_analysis.md`.
 
 **Must do:**
-- Record JOURNAL § Data understanding `Status: skipped` with a
-  date.
+- Run `eda stamp --status skipped`. Do not type the date.
 - Stop without placing `data_analysis/data_analysis.py`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `python -m skore_skills cells run`.
 - Write `data_analysis/data_analysis.py` or `data_analysis/data_analysis.md`.
+- Invent a calendar date for the data-understanding Status.
 - Pick a package name or start modeling.
 - Run `python -m skore_skills site build`.
 

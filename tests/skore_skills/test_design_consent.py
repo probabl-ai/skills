@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 
 from skore_skills.cli import cli
-from skore_skills.design_consent import design_consent
+from skore_skills.design_consent import design_approve, design_consent
 
 
 def _write(path: Path, text: str = "") -> None:
@@ -165,3 +166,118 @@ def test_missing_or_blank_state_asks(tmp_path: Path) -> None:
 
     _write(tmp_path / "journal" / f"{stem}.md", "- **State:** `\n")
     assert design_consent(tmp_path, stem)["reason"] == "first_approval"
+
+
+def test_design_approve_stamps_today(tmp_path: Path) -> None:
+    """A planned note records approval with the injected date."""
+    stem = "05_new_model"
+    _note(tmp_path, stem, "planned")
+
+    payload = design_approve(tmp_path, stem, today=date(2026, 10, 6))
+
+    assert payload == {
+        "action": "approved",
+        "stem": stem,
+        "state": "approved",
+        "approved_on": "2026-10-06",
+    }
+    text = (tmp_path / "journal" / f"{stem}.md").read_text(encoding="utf-8")
+    assert "- **State:** approved\n" in text
+    assert "- **Approved by user on:** 2026-10-06\n" in text
+    assert "Does a richer feature set beat the baseline?" in text
+    assert design_consent(tmp_path, stem)["action"] == "proceed"
+
+
+def test_design_approve_accepts_a_blank_state(tmp_path: Path) -> None:
+    """A blank State still awaiting approval can be stamped."""
+    stem = "05_new_model"
+    _write(
+        tmp_path / "journal" / f"{stem}.md",
+        "## Status\n\n- **State:**\n- **Approved by user on:** n/a\n",
+    )
+
+    payload = design_approve(tmp_path, stem, today=date(2026, 10, 6))
+
+    assert payload["approved_on"] == "2026-10-06"
+    text = (tmp_path / "journal" / f"{stem}.md").read_text(encoding="utf-8")
+    assert "- **State:** approved\n" in text
+
+
+@pytest.mark.parametrize(
+    "state",
+    ["approved", "running", "done", "abandoned — kept reason", "draft"],
+)
+def test_design_approve_refuses_to_overwrite(tmp_path: Path, state: str) -> None:
+    """A note that is not awaiting approval keeps its existing date."""
+    stem = "01_baseline"
+    _note(tmp_path, stem, state)
+    path = tmp_path / "journal" / f"{stem}.md"
+    before = path.read_text(encoding="utf-8")
+
+    with pytest.raises(ValueError, match="design note state is"):
+        design_approve(tmp_path, stem, today=date(2026, 10, 6))
+
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_design_approve_requires_the_note(tmp_path: Path) -> None:
+    """A missing design note is an error."""
+    with pytest.raises(ValueError, match="design note is missing"):
+        design_approve(tmp_path, "09_missing", today=date(2026, 10, 6))
+
+
+def test_design_approve_requires_both_status_lines(tmp_path: Path) -> None:
+    """Approval needs a State line and an Approved by user on line."""
+    stem = "05_new_model"
+    path = tmp_path / "journal" / f"{stem}.md"
+    _write(path, "## Status\n\n- **Approved by user on:** n/a\n")
+    with pytest.raises(ValueError, match="missing State"):
+        design_approve(tmp_path, stem, today=date(2026, 10, 6))
+
+    _write(path, "## Status\n\n- **State:** planned\n")
+    before = path.read_text(encoding="utf-8")
+    with pytest.raises(ValueError, match="missing Approved by user on"):
+        design_approve(tmp_path, stem, today=date(2026, 10, 6))
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_design_approve_rejects_a_blank_stem() -> None:
+    """A blank stem is an error."""
+    with pytest.raises(ValueError, match="stem is required"):
+        design_approve(Path("."), "  ")
+
+
+def test_design_approve_cli_prints_json(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The CLI stamps the note and prints the approval date."""
+    stem = "05_new_model"
+    _note(tmp_path, stem, "planned")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["design", "approve", "--stem", stem])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["action"] == "approved"
+    assert payload["approved_on"] == date.today().isoformat()
+    text = (tmp_path / "journal" / f"{stem}.md").read_text(encoding="utf-8")
+    assert f"- **Approved by user on:** {payload['approved_on']}\n" in text
+
+
+def test_design_approve_cli_requires_stem() -> None:
+    """Omitting --stem is a usage error."""
+    result = CliRunner().invoke(cli, ["design", "approve"])
+
+    assert result.exit_code == 2
+    assert "Missing option" in result.output
+
+
+def test_design_approve_cli_rejects_blank_stem(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A blank stem is a usage error."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["design", "approve", "--stem", "  "])
+    assert result.exit_code != 0
+    assert "stem is required" in result.output

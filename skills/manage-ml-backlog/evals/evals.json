@@ -16,7 +16,8 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Invent a metric that is not in the digest or user text.",
         "The response does NOT: Draft `02_*.py` in this turn.",
-        "The response does NOT: Run `git commit` in this skill or `git push`."
+        "The response does NOT: Run `git commit` in this skill or `git push`.",
+        "The response does NOT: Change design-note `State` or `Approved by user on`."
       ],
       "tools": false,
       "sandbox": [],
@@ -113,7 +114,7 @@
         "Copy G-AUDIT-FINDING byte-for-byte into the design-note `Audit findings` Status line, separately from Headline result.",
         "Insert `## Results` with Report overview, then Checks, then Metrics. Summarize Report overview and Checks from the digest, not from HTML. `### Metrics` is a heading only: do not transcribe the metric table or its values.",
         "After Metrics, add a `###` subsection for `roc` with `<!-- results-embed: roc -->`, summarizing from that digest cell.",
-        "Update the rest of the design-note Status block for `01_baseline`.",
+        "Copy Headline result, Persisted report, and Audit findings into the design-note Status block. Do not change `State` or `Approved by user on`.",
         "Refresh the `JOURNAL.md` Status rows `Last experiment` and `Last result`.",
         "Return to the caller after recording.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
@@ -125,6 +126,7 @@
         "The response does NOT: Run `site build` or `git end-turn --stage backlog` \u2014 the caller owns the close.",
         "The response does NOT: Rewrite or shorten the supplied Hub URL. Pasting the digest string unchanged is required, not a violation.",
         "The response does NOT: Merge the audit finding into the headline metric or Last result. Copying the supplied G-AUDIT-FINDING unchanged, including the `ROC-AUC 0.86` already inside that string, is required.",
+        "The response does NOT: Change design-note `State` or `Approved by user on`.",
         "The response does NOT: Parse `scratch/results/` HTML when writing `## Results`.",
         "The response does NOT: Invent extra Display subsections without a matching digest cell."
       ],
@@ -146,6 +148,7 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Invent or estimate a metric.",
         "The response does NOT: Mark the row `done` without a result.",
+        "The response does NOT: Change design-note `State` or `Approved by user on`.",
         "The response does NOT: Edit the Ideas table.",
         "The response does NOT: Ask the idea-triage question.",
         "The response does NOT: Parse report HTML to fill Results."

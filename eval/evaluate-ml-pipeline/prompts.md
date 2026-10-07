@@ -32,16 +32,18 @@ violated.
 **Must do:**
 - After all evaluation gates and before writing/running
   `skore.evaluate`, give a 1–3 sentence preview: local
-  full-dataset CV with the selected splitter, report persistence,
-  and the `experiments/01_baseline.py` /
+  full-dataset CV with the selected splitter, the skore checks
+  computed and stored with the report, report persistence, and
+  the `experiments/01_baseline.py` /
   `scratch/results/01_baseline/` outputs.
 - Name the fold count when known; otherwise explain that timing
-  depends on rows, folds/repeats, and learner cost. Do not invent
-  a minute estimate.
+  depends on rows, folds/repeats, the learner, and the checks.
+  Do not invent a minute estimate.
 - Pick **`skore.evaluate(learner, data={...})`** as the entry
   point, with no `splitter=` (not `cross_val_score`, not
   `cross_validate`). The `KFold` already on the marker is reused.
-- Score that one learner with one `skore.evaluate` and one
+- Score that one learner with one `skore.evaluate`, one
+  `report.checks.summarize()` with no arguments, and one
   `project.put`.
 - Name `python -m skore_skills frame show` and
   `python -m skore_skills api get` for `skore.evaluate` (or Read
@@ -55,8 +57,9 @@ violated.
   `scratch/results/01_baseline/snapshot.py` and run it after
   `put`. It writes `report.html` from `report._repr_html_()`,
   `report.txt` from `repr(report)`, and `locator.txt` with the
-  normalized G-REPORT-LOCATOR. The experiment file ends at `put`
-  and a bare `report`.
+  normalized G-REPORT-LOCATOR. The experiment file ends at
+  `report.checks.summarize()`, `project.put`, and a bare
+  `report`.
 - When `DataOp.skb.report` accepts `eval`, `snapshot.py` writes
   `scratch/results/01_baseline/pipeline/` with
   `learner.report(eval=False, open=False, overwrite=True, output_dir=...)`
@@ -74,6 +77,8 @@ violated.
 - Default to `StratifiedKFold` (forbidden — compresses across-fold
   variance, even on imbalance).
 - Pass `splitter=` to `skore.evaluate`.
+- Pass `fast_mode` or `ignore` to `report.checks.summarize`.
+- Call `project.put` before `report.checks.summarize()`.
 - Pre-pin a different metric (e.g. `scoring="neg_mean_squared_error"`).
   The locked comparison is `MAE`.
 - Run `git commit` in this skill or `git push`.
@@ -747,11 +752,15 @@ violated.
 **Must do:**
 - Pick `skore.evaluate(learner, data={...})` with no
   `splitter=`. The `KFold` already on the marker is reused.
+- Call `report.checks.summarize()` with no arguments after
+  `evaluate` and before `project.put`.
 - Trust skore metric and SKD-check defaults.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Define a `Check` subclass or call `report.checks.add`.
+- Pass `fast_mode` or `ignore` to `report.checks.summarize`.
+- Call `project.put` before `report.checks.summarize()`.
 - Pass `scoring=` to `skore.evaluate`.
 - Call `report.metrics.add`.
 

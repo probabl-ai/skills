@@ -17,7 +17,7 @@ after listing the boxes.
 
 ```
 - [ ] status (skip autocommit ask if already on/off, unless the user asked to change it)
-- [ ] git init if no .git
+- [ ] git init -b main if no .git
 - [ ] git ignore-merge (record ambiguous_dotfiles; do not ask yet)
 - [ ] git.autocommit ask if null
 - [ ] off, or on and HEAD exists → stop; no file question; no commit
@@ -37,8 +37,10 @@ after listing the boxes.
    invent another commit. Later stages follow the new value.
    Otherwise, if autocommit is already `on` or `off`, do not ask
    that question again.
-2. If there is no `.git` directory, run `git init`. Do not run
-   `git config`.
+2. If there is no `.git` directory, run `git init -b main`. The
+   initial branch is `main`. Do not run `git config`. Do not name
+   that branch `master`. Do not rename a branch that already
+   exists.
 3. Run `python -m skore_skills git ignore-merge`. Keep the JSON
    `ambiguous_dotfiles` list. Exit code 2 is that structured
    list, not a command failure. Do not ask yet.
@@ -114,5 +116,7 @@ after listing the boxes.
 - Never split hidden files and review paths into two questions
   before the first commit.
 - Never push, create a remote, amend, rebase, or set git identity.
+- The initial branch is `main`. Do not name it `master`. Do not
+  rename a branch that already exists.
 - Do not call `python -m skore_skills git end-turn --stage …` to
   create the first commit.

@@ -18,7 +18,7 @@
 **Must do:**
 - Emit the Pre-flight then run the commands (do not stop after
   listing boxes).
-- Name `git init`.
+- Run `git init -b main` so the initial branch is `main`.
 - Run `python -m skore_skills git ignore-merge`.
 - Ask once whether later stages may autocommit (`on` vs `off`) and
   persist with `python -m skore_skills policy set git.autocommit on`.
@@ -28,6 +28,7 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Leave the initial branch as `master`.
 - Stage `.env` or raw data.
 - Ask a second time before the first commit after `on`.
 - Ask which review paths to keep when `review_paths` is empty.
@@ -69,12 +70,13 @@
 - The user answers the autocommit question with `off`.
 
 **Must do:**
-- Name `git init`.
+- Run `git init -b main` so the initial branch is `main`.
 - Run `python -m skore_skills git ignore-merge`.
 - Persist `python -m skore_skills policy set git.autocommit off`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Leave the initial branch as `master`.
 - Run `git commit`.
 - Run `git push`.
 - Use `python -m skore_skills git end-turn` to create a commit.
@@ -95,6 +97,7 @@
 - No HEAD yet.
 
 **Must do:**
+- Run `git init -b main` so the initial branch is `main`.
 - Run `python -m skore_skills git ignore-merge`.
 - Ask which hidden paths to keep, then re-run
   `python -m skore_skills git ignore-merge --decide --keep .cursor`.
@@ -102,6 +105,7 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Leave the initial branch as `master`.
 - `--keep` `.env` or `.skore`.
 - Ask a second question for review paths when `review_paths` is
   empty.
@@ -181,6 +185,7 @@
 - `src/pkg/data.py` is also dirty.
 
 **Must do:**
+- Run `git init -b main` so the initial branch is `main`.
 - Run `python -m skore_skills git ignore-merge` and
   `python -m skore_skills git review` before asking.
 - Ask **once**, listing `.python-version` and `checkpoints/`
@@ -192,6 +197,7 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Leave the initial branch as `master`.
 - Ask two questions, one for hidden files and another for review
   paths.
 - `--keep` `checkpoints/`, `.env`, or `.skore`.

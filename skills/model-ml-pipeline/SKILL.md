@@ -175,13 +175,13 @@ duplicate a child's detailed preview.
 - For an approved implementation, say which child comes next and
   the broad sequence: local pipeline preparation → small
   real-data smoke fit/predict → optional full-dataset evaluation
-  → gated review. Then let `build-ml-pipeline`,
+  → review. Then let `build-ml-pipeline`,
   `smoke-test-ml-pipeline`, `evaluate-ml-pipeline`, and
   `review-ml-experiment` each own the single detailed Before
   execution preview at its actual compute boundary. The dispatcher
   preview is those four phase names only, one short line each. Do
   not mention the Method viewer, a site rebuild, a row-count
-  assertion, `skore.evaluate`, or Review / Skip / Stop. Do not list
+  assertion, or `skore.evaluate`. Do not list
   their commands (`status`, `frame show`, `design consent`,
   `smoke run`) or a DataOps declaration in this preview. Do not
   name `loop notebooks` or `notebook convert`. Notebooks stay
@@ -211,9 +211,10 @@ the JSON `context` inline (§ Gate context), including the site
 preview when `policy.site`, then **AskUserQuestion** (single
 choice), in order: **Approve** / **Modify** / **Stop**. Do not
 also ask in chat whether the note looks right.
-- **Approve** → set `**State:**` to `approved` and
-  `**Approved by user on:**` to today's date (`YYYY-MM-DD`).
-  Re-run `design consent`; code starts only on `proceed`.
+- **Approve** → run
+  `python -m skore_skills design approve --stem <stem>`.
+  Do not type the date. Re-run `design consent`; code starts
+  only on `proceed`.
 - **Modify** → leave `State` `planned`, edit the note, and ask
   this gate again.
 - **Stop** → do not implement.
@@ -258,24 +259,13 @@ also ask in chat whether the note looks right.
    - `stop` — no `scratch/results/<stem>/report.html`. Do not
      review. Name that file. This is the evaluation snapshot, not
      the site launcher `report.html`. Do not record-outcome.
-   - `ask` — stop at the question. The review skill owns the
-     cost preview and Review (Recommended) / Skip / Stop. Load
-     `review-ml-experiment` only if
-     `status.skills.review-ml-experiment` is true so it can ask.
-     Do not run `loop notebooks`, record-outcome, or `site build`
-     while `action` is `ask`. Do not name that close in the
-     question. Missing skill → one-line skip and run § Close
-     with `n/a — audit not run`.
-   - **Review** or `proceed` — load `review-ml-experiment` (same
-     gate). It returns the digest, G-AUDIT-FINDING, locator, and
-     idea paths. Do not load `audit-ml-pipeline` from this
-     dispatcher. Then § Close, in that order.
-   - **Skip** — no idea files. Then § Close, in that order, with
+   - `audit` or `proceed` — load `review-ml-experiment` only if
+     `status.skills.review-ml-experiment` is true. It returns the
+     digest, G-AUDIT-FINDING, locator, and idea paths. Do not
+     load `audit-ml-pipeline` from this dispatcher.
+     Then § Close, in that order.
+   - Missing skill → one-line skip and run § Close with
      `n/a — audit not run`.
-   - **Stop** — do not record-outcome and do not audit. Run
-     § Close steps 1–2 only. `not_evaluated` does not convert.
-     After `loop notebooks` is `skip`, run steps 5 and 6, then
-     return to triage when `status.skills.triage-ml-task` is true.
 
 Do not duplicate child-skill methodology. Before new library
 symbols are written, children use
@@ -319,12 +309,12 @@ symbols are written, children use
 
 ## Close
 
-Reached only after **Review**, **Skip**, a missing review skill,
-**Stop**, or red smoke. The four-phase preview does not enter
-here, and neither does `review consent` `ask`. Run the steps in
+Reached only after review returns, a missing review skill, or
+red smoke. The four-phase preview does not enter here, and
+neither does `review consent` `stop`. Run the steps in
 this order. Do not reorder them. `loop notebooks` continues only
 on `skip`. `record` is the `loop artifacts` action, not this
-gate. **Stop** and red smoke skip steps 3 and 4: do not mark the
+gate. Red smoke skips steps 3 and 4: do not mark the
 experiment done. This dispatcher owns the user-facing close.
 Children return locator / digest / finding and do not preview it.
 

@@ -84,16 +84,19 @@ skill ids, `G-*` names, or the wrapper CLI.
    installed.
 5. Emit Pre-flight, then 1–3 sentences: this is local
    full-dataset evaluation with the locked scheme, report
-   metrics, and `project.put`. When `translation.splitter` is
-   `prefit`, say the model is fitted on the training table and
-   scored on the shipped test table. Name the stem, the fold
-   count when known, and `experiments/<stem>.py` plus
-   `scratch/results/<stem>/`. Timing depends on rows, folds,
-   and the learner. Do not invent minutes. If consent is still
-   pending, preview and stop.
+   metrics, the skore checks, and `project.put`. The checks are
+   computed in this run and stored with the report. When
+   `translation.splitter` is `prefit`, say the model is fitted
+   on the training table and scored on the shipped test table.
+   Name the stem, the fold count when known, and
+   `experiments/<stem>.py` plus `scratch/results/<stem>/`.
+   Timing depends on rows, folds, the learner, and the checks.
+   Do not invent minutes. If consent is still pending, preview
+   and stop.
 6. Write the call in `experiments/NN_*.py` only. See the call
    shapes below. `python -m skore_skills style` after the edit.
-   The experiment ends at `project.put` and a bare `report`.
+   The experiment ends at `report.checks.summarize()`,
+   `project.put`, and a bare `report`.
 7. After `put` has stored the report, copy `templates/snapshot.py`
    to `scratch/results/<stem>/snapshot.py` and run it. Then End
    of turn. Do not add snapshot writes to the experiment file.
@@ -180,15 +183,29 @@ Return to `build-ml-pipeline`. `BaseEstimator` alone, and
 An extra check the user asks for after the lock:
 `references/custom-checks.md`. Subclass `skore.Check` at module
 level in `experiments/NN_*.py`, then `report.checks.add(...)`
-after `evaluate` and before `project.put`. `add` extends SKD
+after `evaluate` and before `summarize`. `add` extends SKD
 checks. Do not invent a check. Do not register one from
 `audit/`. Confirm `Check` and `checks.add` with `api get`.
+
+Every evaluation calls `report.checks.summarize()` with no
+arguments after `evaluate` and after any `checks.add`, then
+`project.put`. That stores the check results on the report.
+Do not pass `fast_mode` or `ignore`. Confirm `checks.summarize`
+with `api get`.
+
+```python
+report = skore.evaluate(...)
+report.checks.summarize()
+project.put(STEM, report)
+report
+```
 
 Escalate past `evaluate` only when the dispatcher is too coarse
 (`references/reports.md`): `EstimatorReport` for one held-out
 fit, `CrossValidationReport` for per-fold artifacts. Holdout uses
 `EstimatorReport`. This loop scores that one learner with one
-`skore.evaluate` and one `project.put`.
+`skore.evaluate`, one `report.checks.summarize()`, and one
+`project.put`.
 
 CV is necessary but not sufficient for any pipeline with
 history-dependent features. `skore.evaluate` materializes the
@@ -352,6 +369,8 @@ Pre-flight (evaluate-ml-pipeline):
       (not cells in the experiment file)
 - [ ] skore.evaluate omits splitter=
       (or splitter="prefit" and only the test table is passed)
+- [ ] report.checks.summarize() then project.put
+      (no fast_mode, no ignore; after any checks.add)
 - [ ] Smoke: passing | n/a (no history-dependent step) | STOP
 ```
 

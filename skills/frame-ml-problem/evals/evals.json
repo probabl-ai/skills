@@ -100,18 +100,19 @@
       "id": 4,
       "title": "Revise blanks the named goal and its metric cells",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Status is `locked`.\n- Prediction goal is `point_predictions`, metric role is\n  `point_error`, metric is `MAE`, deployment is `iid`, and\n  folds is `5`.\n- `python -m skore_skills frame show --revise` returns `ask` /\n  `revise` with choices `modify`, `keep`, `stop`.\n- The user chooses `modify`.]\n\nThe constraint changed: we now need intervals, not point predictions.",
-      "expected_output": "Behavioural response satisfying: - Name `frame show --revise`. - On modify, run `frame clear --cell prediction_goal`. - That blanks prediction goal, metric role, and metric, and sets Status to `draft` with Revised on today's date. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave Status `locked` after modify. - Blank deployment or folds.",
+      "expected_output": "Behavioural response satisfying: - Name `frame show --revise`. - On modify, run `frame clear --cell prediction_goal`. - That blanks prediction goal, metric role, and metric, and sets Status to `draft`. `frame clear` stamps Revised on. Do not type the date. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave Status `locked` after modify. - Blank deployment or folds.",
       "files": [],
       "expectations": [
         "Name `frame show --revise`.",
         "On modify, run `frame clear --cell prediction_goal`.",
-        "That blanks prediction goal, metric role, and metric, and sets Status to `draft` with Revised on today's date.",
+        "That blanks prediction goal, metric role, and metric, and sets Status to `draft`. `frame clear` stamps Revised on. Do not type the date.",
         "Leave deployment and folds filled.",
         "Stop for the next `frame show`. Do not write `intervals` in this turn.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Leave Status `locked` after modify.",
         "The response does NOT: Blank deployment or folds.",
-        "The response does NOT: Write a model or a splitter."
+        "The response does NOT: Write a model or a splitter.",
+        "The response does NOT: Invent a calendar date for Revised on."
       ],
       "tools": false,
       "sandbox": [],

@@ -27,6 +27,7 @@
 - Invent a metric that is not in the digest or user text.
 - Draft `02_*.py` in this turn.
 - Run `git commit` in this skill or `git push`.
+- Change design-note `State` or `Approved by user on`.
 
 ---
 
@@ -167,8 +168,9 @@
   the metric table or its values.
 - After Metrics, add a `###` subsection for `roc` with
   `<!-- results-embed: roc -->`, summarizing from that digest cell.
-- Update the rest of the design-note Status block for
-  `01_baseline`.
+- Copy Headline result, Persisted report, and Audit findings
+  into the design-note Status block. Do not change `State` or
+  `Approved by user on`.
 - Refresh the `JOURNAL.md` Status rows `Last experiment` and
   `Last result`.
 - Return to the caller after recording.
@@ -188,6 +190,7 @@
 - Merge the audit finding into the headline metric or Last result.
   Copying the supplied G-AUDIT-FINDING unchanged, including the
   `ROC-AUC 0.86` already inside that string, is required.
+- Change design-note `State` or `Approved by user on`.
 - Parse `scratch/results/` HTML when writing `## Results`.
 - Invent extra Display subsections without a matching digest cell.
 
@@ -218,6 +221,7 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Invent or estimate a metric.
 - Mark the row `done` without a result.
+- Change design-note `State` or `Approved by user on`.
 - Edit the Ideas table.
 - Ask the idea-triage question.
 - Parse report HTML to fill Results.

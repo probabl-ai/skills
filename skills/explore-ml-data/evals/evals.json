@@ -45,14 +45,15 @@
       "id": 3,
       "title": "Skip G-DATA-ANALYSIS",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Scaffold exists (`has_src`, `journal/JOURNAL.md`).\n- `status.data_analysis` is `missing`.\n- No `data_analysis/data_analysis.md`.]\n\nSkip the EDA. I already know the data.",
-      "expected_output": "Behavioural response satisfying: - Record JOURNAL \u00a7 Data understanding `Status: skipped` with a date. - Stop without placing `data_analysis/data_analysis.py`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `python -m skore_skills cells run`. - Write `data_analysis/data_analysis.py` or `data_analysis/data_analysis.md`.",
+      "expected_output": "Behavioural response satisfying: - Run `eda stamp --status skipped`. Do not type the date. - Stop without placing `data_analysis/data_analysis.py`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `python -m skore_skills cells run`. - Write `data_analysis/data_analysis.py` or `data_analysis/data_analysis.md`.",
       "files": [],
       "expectations": [
-        "Record JOURNAL \u00a7 Data understanding `Status: skipped` with a date.",
+        "Run `eda stamp --status skipped`. Do not type the date.",
         "Stop without placing `data_analysis/data_analysis.py`.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `python -m skore_skills cells run`.",
         "The response does NOT: Write `data_analysis/data_analysis.py` or `data_analysis/data_analysis.md`.",
+        "The response does NOT: Invent a calendar date for the data-understanding Status.",
         "The response does NOT: Pick a package name or start modeling.",
         "The response does NOT: Run `python -m skore_skills site build`."
       ],

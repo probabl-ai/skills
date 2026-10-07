@@ -1,4 +1,4 @@
-"""Decide whether the expensive skore-check audit may run."""
+"""Decide whether an audit runs for this stem."""
 
 from __future__ import annotations
 
@@ -6,14 +6,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-_ASK_CHOICES = ["review", "skip", "stop"]
-
 
 def review_consent(root: Path, stem: str) -> dict[str, Any]:
     """Return the audit gate for ``stem``.
 
     Filesystem only: ``report.html`` and the audit digest. Does not
-    open a skore Project or run checks.
+    open a skore Project or run checks. A missing digest is ``audit``
+    with no choices: checks were stored with the report.
     """
     cleaned = stem.strip()
     if not cleaned:
@@ -33,9 +32,8 @@ def review_consent(root: Path, stem: str) -> dict[str, Any]:
 
     return {
         "stem": cleaned,
-        "action": "ask",
-        "reason": "first_audit",
-        "choices": list(_ASK_CHOICES),
+        "action": "audit",
+        "reason": "digest_missing",
     }
 
 

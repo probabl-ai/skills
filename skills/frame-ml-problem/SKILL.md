@@ -89,7 +89,8 @@ wrapper CLI.
    that split in the folds question and write `predefined` if
    they choose it. Do not offer it otherwise. Do not write
    `prefit` in the table. Once any decision cell is filled and
-   Status is not `locked`, set Status to `draft`. If any key in
+   Status is not `locked`, set Status to `draft`. Do not type
+   `Revised on`; only `frame clear` writes that date. If any key in
    `missing` is still unanswered, ask those keys and stop. Do
    not invent their values. Do not show the lock menu. If the
    write fills every required cell, run
@@ -104,7 +105,8 @@ wrapper CLI.
    `python -m skore_skills frame clear --cell <key>` for that
    cell and stop. Do not write the new value. Do not name any
    other cell as cleared. The command's JSON `blanked` list is
-   the record. Status stays `draft`. The next `frame show` asks
+   the record. Status stays `draft`. `frame clear` stamps
+   `Revised on`; do not type that date. The next `frame show` asks
    only keys that are still empty or invalid.
 7. `ask` / `confirm_lock` or `ask` / `revise` — quote JSON
    `context` inline in 2–4 lines, then one single-choice
@@ -117,7 +119,8 @@ wrapper CLI.
    - `lock` on a later turn sets Status to `locked`.
    - `modify` on a revise, when the user named one cell: run
      `python -m skore_skills frame clear --cell <key>` and stop.
-     Do not write the new value. Do not blank any other cell by
+     Do not write the new value. Do not type `Revised on`; the
+     command stamps that date. Do not blank any other cell by
      hand. The next `frame show` asks only keys that are still
      empty or invalid.
      `modify` with no named cell writes nothing and does not
@@ -150,7 +153,8 @@ wrapper CLI.
 - A locked table changes only through `frame show --revise`, then
   the same fill and confirm gates. `keep` does not edit it.
 - On `modify`, `frame clear` is the only journal edit, and only
-  for the cell the user named. Do not rewrite `experiments/`,
+  for the cell the user named. It stamps `Revised on`; do not
+  type that date. Do not rewrite `experiments/`,
   `audit/`, or a report in this skill.
 - After a cell is blanked, do not run an existing experiment
   script. Say that it still uses the previous splitter and

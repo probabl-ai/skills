@@ -83,10 +83,11 @@ Run Procedure steps 1-3 and nothing else:
 3. Step 3 — update the matching History row and design-note Status
    block from the digest or user-supplied headline when available.
    Paste G-REPORT-LOCATOR and G-AUDIT-FINDING verbatim into their
-   separate Status lines. Also refresh the `journal/JOURNAL.md`
-   Status rows `Last experiment` and `Last result`. Insert or replace `## Results`
-   between Status and Notebooks from digest text, not HTML.
-   `### Metrics` is a heading only.
+   separate Status lines. Do not change `State` or `Approved by
+   user on`. Also refresh the `journal/JOURNAL.md` Status rows
+   `Last experiment` and `Last result`. Insert or replace
+   `## Results` between Status and Notebooks from digest text, not
+   HTML. `### Metrics` is a heading only.
 
 Then return to the caller. Do not read `journal/ideas/`, do not
 edit the Ideas table, and do not open the idea-triage menu — the
@@ -145,8 +146,9 @@ locator.
    derive or guess a URL. Copy G-AUDIT-FINDING verbatim into the
    design note's `Audit findings` line. Audit skipped →
    `n/a — audit not run`; missing/errored digest →
-   `n/a — audit digest unavailable`. Update the rest of the
-   design-note Status block the same way. Then insert or replace
+   `n/a — audit digest unavailable`. The Status update copies
+   Headline result, Persisted report, and Audit findings. Do not
+   change `State` or `Approved by user on`. Then insert or replace
    `## Results` in the design note, between `## Status` and
    `## Notebooks`. Summarize from the audit digest — its cell
    outputs carry `repr(report)`, `## Checks summary`, and
@@ -226,6 +228,9 @@ locator.
 - Do not invent metrics.
 - Do not derive, shorten, or merge G-AUDIT-FINDING with the
   headline metric. Copy each into its owned field.
+- Do not change design-note `State` or `Approved by user on`.
+  Record-outcome copies Headline result, Persisted report, and
+  Audit findings.
 - Do not parse `scratch/results/<stem>/*.html` when writing
   `## Results`. Summarize Report overview and Checks from the
   digest, or from `report.txt` on the evaluation-only path.
