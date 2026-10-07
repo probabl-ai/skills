@@ -183,3 +183,25 @@
   memory when they are absent from this turn's `accessors.txt`
   trees.
 - Put the extra-view `write_text` in `audit/<stem>.py`.
+
+---
+
+## CASE_06 — Fired-check advice follows its docs
+
+**User prompt:**
+> What should we do about this check?
+
+**Assumed workspace state:**
+- The audit digest exists.
+- One `Issues:` line is `SKD004`, with a documentation URL.
+- That page recommends tuning the decision threshold. It does not
+  recommend class weighting or resampling.
+
+**Must do:**
+- Read that documentation URL and apply its recommendation:
+  tune the decision threshold.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Recommend class weighting or resampling.
+- Call `skore.evaluate` or `project.put`.

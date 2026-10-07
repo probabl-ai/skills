@@ -165,8 +165,8 @@ in `viewers.py`.
    `viewers.py` writes `checks.html`. The notebook cell does not.
    The repr opens with the severity counts, then lists issues,
    tips, passed, and not-applicable checks with codes like
-   `SKD003`. Actionable lines carry the documentation URL the
-   review cites in an idea file.
+   `SKD003`. Actionable lines carry the documentation URL. The
+   review reads that page and applies its recommendation.
    Verified on `CrossValidationReport` and `EstimatorReport`.
 
 8. **Metrics summary (code cell, verbose frame last).**

@@ -265,7 +265,9 @@ view / Custom query / Custom plot materially changes the work.
 The run pauses at the existing post-audit gate before close.
 
 Questions about what the report means are **LLM narrative work**
-over the digest; they do not call `evaluate` or `put`. If any
+over the digest. For a fired check, read its documentation URL
+and apply that page's recommendation. They do not call
+`evaluate` or `put`. If any
 mandatory gate is pending, preview the possible audit but do not
 write or execute it.
 
@@ -322,8 +324,9 @@ Brief outline; full anatomy with concrete examples →
 7. **Checks summary** — `checks = report.checks.summarize()`, then
    `checks` as the last expression. `viewers.py` writes
    `checks.html`. Its repr groups the walk by severity; every
-   `issue` / `tip` line ends with the documentation URL holding
-   the actionable mitigation (custom `CSTM*` checks may have none).
+   `issue` / `tip` line ends with the documentation URL. Read that
+   page and apply its recommendation (custom `CSTM*` checks may
+   have none).
 8. **Metrics summary** —
    `metrics = report.metrics.summarize().frame(verbose_name=True, flat_index=False)`,
    then `metrics` last. `viewers.py` writes `metrics.html` from

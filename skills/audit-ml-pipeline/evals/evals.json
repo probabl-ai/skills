@@ -112,6 +112,22 @@
       "tools": false,
       "sandbox": [],
       "expect_files": []
+    },
+    {
+      "id": 6,
+      "title": "Fired-check advice follows its docs",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- The audit digest exists.\n- One `Issues:` line is `SKD004`, with a documentation URL.\n- That page recommends tuning the decision threshold. It does not\n  recommend class weighting or resampling.]\n\nWhat should we do about this check?",
+      "expected_output": "Behavioural response satisfying: - Read that documentation URL and apply its recommendation: tune the decision threshold. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Recommend class weighting or resampling. - Call `skore.evaluate` or `project.put`.",
+      "files": [],
+      "expectations": [
+        "Read that documentation URL and apply its recommendation: tune the decision threshold.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Recommend class weighting or resampling.",
+        "The response does NOT: Call `skore.evaluate` or `project.put`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
     }
   ]
 }

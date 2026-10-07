@@ -133,3 +133,29 @@
 - Run `cells run`.
 - Load `manage-ml-backlog` record-outcome.
 - Delete `scratch/results/01_baseline/report.html`.
+
+---
+
+## CASE_06 — Check recommendation comes from its docs
+
+**User prompt:**
+> Review.
+
+**Assumed workspace state:**
+- This turn already answered Review.
+- `status.skills.audit-ml-pipeline` is `true`.
+- The digest has one `Issues:` line, code `SKD004`, with a
+  documentation URL.
+- That page recommends tuning the decision threshold. It does not
+  recommend class weighting or resampling.
+
+**Must do:**
+- Read that documentation URL and apply its recommendation in
+  What changes: tune the decision threshold.
+- Write the idea file for `SKD004`.
+- Source it as `audit:01_baseline:checks.SKD004`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Recommend class weighting or resampling.
+- Invent a metric or a winning idea.

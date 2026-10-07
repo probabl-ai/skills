@@ -61,7 +61,9 @@ reading this report and writing follow-up ideas — not skill ids,
    `journal/ideas/<stem>-<slug>.md` with Experiment, Source
    (`audit:<stem>:checks.<code>` or `design:<stem>`), Triage
    `open`, Question, Why now, What changes, Open gaps. No
-   acceptance criteria. On a refresh, keep an existing file's
+   acceptance criteria. For a check candidate, read the
+   documentation URL on that line and apply that page's
+   recommendation in What changes. On a refresh, keep an existing file's
    `Triage` value and the matching Ideas status. A new candidate
    is `open`.
 7. Upsert one `## Ideas` row per file in `journal/JOURNAL.md`.
