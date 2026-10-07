@@ -10,19 +10,15 @@
 **Assumed workspace state:**
 - `status.setup.pending` is empty.
 - The design is approved, smoke is green, and the persisted report exists.
-- `review consent` returns `ask`. The user has not answered yet.
+- `review consent` returns `audit`.
 
 **Must do:**
 - Run `python -m skore_skills review consent --stem <stem>` before
   the first `cells run`.
-- On `ask`, give a 1–3 sentence preview: local read of the
-  persisted report, every skore check, writes `audit/<stem>.py`,
-  `scratch/audit/<stem>/audit.md`, and
-  `scratch/audit/<stem>/viewers.py`, can be slow. Do not invent
-  minutes. Ask Review / Skip / Stop. Do not `cells run` until
-  Review.
-- After Review, confirm the report with `project.summarize()` and
-  load it with `project.get(id)`.
+- On `audit`, write `audit/<stem>.py` and `cells run`. Do not ask
+  Review / Skip / Stop.
+- Confirm the report with `project.summarize()` and load it with
+  `project.get(id)`.
 - Render checks and metrics into the audit digest.
 - Copy `templates/viewers.py` to `scratch/audit/<stem>/viewers.py`
   and run it. It writes
@@ -68,15 +64,16 @@
 - The report exists and smoke is green.
 
 **Must do:**
-- Ask the review gate again before `cells run`, because a re-audit
-  re-runs the checks.
-- Stop at that question. Do not close on this turn.
+- Run `cells run` for the re-audit. Do not ask Review / Skip /
+  Stop.
+- Do not run the direct close before Close audit.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Paste `scratch/audit/<stem>/audit.md` wholesale into chat.
 - Run `loop notebooks` before Close audit.
-- Call record-outcome before the re-audit gate is answered.
+- Call record-outcome before Close audit.
+- Ask Review / Skip / Stop before `cells run`.
 - Run `git commit`.
 
 ---

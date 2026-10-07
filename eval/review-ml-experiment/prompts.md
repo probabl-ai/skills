@@ -2,7 +2,7 @@
 
 ---
 
-## CASE_01 — Ask previews cost and does not run checks
+## CASE_01 — First audit runs without a question
 
 **User prompt:**
 > Review experiment 01_baseline.
@@ -11,21 +11,20 @@
 - `scratch/results/01_baseline/report.html` exists.
 - `scratch/audit/01_baseline/audit.md` does not.
 - `python -m skore_skills review consent --stem 01_baseline`
-  returns `ask`.
+  returns `audit`.
+- `status.skills.audit-ml-pipeline` is `true`.
 
 **Must do:**
 - Run `python -m skore_skills review consent --stem 01_baseline`.
-- In 1–3 sentences, say this is a local read of the persisted
-  report, not another fit. Name `audit/01_baseline.py` and
-  `scratch/audit/01_baseline/audit.md`. Say the audit template
-  runs every skore check and can be slow. Do not invent minutes.
-- AskUserQuestion: Review (Recommended) / Skip / Stop.
+- On `audit`, load `audit-ml-pipeline` and `cells run`. Do not
+  ask Review / Skip / Stop.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run `cells run` before Review.
-- Load `audit-ml-pipeline` before Review.
-- Write `journal/ideas/` or `JOURNAL.md`.
+- Ask Review / Skip / Stop.
+- Open the Project or call `report.*` from this skill.
+- Skip `cells run`.
+- Write `journal/ideas/` before the digest exists.
 
 ---
 
@@ -35,14 +34,13 @@
 > Review.
 
 **Assumed workspace state:**
-- This turn already answered Review.
+- `review consent` returned `audit` and `cells run` produced the
+  digest.
 - `status.skills.audit-ml-pipeline` is `true`.
 - The digest has one `Issues:` line, code `SKD003`.
 - The design note named a gap this run did not test.
 
 **Must do:**
-- Load `audit-ml-pipeline` for `cells run`. Do not ask the cost
-  question again.
 - Write one file per candidate under `journal/ideas/`, including
   the check line and the design-note gap.
 - Source the check file as `audit:01_baseline:checks.SKD003` and
@@ -56,6 +54,7 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask Review / Skip / Stop.
 - Open the Project or call `report.*` from this skill.
 - Write History, Backlog, Status, or a design note.
 - Invent a metric or a winning idea.
@@ -63,14 +62,14 @@
 
 ---
 
-## CASE_03 — Skip writes no idea files
+## CASE_03 — Missing audit skill writes no idea files
 
 **User prompt:**
-> Skip.
+> Review experiment 01_baseline.
 
 **Assumed workspace state:**
-- `review consent` returned `ask`.
-- The user answered Skip.
+- `review consent` returned `audit`.
+- `status.skills.audit-ml-pipeline` is not true.
 
 **Must do:**
 - Return `n/a — audit not run` so the caller can record-outcome.
@@ -80,6 +79,7 @@
 - Run `cells run`.
 - Write any `journal/ideas/` file.
 - Write an Ideas row or any other `JOURNAL.md` edit.
+- Ask Review / Skip / Stop.
 
 ---
 
@@ -114,22 +114,21 @@
 
 ---
 
-## CASE_05 — Stop does not audit or record
+## CASE_05 — Missing report does not audit
 
 **User prompt:**
-> Stop.
+> Review experiment 01_baseline.
 
 **Assumed workspace state:**
-- `review consent` returned `ask`.
-- `status.skills.triage-ml-task` is `true`.
-- The persisted report exists.
+- `review consent` returned `stop` / `report_html_missing`.
+- `scratch/results/01_baseline/report.html` does not exist.
 
 **Must do:**
-- Leave the persisted report in place.
-- Load `triage-ml-task`.
+- Name the missing `scratch/results/01_baseline/report.html`.
+- Stop. Do not audit.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `cells run`.
 - Load `manage-ml-backlog` record-outcome.
-- Delete `scratch/results/01_baseline/report.html`.
+- Ask Review / Skip / Stop.

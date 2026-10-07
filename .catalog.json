@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "fdcf33e8debbf7ec8a60dc0fb1a4f02ec58f64b2570f0b3b3e5e74d49cb4675c",
+  "catalog_hash": "62992d35d45bb8f5736c4ced0628aa6e0fab1bca855ca4b02ba3e3afee4cff54",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "3fb159ee14c31534a93afc0213877f11269a638ee54bb4764c2f1120b9c63cfa"
+      "hash": "c2b1def761c0e94bf05b282f5a4340a67dadd7306b061c9990eb180251eac49c"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -57,7 +57,7 @@
       "summary": "Audit a persisted skore report read-only and produce a reusable digest.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "128d6b030ca61790bebdb91df80cd78dc5c06036a53751beaf688eee4a75a466"
+      "hash": "3a9074af3c840ef660fc59e07c3ba16a784bd4a320950132c49bd84931cb4411"
     },
     {
       "id": "manage-ml-backlog",
@@ -108,10 +108,10 @@
       "id": "review-ml-experiment",
       "path": "skills/review-ml-experiment",
       "title": "Review ML Experiment",
-      "summary": "Gate the skore-check audit, then write one idea file and one Ideas row per candidate.",
+      "summary": "Read the stored report, then write one idea file and one Ideas row per candidate.",
       "category": "meta",
       "subcategory": null,
-      "hash": "cab1560b6d30c42407e5f6a8d4a8154a9759433d33727245b70e3e208f2a8adc"
+      "hash": "e51939e789a4d0ea6e05e0945fe98848d7a9a1c34d59477af1b3554c065a8528"
     },
     {
       "id": "shape-user-idea",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, then coordinate modeling choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "8d7e7b6dc637b096602d0f15e4cb53f7511c61069576d38290d039947ceab609"
+      "hash": "48c447ce76d62525fd714eb2bca2ac7dc300ae57eb5b7aaef58560e14c2510d5"
     },
     {
       "id": "choose-python-library",

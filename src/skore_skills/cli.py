@@ -239,7 +239,7 @@ def review_choices_cmd() -> None:
 @review_group.command("consent")
 @click.option("--stem", required=True, help="Experiment stem, e.g. 01_baseline.")
 def review_consent_cmd(stem: str) -> None:
-    """Print whether the skore-check audit may run as JSON."""
+    """Print whether to audit this stem, as JSON."""
     try:
         click.echo(render_review_consent(Path.cwd(), stem), nl=False)
     except ValueError as exc:

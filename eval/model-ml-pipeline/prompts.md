@@ -93,7 +93,7 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - With no shell, the answer is the four-phase preview only:
   local pipeline preparation, small real-data smoke fit/predict,
-  optional full-dataset evaluation, gated review.
+  optional full-dataset evaluation, review.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -122,7 +122,7 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - With no shell, the answer is the four-phase preview only:
   local pipeline preparation, small real-data smoke fit/predict,
-  optional full-dataset evaluation, gated review.
+  optional full-dataset evaluation, review.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -291,7 +291,7 @@ and `frame show` already returned `proceed` with a non-null
 
 ---
 
-## CASE_11 — Implement loop gates review before record-outcome
+## CASE_11 — Implement loop reviews before record-outcome
 
 **User prompt:**
 > Evaluate it.
@@ -301,27 +301,27 @@ and `frame show` already returned `proceed` with a non-null
 - `01_baseline` design note approved; smoke green.
 - The user chose Evaluate at the post-smoke gate.
 - `evaluate-ml-pipeline` and `review-ml-experiment` are installed.
-- `review consent` returns `ask`.
+- `review consent` returns `audit`.
 - `policy.notebooks` and `policy.site` are both true.
-- `audit/01_baseline.py` exists after Review.
 
 **Must do:**
 - Run evaluate, then `review consent`.
-- On `ask`, let `review-ml-experiment` preview the audit cost and
-  ask Review / Skip / Stop. Do not load `audit-ml-pipeline` from
-  this dispatcher. Stop at that question.
+- On `audit`, load `review-ml-experiment`. Do not load
+  `audit-ml-pipeline` from this dispatcher. Do not ask Review /
+  Skip / Stop.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run `cells run` from this dispatcher before Review.
-- Run `loop notebooks`, record-outcome, or `site build` while
-  `review consent` is `ask`.
+- Run `cells run` from this dispatcher.
+- Run `loop notebooks`, record-outcome, or `site build` before
+  `review-ml-experiment` returns.
+- Ask Review / Skip / Stop.
 - Leave History `planned` in any journal excerpt you author.
 - Write the journal files directly instead of dispatching.
 
 ---
 
-## CASE_12 — Skip review still records the locator
+## CASE_12 — Review then records the locator
 
 **User prompt:**
 > Finish the successful baseline evaluation.
@@ -330,7 +330,10 @@ and `frame show` already returned `proceed` with a non-null
 - `status.setup.pending` is empty.
 - Smoke is green and evaluate returned
   `[Open report](https://example.invalid/report/42) · hub · id: 42`.
-- The user answered Skip at the review gate.
+- `review consent` returned `proceed`.
+- `review-ml-experiment` returned that locator and
+  G-AUDIT-FINDING `0 issues, 0 tips — automated checks surfaced no actionable finding`.
+- `policy.site` is not true.
 
 **Must do:**
 - Name this order. A no-tools turn that lists each command
@@ -344,7 +347,7 @@ and `frame show` already returned `proceed` with a non-null
   again until `skip`.
 - Name record-outcome next, with the exact locator
   `[Open report](https://example.invalid/report/42) · hub · id: 42`
-  and G-AUDIT-FINDING `n/a — audit not run`, before site build.
+  and that G-AUDIT-FINDING, before site build.
 - Write 2–6 sentences of the result and link `journal/<stem>.md`,
   because this workspace does not set `policy.site`.
 - Include that locator in the user-facing close (first among
@@ -354,9 +357,10 @@ and `frame show` already returned `proceed` with a non-null
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run the skore-check audit after Skip.
-- Write `journal/ideas/` files.
-- Drop the locator because there is no audit digest.
+- Ask Review / Skip / Stop.
+- Record G-AUDIT-FINDING `n/a — audit not run`.
+- Write the journal files directly instead of record-outcome.
+- Drop the locator.
 - Invent a headline metric.
 - Open idea triage.
 

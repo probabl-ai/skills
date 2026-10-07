@@ -275,16 +275,15 @@ report = skore.evaluate(
     learner,
     data={"data_dir": str(DATA_DIR)},
 )
-report
-
-# Custom checks register here, before the report is stored.
-# A non-default metric was attached with `with_scoring` in build.
+# A custom check the user asked for is added here, before summarize.
+report.checks.summarize()
 
 # %% [markdown]
 # ## Persist
 
 # %%
 project.put("01_baseline", report)
+report
 ```
 
 Agent snapshot, not a notebook cell. Copy
@@ -349,7 +348,9 @@ Note the clean separation:
   and the HTML / locator files are the agent's scratch problem
   (`scratch/results/<stem>/snapshot.py`; see
   `python -m skore_skills api get` § "`scratch/` conventions"),
-  not the experiment script. The bare `report` line is jupytext
+  not the experiment script. `report.checks.summarize()` runs
+  before `project.put` so the stored report holds the check
+  results. The bare `report` line after `put` is jupytext
   display, not a debug print.
 
 ## When `evaluate` is too coarse — escalate

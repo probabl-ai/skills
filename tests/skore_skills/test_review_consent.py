@@ -27,7 +27,7 @@ def test_missing_report_stops(tmp_path: Path) -> None:
     }
 
 
-def test_first_audit_asks(tmp_path: Path) -> None:
+def test_missing_digest_audits(tmp_path: Path) -> None:
     stem = "01_baseline"
     _write(tmp_path / "scratch" / "results" / stem / "report.html")
 
@@ -35,10 +35,10 @@ def test_first_audit_asks(tmp_path: Path) -> None:
 
     assert payload == {
         "stem": stem,
-        "action": "ask",
-        "reason": "first_audit",
-        "choices": ["review", "skip", "stop"],
+        "action": "audit",
+        "reason": "digest_missing",
     }
+    assert "choices" not in payload
 
 
 def test_existing_digest_proceeds(tmp_path: Path) -> None:
@@ -69,7 +69,7 @@ def test_cli_prints_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Non
     result = CliRunner().invoke(cli, ["review", "consent", "--stem", stem])
 
     assert result.exit_code == 0, result.output
-    assert json.loads(result.output)["action"] == "ask"
+    assert json.loads(result.output)["action"] == "audit"
 
 
 def test_cli_requires_stem() -> None:
@@ -81,7 +81,7 @@ def test_cli_requires_stem() -> None:
 def test_cli_rejects_blank_stem(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A blank stem is a usage error, not an ask."""
+    """A blank stem is a usage error, not an audit."""
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(cli, ["review", "consent", "--stem", "  "])
     assert result.exit_code != 0
