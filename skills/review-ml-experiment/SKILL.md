@@ -5,7 +5,7 @@ description: >
   markdown idea file and one Ideas row per candidate. Trigger
   after a successful evaluate, on "review this stem", or when
   review consent is audit or proceed. Do not write History,
-  Backlog, or a design note. Do not ask before the audit.
+  Backlog, or a design note.
 ---
 
 # Review ML Experiment
@@ -30,12 +30,11 @@ ids, `cells run`, or the wrapper CLI.
      file and stop. Do not audit. Do not record-outcome.
    - `audit` — report exists, digest does not. Load
      `audit-ml-pipeline` when installed. That skill runs
-     `cells run`. Do not ask.
+     `cells run`.
    - `proceed` — digest already on disk. Do not `cells run`
      unless the user asked to re-audit. A re-audit loads
-     `audit-ml-pipeline`; that skill runs `cells run` without
-     a question. Otherwise refresh idea files from the existing
-     digest.
+     `audit-ml-pipeline`; that skill runs `cells run`.
+     Otherwise refresh idea files from the existing digest.
 2. Missing audit skill → one-line skip. Return
    `n/a — audit not run` and write no idea files. Do not open
    the Project or call `report.*` here.
@@ -70,7 +69,6 @@ ids, `cells run`, or the wrapper CLI.
 
 ## Stop conditions
 
-- Do not ask Review / Skip / Stop before `cells run`.
 - On `proceed`, do not `cells run` unless the user asked to
   re-audit.
 - Do not write History, Backlog, Status, or a design note.

@@ -2,7 +2,7 @@
 
 ---
 
-## CASE_01 — First audit runs without a question
+## CASE_01 — First audit loads the audit
 
 **User prompt:**
 > Review experiment 01_baseline.
@@ -16,12 +16,10 @@
 
 **Must do:**
 - Run `python -m skore_skills review consent --stem 01_baseline`.
-- On `audit`, load `audit-ml-pipeline` and `cells run`. Do not
-  ask Review / Skip / Stop.
+- On `audit`, load `audit-ml-pipeline` and `cells run`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Ask Review / Skip / Stop.
 - Open the Project or call `report.*` from this skill.
 - Skip `cells run`.
 - Write `journal/ideas/` before the digest exists.
@@ -54,7 +52,6 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Ask Review / Skip / Stop.
 - Open the Project or call `report.*` from this skill.
 - Write History, Backlog, Status, or a design note.
 - Invent a metric or a winning idea.
@@ -79,7 +76,6 @@
 - Run `cells run`.
 - Write any `journal/ideas/` file.
 - Write an Ideas row or any other `JOURNAL.md` edit.
-- Ask Review / Skip / Stop.
 
 ---
 
@@ -131,4 +127,3 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `cells run`.
 - Load `manage-ml-backlog` record-outcome.
-- Ask Review / Skip / Stop.

@@ -262,7 +262,7 @@ also ask in chat whether the note looks right.
    - `audit` or `proceed` — load `review-ml-experiment` only if
      `status.skills.review-ml-experiment` is true. It returns the
      digest, G-AUDIT-FINDING, locator, and idea paths. Do not
-     load `audit-ml-pipeline` from this dispatcher. Do not ask.
+     load `audit-ml-pipeline` from this dispatcher.
      Then § Close, in that order.
    - Missing skill → one-line skip and run § Close with
      `n/a — audit not run`.

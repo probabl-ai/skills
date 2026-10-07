@@ -3,15 +3,14 @@
   "evals": [
     {
       "id": 1,
-      "title": "First audit runs without a question",
+      "title": "First audit loads the audit",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `scratch/results/01_baseline/report.html` exists.\n- `scratch/audit/01_baseline/audit.md` does not.\n- `python -m skore_skills review consent --stem 01_baseline`\n  returns `audit`.\n- `status.skills.audit-ml-pipeline` is `true`.]\n\nReview experiment 01_baseline.",
-      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills review consent --stem 01_baseline`. - On `audit`, load `audit-ml-pipeline` and `cells run`. Do not ask Review / Skip / Stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask Review / Skip / Stop. - Open the Project or call `report.*` from this skill.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills review consent --stem 01_baseline`. - On `audit`, load `audit-ml-pipeline` and `cells run`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Open the Project or call `report.*` from this skill. - Skip `cells run`.",
       "files": [],
       "expectations": [
         "Run `python -m skore_skills review consent --stem 01_baseline`.",
-        "On `audit`, load `audit-ml-pipeline` and `cells run`. Do not ask Review / Skip / Stop.",
+        "On `audit`, load `audit-ml-pipeline` and `cells run`.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
-        "The response does NOT: Ask Review / Skip / Stop.",
         "The response does NOT: Open the Project or call `report.*` from this skill.",
         "The response does NOT: Skip `cells run`.",
         "The response does NOT: Write `journal/ideas/` before the digest exists."
@@ -24,7 +23,7 @@
       "id": 2,
       "title": "Review loads audit and writes idea files",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `review consent` returned `audit` and `cells run` produced the\n  digest.\n- `status.skills.audit-ml-pipeline` is `true`.\n- The digest has one `Issues:` line, code `SKD003`.\n- The design note named a gap this run did not test.]\n\nReview.",
-      "expected_output": "Behavioural response satisfying: - Write one file per candidate under `journal/ideas/`, including the check line and the design-note gap. - Source the check file as `audit:01_baseline:checks.SKD003` and the gap as `design:01_baseline`. - Write `Triage: open` on each new idea file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask Review / Skip / Stop. - Open the Project or call `report.*` from this skill.",
+      "expected_output": "Behavioural response satisfying: - Write one file per candidate under `journal/ideas/`, including the check line and the design-note gap. - Source the check file as `audit:01_baseline:checks.SKD003` and the gap as `design:01_baseline`. - Write `Triage: open` on each new idea file. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Open the Project or call `report.*` from this skill. - Write History, Backlog, Status, or a design note.",
       "files": [],
       "expectations": [
         "Write one file per candidate under `journal/ideas/`, including the check line and the design-note gap.",
@@ -33,7 +32,6 @@
         "Upsert one `## Ideas` row per file: Question as plain text, Status `open`, Experiment `01_baseline`, Source copied from the file.",
         "Return the digest, `audit finding` JSON, `loop locator` JSON, and the idea paths.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
-        "The response does NOT: Ask Review / Skip / Stop.",
         "The response does NOT: Open the Project or call `report.*` from this skill.",
         "The response does NOT: Write History, Backlog, Status, or a design note.",
         "The response does NOT: Invent a metric or a winning idea.",
@@ -54,8 +52,7 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `cells run`.",
         "The response does NOT: Write any `journal/ideas/` file.",
-        "The response does NOT: Write an Ideas row or any other `JOURNAL.md` edit.",
-        "The response does NOT: Ask Review / Skip / Stop."
+        "The response does NOT: Write an Ideas row or any other `JOURNAL.md` edit."
       ],
       "tools": false,
       "sandbox": [],
@@ -95,8 +92,7 @@
         "Stop. Do not audit.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `cells run`.",
-        "The response does NOT: Load `manage-ml-backlog` record-outcome.",
-        "The response does NOT: Ask Review / Skip / Stop."
+        "The response does NOT: Load `manage-ml-backlog` record-outcome."
       ],
       "tools": false,
       "sandbox": [],

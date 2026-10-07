@@ -444,11 +444,10 @@ cell that produced it.
 Before the first `cells run` for a stem, run
 `python -m skore_skills review consent --stem <stem>`.
 - `stop` — name the missing `report.html` and stop.
-- `audit` — write `audit/<stem>.py` and `cells run`. Do not ask.
+- `audit` — write `audit/<stem>.py` and `cells run`.
   Check results were stored with the report; this read uses them.
 - `proceed` — digest exists. Do not `cells run` unless the user
-  explicitly asked to re-audit. A re-audit runs `cells run`
-  without a question.
+  explicitly asked to re-audit. A re-audit runs `cells run`.
 
 ```bash
 python -m skore_skills cells run audit/<stem>.py scratch/audit/<stem>/audit.md

@@ -15,8 +15,7 @@
 **Must do:**
 - Run `python -m skore_skills review consent --stem <stem>` before
   the first `cells run`.
-- On `audit`, write `audit/<stem>.py` and `cells run`. Do not ask
-  Review / Skip / Stop.
+- On `audit`, write `audit/<stem>.py` and `cells run`.
 - Confirm the report with `project.summarize()` and load it with
   `project.get(id)`.
 - Render checks and metrics into the audit digest.
@@ -64,8 +63,7 @@
 - The report exists and smoke is green.
 
 **Must do:**
-- Run `cells run` for the re-audit. Do not ask Review / Skip /
-  Stop.
+- Run `cells run` for the re-audit.
 - Do not run the direct close before Close audit.
 
 **Must NOT do:**
@@ -73,7 +71,6 @@
 - Paste `scratch/audit/<stem>/audit.md` wholesale into chat.
 - Run `loop notebooks` before Close audit.
 - Call record-outcome before Close audit.
-- Ask Review / Skip / Stop before `cells run`.
 - Run `git commit`.
 
 ---
