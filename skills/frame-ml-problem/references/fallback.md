@@ -18,15 +18,16 @@ Then write:
 - Baseline note: the baseline, in words
 - Every other decision row: `n/a`, unless they already stated a value
 
-Do not name a splitter class or write code. Set Status to `draft`.
+Do not name a splitter class or write code. Set Status to `locked`.
+Say these choices are reused for the rest of the experiment so
+models stay comparable, and that any one of them can be changed by
+naming it. Do not say "lock". There is no splitter translation.
+Do not ask lock, modify, or stop.
 
 If they say it is actually classification or regression, write that
-goal instead of `uncovered` and stop. The next `frame show` uses the
-closed menu.
+goal instead of `uncovered` and stop. Do not set Status to `locked`.
+The next `frame show` uses the closed menu.
 
-If the command is missing, there is no JSON confirmation. On the
-next turn, restate the three cells and ask lock, modify, or stop.
-Lock sets Status to `locked`. There is no splitter translation.
-
-If the command is present and returns `uncovered`, write the cells
-and stop. The next `frame show` asks lock, modify, or stop.
+If the command is missing, there is no JSON. The same write sets
+Status to `locked` and uses the same lines. There is no splitter
+translation.

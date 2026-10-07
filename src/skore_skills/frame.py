@@ -64,7 +64,6 @@ _GOALS = (
 )
 _FALLBACK = "references/fallback.md"
 _SUPPORTED_TASKS = frozenset({"", "none", "classification", "regression"})
-_CONFIRM = ["lock", "modify", "stop"]
 _REVISE = ["modify", "keep", "stop"]
 
 
@@ -475,7 +474,7 @@ def frame_show(root: Path, *, revise: bool = False) -> dict[str, Any]:
             "decisions": _effective(rows),
             "translation": _translation(rows),
         }
-    return _ask("confirm_lock", rows, choices=list(_CONFIRM), full=True)
+    return _ask("set", rows, full=True)
 
 
 def render_frame_show(root: Path, *, revise: bool = False) -> str:

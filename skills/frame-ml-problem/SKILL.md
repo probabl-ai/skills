@@ -1,7 +1,7 @@
 ---
 name: frame-ml-problem
 description: >
-  Lock the problem, the deployment setting, the comparison metric,
+  Record the problem, the deployment setting, the comparison metric,
   the baseline, and the fold count in the journal before any
   model code. Ask every missing decision in one turn, from
   `frame show`. Does not write Python, estimator hyperparameters,
@@ -15,8 +15,9 @@ description: >
   reference named in `questions` once, ask every key in `missing`
   in one message, and write every answered cell. If a key is
   still unanswered, ask it and stop. If the write fills every
-  required cell, run `frame show` again and AskUserQuestion
-  Lock / Modify / Stop, then stop. Do not lock in that turn.
+  required cell, set Status to `locked`, say those choices are
+  reused and can be changed by name, then follow `proceed`.
+  Do not ask to confirm.
   If that command is missing, or the problem is not classification
   or regression, read `references/fallback.md` and do not invent
   the closed menu.
@@ -63,9 +64,11 @@ wrapper CLI.
    or exits without JSON, read `references/fallback.md` and follow
    it. Do not open another reference. Do not guess candidates.
 3. `stop` — say the JSON `reason` and stop.
-4. `ask` / `uncovered` — read `references/fallback.md` only. Write
-   Prediction goal `uncovered` and the prose cells it names. Set
-   Status to `draft`. Stop this turn.
+4. `ask` / `uncovered` — read `references/fallback.md` only and
+   follow it. When that writes the uncovered cells, set Status to
+   `locked`, say the reuse and change lines, and say there is no
+   splitter translation. Do not ask Lock / Modify / Stop. Do not
+   load `build-ml-pipeline`. Stop this turn.
 5. `ask` / `missing_keys` — read each distinct `reference` in
    `questions` once before asking. Do not open any other file
    under `references/`. Ask every key in `missing` in one
@@ -88,35 +91,43 @@ wrapper CLI.
    names a separate training table and test table, offer using
    that split in the folds question and write `predefined` if
    they choose it. Do not offer it otherwise. Do not write
-   `prefit` in the table. Once any decision cell is filled and
-   Status is not `locked`, set Status to `draft`. Do not type
-   `Revised on`; only `frame clear` writes that date. If any key in
-   `missing` is still unanswered, ask those keys and stop. Do
-   not invent their values. Do not show the lock menu. If the
-   write fills every required cell, run
-   `python -m skore_skills frame show` again in this turn. When
-   that returns `ask` / `confirm_lock`, follow step 7 in this
-   same turn. Do not defer the lock question. If the second
-   `frame show` still returns `missing_keys`, ask those keys
-   and stop. Do not set Status to `locked`. The sentences that
-   filled the cells are not the Lock choice.
+   `prefit` in the table. Do not type `Revised on`; only
+   `frame clear` writes that date. If any key in `missing` is
+   still unanswered, set Status to `draft` once any decision cell
+   is filled, ask those keys, and stop. Do not invent their
+   values. Do not set Status to `locked`. Do not ask to confirm
+   the table. If the write fills every required cell, set Status
+   to `locked` in that same edit, not `draft`. Run
+   `python -m skore_skills frame show` again in this turn. On
+   `proceed`, say the reuse and change lines, then follow step 8.
+   On `ask` / `set`, write Status `locked` only, say those lines,
+   run `frame show` again, and follow step 8. If that `frame show`
+   still returns `missing_keys`, the table was not complete: ask
+   those keys and stop, and leave Status `draft`.
+   Reuse and change lines, quoting JSON `context` in 2–4 lines:
+   these choices are reused for the rest of the experiment so
+   models stay comparable, and any one of them can be changed by
+   naming it (for example the comparison metric). Do not say
+   "lock" in those lines. Do not AskUserQuestion.
 6. When the user named one cell and Status is `draft`, do not
-   use the lock menu as the change. Run
+   treat `set` as accepting the table. Run
    `python -m skore_skills frame clear --cell <key>` for that
    cell and stop. Do not write the new value. Do not name any
    other cell as cleared. The command's JSON `blanked` list is
    the record. Status stays `draft`. `frame clear` stamps
    `Revised on`; do not type that date. The next `frame show` asks
    only keys that are still empty or invalid.
-7. `ask` / `confirm_lock` or `ask` / `revise` — quote JSON
-   `context` inline in 2–4 lines, then one single-choice
-   **AskUserQuestion** using only JSON `choices`, in that order,
-   and stop. `confirm_lock` labels are **Lock** / **Modify** /
-   **Stop**. `revise` labels are **Modify** / **Keep** / **Stop**.
-   Do not also ask for a typed answer. The user sentence that
-   opened this screen is not a choice. Do not set Status to
-   `locked` in that same turn.
-   - `lock` on a later turn sets Status to `locked`.
+7. `ask` / `set` — the table was already complete and Status is
+   still `draft`. Write Status `locked` only. Say the reuse and
+   change lines from step 5. Run `frame show` again and follow
+   step 8. Do not AskUserQuestion. The user sentence that opened
+   this screen is not a choice.
+   `ask` / `revise` — quote JSON `context` inline in 2–4 lines,
+   then one single-choice **AskUserQuestion** using only JSON
+   `choices`, in that order, and stop. Labels are **Modify** /
+   **Keep** / **Stop**. Do not also ask for a typed answer. The
+   user sentence that opened this screen is not a choice. Do not
+   set Status to `locked` in that same turn.
    - `modify` on a revise, when the user named one cell: run
      `python -m skore_skills frame clear --cell <key>` and stop.
      Do not write the new value. Do not type `Revised on`; the
@@ -151,7 +162,8 @@ wrapper CLI.
 - Do not open a reference the JSON did not name, except
   `references/fallback.md` when the command is missing.
 - A locked table changes only through `frame show --revise`, then
-  the same fill and confirm gates. `keep` does not edit it.
+  the same fill. A complete fill sets Status to `locked` again.
+  `keep` does not edit it.
 - On `modify`, `frame clear` is the only journal edit, and only
   for the cell the user named. It stamps `Revised on`; do not
   type that date. Do not rewrite `experiments/`,

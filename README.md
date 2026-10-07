@@ -129,7 +129,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 | Skill | Description |
 | --- | --- |
 | [explore-ml-data](skills/explore-ml-data/SKILL.md) | Explore the dataset before designing any model. |
-| [frame-ml-problem](skills/frame-ml-problem/SKILL.md) | Lock the problem, deployment setting, metric, baseline, and fold count before any model code. |
+| [frame-ml-problem](skills/frame-ml-problem/SKILL.md) | Record the problem, deployment setting, metric, baseline, and fold count before any model code. |
 | [research-ml-practice](skills/research-ml-practice/SKILL.md) | Literature research for an ML methodology concern. |
 | [build-ml-pipeline](skills/build-ml-pipeline/SKILL.md) | Declare a skrub DataOps graph from the data source to the predictor after framing is locked. |
 | [evaluate-ml-pipeline](skills/evaluate-ml-pipeline/SKILL.md) | Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports. |

@@ -71,7 +71,8 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Invent `probabilities`, `iid`, or `KFold`.",
         "The response does NOT: Open `references/prediction-goal.md` or `references/metric-role.md`.",
-        "The response does NOT: Write Python."
+        "The response does NOT: Write Python.",
+        "The response does NOT: Ask lock, modify, or stop."
       ],
       "tools": false,
       "sandbox": [],
@@ -79,17 +80,20 @@
     },
     {
       "id": 3,
-      "title": "Confirm lock quotes the context",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Every required cell is valid and Status is `draft`.\n- `frame show` returns `ask` / `confirm_lock` with choices\n  `lock`, `modify`, `stop`, and `context.metric` `MAE`.]\n\nThe table is filled. Lock it.",
-      "expected_output": "Behavioural response satisfying: - Quote the JSON context, including MAE, in the question. - AskUserQuestion with only Lock, Modify, and Stop, in that order, then stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write Python or a class constructor. - Treat \"Lock it\" as the lock choice in this turn.",
+      "title": "A complete draft is recorded",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Every required cell is valid and Status is `draft`.\n- `frame show` returns `ask` / `set` with no choices, and\n  `context.metric` `MAE`.\n- After Status is written `locked`, `frame show` returns\n  `proceed` with a non-null `translation`. This turn was not\n  dispatched by `model-ml-pipeline`.]\n\nThe table is filled. Lock it.",
+      "expected_output": "Behavioural response satisfying: - Write Status `locked`. - Say these choices are reused for the rest of the experiment so models stay comparable, and that any one of them can be changed by naming it. Quote MAE in those lines. - Run `frame show` again. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write Python or a class constructor. - AskUserQuestion.",
       "files": [],
       "expectations": [
-        "Quote the JSON context, including MAE, in the question.",
-        "AskUserQuestion with only Lock, Modify, and Stop, in that order, then stop.",
+        "Write Status `locked`.",
+        "Say these choices are reused for the rest of the experiment so models stay comparable, and that any one of them can be changed by naming it. Quote MAE in those lines.",
+        "Run `frame show` again.",
+        "Run `python -m skore_skills git end-turn --stage implement`.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write Python or a class constructor.",
-        "The response does NOT: Treat \"Lock it\" as the lock choice in this turn.",
-        "The response does NOT: Set Status to `locked` in this turn.",
+        "The response does NOT: AskUserQuestion.",
+        "The response does NOT: Treat \"Lock it\" as a menu choice.",
+        "The response does NOT: Say \"lock\" in the reuse and change lines.",
         "The response does NOT: Load `build-ml-pipeline`."
       ],
       "tools": false,
@@ -142,8 +146,8 @@
     {
       "id": 10,
       "title": "Draft table blanks the named metric",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Status is `draft`.\n- Metric is `MAE`. Metric role is `point_error`. The other\n  required cells are valid.\n- `frame show` returns `ask` / `confirm_lock`, not `revise`.]\n\nChange the comparison metric. The table is not locked yet.",
-      "expected_output": "Behavioural response satisfying: - Run `frame clear --cell metric` and stop. - Do not write the replacement metric. - Do not name metric role as cleared. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Set Status to `locked`. - Treat `confirm_lock` as the way to make this change.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Status is `draft`.\n- Metric is `MAE`. Metric role is `point_error`. The other\n  required cells are valid.\n- `frame show` returns `ask` / `set`, not `revise`.]\n\nChange the comparison metric. The table is not locked yet.",
+      "expected_output": "Behavioural response satisfying: - Run `frame clear --cell metric` and stop. - Do not write the replacement metric. - Do not name metric role as cleared. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Set Status to `locked`. - Treat `set` as accepting the table.",
       "files": [],
       "expectations": [
         "Run `frame clear --cell metric` and stop.",
@@ -151,7 +155,7 @@
         "Do not name metric role as cleared.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Set Status to `locked`.",
-        "The response does NOT: Treat `confirm_lock` as the way to make this change."
+        "The response does NOT: Treat `set` as accepting the table."
       ],
       "tools": false,
       "sandbox": [],
@@ -243,18 +247,19 @@
     },
     {
       "id": 14,
-      "title": "A complete answer set asks to lock in the same turn",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Status is still the empty placeholder. No decision cell is\n  filled.\n- The first `frame show` returns `ask` / `missing_keys` for\n  every required key.\n- After those cells are written, a second `frame show` returns\n  `ask` / `confirm_lock` with choices `lock`, `modify`, `stop`.]\n\nPrediction goal: point_predictions. Deployment: iid. Horizon,\ngap, generalize-to, known at predict, and time role: n/a.\nMetric role: point_error. Metric: RMSE. Baseline: dummy.\nBaseline note: mean house value. Folds: 2.",
-      "expected_output": "Behavioural response satisfying: - Write every decision from the user message. Set Status to `draft`. - Run `frame show` again in this turn. - AskUserQuestion with only Lock, Modify, and Stop, in that order, then stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Set Status to `locked`. - Treat the filled cells as the Lock choice.",
+      "title": "A complete answer set is recorded in the same turn",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Status is still the empty placeholder. No decision cell is\n  filled.\n- The first `frame show` returns `ask` / `missing_keys` for\n  every required key.\n- After those cells are written with Status `locked`, a second\n  `frame show` returns `proceed` with a non-null `translation`.\n  This turn was not dispatched by `model-ml-pipeline`.]\n\nPrediction goal: point_predictions. Deployment: iid. Horizon,\ngap, generalize-to, known at predict, and time role: n/a.\nMetric role: point_error. Metric: RMSE. Baseline: dummy.\nBaseline note: mean house value. Folds: 2.",
+      "expected_output": "Behavioural response satisfying: - Write every decision from the user message. Set Status to `locked`. - Run `frame show` again in this turn. - Say these choices are reused for the rest of the experiment so models stay comparable, and that any one of them can be changed by naming it. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave Status `draft`. - AskUserQuestion with Lock, Modify, and Stop.",
       "files": [],
       "expectations": [
-        "Write every decision from the user message. Set Status to `draft`.",
+        "Write every decision from the user message. Set Status to `locked`.",
         "Run `frame show` again in this turn.",
-        "AskUserQuestion with only Lock, Modify, and Stop, in that order, then stop.",
+        "Say these choices are reused for the rest of the experiment so models stay comparable, and that any one of them can be changed by naming it.",
+        "Run `python -m skore_skills git end-turn --stage implement`.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
-        "The response does NOT: Set Status to `locked`.",
-        "The response does NOT: Treat the filled cells as the Lock choice.",
-        "The response does NOT: Defer the lock question to a later turn.",
+        "The response does NOT: Leave Status `draft`.",
+        "The response does NOT: AskUserQuestion with Lock, Modify, and Stop.",
+        "The response does NOT: Say \"lock\" in the reuse and change lines.",
         "The response does NOT: Load `build-ml-pipeline`."
       ],
       "tools": false,

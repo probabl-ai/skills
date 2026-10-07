@@ -145,14 +145,14 @@ def test_time_deployment_asks_the_remaining_cells(tmp_path: Path) -> None:
     assert "candidates" not in horizon
 
 
-def test_complete_draft_asks_to_lock(tmp_path: Path) -> None:
+def test_complete_draft_asks_to_set(tmp_path: Path) -> None:
     _journal(tmp_path, **_locked_iid(Status="draft"))
 
     payload = frame_show(tmp_path)
 
     assert payload["action"] == "ask"
-    assert payload["reason"] == "confirm_lock"
-    assert payload["choices"] == ["lock", "modify", "stop"]
+    assert payload["reason"] == "set"
+    assert "choices" not in payload
     assert payload["context"]["metric"] == "MAE"
     assert payload["context"]["folds"] == "5"
 
@@ -412,8 +412,10 @@ def test_revise_asks_and_draft_blocks_proceed(tmp_path: Path) -> None:
 
     _journal(tmp_path, **_locked_iid(Status="draft", **{"Revised on": "2026-09-25"}))
 
-    assert frame_show(tmp_path)["reason"] == "confirm_lock"
-    assert frame_show(tmp_path, revise=True)["reason"] == "confirm_lock"
+    draft = frame_show(tmp_path)
+    assert draft["reason"] == "set"
+    assert "choices" not in draft
+    assert frame_show(tmp_path, revise=True)["reason"] == "set"
 
 
 def test_status_reads_the_block(tmp_path: Path) -> None:
@@ -453,7 +455,8 @@ def test_uncovered_prose_locks_without_a_translation(tmp_path: Path) -> None:
 
     draft = frame_show(tmp_path)
 
-    assert draft["reason"] == "confirm_lock"
+    assert draft["reason"] == "set"
+    assert "choices" not in draft
     assert draft["context"]["prediction_goal"] == "uncovered"
 
     _journal(

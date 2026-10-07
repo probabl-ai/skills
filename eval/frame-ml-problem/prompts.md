@@ -119,10 +119,11 @@
 - Open `references/prediction-goal.md` or
   `references/metric-role.md`.
 - Write Python.
+- Ask lock, modify, or stop.
 
 ---
 
-## CASE_03 — Confirm lock quotes the context
+## CASE_03 — A complete draft is recorded
 
 **User prompt:**
 > The table is filled. Lock it.
@@ -130,19 +131,26 @@
 **Assumed workspace state:**
 - `status.setup.pending` is empty.
 - Every required cell is valid and Status is `draft`.
-- `frame show` returns `ask` / `confirm_lock` with choices
-  `lock`, `modify`, `stop`, and `context.metric` `MAE`.
+- `frame show` returns `ask` / `set` with no choices, and
+  `context.metric` `MAE`.
+- After Status is written `locked`, `frame show` returns
+  `proceed` with a non-null `translation`. This turn was not
+  dispatched by `model-ml-pipeline`.
 
 **Must do:**
-- Quote the JSON context, including MAE, in the question.
-- AskUserQuestion with only Lock, Modify, and Stop, in that
-  order, then stop.
+- Write Status `locked`.
+- Say these choices are reused for the rest of the experiment so
+  models stay comparable, and that any one of them can be changed
+  by naming it. Quote MAE in those lines.
+- Run `frame show` again.
+- Run `python -m skore_skills git end-turn --stage implement`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write Python or a class constructor.
-- Treat "Lock it" as the lock choice in this turn.
-- Set Status to `locked` in this turn.
+- AskUserQuestion.
+- Treat "Lock it" as a menu choice.
+- Say "lock" in the reuse and change lines.
 - Load `build-ml-pipeline`.
 
 ---
@@ -225,7 +233,7 @@
 - Status is `draft`.
 - Metric is `MAE`. Metric role is `point_error`. The other
   required cells are valid.
-- `frame show` returns `ask` / `confirm_lock`, not `revise`.
+- `frame show` returns `ask` / `set`, not `revise`.
 
 **Must do:**
 - Run `frame clear --cell metric` and stop.
@@ -235,7 +243,7 @@
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Set Status to `locked`.
-- Treat `confirm_lock` as the way to make this change.
+- Treat `set` as accepting the table.
 
 ---
 
@@ -356,7 +364,7 @@
 
 ---
 
-## CASE_14 — A complete answer set asks to lock in the same turn
+## CASE_14 — A complete answer set is recorded in the same turn
 
 **User prompt:**
 > Prediction goal: point_predictions. Deployment: iid. Horizon,
@@ -370,21 +378,24 @@
   filled.
 - The first `frame show` returns `ask` / `missing_keys` for
   every required key.
-- After those cells are written, a second `frame show` returns
-  `ask` / `confirm_lock` with choices `lock`, `modify`, `stop`.
+- After those cells are written with Status `locked`, a second
+  `frame show` returns `proceed` with a non-null `translation`.
+  This turn was not dispatched by `model-ml-pipeline`.
 
 **Must do:**
 - Write every decision from the user message. Set Status to
-  `draft`.
+  `locked`.
 - Run `frame show` again in this turn.
-- AskUserQuestion with only Lock, Modify, and Stop, in that
-  order, then stop.
+- Say these choices are reused for the rest of the experiment so
+  models stay comparable, and that any one of them can be changed
+  by naming it.
+- Run `python -m skore_skills git end-turn --stage implement`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Set Status to `locked`.
-- Treat the filled cells as the Lock choice.
-- Defer the lock question to a later turn.
+- Leave Status `draft`.
+- AskUserQuestion with Lock, Modify, and Stop.
+- Say "lock" in the reuse and change lines.
 - Load `build-ml-pipeline`.
 
 ---
