@@ -337,8 +337,9 @@ board for this pick.
 
 1. **Pre-defined option** — the recipe file
    `references/extra_analyses.md` (path only; do not say
-   “extra-analyses” in chat). Its own `allow_multiple` board,
-   all unchecked. Load
+   “extra-analyses” in chat). Its own `allow_multiple` board.
+   The question's last line is exactly: Select each one you want.
+   Write nothing after that line. Load
    `plot-ml-figure` if installed before figure cells.
 2. **Query** — wait for the user’s analysis request. Append
    cells (load `plot-ml-figure` if a figure). Not the canned
@@ -365,8 +366,10 @@ board for this pick.
    provenance / scoring-time availability) plus the
    `measure` board — do not claim a scratch file was read.
    Do not say to drop a raw column. **AskUserQuestion**
-   `allow_multiple` (unchecked) on **only** sourced
-   **`measure`** extras that are not already in the notebook.
+   `allow_multiple` on **only** sourced **`measure`** extras
+   that are not already in the notebook. The question's last
+   line is exactly: Select each one you want. Write nothing
+   after that line.
    Map onto extra_analyses when a recipe exists; else a
    custom cell. `declare` / `evaluate` / `confirm` stay off
    this board → Open questions as advice, not findings. Do

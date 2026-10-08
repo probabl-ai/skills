@@ -95,7 +95,8 @@ def test_site_build_runs_mkdocs(
     _scaffold(tmp_path)
     (tmp_path / "data_analysis").mkdir()
     (tmp_path / "data_analysis" / "data_analysis.md").write_text(
-        "# eda\n", encoding="utf-8"
+        "# eda\n\nThe score is $R^2$.\n\n$$\\frac{1}{2}$$\n",
+        encoding="utf-8",
     )
     (tmp_path / "mkdocs.yml").write_text("hand-written\n", encoding="utf-8")
     seen: list[list[str]] = []
@@ -117,12 +118,23 @@ def test_site_build_runs_mkdocs(
     assert "index.md" in generated
     assert "Home: index.md" in generated
     assert "font: false" in generated
-    assert "assets/skore/skore.css" in generated
+    assert (
+        "markdown_extensions:\n  - pymdownx.arithmatex:\n      generic: true\n"
+    ) in generated
+    assert (
+        "extra_css:\n  - assets/skore/katex/katex.min.css\n  - assets/skore/skore.css\n"
+    ) in generated
     assert "assets/skore/skore.js" in generated
     assert "assets/skore/iframe-worker.js" in generated
     assert generated.index("assets/skore/nav-data.js") < generated.index(
         "assets/skore/skore.js"
     )
+    assert (
+        "  - assets/skore/skore.js\n"
+        "  - assets/skore/katex/katex.min.js\n"
+        "  - assets/skore/katex/contrib/auto-render.min.js\n"
+        "  - assets/skore/katex-render.js\n"
+    ) in generated
     assert (tmp_path / "_build" / "docs" / "index.md").is_file()
     assets = tmp_path / "_build" / "docs" / "assets" / "skore"
     assert (assets / "skore.css").is_file()
@@ -132,12 +144,23 @@ def test_site_build_runs_mkdocs(
     assert (assets / "iframe-worker.js").is_file()
     assert (assets / "iframe-worker.LICENSE").is_file()
     assert (assets / "fonts" / "GeistVF.woff2").is_file()
+    assert (assets / "katex-render.js").is_file()
+    assert (assets / "katex" / "katex.min.js").is_file()
+    assert (assets / "katex" / "katex.min.css").is_file()
+    assert (assets / "katex" / "LICENSE").is_file()
+    assert (assets / "katex" / "contrib" / "auto-render.min.js").is_file()
+    assert any((assets / "katex" / "fonts").glob("*.woff2"))
     icons = assets / "icons"
     assert (icons / "square-caret-left-regular.svg").is_file()
     assert (icons / "square-caret-right-regular.svg").is_file()
     assert (icons / "FONT-AWESOME-NOTICE.txt").is_file()
     journal = (tmp_path / "_build" / "docs" / "index.md").read_text(encoding="utf-8")
     assert "](data_analysis.md)" in journal
+    analysis = (tmp_path / "_build" / "docs" / "data_analysis.md").read_text(
+        encoding="utf-8"
+    )
+    assert "$R^2$" in analysis
+    assert "$$\\frac{1}{2}$$" in analysis
     index = tmp_path / "html" / "index.html"
     assert index.is_file()
     launcher = tmp_path / "report.html"

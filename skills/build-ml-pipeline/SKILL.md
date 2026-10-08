@@ -118,8 +118,11 @@ Implement the approved design. Do not silently upgrade it.
 On a feature, transform, or leakage question, load
 `research-ml-practice` if it is installed. Abstract the problem
 class. AskUserQuestion `allow_multiple` on `declare` rows that
-do not violate a stop. `measure` revisits EDA and does not edit
-`data_analysis.py`. The splitter still comes from `frame show`.
+do not violate a stop. The question's last line is exactly:
+Select each one you want. Write nothing after that line.
+`measure` revisits EDA and does not edit `data_analysis.py`.
+The splitter still comes from
+`frame show`.
 `evaluate` names `evaluate-ml-pipeline`. `confirm` asks the
 user. Missing skill → one line.
 

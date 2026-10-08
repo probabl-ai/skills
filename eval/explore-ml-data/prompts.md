@@ -438,7 +438,8 @@
 - Run `python -m skore_skills site build` again on the
   continuation board.
 - Run `notebook convert` before Close.
-- Ask keep-exploring versus close before that board.
+- Ask keep-exploring versus close as its own question, instead
+  of the five-option board.
 - Say “extra-analyses” or “standard extra analysis” on that
   board.
 
@@ -464,7 +465,7 @@
   (skip the canned extra-analysis survey).
 - Summarize the scratch note in chat (what is happening + why
   it matters here).
-- AskUserQuestion `allow_multiple` on `measure` rows only.
+- AskUserQuestion `allow_multiple` on `measure` rows only. The question's last line is exactly: Select each one you want.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -473,6 +474,9 @@
 - Copy literature into modelling implications as if it were
   measured.
 - Append a `declare` or `evaluate` row as an EDA cell.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 
@@ -569,8 +573,8 @@
   extra-measurement question (problem class, not the dataset
   proper name).
 - Read `scratch/research/survey-<slug>.md`.
-- AskUserQuestion `allow_multiple` (unchecked) on **only**
-  sourced **`measure`** extras from that note.
+- AskUserQuestion `allow_multiple` on **only** sourced
+  **`measure`** extras from that note. The question's last line is exactly: Select each one you want.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -582,6 +586,9 @@
 - Write a ranked pipeline action table in the survey note.
 - Run `git end-turn` in this pass.
 - Name `Close` as recommended on the continuation board.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 

@@ -16,8 +16,9 @@
 - Emit the Pre-flight then ask (do not stop after listing boxes).
 - Run `status` and `env detect` before any write.
 - AskUserQuestion multi-select of installed pieces (env,
-  workspace, editable, git) with **every installed box
-  preselected**. Do not auto-run all four before the answer.
+  workspace, editable, git). The question's last line is exactly: Select each
+  one you want.
+  Do not auto-run all four before the answer.
 - In that same opening phase, before `env init`, `scaffold`,
   package install, or `git init`, ask the unrecorded choices:
   environment manager, whether we manage the environment, the
@@ -40,7 +41,10 @@
 - Commit without asking.
 - Write a runnable baseline experiment.
 - Run `git push`.
-- Leave a setup box unchecked because the folder is empty.
+- Omit a setup box because the folder is empty.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 - Ask executed notebooks or documentation site in this meta.
 
 ---
@@ -63,11 +67,12 @@
 **Must do:**
 - Read `status` first and do not offer Python environment.
 - Ask the multi-select with workspace layout, editable install,
-  and Git **preselected**. Editable is on the board because
-  workspace is pending and editable is still missing.
+  and Git. The question's last line is exactly: Select each one you want. Editable is on
+  the board because workspace is pending and editable is still
+  missing.
 - Before any setup command, persist
   `python -m skore_skills policy set setup.<piece> declined` for
-  each unchecked box.
+  each piece the user does not select.
 - Ask the Python import name and automatic commits for the boxes
   the user keeps. Do not ask which manager to use or whether we
   manage the environment.
@@ -83,7 +88,10 @@
   the environment.
 - Pass `--force` to `scaffold`.
 - Wire the editable install before the layout exists.
-- Preselect a piece whose `status.setup` value is `done`.
+- Offer a piece whose `status.setup` value is `done`.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 
@@ -100,8 +108,9 @@
   `persist-ml-git: false`, `triage-ml-task: true`.
 
 **Must do:**
-- Ask the multi-select of **installed** pieces only. Omit git
-  because `setup-git` is not installed.
+- Ask the multi-select of **installed** pieces only. The
+  question's last line is exactly: Select each one you want.
+  Omit git because `setup-git` is not installed.
 - Do not ask about automatic commits.
 - In the opening phase, ask the environment manager, whether we
   manage the environment, and the Python import name, then
@@ -118,10 +127,13 @@
   missing skill.
 - Invent the `setup-git` procedure from memory.
 - Treat the missing skill as an error that aborts setup.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 
-## CASE_04 — User unchecks env
+## CASE_04 — User does not select env
 
 **User prompt:**
 > Set up this empty folder for an ML project.
@@ -129,12 +141,14 @@
 **Assumed workspace state:**
 - Empty folder.
 - Every `skills` entry is `true`.
-- The user unchecks Python environment and keeps workspace, editable,
-  and git.
+- The user does not select Python environment and selects
+  workspace, editable, and git.
 
 **Must do:**
-- Ask the multi-select with every installed box preselected.
-- Skip `setup-python-env` in one line because the user unchecked it.
+- Ask the multi-select with every installed box. The question's
+  last line is exactly: Select each one you want.
+- Skip `setup-python-env` in one line because the user did not
+  select it.
 - Persist `python -m skore_skills policy set setup.env declined`
   before any write.
 - Do not ask the environment manager or whether we manage the
@@ -148,6 +162,9 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `env init` anyway.
 - Invent the env manager procedure from memory.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 
@@ -159,8 +176,8 @@
 **Assumed workspace state:**
 - Empty folder; `has_src` is false.
 - Every `skills` entry is `true`.
-- The user unchecks workspace and git, leaves editable checked,
-  unchecks env.
+- The user does not select workspace, git, or env, and selects
+  editable.
 
 **Must do:**
 - Stop in one line: editable needs `src/` or a selected workspace
@@ -191,7 +208,8 @@
 - Every `skills` entry is `true`.
 
 **Must do:**
-- Ask the multi-select with every installed box preselected.
+- Ask the multi-select with every installed box. The question's
+  last line is exactly: Select each one you want.
 - Do not ask which environment manager to use.
 - Persist `python -m skore_skills policy set env_manager pixi`
   before loading `setup-python-env`.
@@ -204,6 +222,9 @@
   names pixi.
 - Run `env init` or `scaffold` before the remaining opening
   questions are answered.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 

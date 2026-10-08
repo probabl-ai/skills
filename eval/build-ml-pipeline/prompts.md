@@ -311,7 +311,7 @@ violated.
 **Must do:**
 - Load `research-ml-practice` if the concern is not already in
   scratch.
-- AskUserQuestion `allow_multiple` on **`declare`** rows.
+- AskUserQuestion `allow_multiple` on **`declare`** rows. The question's last line is exactly: Select each one you want.
 - Treat `measure` as revisit-EDA / open question.
 
 **Must NOT do:**
@@ -319,6 +319,9 @@ violated.
 - Edit `data_analysis/data_analysis.py`.
 - Drop `customer_id` from raw files under `data/`.
 - Pick a cross-validator in pipeline code.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 

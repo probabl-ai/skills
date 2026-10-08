@@ -3,9 +3,10 @@
 Recipes, not a second notebook. Run this board only after the user
 picks **Choose additional pre-defined option** on the
 continuation board. Do not ask extras after the default pass. Then
-AskUserQuestion
-`allow_multiple` (all unchecked). Only list items that apply and
-were **not** already in the user prompt. Picks:
+AskUserQuestion `allow_multiple`. The question's last line is
+exactly: Select each one you want. Write nothing after that
+line. Only list items that
+apply and were **not** already in the user prompt. Picks:
 `add-python-package` for the extra lib (agent), append the matching
 cells, `style`, re-run `cells run`, refresh `facts.py`, then write
 `data_analysis.md`. PNG unless the user asked for hover. Load

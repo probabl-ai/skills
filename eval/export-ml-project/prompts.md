@@ -14,14 +14,17 @@
 
 **Must do:**
 - Run `python -m skore_skills status`.
-- AskUserQuestion `allow_multiple`: notebooks **not** preselected,
-  site preselected.
-- Load `export-ml-site` if site stays checked.
+- AskUserQuestion `allow_multiple`. The preamble states
+  notebooks are off and the site is on. The question's last line is exactly: Select each one you want.
+- Load `export-ml-site` if the user selects the site.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `git end-turn`.
 - Invent `mkdocs` steps instead of loading the child.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.
 
 ---
 
@@ -31,7 +34,7 @@
 > Export notebooks and the site.
 
 **Assumed workspace state:**
-- User checks both boxes.
+- User selects both.
 - `status.skills.export-ml-notebook` is `false`.
 - `status.skills.export-ml-site` is `true`.
 
@@ -47,7 +50,7 @@
 
 ---
 
-## CASE_03 — Null flags preselect both boxes
+## CASE_03 — Null flags do not select either box
 
 **User prompt:**
 > Export the project.
@@ -58,11 +61,15 @@
 - `export-ml-notebook` and `export-ml-site` are installed.
 
 **Must do:**
-- Run `python -m skore_skills status`.
-- AskUserQuestion `allow_multiple`: notebooks preselected, site
-  preselected (`null` treated as on).
+- AskUserQuestion `allow_multiple`. The preamble states that
+  neither notebooks nor the site is recorded yet. The
+  question's last line is exactly: Select each one you want.
+  Do not treat `null` as on. This turn stops at the question.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Leave either flag `null` after persist.
+- Persist `notebooks` or `site` before the user answers.
 - Run `git end-turn`.
+- In the question, ask the user to uncheck a box, or say that a
+  box starts checked. A recorded status is not the box's starting
+  state.

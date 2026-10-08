@@ -24,19 +24,23 @@ in the question.
    `policy.site`, and `skills`.
 2. **AskUserQuestion** with `allow_multiple`. Say first, in 2–4
    lines, what each box authorizes (toolchain installs, convert
-   re-execution, a built site) and that both answers persist as
-   policy. A file link is an addition, never the context.
+   re-execution, a built site), the recorded flags
+   (`policy.notebooks` and `policy.site`: `true`, `false`, or
+   not recorded), and that both answers persist as policy. A
+   file link is an addition, never the context. The question's
+   last line is exactly: Select each one you want. Write nothing
+   after that line.
 
-   - Executed notebooks — preselected iff `policy.notebooks` is
-     not false (`true` or `null`)
-   - Documentation site — preselected iff `policy.site` is not
-     false (`true` or `null`)
+   - Executed notebooks
+   - Documentation site
 
-3. Persist each box this turn: checked →
+3. After the answer, and not in the question, persist each box
+   this turn: selected →
    `python -m skore_skills policy set notebooks true` (or `site`);
-   unchecked → `false`. Do not leave them `null`. Do not write
-   notebooks or site into JOURNAL; policy is the record.
-4. Load each checked child only if `status.skills.<id>` is true;
+   a box the user does not select → `false`. Do not leave them
+   `null`. Do not write notebooks or site into JOURNAL; policy
+   is the record.
+4. Load each selected child only if `status.skills.<id>` is true;
    else one-line skip. Do not invent that skill's steps:
 
    - notebooks → `export-ml-notebook` (installs toolchain if this

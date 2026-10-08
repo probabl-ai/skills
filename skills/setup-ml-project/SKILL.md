@@ -3,13 +3,14 @@ name: setup-ml-project
 description: >
   Coordinate ML project setup. Trigger when the user asks to set up
   or bootstrap a workspace, or when a pipeline stage finds
-  status.setup.pending non-empty. Ask only those pending pieces
-  (all preselected). Do not offer a piece that is already done or
-  declined. Then, in that same opening phase, ask the environment
-  manager, whether we manage the env, the import name, and git
-  autocommit — only for boxes that stay checked and answers that
-  are not already recorded. Persist those answers, then run only
-  what stays checked. Git may ask once, just before the first
+  status.setup.pending non-empty. Ask only those pending pieces.
+  The question tells the user to select each piece they want.
+  Do not offer a piece that is already done or declined.
+  Then, in that same opening phase, ask the environment manager,
+  whether we manage the env, the import name, and git autocommit
+  — only for pieces the user selects, and answers that are not
+  already recorded. Persist those answers, then run only what
+  the user selects. Git may ask once, just before the first
   commit, which unknown files to keep. Return to the skill that
   dispatched this turn.
 ---
@@ -35,8 +36,8 @@ after listing the boxes.
 ```
 - [ ] status + env detect (read-only)
 - [ ] pending empty → return to caller
-- [ ] ask pending pieces only (those boxes preselected)
-- [ ] persist declined for unchecked pieces
+- [ ] ask pending pieces only (user selects each one)
+- [ ] persist declined (after the answer; not in the question)
 - [ ] editable without workspace and no src → stop
 - [ ] ask remaining choices; persist
 - [ ] load selected | skip; persist done
@@ -75,28 +76,30 @@ after listing the boxes.
    - Git — `setup.pending` contains `git` and
      `status.skills.setup-git` is true
 
-   Map checked labels to `setup-python-env`, `setup-workspace`,
+   Map selected labels to `setup-python-env`, `setup-workspace`,
    `add-python-package`, `setup-git` when loading.
 
-   **Preselect every box on this board** (those boxes on). Do
-   not add a `done` or `declined` piece because the layout
-   already looks unfinished. The user may uncheck. If every
-   pending piece's skill id is false, skip the ask, name the
-   missing skills in one line, and go to step 8.
-4. Before any write, persist each unchecked box:
+   The question's last line is exactly: Select each one you want.
+   Write nothing after that line. Do not add a `done` or
+   `declined` piece because the layout already looks
+   unfinished. If every pending
+   piece's skill id is false, skip the ask, name the missing
+   skills in one line, and go to step 8.
+4. After the answer, and not in the question, persist each piece
+   the user does not select:
    `python -m skore_skills policy set setup.<piece> declined`
    (`env`, `workspace`, `editable`, or `git`). Do not persist
    `declined` for a box that was not on the board.
-5. Editable checked, `has_src` false, and workspace not selected
+5. Editable selected, `has_src` false, and workspace not selected
    → one-line stop. Do not ask the remaining choices. Do not
    scaffold from this meta.
 6. Ask the remaining choices **now**, before any write. Skip a
-   question when its piece was unchecked, was not on the board,
-   or the value is already recorded. Each ask states in 2–4
-   lines what the answer authorizes. Order:
+   question when the user does not select its piece, it was not
+   on the board, or the value is already recorded. Each ask
+   states in 2–4 lines what the answer authorizes. Order:
 
-   - **Environment manager** — Python environment stayed
-     checked. If `env_manager` is not `"none"`, `ambiguous` is
+   - **Environment manager** — the user selects Python
+     environment. If `env_manager` is not `"none"`, `ambiguous` is
      false, `mismatch` is false, and `policy.env_manager` is
      unset, persist that detected manager. Do not ask. Otherwise
      ask when (`env_manager` is `"none"` and
@@ -105,16 +108,16 @@ after listing the boxes.
      `recommended` order. PATH is not permission. Do not
      `curl | sh`. Persist
      `python -m skore_skills policy set env_manager <manager>`.
-   - **Whether we manage the env** — Python environment stayed
-     checked and `policy.env.managed` is null. Default yes.
+   - **Whether we manage the env** — the user selects Python
+     environment and `policy.env.managed` is null. Default yes.
      Persist `policy set env.managed true` or `false`.
-   - **Python import name** — workspace stayed checked, the
+   - **Python import name** — the user selects workspace, the
      layout is fresh or manager-only (no `src/` and no
      `journal/`), `policy.package` is unset, and `src/<pkg>/`
      does not already name it. Folder name is the default
      option. “You pick” / “go fast” does not resolve it.
      Persist `policy set package <pkg>`.
-   - **Automatic commits** — Git stayed checked and
+   - **Automatic commits** — the user selects Git and
      `policy.git.autocommit` is null. Ask once: should later
      stages persist with `git commit` (`on`) or never (`off`)?
      That answer consents to the first commit. It does not
@@ -123,14 +126,15 @@ after listing the boxes.
 
    Do not ask notebooks, the documentation site, tabular
    library, or where reports go.
-7. Load **still-checked** skills only, in this order: env →
+7. Load **selected** skills only, in this order: env →
    workspace → editable (`has_src`) → git. Load `<id>` only if
    `status.skills.<id>` is true; else one-line skip. Do not
    invent that skill's steps. The loaded skills must not ask
    again for a choice persisted in step 6. After each loaded
    skill returns, persist
    `python -m skore_skills policy set setup.<piece> done`.
-   Do not mark a skipped or unchecked piece `done`.
+   Do not mark a skipped piece, or a piece the user does not
+   select, `done`.
 8. Return to the skill that dispatched this turn (a lifecycle
    stage, or triage waiting on a lifecycle request). Do not
    open the entry board and do not start exploratory data

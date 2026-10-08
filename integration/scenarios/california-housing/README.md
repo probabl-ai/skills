@@ -63,8 +63,8 @@ the fork reply instead of continuing the spine.
 
 | Fork | After | Reply | Check |
 | --- | --- | --- | --- |
-| `decline-workspace` | `setup-open` | Uncheck the workspace layout. Keep the Python environment, the editable install, and Git. | No `src/` or `journal/`. |
-| `decline-git` | `setup-open` | Uncheck Git. Keep the Python environment, the workspace layout, and the editable install. | `.skore` records Git declined. No scaffold yet. |
+| `decline-workspace` | `setup-open` | Do not select the workspace layout. Select the Python environment, the editable install, and Git. | No `src/` or `journal/`. |
+| `decline-git` | `setup-open` | Do not select Git. Select the Python environment, the workspace layout, and the editable install. | `.skore` records Git declined. No scaffold yet. |
 | `you-pick-name` | `setup-managed` | You pick the import name. | No `src/housing/`. |
 | `skip-eda` | `setup-autocommit` | Skip the data analysis. | Data understanding is `skipped`. No analysis file and no design note. |
 | `lock-same-turn` | `frame-open` | The `frame-fill` values, then `Lock these decisions.` | Status stays `draft`. |

@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "fdca07e83e08e7a1f5e2190fc6504dc5594d7e1bb41104d093ae2fc90d12f387",
+  "catalog_hash": "8fb2ae30881522cf3958c1607ccbd5be46d8d527263097a39f2a1821d5b1ec7c",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "53a72a37bd1dd196def2b63b129241b46fa79e41ac7464156cbbf5a1f3186130"
+      "hash": "7976161a24ca40cd64c2c7945457b124c4288d81f830ac3e6fea6534ee22a20d"
     },
     {
       "id": "frame-ml-problem",
@@ -30,7 +30,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "df72dacc9510dc054a0ec8b6bed7737463afab4a13ca80ed4dacf7426d05c627"
+      "hash": "d98112ec4821c7e46dd281810b5a750390c4d1da133e5cadd5360d0ceac2e33a"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -138,7 +138,7 @@
       "summary": "Ask setup choices up front, then coordinate workspace, environment, and git.",
       "category": "meta",
       "subcategory": null,
-      "hash": "5a4dc59d33409aff717fac9d032904ee007e6d4ba13b3597eca1d76acdad147e"
+      "hash": "a760eb0f16a8332667e94f9338c61cfd0cc2340f6fabb0db491768fc684da070"
     },
     {
       "id": "setup-git",
@@ -246,7 +246,7 @@
       "summary": "Coordinate executed notebooks and an offline MkDocs documentation site.",
       "category": "meta",
       "subcategory": null,
-      "hash": "d35285038ddd7f0ac095ad1b855e4ca976f3c2a4b2780084c3dd9dfddbe6dcfb"
+      "hash": "09fd4853d6b7b9b7a0a20dc1219af9f3e249b7ff21d5e923220a9344a100226b"
     },
     {
       "id": "sync-ml-reports",

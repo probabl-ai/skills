@@ -3,7 +3,7 @@
     {
       "id": "decline-workspace",
       "after": "setup-open",
-      "say": "Uncheck the workspace layout. Keep the Python environment, the editable install, and Git.",
+      "say": "Do not select the workspace layout. Select the Python environment, the editable install, and Git.",
       "expect": {
         "files": [
           "DATA.md",
@@ -20,7 +20,7 @@
     {
       "id": "decline-git",
       "after": "setup-open",
-      "say": "Uncheck Git. Keep the Python environment, the workspace layout, and the editable install.",
+      "say": "Do not select Git. Select the Python environment, the workspace layout, and the editable install.",
       "expect": {
         "files": [
           "DATA.md",
