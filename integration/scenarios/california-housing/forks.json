@@ -93,46 +93,56 @@
       "expect": {
         "files": [
           "journal/JOURNAL.md",
+          "journal/01_*.md",
           "src/housing/pipeline.py"
         ],
         "absent": [
-          "journal/01_*.md",
           "experiments/*.py"
         ],
         "contains": {
           "journal/JOURNAL.md": [
-            "| Status | draft |",
+            "| Status | locked |",
             "| Prediction goal | point_predictions |",
             "| Deployment | iid |",
             "| Baseline | dummy |",
             "| Folds | 2 |"
+          ]
+        },
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** planned"
           ]
         }
       }
     },
     {
       "id": "discuss-baseline",
-      "after": "frame-lock",
+      "after": "frame-fill",
       "say": "Discuss the next step.",
       "expect": {
         "files": [
           "journal/JOURNAL.md",
+          "journal/01_*.md",
           "src/housing/pipeline.py"
         ],
         "absent": [
-          "journal/01_*.md",
           "experiments/*.py"
         ],
         "contains": {
           "journal/JOURNAL.md": [
             "| Status | locked |"
           ]
+        },
+        "contains_any": {
+          "journal/01_*.md": [
+            "**State:** planned"
+          ]
         }
       }
     },
     {
       "id": "stop-design",
-      "after": "baseline-choose",
+      "after": "frame-fill",
       "say": "Stop.",
       "expect": {
         "files": [
@@ -152,7 +162,7 @@
     },
     {
       "id": "modify-design",
-      "after": "baseline-choose",
+      "after": "frame-fill",
       "say": "Modify the method, then ask me again.",
       "expect": {
         "files": [

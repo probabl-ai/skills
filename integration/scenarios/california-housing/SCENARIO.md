@@ -63,12 +63,13 @@ checkout at `{{SKILLS_REPO}}` and supplied that checkout's
 - Baseline: `dummy`.
 - Baseline note: mean house value.
 - Folds: `2`.
-- Lock these modeling decisions.
+- Those answers lock the table and write the baseline design note.
+  Do not ask to lock them, and do not ask whether to build that
+  baseline.
 
 ## Baseline
 
-- Build the locked baseline.
-- Approve the proposal and the design note.
+- Approve the design note.
 - Evaluate and keep the report local.
 - When the audit digest is ready, close the audit. That choice is
   already made: do not ask again, and do not add an additional
@@ -80,6 +81,6 @@ checkout at `{{SKILLS_REPO}}` and supplied that checkout's
 - Promote the first open idea into the backlog.
 - Set every other open idea aside.
 - Take backlog item `B1` as the next experiment.
-- Approve its proposal and design note.
+- Approve its design note. Do not ask to confirm the proposal.
 - Build and smoke-test that second experiment.
 - Stop before evaluating the second experiment.

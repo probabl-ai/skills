@@ -67,8 +67,9 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - Run `python -m skore_skills scaffold --journal --stem
   02_target_transform` to create the packaged design-note shell.
-- State that Question, Motivation, Method, and Risks are filled only
-  after that command creates the shell, then stop for user approval.
+- Fill Question, Motivation, Method, and Risks from the selected
+  target-transform proposal after that command creates the shell.
+- Ask Approve / Modify / Stop. Do not ask Yes / No before the note.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -163,7 +164,7 @@ and `frame show` already returned `proceed` with a non-null
 
 ---
 
-## CASE_06 — First-model menu without EDA or Backlog
+## CASE_06 — First model writes the baseline note
 
 **User prompt:**
 > Let us start modeling. What can we do?
@@ -183,15 +184,18 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - Run `python -m skore_skills status` and
   `python -m skore_skills model choices`.
-- Ask one question with, in order: Build the locked baseline;
-  Discuss the next step. The baseline description quotes
-  `seasonal_naive` and `last observed week`.
+- Run `python -m skore_skills scaffold --journal --stem <NN_short>`
+  and fill the design note from `seasonal_naive` and
+  `last observed week`.
+- Ask Approve / Modify / Stop. Do not ask Yes / No before the note.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask Build the locked baseline or Discuss the next step.
+- Mention discuss, an EDA proposal, or the backlog.
 - Offer an EDA-derived proposal.
 - Offer Pick from the Backlog.
-- Write model code before a proposal and design are approved.
+- Write model code before the design note is approved.
 
 ---
 
@@ -286,6 +290,7 @@ and `frame show` already returned `proceed` with a non-null
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask Yes / No before a row is picked.
 - Renumber B3 to B2.
 - Invent a new Backlog item.
 
@@ -571,3 +576,56 @@ and `frame show` already returned `proceed` with a non-null
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `python -m skore_skills model choices`.
 - Start model code.
+
+---
+
+## CASE_21 — Discuss does not write the baseline note
+
+**User prompt:**
+> Discuss the next step.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Modeling decisions Status is `locked`. Baseline is
+  `seasonal_naive`.
+- No experiment scripts.
+- `python -m skore_skills model choices` returns `choices` whose
+  ids are `baseline` then `discuss`.
+
+**Must do:**
+- Discuss what to learn, why now, and what changes.
+- Once an idea is agreed, restate it, then AskUserQuestion
+  Yes / No, before creating a design note.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Write the locked-baseline design note.
+- Ask Build the locked baseline.
+- Write model code.
+
+---
+
+## CASE_22 — A picked backlog row writes the note
+
+**User prompt:**
+> Take B1. Robust scaling applies to the numeric columns.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- `experiments/01_baseline.py` exists.
+- B1 Item is "try robust scaling", Source is `user`. B3 remains.
+- The missing shaping fact is already in the prompt: numeric
+  columns.
+
+**Must do:**
+- Fill the next design note from that Item, Source, and the
+  numeric-columns fact.
+- Ask Approve / Modify / Stop.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask Yes / No before the note.
+- Ask which columns again.
+- Add an estimator or a procedure the row and the fact do not state.
+- Renumber B3.
+- Write model code before the design note is approved.

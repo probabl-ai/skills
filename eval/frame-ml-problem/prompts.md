@@ -136,6 +136,8 @@
 - After Status is written `locked`, `frame show` returns
   `proceed` with a non-null `translation`. This turn was not
   dispatched by `model-ml-pipeline`.
+- No experiment script exists. History has no running, done, or
+  abandoned model row. `status.skills.model-ml-pipeline` is true.
 
 **Must do:**
 - Write Status `locked`.
@@ -143,19 +145,21 @@
   models stay comparable, and that any one of them can be changed
   by naming it. Quote MAE in those lines.
 - Run `frame show` again.
-- Run `python -m skore_skills git end-turn --stage implement`.
+- Load `model-ml-pipeline` and stop.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write Python or a class constructor.
+- Write a design note.
 - AskUserQuestion.
 - Treat "Lock it" as a menu choice.
 - Say "lock" in the reuse and change lines.
 - Load `build-ml-pipeline`.
+- Run `python -m skore_skills git end-turn --stage implement`.
 
 ---
 
-## CASE_04 — Revise blanks the named goal and its metric cells
+## CASE_04 — A named goal is replaced in the same turn
 
 **User prompt:**
 > The constraint changed: we now need intervals, not point predictions.
@@ -166,30 +170,29 @@
 - Prediction goal is `point_predictions`, metric role is
   `point_error`, metric is `MAE`, deployment is `iid`, and
   folds is `5`.
-- `python -m skore_skills frame show --revise` returns `ask` /
-  `revise` with choices `modify`, `keep`, `stop`.
-- The user chooses `modify`.
+- `intervals` is a prediction-goal candidate.
 
 **Must do:**
-- Name `frame show --revise`.
-- On modify, run `frame clear --cell prediction_goal`.
-- That blanks prediction goal, metric role, and metric, and sets
-  Status to `draft`. `frame clear` stamps Revised on. Do not type
-  the date.
+- Run `frame clear --cell prediction_goal`. Prediction goal,
+  metric role, and metric are the ones to fill again, and Status
+  is `draft`. `frame clear` stamps Revised on. Do not type the
+  date.
+- Write `intervals`, because the message already states it.
+- Ask the metric role and metric, which are no longer filled.
 - Leave deployment and folds filled.
-- Stop for the next `frame show`. Do not write `intervals` in
-  this turn.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Leave Status `locked` after modify.
-- Blank deployment or folds.
+- Run `frame show --revise` or ask Modify / Keep / Stop.
+- Say "cell", "blank", "clear", or "reopen".
+- Leave Status `locked`.
+- Reopen deployment or folds.
 - Write a model or a splitter.
 - Invent a calendar date for Revised on.
 
 ---
 
-## CASE_09 — Revise blanks only the named metric
+## CASE_09 — A named metric asks for its replacement
 
 **User prompt:**
 > Change the comparison metric. Keep the rest of the framing.
@@ -200,23 +203,22 @@
 - Metric is `MAE`. Metric role is `point_error`. Prediction goal
   is `point_predictions`. Folds is `5`.
 - `experiments/01_baseline.py` exists.
-- `python -m skore_skills frame show --revise` returns `ask` /
-  `revise` with choices `modify`, `keep`, `stop`.
-- The user chooses `modify`.
+- After `frame clear --cell metric`, `frame show` asks for the
+  metric. The message does not state the new value.
 
 **Must do:**
-- Name `frame show --revise`.
-- On modify, run `frame clear --cell metric`. That blanks only
-  the metric and leaves metric role, prediction goal, and folds
-  filled.
-- Stop for the next `frame show`.
+- Run `frame clear --cell metric`. Leave metric role, prediction
+  goal, and folds filled.
+- Ask which comparison metric replaces `MAE`.
 - Say `experiments/01_baseline.py` still uses the previous metric
   and is not run. The next build or evaluate rewrites it after
   the table is locked again.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Blank metric role, prediction goal, or folds.
+- Run `frame show --revise` or ask Modify / Keep / Stop.
+- Say "cell", "blank", "clear", or "reopen".
+- Reopen metric role, prediction goal, or folds.
 - Write the replacement metric in this turn.
 - Rewrite an experiment file or a report.
 - Run `experiments/01_baseline.py`.
@@ -264,7 +266,8 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Set Status to `draft` or blank a cell on this turn.
+- Ask Modify / Keep / Stop.
+- Set Status to `draft` or reopen a decision on this turn.
 - Leave every cell filled and ask to lock again as if the change
   were done.
 
@@ -290,7 +293,7 @@
 
 ---
 
-## CASE_08 — Standalone lock still closes the turn
+## CASE_08 — A first standalone lock loads modeling
 
 **User prompt:**
 > Lock the table.
@@ -298,15 +301,18 @@
 **Assumed workspace state:**
 - `status.setup.pending` is empty.
 - This turn was not dispatched by `model-ml-pipeline`.
+- No experiment script exists. History has no running, done, or
+  abandoned model row.
+- `status.skills.model-ml-pipeline` is true.
 - `frame show` returns `proceed` with a non-null `translation`.
 
 **Must do:**
-- Run `python -m skore_skills git end-turn --stage implement`.
-- If that command returns `invoke`, load `persist-ml-git` when installed.
+- Load `model-ml-pipeline` and stop.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Load `build-ml-pipeline`.
+- Load `build-ml-pipeline` or write a design note.
+- Run `python -m skore_skills git end-turn --stage implement`.
 
 ---
 
@@ -381,6 +387,8 @@
 - After those cells are written with Status `locked`, a second
   `frame show` returns `proceed` with a non-null `translation`.
   This turn was not dispatched by `model-ml-pipeline`.
+- No experiment script exists. History has no running, done, or
+  abandoned model row. `status.skills.model-ml-pipeline` is true.
 
 **Must do:**
 - Write every decision from the user message. Set Status to
@@ -389,14 +397,15 @@
 - Say these choices are reused for the rest of the experiment so
   models stay comparable, and that any one of them can be changed
   by naming it.
-- Run `python -m skore_skills git end-turn --stage implement`.
+- Load `model-ml-pipeline` and stop.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Leave Status `draft`.
 - AskUserQuestion with Lock, Modify, and Stop.
 - Say "lock" in the reuse and change lines.
-- Load `build-ml-pipeline`.
+- Load `build-ml-pipeline` or write a design note.
+- Run `python -m skore_skills git end-turn --stage implement`.
 
 ---
 
@@ -421,3 +430,25 @@
 - Invent deployment, horizon, gap, or time role.
 - AskUserQuestion with Lock, Modify, and Stop.
 - Set Status to `locked`.
+
+---
+
+## CASE_16 — An existing experiment still closes the turn
+
+**User prompt:**
+> Lock the table.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- This turn was not dispatched by `model-ml-pipeline`.
+- `experiments/01_baseline.py` exists.
+- `frame show` returns `proceed` with a non-null `translation`.
+
+**Must do:**
+- Run `python -m skore_skills git end-turn --stage implement`.
+- If that command returns `invoke`, load `persist-ml-git` when installed.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Load `model-ml-pipeline` or `build-ml-pipeline`.
+- Write a design note.

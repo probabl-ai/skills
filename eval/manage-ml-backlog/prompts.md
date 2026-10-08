@@ -122,13 +122,13 @@
 
 **Must do:**
 - Present exactly B1 and B4 and ask for one pick.
-- Turn the selected Item + Source into a proposal, asking for
-  missing shaping facts.
+- After a pick, ask only for a shaping fact the row does not state.
 - Remove only the selected row after the model stage creates its
   design note.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask Yes / No on the proposal.
 - Invent B2/B3 or renumber B4.
 - Invent a Method from the one-line item.
 - Require an audit digest for this selection mode.
@@ -440,3 +440,27 @@
 - Ask promote / discard / set aside before the user picks a file.
 - Delete any idea file.
 - Append a Backlog row.
+
+---
+
+## CASE_16 — A stated shaping fact returns the proposal
+
+**User prompt:**
+> B1, try robust scaling. Apply it to the numeric columns.
+
+**Assumed workspace state:**
+- Model-entry selection mode.
+- B1 Item is "try robust scaling", Source is `user`.
+- The missing shaping fact is already in the prompt: numeric
+  columns.
+
+**Must do:**
+- Return that proposal to `model-ml-pipeline`.
+- Keep the method to the item plus the numeric columns.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask Yes / No on the proposal.
+- Ask which columns again.
+- Invent a Method beyond the item and the stated columns.
+- Start pipeline implementation.
