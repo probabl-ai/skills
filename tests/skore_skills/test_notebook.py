@@ -535,6 +535,59 @@ def test_notebook_fill_writes_empty_outputs(
     )
 
 
+def test_notebook_fill_out_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``--out`` writes the notebook and clears outputs on a cell object."""
+    src = tmp_path / "experiment.py"
+    src.write_text("# %%\nreport\n", encoding="utf-8")
+    dest = tmp_path / "out" / "custom.ipynb"
+
+    class _Cell:
+        def __init__(self) -> None:
+            self.cell_type = "code"
+            self.outputs = [{"output_type": "execute_result"}]
+            self.execution_count = 2
+
+        def get(self, key: str, default: object = None) -> object:
+            return getattr(self, key, default)
+
+    code = _Cell()
+    payload = SimpleNamespace(
+        cells=[code, {"cell_type": "markdown", "source": "# Title"}],
+        metadata={},
+    )
+    monkeypatch.setattr(
+        notebook_mod, "jupytext", SimpleNamespace(read=lambda path: payload)
+    )
+    monkeypatch.setattr(notebook_mod, "nbformat", _stub_nbformat())
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["notebook", "fill", str(src), "--out", str(dest)])
+    assert result.exit_code == 0, result.output
+    assert dest.is_file()
+    assert code.outputs == []
+    assert code.execution_count is None
+    assert "outputs" not in payload.cells[1]
+
+
+def test_notebook_fill_unexpected_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A failure while reading the source is a Click error."""
+    src = tmp_path / "experiment.py"
+    src.write_text("# %%\n1\n", encoding="utf-8")
+
+    def fail(path: Path) -> None:
+        raise RuntimeError("fill broke")
+
+    monkeypatch.setattr(notebook_mod, "jupytext", SimpleNamespace(read=fail))
+    monkeypatch.setattr(notebook_mod, "nbformat", _stub_nbformat())
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["notebook", "fill", str(src)])
+    assert result.exit_code != 0
+    assert "fill broke" in result.output
+
+
 def test_notebook_fill_html(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """``--html`` renders the output-free notebook."""
     src = tmp_path / "audit.py"
