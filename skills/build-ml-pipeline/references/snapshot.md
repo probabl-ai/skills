@@ -48,8 +48,8 @@ expression. Do not add `skore.evaluate` or `project.put` here.
 Do not `notebook convert` this unfitted snapshot if the
 experiment file already contains `skore.evaluate`. That ban is
 only for this snapshot, before the first evaluation.
-`model-ml-pipeline` and `evaluate-ml-pipeline` still convert
-`experiments/<stem>.py` at close.
+`model-ml-pipeline` and `evaluate-ml-pipeline` still fill
+`experiments/<stem>.py` at close, without executing it.
 
 For a pre-evaluation experiment (the source contains no
 `skore.evaluate` / `project.put`), read the notebook policy
@@ -60,8 +60,8 @@ Do not separately execute the script. When notebooks is `null`
 or `false`, do not change policy and use the existing
 non-notebook execution. If an existing source already contains
 evaluation, keep the unfitted snapshot path above and do not
-convert it here; the next evaluation run owns that one full
-execution.
+convert it here; the next evaluation runs `materialize.py` once
+and fills the notebook without a kernel.
 
 If `policy.site` is true and `export-ml-site` is installed, run
 `python -m skore_skills site build --if-stale` after this snapshot and

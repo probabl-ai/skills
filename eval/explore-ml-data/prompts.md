@@ -142,6 +142,9 @@
   implications, each with a sentence citing extras/JSON numbers.
 - Put `TableReport.json()` under `scratch/data_analysis/<slug>.json`
   and extras under `scratch/data_analysis/extras.json`.
+- Run `scratch/data_analysis/materialize.py` once. That run writes
+  the TableReport HTML, the figures, and those JSON files. Do not
+  execute `data_analysis/data_analysis.py`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -152,10 +155,11 @@
 - Modify the user's raw data files.
 - Train/test split or install sklearn unless extras were requested.
 - Leave a saved figure unembedded in `data_analysis.md`.
+- `notebook convert` or `cells run` `data_analysis/data_analysis.py`.
 
 ---
 
-## CASE_06 — Missing IPython delegates to add-python-package
+## CASE_06 — Missing IPython does not block the run
 
 **User prompt:**
 > Run the EDA now.
@@ -167,13 +171,15 @@
 - `add-python-package` is installed.
 
 **Must do:**
-- Load `add-python-package` for `ipython` (`env route` agent
-  scope). Do not place a fabricated digest.
+- Run `scratch/data_analysis/materialize.py`. Do not block on
+  IPython and do not skip the analysis.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Load `add-python-package` for `ipython` before the run.
 - Run `pixi add ipython` / `uv add ipython` from this skill.
 - Hand-write expected exploratory data analysis output.
+- Skip the analysis because IPython is missing.
 
 ---
 
@@ -187,9 +193,9 @@
 - `data_analysis/data_analysis.md` was just written.
 - `policy.notebooks` is true. `policy.site` is true.
 - `export-ml-notebook` and `export-ml-site` are installed.
-- `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are installed.
-- The completed EDA execution already wrote a source-current
-  `.ipynb` and `.nb.html`.
+- `jupytext`, `nbformat`, and `nbconvert` are installed.
+- The completed `materialize.py` run already wrote the artifacts,
+  and fill already wrote a source-current `.ipynb` and `.nb.html`.
 
 **Must do:**
 - Write 2–6 sentences of EDA findings.
@@ -207,8 +213,11 @@
 - Name `site build` or `--if-stale` in the user-facing close.
   Housekeeping may name the command.
 - Fail the data-analysis turn if site build errors; name the error.
-- Run `cells run` as a substitute for convert.
-- Re-run `notebook convert` for the source-current notebook.
+- Run `cells run` or `notebook convert` on
+  `data_analysis/data_analysis.py`.
+- Re-run `notebook fill` for the source-current notebook.
+- Re-run `materialize.py` when the artifacts are already from
+  this human file.
 - Run `git commit` in this skill.
 
 ---
@@ -237,7 +246,7 @@
 
 ---
 
-## CASE_09 — Notebooks on, site off converts without HTML
+## CASE_09 — Notebooks on, site off fills without HTML
 
 **User prompt:**
 > EDA is done. Close the turn.
@@ -247,10 +256,11 @@
 - `data_analysis/data_analysis.md` was just written.
 - `policy.notebooks` is true. `policy.site` is false.
 - `export-ml-notebook` is installed.
-- `jupytext`, `nbclient`, and `ipywidgets` are installed.
+- `jupytext` and `nbformat` are installed.
+- No source-current `.ipynb` yet.
 
 **Must do:**
-- Run `python -m skore_skills notebook convert
+- Run `python -m skore_skills notebook fill
   data_analysis/data_analysis.py`.
 - Run `python -m skore_skills git end-turn --stage data_analysis`.
 
@@ -258,10 +268,12 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Pass `--html` when the site gate is off.
 - Run `python -m skore_skills site build`.
+- `notebook convert` or `cells run`
+  `data_analysis/data_analysis.py`.
 
 ---
 
-## CASE_10 — Missing convert toolchain skips in one line
+## CASE_10 — Missing fill toolchain skips in one line
 
 **User prompt:**
 > EDA is done. Close the turn.
@@ -271,17 +283,17 @@
 - `data_analysis/data_analysis.md` was just written.
 - `policy.notebooks` is true. `policy.site` is false.
 - `export-ml-notebook` is installed.
-- `jupytext` and `nbclient` are not importable; `notebook convert`
+- `jupytext` and `nbformat` are not importable; `notebook fill`
   fails with that ImportError.
 
 **Must do:**
-- Skip the convert in one line, naming `add-python-package` for
-  `jupytext` and `nbclient`.
+- Skip the fill in one line, naming `add-python-package` for
+  `jupytext` and `nbformat`.
 - Run `python -m skore_skills git end-turn --stage data_analysis`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Fail the data-analysis turn because convert failed.
+- Fail the data-analysis turn because fill failed.
 - Run `pixi add` / `uv add` from this skill.
 
 ---
@@ -738,7 +750,7 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run `notebook convert` or `git end-turn` before the user picks
+- Run `notebook fill` or `git end-turn` before the user picks
   Close.
 - Fail the continuation board if site build errors; name the
   error.
@@ -849,5 +861,5 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `pixi add` or `uv add`.
 - Skip the continuation board.
-- Run `notebook convert` or `git end-turn` before the user picks
+- Run `notebook fill` or `git end-turn` before the user picks
   Close.

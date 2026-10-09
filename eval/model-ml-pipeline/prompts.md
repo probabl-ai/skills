@@ -338,11 +338,10 @@ and `frame show` already returned `proceed` with a non-null
   satisfies the step. Do not reorder it.
 - Name `python -m skore_skills loop notebooks --stem <stem>`
   first. It continues only on `skip`. `record` is not this gate.
-- On `convert`, name `notebook convert` for every `sources`
-  entry (`--html` when `html` is true), then
-  `scratch/results/<stem>/snapshot.py` and `loop locator` when
-  the experiment script was converted, then `loop notebooks`
-  again until `skip`.
+- On `convert`, name `notebook fill` for every `experiments/`
+  or `audit/` source (`--html` when `html` is true). Do not
+  `notebook convert` those files. Fill does not `put`. Then
+  `loop notebooks` again until `skip`.
 - Name record-outcome next, with the exact locator
   `[Open report](https://example.invalid/report/42) · hub · id: 42`
   and that G-AUDIT-FINDING, before site build.

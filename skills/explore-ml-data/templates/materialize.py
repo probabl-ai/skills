@@ -1,14 +1,23 @@
-"""Agent-only snapshot. Copy to scratch/data_analysis/facts.py; do not commit.
+"""Agent-only materialize. Copy to scratch/data_analysis/materialize.py.
 
-Reuse the same families and target as data_analysis/data_analysis.py.
-Writes TableReport.json (plot_distributions=False) per family and
-extras.json (tables[], target, correlations, leakage flags, png
-and html paths).
+Do not commit. This is the only EDA run. Do not execute
+``data_analysis/data_analysis.py`` and do not ``notebook convert``
+or ``cells run`` it. Replace the ``<ANALYSIS>`` block with that
+file's loads, ``TableReport.write_html`` calls, and figure or HTML
+saves, same paths. One load per family. Bind ``FAMILIES`` as
+``(slug, raw)`` and ``FRAME`` to the target family's pandas frame.
+Leave the tail. It writes ``<slug>.json``
+(``plot_distributions=False``) and ``extras.json``.
 """
 
 import json
 
+import matplotlib
+
+matplotlib.use("Agg")
+
 import pandas as pd
+import seaborn as sns
 import skrub
 
 from <pkg> import PROJECT_ROOT
@@ -16,26 +25,31 @@ from <pkg> import PROJECT_ROOT
 TARGET = <TARGET>  # column name str, or None
 TASK = "<TASK>"  # classification | regression | none
 
-# Confirmed families only — (slug, raw). First family holds TARGET.
-FAMILIES = [
-    ("<slug>", <LOAD_RAW_DATA>),
-]
-
 analysis = PROJECT_ROOT / "data_analysis"
 analysis.mkdir(parents=True, exist_ok=True)
 out = PROJECT_ROOT / "scratch" / "data_analysis"
 out.mkdir(parents=True, exist_ok=True)
 
-report_html_names: set[str] = set()
+# <ANALYSIS>
+FAMILIES = [
+    ("<slug>", <LOAD_RAW_DATA>),
+]
+FRAME = None
+for slug, raw in FAMILIES:
+    frame = raw.to_pandas() if hasattr(raw, "to_pandas") else raw
+    skrub.TableReport(raw, title=slug, verbose=0).write_html(
+        analysis / f"data_analysis_{slug}.html"
+    )
+    if FRAME is None and (TARGET is None or TARGET in frame.columns):
+        FRAME = frame
+# Figure and extra HTML saves from the human file, same paths.
+# </ANALYSIS>
+
+report_html_names = {f"data_analysis_{slug}.html" for slug, _raw in FAMILIES}
 table_rows: list[dict] = []
-target_frame = None
 
 for slug, raw in FAMILIES:
     frame = raw.to_pandas() if hasattr(raw, "to_pandas") else raw
-    html = analysis / f"data_analysis_{slug}.html"
-    report_html_names.add(html.name)
-    if not html.is_file():
-        skrub.TableReport(raw, title=slug, verbose=0).write_html(html)
     report = skrub.TableReport(
         raw, title=slug, verbose=0, plot_distributions=False
     )
@@ -52,14 +66,10 @@ for slug, raw in FAMILIES:
             "has_target": has_target,
         }
     )
-    if has_target and target_frame is None:
-        target_frame = frame
 
-if target_frame is None:
+if FRAME is None:
     _, raw0 = FAMILIES[0]
-    target_frame = raw0.to_pandas() if hasattr(raw0, "to_pandas") else raw0
-
-FRAME = target_frame
+    FRAME = raw0.to_pandas() if hasattr(raw0, "to_pandas") else raw0
 
 pngs = sorted(p.name for p in analysis.glob("*.png"))
 htmls = sorted(

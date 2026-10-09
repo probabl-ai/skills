@@ -16,12 +16,13 @@
 
 **Must do:**
 - Run `python -m skore_skills review consent --stem 01_baseline`.
-- On `audit`, load `audit-ml-pipeline` and `cells run`.
+- On `audit`, load `audit-ml-pipeline`. That skill runs
+  `materialize.py` once.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Open the Project or call `report.*` from this skill.
-- Skip `cells run`.
+- Skip `materialize.py`.
 - Write `journal/ideas/` before the digest exists.
 
 ---
@@ -32,8 +33,8 @@
 > Review.
 
 **Assumed workspace state:**
-- `review consent` returned `audit` and `cells run` produced the
-  digest.
+- `review consent` returned `audit` and `materialize.py` wrote
+  the digest.
 - `status.skills.audit-ml-pipeline` is `true`.
 - The digest has one `Issues:` line, code `SKD003`.
 - The design note named a gap this run did not test.
@@ -73,13 +74,13 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run `cells run`.
+- Run `materialize.py` or `cells run`.
 - Write any `journal/ideas/` file.
 - Write an Ideas row or any other `JOURNAL.md` edit.
 
 ---
 
-## CASE_04 — Existing digest refreshes files without cells run
+## CASE_04 — Existing digest refreshes files without materialize
 
 **User prompt:**
 > Review experiment 01_baseline.
@@ -97,7 +98,7 @@
 - Refresh `journal/ideas/` from the existing digest.
 - Keep that file's `Triage: discarded`.
 - Keep that Ideas row and its Status `discarded`.
-- Skip `cells run`.
+- Skip `materialize.py`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -125,7 +126,7 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run `cells run`.
+- Run `materialize.py` or `cells run`.
 - Load `manage-ml-backlog` record-outcome.
 
 ---

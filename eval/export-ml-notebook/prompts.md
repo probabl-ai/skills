@@ -2,7 +2,7 @@
 
 ---
 
-## CASE_01 — Convert EDA percent file
+## CASE_01 — Fill EDA percent file
 
 **User prompt:**
 > Give me an executed notebook of the EDA.
@@ -10,16 +10,18 @@
 **Assumed workspace state:**
 - `data_analysis/data_analysis.py` exists.
 - `policy.notebooks` is true.
-- `jupytext`, `nbclient`, and `ipywidgets` are installed.
+- `jupytext` and `nbformat` are installed.
 
 **Must do:**
-- Run `python -m skore_skills notebook convert data_analysis/data_analysis.py`.
+- Run `python -m skore_skills notebook fill data_analysis/data_analysis.py`.
+- Leave code-cell outputs empty. Do not start EDA from this skill.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Rewrite `data_analysis/data_analysis.py` from a `.ipynb`.
 - Run `git commit`.
-- Run `cells run` as a substitute for convert.
+- Run `notebook convert` or `cells run` on
+  `data_analysis/data_analysis.py`.
 - Pass `--html` unless the user asked for HTML or a site viewer.
 
 ---
@@ -35,17 +37,17 @@
 
 **Must do:**
 - Persist `notebooks true`. Do not AskUserQuestion.
-- Load `add-python-package` for `jupytext`, `nbclient`, and
-  `ipywidgets`, then convert.
+- Load `add-python-package` for `jupytext` and `nbformat`, then
+  fill.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Convert while the flag is still null or false.
+- Fill while the flag is still null or false.
 - Run `pixi add` / `uv add` from this skill.
 
 ---
 
-## CASE_03 — Convert without HTML does not rebuild site
+## CASE_03 — Fill without HTML does not rebuild site
 
 **User prompt:**
 > Convert data_analysis/data_analysis.py to a notebook.
@@ -56,7 +58,8 @@
 - `export-ml-site` is installed.
 
 **Must do:**
-- Convert the percent file without `--html`.
+- Fill `data_analysis/data_analysis.py` without `--html`. Leave
+  code-cell outputs empty.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -73,19 +76,21 @@
 **Assumed workspace state:**
 - `data_analysis/data_analysis.py` exists.
 - `policy.notebooks` is true.
-- `jupytext`, `nbclient`, and `ipywidgets` are installed.
+- `jupytext` and `nbformat` are installed.
 - `add-python-package` is installed.
 - `policy.site` is true.
 - `export-ml-site` is installed.
 
 **Must do:**
 - Load `add-python-package` for `nbconvert`.
-- Run `python -m skore_skills notebook convert data_analysis/data_analysis.py --html`.
+- Run `python -m skore_skills notebook fill data_analysis/data_analysis.py --html`.
+- Leave code-cell outputs empty.
 - Run `python -m skore_skills site build --if-stale`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run `cells run` as a substitute for convert.
+- Run `notebook convert` or `cells run` on
+  `data_analysis/data_analysis.py`.
 - Run `git end-turn`.
 
 ---
@@ -99,15 +104,15 @@
 - `policy.notebooks` is false.
 
 **Must do:**
-- Say the executed-notebooks gate is off and offer to turn it on.
+- Say notebooks are off and offer to turn them on.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Run `notebook convert` while the flag is false.
+- Run `notebook fill` or `notebook convert` while the flag is false.
 
 ---
 
-## CASE_06 — Audit digest and notebook share one execution
+## CASE_06 — Audit notebook is filled without a kernel
 
 **User prompt:**
 > Run the audit and make its notebook available.
@@ -117,11 +122,13 @@
 - `audit/01_baseline.py` exists.
 
 **Must do:**
-- Run `notebook convert audit/01_baseline.py --digest
-  scratch/audit/01_baseline/audit.md --html`.
+- Run `notebook fill audit/01_baseline.py --html`.
+- Leave code-cell outputs empty. The digest is
+  `scratch/audit/01_baseline/audit.md` from `materialize.py`,
+  not from this fill.
 
 **Must NOT do:**
-- Also run `cells run` or execute the audit script separately.
-- Write the digest to `audit/01_baseline.digest.md` or any path
-  other than `scratch/audit/01_baseline/audit.md`.
+- `notebook convert` or `cells run` `audit/01_baseline.py`.
+- Execute the audit script to fill the notebook.
+- Write the digest to `audit/01_baseline.digest.md`.
 - Change either recorded policy.

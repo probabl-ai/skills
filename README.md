@@ -151,7 +151,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 | [add-python-package](skills/add-python-package/SKILL.md) | Add a dependency through the project env manager, or ask the user when the environment is user-managed. |
 | [choose-python-library](skills/choose-python-library/SKILL.md) | Resolve a library choice and add the selected dependency. |
 | [plot-ml-figure](skills/plot-ml-figure/SKILL.md) | Pick pandas, seaborn, plotly, or matplotlib before writing figure code. |
-| [export-ml-notebook](skills/export-ml-notebook/SKILL.md) | Convert a jupytext percent file into an executed notebook. |
+| [export-ml-notebook](skills/export-ml-notebook/SKILL.md) | Write a jupytext percent file out as a notebook with empty outputs. |
 | [export-ml-site](skills/export-ml-site/SKILL.md) | Package workspace markdown and existing notebook HTML into an offline MkDocs site. |
 
 Canonical package policy lives in the CLI; print it with `python -m skore_skills env stack`. `choose-python-library` resolves competing libraries.

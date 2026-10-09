@@ -99,22 +99,26 @@ skill ids, `G-*` names, or the wrapper CLI.
 6. Write the call in `experiments/NN_*.py` only. See the call
    shapes below. `python -m skore_skills style` after the edit.
    The experiment ends at `report.checks.summarize()`,
-   `project.put`, and a bare `report`. Read notebook/site policy
-   before execution. When `policy.notebooks` is `true`, execute
-   once with `python -m skore_skills notebook convert
-   experiments/<stem>.py`, adding `--html` only when
-   `policy.site` is also `true`; do not separately run the
-   script. When notebooks is `null` or `false`, do not change
-   policy and use the composed-dev script execution.
-7. After `put` has stored the report, copy `templates/snapshot.py`
-   to `scratch/results/<stem>/snapshot.py` and run it. When
-   `policy.site` is `true` and `export-ml-site` is installed,
-   run `python -m skore_skills site build --if-stale` after the
-   snapshot and before audit/review or another user gate. This
-   exposes the completed evaluation notebook and result viewers
-   immediately. It does not replace the close-time build after
-   record-outcome. Then End of turn. Do not add snapshot writes
-   to the experiment file.
+   `project.put`, and a bare `report`. Do not execute this file.
+7. Copy `templates/materialize.py` to
+   `scratch/results/<stem>/materialize.py`. Substitute the
+   Project init. Replace the `<CALL>` block with the experiment
+   call, same arguments and order. Run that file once with the
+   composed-dev Python from `env verify`. It is the only
+   `skore.evaluate` and the only `project.put`. Read `id.txt`,
+   form the locator, and write `locator.txt`. When
+   `policy.notebooks` is `true`, run
+   `python -m skore_skills notebook fill experiments/<stem>.py`,
+   adding `--html` only when `policy.site` is also `true`. Do
+   not `notebook convert` the experiment, and do not run the
+   experiment file. When notebooks is `null` or `false`, do not
+   change policy and do not fill. When `policy.site` is `true`
+   and `export-ml-site` is installed, run
+   `python -m skore_skills site build --if-stale` after the
+   locator and before audit/review or another user gate. This
+   exposes the result viewers immediately. It does not replace
+   the close-time build after record-outcome. Then End of turn.
+   Do not add materialize writes to the experiment file.
 
 Every Python probe goes to `scratch/<ts>_<short>.py` and runs
 with the composed-dev Python from `env verify`. No inline
@@ -230,10 +234,12 @@ test is still required before the caller may flip status to
 `done`. Do not edit `JOURNAL.md` History or the design-note
 Status to `done` from this skill.
 
-`skore.evaluate(...)` and `project.put(...)` live only in
-`experiments/NN_*.py`. A scratch probe, an audit file, or a
-notebook that calls them duplicates the report under the same
-key. Read a stored report with `project.summarize()` then
+The human experiment file contains `skore.evaluate(...)` and
+`project.put(...)` and is not executed. The same call is copied
+into `scratch/results/<stem>/materialize.py`, which is the only
+run, so `project.put` happens once. An audit file, a scratch
+probe, or `notebook convert` on the experiment must not call
+them. Read a stored report with `project.summarize()` then
 `project.get(id)`. `get(key)` raises `KeyError` because `get`
 is by id. Do not re-run `evaluate` to paper over that.
 
@@ -242,14 +248,11 @@ when that skill is installed.
 
 ## After `put`
 
-`Project.put` returns `None`. Read
-`project.summarize().frame()`, take the newest row for the key,
-and form one locator. Copy `templates/snapshot.py` to
-`scratch/results/<stem>/snapshot.py` (gitignored). Substitute
-the Project init from `experiments/<stem>.py`, the report id,
-and that locator. Run the script with the composed-dev Python
-from `env verify`, before `loop locator` and `loop artifacts`.
-Do not put these writes in `experiments/<stem>.py`. Run
+`Project.put` returns `None`. `materialize.py` writes the newest
+id for the key to `scratch/results/<stem>/id.txt`. Form one
+locator from that id and write `locator.txt` next to it, before
+`loop locator` and `loop artifacts`. Do not put these writes in
+`experiments/<stem>.py`. Run
 `python -m skore_skills loop locator --stem <stem>` and paste
 JSON `locator` verbatim. Missing locator is
 `n/a — backend did not expose a locator`.
@@ -267,9 +270,10 @@ JSON `locator` verbatim. Missing locator is
   <run-id>`. Do not invent a browser link.
 
 The script writes `report._repr_html_()` to
-`scratch/results/<stem>/report.html` and `repr(report)` to
-`report.txt`. It regenerates the Method viewer from the stored
-learner: `report.estimator_` on `EstimatorReport`,
+`scratch/results/<stem>/report.html`, `repr(report)` to
+`report.txt`, `checks.html`, and `metrics.html`. It regenerates
+the Method viewer from the in-memory learner:
+`report.estimator_` on `EstimatorReport`,
 `report.reports_[0].estimator_` on `CrossValidationReport`.
 Confirm `eval` on `DataOp.skb.report` with `api get`.
 `learner.report` forwards it. When `eval` is a parameter, call
@@ -305,19 +309,16 @@ only on `skip`.
    `site build`, or `git end-turn` while `action` is `convert`.
    `not_evaluated` does not convert.
 2. On `convert`, run
-   `python -m skore_skills notebook convert <source>` for every
-   `sources` entry, with `--html` when `html` is true. Converting
-   only `audit/<stem>.py` is not the close. The unfitted-snapshot
-   ban does not apply: convert the experiment script even though
-   this turn wrote `skore.evaluate`. If `experiments/<stem>.py`
-   was in `sources`, re-run
-   `scratch/results/<stem>/snapshot.py` and
-   `python -m skore_skills loop locator --stem <stem>`. Re-run
-   step 1 until `action` is `skip`. Convert re-executes the
-   script. If convert fails because `ipywidgets` is missing,
-   load `add-python-package` for it (agent) and convert again.
-   Missing jupytext / nbclient / nbconvert → one line naming
-   `add-python-package`.
+   `python -m skore_skills notebook fill <source>` for every
+   `experiments/` or `audit/` entry, with `--html` when `html`
+   is true. Do not `notebook convert` those files. Fill does not
+   `put`. Re-run `materialize.py` first only when that human
+   call changed since the run that wrote the current artifacts.
+   Filling only `audit/<stem>.py` is not the close. The
+   unfitted-snapshot ban does not apply: fill the experiment
+   script even though it contains `skore.evaluate`. Re-run step
+   1 until `action` is `skip`. Missing jupytext / nbformat /
+   nbconvert → one line naming `add-python-package`.
 3. record-outcome, only once step 1 is `skip`, and before site
    build. If audit ran, pass its digest and G-AUDIT-FINDING into
    `manage-ml-backlog` when that skill is installed, with the
@@ -380,8 +381,8 @@ Pre-flight (evaluate-ml-pipeline):
       (or holdout / prefit, and the marker has no cv)
 - [ ] skore_mode is set (local | hub | mlflow)
 - [ ] evaluate consent is proceed, or the user answered Evaluate
-- [ ] Call site is experiments/NN_*.py
-- [ ] Snapshots are scratch/results/<stem>/snapshot.py
+- [ ] Call site is experiments/NN_*.py (not executed)
+- [ ] The one run is scratch/results/<stem>/materialize.py
       (not cells in the experiment file)
 - [ ] skore.evaluate omits splitter=
       (or splitter="prefit" and only the test table is passed)
@@ -400,5 +401,5 @@ Pre-flight (evaluate-ml-pipeline):
 - `references/custom-metrics.md` — a non-default metric via
   `with_scoring`.
 - `references/custom-checks.md` — a check the user asked for.
-- `templates/snapshot.py` — agent-only post-put snapshot. Copy
-  to `scratch/results/<stem>/snapshot.py`.
+- `templates/materialize.py` — the only evaluation run. Copy
+  to `scratch/results/<stem>/materialize.py`.

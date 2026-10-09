@@ -8,7 +8,7 @@ exactly: Select each one you want. Write nothing after that
 line. Only list items that
 apply and were **not** already in the user prompt. Picks:
 `add-python-package` for the extra lib (agent), append the matching
-cells, `style`, re-run `cells run`, refresh `facts.py`, then write
+cells, `style`, edit `<ANALYSIS>` to match, run `materialize.py` once, fill when notebooks are on, then write
 `data_analysis.md`. PNG unless the user asked for hover. Load
 `plot-ml-figure` if installed before figure cells. One
 figure-level call as the last expression of its own cell; table

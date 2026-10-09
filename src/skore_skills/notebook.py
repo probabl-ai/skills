@@ -1,4 +1,8 @@
-"""Convert jupytext percent ``# %%`` files into executed notebooks."""
+"""Turn jupytext percent ``# %%`` files into notebooks.
+
+``convert`` executes the source. ``fill`` writes the same notebook
+with empty outputs and does not start a kernel.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 MISSING = "jupytext and nbclient are required; add them with add-python-package"
+MISSING_FILL = "jupytext and nbformat are required; add them with add-python-package"
 MISSING_IPYWIDGETS = "ipywidgets is required; add it with add-python-package"
 MISSING_NBCONVERT = "nbconvert is required; add it with add-python-package"
 TEMPLATE_DIR = Path(__file__).with_name("site_assets")
@@ -16,10 +21,13 @@ INLINE_SETUP = "%matplotlib inline"
 try:
     import jupytext
     import nbformat
-    from nbclient import NotebookClient
 except ImportError:  # pragma: no cover - exercised by hiding modules in tests
     jupytext = None
     nbformat = None
+
+try:
+    from nbclient import NotebookClient
+except ImportError:  # pragma: no cover - exercised by hiding the module in tests
     NotebookClient = None
 
 try:
@@ -48,6 +56,18 @@ def _set_source_fingerprint(notebook: Any, fingerprint: str) -> None:
 
 def _value(item: Any, key: str, default: Any = None) -> Any:
     return getattr(item, key, item.get(key, default))
+
+
+def _clear_code_outputs(notebook: Any) -> None:
+    for cell in _cells(notebook):
+        if _value(cell, "cell_type", "code") != "code":
+            continue
+        if hasattr(cell, "outputs"):
+            cell.outputs = []
+            cell.execution_count = None
+            continue
+        cell["outputs"] = []
+        cell["execution_count"] = None
 
 
 def render_digest(src: Path, notebook: Any) -> str:
@@ -145,6 +165,50 @@ def convert(
     if digest is not None:
         digest.parent.mkdir(parents=True, exist_ok=True)
         digest.write_text(render_digest(src, notebook), encoding="utf-8")
+    return dest
+
+
+def fill(src: Path, out: Path | None = None, *, html: bool = False) -> Path:
+    """Read a percent-format ``.py`` and write an ``.ipynb`` with no outputs.
+
+    Does not start a kernel. Code cells are cleared so a source-only
+    notebook is what the site embeds.
+
+    Parameters
+    ----------
+    src : pathlib.Path
+        Jupytext percent-format source.
+    out : pathlib.Path, optional
+        Destination notebook. Defaults to the same stem next to ``src``.
+    html : bool, optional
+        When true, also write ``<stem>.nb.html`` next to ``src``.
+
+    Returns
+    -------
+    pathlib.Path
+        Path of the ``.ipynb`` written.
+
+    Raises
+    ------
+    ImportError
+        When jupytext, nbformat, or (if ``html``) nbconvert is not importable.
+    FileNotFoundError
+        When ``src`` is missing.
+    """
+    if jupytext is None or nbformat is None:
+        raise ImportError(MISSING_FILL)
+    assert jupytext is not None
+    assert nbformat is not None
+    if not src.is_file():
+        raise FileNotFoundError(f"notebook source not found: {src}")
+    dest = src.with_suffix(".ipynb") if out is None else out
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    notebook = jupytext.read(src)
+    _clear_code_outputs(notebook)
+    _set_source_fingerprint(notebook, source_fingerprint(src))
+    nbformat.write(notebook, dest)
+    if html:
+        to_html(dest, src.with_name(f"{src.stem}.nb.html"))
     return dest
 
 

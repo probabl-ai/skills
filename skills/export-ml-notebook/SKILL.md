@@ -1,9 +1,11 @@
 ---
 name: export-ml-notebook
 description: >
-  Convert a jupytext percent `# %%` Python file into an executed
-  `.ipynb` with cell outputs. Pass `--html` when the notebook
-  should also become a viewer on the site. Trigger on notebook,
+  Write a jupytext percent `# %%` Python file out as an `.ipynb`.
+  `data_analysis/`, `experiments/`, and `audit/` are filled with
+  empty outputs. Pass `--html` when that notebook should also
+  become a viewer on the site. Kernel `notebook convert` stays
+  for a source that is itself the execution. Trigger on notebook,
   ipynb, HTML, or executed-report requests, or when export-ml-project
   dispatches notebooks.
 ---
@@ -21,13 +23,15 @@ Tell the user the written `.ipynb` (and HTML viewer) paths. Do
 not quote `notebook convert`, `--html`, or `site build` as
 something they should run.
 
-While `policy.notebooks` is true, `explore-ml-data` converts the
+While `policy.notebooks` is true, `explore-ml-data` fills the
 analysis file it wrote. `model-ml-pipeline` and
-`evaluate-ml-pipeline` convert the experiment script and, when
-it exists, `audit/<stem>.py`. `audit-ml-pipeline` converts
-`audit/<stem>.py` only on a direct close. This skill owns
-on-demand conversions, other sources, and turning the flag on
-when it is `null` or false.
+`evaluate-ml-pipeline` fill the experiment script and, when it
+exists, `audit/<stem>.py`, with empty outputs.
+`audit-ml-pipeline` fills `audit/<stem>.py` only on a direct
+close. This skill owns on-demand fills, other sources, and
+turning the flag on when it is `null` or false. A data-analysis,
+experiment, or audit source uses `notebook fill`, not
+`notebook convert`.
 
 ## Workflow checkpoint execution
 
@@ -36,15 +40,17 @@ Only `policy.notebooks` `true` enables automatic notebook
 materialization; `null` and `false` keep the stage's non-notebook
 execution and do not change policy.
 
-When true, `notebook convert` is the stage's **one execution**,
-not a second export pass. Add `--html` only when `policy.site` is
-also true. Audit adds
-`--digest scratch/audit/<stem>/audit.md` so the same kernel run
-writes that digest and no other file. Do not pass
-`audit/<stem>.digest.md` or a path next to the `.py`. Do not
-also run `cells run` or run the script separately. A generated
-notebook records its source fingerprint; `loop notebooks`
-converts again only when the source or required HTML changed.
+When true, exploratory analysis uses `materialize.py` as its
+**one run**, then `notebook fill` writes the `.ipynb` with empty
+outputs. Add `--html` only when `policy.site` is also true. An
+experiment or audit file is the same: `notebook fill` writes the
+`.ipynb` with empty outputs, and `materialize.py` is the run that
+writes the digest and the HTML viewers. Do not `notebook convert`
+those files and do not `cells run` them. Kernel `notebook convert`
+stays only for a source that is itself the execution (the unfitted
+experiment snapshot). A generated notebook records its source
+fingerprint; `loop notebooks` fills or converts again only when
+the source or required HTML changed.
 
 ## Sequence
 
@@ -52,29 +58,26 @@ converts again only when the source or required HTML changed.
    `skills`.
 2. If `policy.notebooks` is `null`: persist
    `python -m skore_skills policy set notebooks true`. Do not
-   AskUserQuestion. Then load `add-python-package` for `jupytext`,
-   `nbclient`, and `ipywidgets` (agent) and continue.
-3. If `policy.notebooks` is false: say executed notebooks are
-   off; offer to turn them on. Do not convert until the policy
-   is true.
-4. Convert the requested percent file (default `data_analysis/data_analysis.py` when
+   AskUserQuestion. Then load `add-python-package` for `jupytext`
+   and `nbformat` (agent) and continue.
+3. If `policy.notebooks` is false: say notebooks are off; offer
+   to turn them on. Do not fill until the policy is true.
+4. Fill the requested percent file (default `data_analysis/data_analysis.py` when
    the user did not name one):
 
    ```bash
-   python -m skore_skills notebook convert data_analysis/data_analysis.py
+   python -m skore_skills notebook fill data_analysis/data_analysis.py
    ```
 
-   Convert injects `%matplotlib inline` for the kernel run so
-   seaborn / matplotlib last expressions emit `image/png`, then
-   strips that setup cell from the written notebook. Do not put
-   `%matplotlib inline` in the `.py` (`style` / ruff would reject
-   it).
+   Fill does not execute the file and leaves code-cell outputs
+   empty. It needs jupytext and nbformat, not nbclient,
+   ipywidgets, or IPython. Do not start EDA, an evaluation, or
+   an audit from this skill to produce those outputs.
+   `experiments/<stem>.py` and `audit/<stem>.py` are filled the
+   same way. Missing `jupytext` / `nbformat` / `nbconvert` stays
+   a one-line skip.
 
-   If convert fails because `ipywidgets` is missing, load
-   `add-python-package` for it (agent) and convert again. Missing
-   `jupytext` / `nbclient` / `nbconvert` stays a one-line skip.
-
-   If the user wants the executed notebook on the site, load
+   If the user wants the notebook on the site, load
    `add-python-package` for `nbconvert` (agent) and pass `--html`
    (writes a self-contained `<stem>.nb.html` next to the `.py`).
    The site embeds that file in the associated exploratory data
@@ -84,28 +87,37 @@ converts again only when the source or required HTML changed.
    Optional `--out path.ipynb`. Keep `*.ipynb` gitignored unless
    the user asks `setup-git` to track them.
 
-   Convert-only requests (executed notebook / ipynb / convert,
-   no HTML or site viewer): run **only** that `notebook convert`
-   line, with no `--html`. Tell the user the written `.ipynb`
-   path. Do not mention `--html` or `site build` as an optional
-   aside.
+   Fill-only requests (notebook / ipynb / convert, no HTML or
+   site viewer): run **only** that `notebook fill` line, with no
+   `--html`. Tell the user the written `.ipynb` path. Do not
+   mention `--html` or `site build` as an optional aside.
+
+   Kernel `notebook convert` is only for a source that is itself
+   the execution: the unfitted experiment snapshot, before
+   `skore.evaluate` exists. Convert injects `%matplotlib inline`
+   for that kernel run so seaborn / matplotlib last expressions
+   emit `image/png`, then strips that setup cell from the written
+   notebook. Do not put `%matplotlib inline` in the `.py`
+   (`style` / ruff would reject it). If that convert fails
+   because `ipywidgets` is missing, load `add-python-package`
+   for it (agent) and convert again.
 5.    After `--html`, if `policy.site` is true, `export-ml-site`
    is installed, run `python -m skore_skills site build --if-stale` so the
    viewer is packaged. Run `--html` and `site build` **only**
-   when the user asked for HTML or a site viewer. Convert
+   when the user asked for HTML or a site viewer. Fill
    without `--html` does not rebuild the site. Skip in one line
    otherwise. If `site build` errors with `mkdocs-material is
    required`, load `add-python-package` for `mkdocs-material`
    (agent) and build once more. Do not `pixi add` / `uv add`.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the
-   convert. Point the user at the HTML viewer / `report.html`,
+   fill. Point the user at the HTML viewer / `report.html`,
    not the CLI.
 
 ## Stop conditions
 
 - Do not `git commit` or `git end-turn`.
-- Do not run `cells run` as a substitute for convert.
+- Do not run `cells run` as a substitute for fill.
 - Do not `pixi add` / `uv add`; load `add-python-package`.
 - Missing skill or missing source → one-line skip.
 - Do not name `--html` or `python -m skore_skills site build`

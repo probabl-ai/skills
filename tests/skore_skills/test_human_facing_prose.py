@@ -32,8 +32,6 @@ BANNED = (
     ),
 )
 
-EXCLUDE_NAMES = frozenset({"facts.py"})
-
 
 def _template_paths() -> list[Path]:
     paths = [
@@ -45,9 +43,7 @@ def _template_paths() -> list[Path]:
     )
     for folder in sorted((REPO / "skills").glob("*/templates")):
         paths.extend(
-            path
-            for path in sorted(folder.glob("*"))
-            if path.suffix in {".py", ".md"} and path.name not in EXCLUDE_NAMES
+            path for path in sorted(folder.glob("*")) if path.suffix in {".py", ".md"}
         )
     return paths
 

@@ -80,7 +80,7 @@ def cells_run(src: Path, dst: Path | None) -> None:
 
 @cli.group("notebook")
 def notebook_group() -> None:
-    """Convert percent-format ``# %%`` files into executed notebooks."""
+    """Write notebooks from percent-format ``# %%`` files."""
 
 
 @notebook_group.command("convert")
@@ -116,6 +116,37 @@ def notebook_convert(
     _reexec_library_command(forwarded)
     try:
         dest = convert(src, out, html=html, digest=digest)
+    except (ImportError, FileNotFoundError, OSError) as exc:
+        raise click.ClickException(str(exc)) from exc
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(str(dest))
+
+
+@notebook_group.command("fill")
+@click.argument("src", type=click.Path(dir_okay=False, path_type=Path))
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="Destination .ipynb (default: same stem next to SRC).",
+)
+@click.option(
+    "--html",
+    is_flag=True,
+    help="Also write <stem>.nb.html next to SRC.",
+)
+def notebook_fill(src: Path, out: Path | None, html: bool) -> None:
+    """Write an .ipynb with empty outputs. Does not execute SRC."""
+    from skore_skills.notebook import fill
+
+    forwarded = ["notebook", "fill", os.fspath(src)]
+    if out is not None:
+        forwarded.extend(["--out", os.fspath(out)])
+    if html:
+        forwarded.append("--html")
+    _reexec_library_command(forwarded)
+    try:
+        dest = fill(src, out, html=html)
     except (ImportError, FileNotFoundError, OSError) as exc:
         raise click.ClickException(str(exc)) from exc
     except Exception as exc:

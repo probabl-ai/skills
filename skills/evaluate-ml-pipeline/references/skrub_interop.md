@@ -286,54 +286,15 @@ project.put("01_baseline", report)
 report
 ```
 
-Agent snapshot, not a notebook cell. Copy
-`templates/snapshot.py` to `scratch/results/01_baseline/snapshot.py`
-and run it after `put` has stored the report:
-
-```python
-import inspect
-
-import skore
-from sklearn.utils import estimator_html_repr
-
-from load_forecast import PROJECT_ROOT
-
-STEM = "01_baseline"
-REPORT_ID = "<id>"
-LOCATOR = "local workspace: [reports/](../reports/) · id: <id>"
-
-project = skore.Project(
-    name="load-forecast",
-    mode="local",
-    workspace=str(PROJECT_ROOT / "reports"),
-)
-report = project.get(REPORT_ID)
-results = PROJECT_ROOT / "scratch" / "results" / STEM
-results.mkdir(parents=True, exist_ok=True)
-(results / "report.html").write_text(report._repr_html_(), encoding="utf-8")
-(results / "report.txt").write_text(repr(report) + "\n", encoding="utf-8")
-(results / "locator.txt").write_text(LOCATOR + "\n", encoding="utf-8")
-learner = report.reports_[0].estimator_
-# Confirm `eval` on `DataOp.skb.report` with `api get`.
-# `learner.report` forwards it. `eval=False` does not fit.
-# Do not call `full_report` or `report` without `eval=False`.
-# If `eval` is absent, write `pipeline.html` instead.
-data_op = getattr(getattr(learner, "data_op", None), "skb", None)
-method = getattr(data_op, "report", None)
-if callable(method) and "eval" in inspect.signature(method).parameters:
-    learner.report(
-        eval=False,
-        open=False,
-        overwrite=True,
-        output_dir=results / "pipeline",
-    )
-else:
-    render = getattr(learner, "_repr_html_", None)
-    (results / "pipeline.html").write_text(
-        render() if callable(render) else estimator_html_repr(learner),
-        encoding="utf-8",
-    )
-```
+The agent does not run that file. Copy `templates/materialize.py`
+to `scratch/results/01_baseline/materialize.py`, put the same
+`skore.evaluate` / `checks.summarize()` / `project.put` in the
+`<CALL>` block, and run that file once. The tail writes
+`report.html`, `report.txt`, `checks.html`, `metrics.html`,
+`id.txt`, and the Method viewer (`pipeline/` with `eval=False`,
+or `pipeline.html`). Write `locator.txt` from `id.txt`. When
+notebooks are on, `notebook fill` the experiment with empty
+outputs. Do not `notebook convert` it.
 
 Note the clean separation:
 
@@ -344,9 +305,9 @@ Note the clean separation:
   bind the source var at fit/CV time.
 - **No `splitter=`.** The locked `cv` is already on the learner.
   See `evaluate-ml-pipeline/references/metadata-routing.md`.
-- **No agent-only `print` calls or snapshot writes** — inspection
+- **No agent-only `print` calls or HTML writes** — inspection
   and the HTML / locator files are the agent's scratch problem
-  (`scratch/results/<stem>/snapshot.py`; see
+  (`scratch/results/<stem>/materialize.py`; see
   `python -m skore_skills api get` § "`scratch/` conventions"),
   not the experiment script. `report.checks.summarize()` runs
   before `project.put` so the stored report holds the check

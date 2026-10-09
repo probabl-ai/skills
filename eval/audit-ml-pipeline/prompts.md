@@ -14,13 +14,15 @@
 
 **Must do:**
 - Run `python -m skore_skills review consent --stem <stem>` before
-  the first `cells run`.
-- On `audit`, write `audit/<stem>.py` and `cells run`.
+  the first `materialize.py` run.
+- On `audit`, write `audit/<stem>.py` and run
+  `scratch/audit/<stem>/materialize.py` once. Do not execute
+  `audit/<stem>.py`.
 - Confirm the report with `project.summarize()` and load it with
   `project.get(id)`.
 - Render checks and metrics into the audit digest.
-- Copy `templates/viewers.py` to `scratch/audit/<stem>/viewers.py`
-  and run it. It writes
+- Copy `templates/materialize.py` to
+  `scratch/audit/<stem>/materialize.py` and run it. It writes
   `scratch/results/<stem>/{report,checks,metrics}.html`. Leave
   the bare Display last on checks in `audit/<stem>.py`. Metrics
   last is `summarize().frame(verbose_name=True, flat_index=False)`,
@@ -48,7 +50,7 @@
   recipes) into `audit/<stem>.py` markdown cells or `#` comments.
 - Put snapshot `write_text` calls or the `help()` loop in
   `audit/<stem>.py`. Those belong in
-  `scratch/audit/<stem>/viewers.py`.
+  `scratch/audit/<stem>/materialize.py`.
 
 ---
 
@@ -63,7 +65,8 @@
 - The report exists and smoke is green.
 
 **Must do:**
-- Run `cells run` for the re-audit.
+- Re-run `scratch/audit/<stem>/materialize.py` for the re-audit.
+  Do not execute `audit/<stem>.py`.
 - Do not run the direct close before Close audit.
 
 **Must NOT do:**
@@ -84,7 +87,7 @@
 - `status.setup.pending` is empty.
 - `model-ml-pipeline` dispatched `review-ml-experiment`, which
   loaded this audit.
-- `cells run` already produced the digest.
+- `materialize.py` already wrote the digest.
 - The user picked Close audit at the post-audit gate.
 - Normalized locator is
   `local workspace: [reports/](../reports/) · id: local-report-id`.
@@ -96,10 +99,10 @@
 - State that the dispatcher owns record-outcome, the notebook
   gate, site, and git close.
 - Tell the caller to run `python -m skore_skills loop notebooks
-  --stem <stem>` and obey `convert` before record-outcome, then
-  the caller's `git end-turn` (`--stage implement` from model,
-  `--stage evaluate` from evaluate). Naming `notebook convert`
-  is not that close.
+  --stem <stem>` and obey `convert` with `notebook fill` before
+  record-outcome, then the caller's `git end-turn` (`--stage
+  implement` from model, `--stage evaluate` from evaluate).
+  Naming `notebook fill` is not that close.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -110,8 +113,8 @@
 - Load `triage-ml-task` from this skill.
 - Dispatch `manage-ml-backlog` from this skill.
 - Run `loop notebooks` or `notebook convert` here.
-- Treat naming `notebook convert` as finishing the close.
-- Treat the close as finished after converting only
+- Treat naming `notebook fill` as finishing the close.
+- Treat the close as finished after filling only
   `audit/<stem>.py`.
 - Add `<!-- results-embed: audit -->`.
 
@@ -162,17 +165,16 @@
   a remembered Display catalog.
 - Confirm the selected accessor with `api get`, append it below
   `## Core audit complete` on the same `audit/<stem>.py` as a bare
-  Display, write `scratch/results/<stem>/<slug>.html` from
-  `viewers.py` only, run style, then execute once with
-  `notebook convert audit/<stem>.py --digest
-  scratch/audit/<stem>/audit.md --html`, and re-run `viewers.py`.
+  Display, append it to `EXTRA` in `materialize.py`, run style,
+  re-run `materialize.py` once, then
+  `notebook fill audit/<stem>.py --html`.
 - Recompute G-AUDIT-FINDING with `audit finding --stem <stem>`.
 - Run `site build --if-stale`, then present the same gate again.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Guess an accessor or show unavailable disabled choices.
-- Run `cells run` in addition to notebook convert.
+- Run `cells run` or `notebook convert` on `audit/<stem>.py`.
 - Run git end-turn, record-outcome, or return to the dispatcher
   before Close audit.
 - Call `evaluate` or `put`.

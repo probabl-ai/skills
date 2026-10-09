@@ -2,8 +2,9 @@
 name: explore-ml-data
 description: >
   Owns data understanding before any model is designed. Place
-  `data_analysis/data_analysis.py`, execute it once, write
-  `data_analysis.md` and JOURNAL § Data understanding. Never
+  `data_analysis/data_analysis.py` and do not execute it. Run
+  `materialize.py` once, write `data_analysis.md` and JOURNAL
+  § Data understanding. Never
   design the model, edit `src/<pkg>/`, or modify raw data files.
 
   TRIGGER when the user asks to explore, profile, or understand
@@ -49,6 +50,7 @@ in this skill. `style` is ruff only.
 | `data_analysis/*.png` | Human — figures for implications, never glance |
 | `data_analysis/<slug>.html` | Human — Plotly (or other) HTML, iframe in implications |
 | `data_analysis/data_analysis.md` | Human + later modelling — TableReport iframes, implications |
+| `scratch/data_analysis/materialize.py` | Agent — the only run; gitignored |
 | `scratch/data_analysis/<slug>.json` | Agent — `TableReport.json()` per family; gitignored |
 | `scratch/data_analysis/extras.json` | Agent — `tables[]`, target, leakage, png and html paths |
 | JOURNAL § Data understanding | Index: status, 2–4 line summary, link |
@@ -67,7 +69,7 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 |---|---|
 | First EDA (triage or free-text) | → write md; then the five-option continuation board |
 | Continuation pick | → pre-defined option, query, automatic exploration, or describe a plot; no end-turn yet |
-| Close this stage | → convert / site / git end-turn / `triage-ml-task` if installed |
+| Close this stage | → fill / site / git end-turn / `triage-ml-task` if installed |
 | Methodology concern while EDA is done | → skip G-DATA-ANALYSIS; Keep exploring § Automatic exploration (named concern skips the canned survey) |
 | Changed data source or "also plot X" | → overwrite `data_analysis/data_analysis.*`, refresh JOURNAL |
 
@@ -109,9 +111,6 @@ Details: `references/cell_anatomy.md`. Extra recipes:
   while EDA is done still skips this gate. Do not run `site
   build` on skip. The unfitted snapshot build in
   `build-ml-pipeline` still runs before Evaluate.
-- **IPython on the run path.** Missing → `add-python-package` for
-  `ipython` (`env route` agent). Decline → skip path. Do not
-  `pixi add` / fabricate output.
 - **G-TABULAR before `data_analysis/data_analysis.py`.**
   `status.policy.tabular`; else `choose-python-library` (recommend
   pandas) then `add-python-package` for that lib **and** `skrub`,
@@ -177,12 +176,12 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 - [ ] G-TABULAR + add frame lib + skrub + matplotlib + seaborn
 - [ ] Target: inferred | AskUserQuestion | none
 - [ ] Families: one file | AskUserQuestion grouping
-- [ ] IPython available or add-python-package
 - [ ] Load plot-ml-figure if installed; place
       data_analysis/data_analysis.py from the template (edit to
-      the live path); one execution matching notebook policy
-- [ ] scratch/data_analysis/facts.py → <slug>.json per family
-      + extras.json
+      the live path); do not execute it
+- [ ] scratch/data_analysis/materialize.py once → HTML, figures,
+      <slug>.json per family, extras.json
+- [ ] notebook fill when policy.notebooks is true
 - [ ] Author data_analysis.md + JOURNAL
 - [ ] Preview `site build` if `policy.site` (skip on G-DATA-ANALYSIS skip)
 - [ ] AskUserQuestion five options, including Close (skip if user
@@ -194,9 +193,9 @@ evidence. End of turn only after Close.
 
 ## Before execution
 
-After G-DATA-ANALYSIS, G-TABULAR, target, families, and IPython
-are resolved, emit 1–3 natural sentences immediately before the
-first notebook write / execution. Say that this is **local
+After G-DATA-ANALYSIS, G-TABULAR, target, and families are
+resolved, emit 1–3 natural sentences immediately before the
+first write. Say that this is **local
 computation**: it profiles the confirmed full table family or
 families, runs duplicate / target / bivariate / leakage analyses
 that apply, and writes `data_analysis/` HTML / figures plus
@@ -207,7 +206,7 @@ Describe cost from facts, not guesses. TableReport and requested
 plots scale with table size and number of families; unless a
 measured duration is already available, say timing depends on
 those inputs and do not invent minutes. Emit this preview once,
-not before every cell command; refresh it only when a newly
+not before every edit; refresh it only when a newly
 selected extra materially changes the work.
 
 Automatic exploration / a methodology discussion is **LLM
@@ -241,21 +240,29 @@ not write or execute the notebook.
    datetime loops, or “skip this cell”. Load `plot-ml-figure`
    if installed **before** writing figure cells (including this
    first write). Markdown is about **this** analysis.
-   `python -m skore_skills style` after the write.
-2. Read `status.policy.notebooks` and `status.policy.site`.
-   When notebooks is `true`, run
-   `python -m skore_skills notebook convert
-   data_analysis/data_analysis.py`, adding `--html` only when
-   site is also `true`. This is the one execution and writes the
-   notebook plus the analysis HTML and PNGs; do not also run
-   `cells run`. When notebooks is `null` or `false`, do not
-   change policy: run `python -m skore_skills cells run
-   data_analysis/data_analysis.py` instead. A useless TableReport
-   `repr` in the digest is expected on that path.
-3. Copy `templates/facts.py` → `scratch/data_analysis/facts.py`
-   with the same families and target; run it; read
-   `scratch/data_analysis/<slug>.json` (each family) and
+   `python -m skore_skills style` after the write. Do not
+   execute this file.
+2. Copy `templates/materialize.py` to
+   `scratch/data_analysis/materialize.py`. Substitute `<pkg>`,
+   `<TARGET>`, `<TASK>`, and the `<ANALYSIS>` block: the same
+   loads, `TableReport.write_html` calls, and figure or HTML
+   saves as the human file. One load per family. Bind
+   `FAMILIES` as `(slug, raw)` and `FRAME` to the target
+   family's pandas frame. Leave the tail. Run that file once.
+   It writes the TableReport HTML, figures, `<slug>.json`, and
+   `extras.json`. Do not execute
+   `data_analysis/data_analysis.py`. Do not `notebook convert`
+   it and do not `cells run` it. Read `<slug>.json` and
    `extras.json`.
+3. Read `status.policy.notebooks` and `status.policy.site`.
+   When notebooks is `true`, run
+   `python -m skore_skills notebook fill
+   data_analysis/data_analysis.py`, adding `--html` only when
+   site is also `true`. Fill does not execute the file. It
+   needs jupytext and nbformat, not nbclient, ipywidgets, or
+   IPython. When notebooks is `null` or `false`, do not change
+   policy and do not fill. `materialize.py` is still the only
+   run.
 4. Write `data_analysis/data_analysis.md` from
    `templates/data_analysis.md`: glance (one iframe per family
    and nothing else), modelling implications (include
@@ -275,7 +282,7 @@ not write or execute the notebook.
    target balance/skew, one or two findings that shape modelling)
    and Report
    `[data_analysis/data_analysis.md](../data_analysis/data_analysis.md)`.
-   Skip path: `eda stamp --status skipped` only. Do not convert or
+   Skip path: `eda stamp --status skipped` only. Do not fill or
    `git end-turn` on skip.
 6. **Continuation board** — unless the user already closed
    the turn (“EDA is done”, “close the turn”): if `policy.site`
@@ -289,7 +296,7 @@ not write or execute the notebook.
    Link
    `data_analysis/data_analysis.md` plus `report.html` and
    `html/data_analysis.html` when the build ran. Do not
-   `notebook convert` or `git end-turn` on this preview. Then
+   `notebook fill` or `git end-turn` on this preview. Then
    **AskUserQuestion** one pick. None is recommended or
    preselected. After the first md, always ask (including
    when triage sent you here). Do not say “extra-analyses” or
@@ -315,7 +322,8 @@ those cells in step 1 and do not re-ask that extra.
 Import failures → `add-python-package`, do not work around.
 
 Refresh (already `done`, user asks for more plots): edit the
-`.py`, re-run steps 2–5, then step 6. Do not re-ask
+human file and the `<ANALYSIS>` block, run `materialize.py`
+once, fill when notebooks are on, then steps 4–6. Do not re-ask
 G-DATA-ANALYSIS.
 
 Methodology concern while `status.data_analysis` is present
@@ -333,8 +341,9 @@ then leave the figure/grid as the cell output.
 
 ## Keep exploring
 
-No separate export pass and no `git end-turn`; the policy-matched
-one execution may update the notebook. Do not run a **second**
+No separate export pass and no `git end-turn`. Editing the human
+file also edits `<ANALYSIS>`, then `materialize.py` runs once
+and fill runs when notebooks are on. Do not run a **second**
 site build until the md is rewritten. Do not say “extra-analyses”
 or “standard extra analysis” **anywhere this turn** (chat,
 checklists, or the board). The file
@@ -391,9 +400,10 @@ board for this pick.
    column.
 4. **Describe a plot** — load `plot-ml-figure` if installed;
    append cells.
-5. Picks that change the `.py`: `style`, then repeat run-path
-   step 2 so notebook-enabled work executes exactly once; refresh
-   facts, rewrite `data_analysis.md` from JSON/PNGs/HTML
+5. Picks that change the `.py`: `style`, edit the `<ANALYSIS>`
+   block to match, run `materialize.py` once, then `notebook fill`
+   when notebooks is `true` (`--html` only when site is also
+   true). Rewrite `data_analysis.md` from JSON/PNGs/HTML
    (implications from **results**). Then preview `site build` if
    `policy.site` and re-ask the five-option board (run path
    step 6). Do not invent domain checklists.
@@ -442,20 +452,19 @@ commands in that message.
    G-REPORT-LOCATOR / G-AUDIT-FINDING).
 
 This skill owns the close. Keep exploring stays a 1–2 sentence
-summary (optional md / site link); it never reaches convert /
+summary (optional md / site link); it never reaches fill /
 `git end-turn`.
 
 If `policy.notebooks` is true, `export-ml-notebook` is installed,
 and this run did not already write a current notebook, run
-`python -m skore_skills notebook convert
+`python -m skore_skills notebook fill
 data_analysis/data_analysis.py`, with `--html` when `policy.site`
-is also true. A notebook produced by run-path step 2 is current:
-do not execute it again merely because the user picked Close.
-Skip in one line otherwise. If convert fails
-because `ipywidgets` is missing, load `add-python-package` for
-it (agent) and convert again. Missing jupytext / nbclient /
-nbconvert → one-line skip naming `add-python-package`;
-do not fail the turn, do not `pixi add`.
+is also true. A notebook produced by run-path step 3 is current:
+do not fill it again merely because the user picked Close.
+Do not re-run `materialize.py` when the artifacts are already
+from this human file. Skip in one line otherwise. Missing
+jupytext / nbformat / nbconvert → one-line skip naming
+`add-python-package`; do not fail the turn, do not `pixi add`.
 
 Then, if `policy.site` is true, `export-ml-site` is installed, run
 `python -m skore_skills site build --if-stale` after durable files are on

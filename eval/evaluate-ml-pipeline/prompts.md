@@ -53,17 +53,20 @@ violated.
 - Run `python -m skore_skills git end-turn --stage evaluate` at
   the end of the turn.
 - If that command returns `invoke`, load `persist-ml-git`.
-- Copy `templates/snapshot.py` to
-  `scratch/results/01_baseline/snapshot.py` and run it after
-  `put`. It writes `report.html` from `report._repr_html_()`,
-  `report.txt` from `repr(report)`, and `locator.txt` with the
-  normalized G-REPORT-LOCATOR. The experiment file ends at
+- Copy `templates/materialize.py` to
+  `scratch/results/01_baseline/materialize.py` and run it once.
+  The `<CALL>` block is the experiment's `skore.evaluate`,
+  `report.checks.summarize()`, and `project.put`. Do not execute
+  `experiments/01_baseline.py`. The tail writes `report.html`
+  from `report._repr_html_()`, `report.txt` from `repr(report)`,
+  `checks.html`, `metrics.html`, and `id.txt`. Write
+  `locator.txt` from that id. The experiment file ends at
   `report.checks.summarize()`, `project.put`, and a bare
   `report`.
-- When `DataOp.skb.report` accepts `eval`, `snapshot.py` writes
+- When `DataOp.skb.report` accepts `eval`, `materialize.py` writes
   `scratch/results/01_baseline/pipeline/` with
   `learner.report(eval=False, open=False, overwrite=True, output_dir=...)`
-  on the stored learner (`reports_[0].estimator_` on a CV report).
+  on the in-memory learner (`reports_[0].estimator_` on a CV report).
   No `environment`. That does not fit. If `eval` is absent, write
   `pipeline.html` from `_repr_html_` or `estimator_html_repr`.
 - Run `python -m skore_skills loop locator --stem 01_baseline` and
@@ -85,7 +88,8 @@ violated.
 - Put `write_text` of `report.html`, `report.txt`, `locator.txt`,
   or `pipeline.html`, or `learner.report(...)`, in
   `experiments/01_baseline.py`. Those writes belong in
-  `scratch/results/01_baseline/snapshot.py`.
+  `scratch/results/01_baseline/materialize.py`.
+- Execute `experiments/01_baseline.py` or `notebook convert` it.
 - Call `learner.report` or `full_report` without `eval=False`.
 
 ---
@@ -246,7 +250,7 @@ violated.
 
 ---
 
-## CASE_07 — `skore.evaluate` / `project.put` only in experiment script
+## CASE_07 — A scratch probe must not re-run evaluate
 
 **User prompt:**
 > Add a scratch probe that re-runs `skore.evaluate(learner, ...)` to
@@ -260,19 +264,21 @@ violated.
 
 **Must do:**
 - Refuse the scratch re-run.
-- Cite the Stop condition: "`skore.evaluate(...)` and
-  `project.put(...)` live only in `experiments/NN_*.py`."
-- Cite that re-running from scratch lands a duplicate row under
-  the same `key` in `project.summarize()`, polluting the Project's
-  report index.
-- Recommend using `project.summarize()` + `project.get(id)` for
-  read-only inspection, OR re-running the experiment script if a
-  fresh report is genuinely needed.
+- Cite that the human experiment file contains
+  `skore.evaluate(...)` and `project.put(...)` and is not
+  executed. The only run is
+  `scratch/results/<stem>/materialize.py`, so `project.put`
+  happens once.
+- Recommend `project.summarize()` then `project.get(id)` to read
+  a stored report. `get(key)` raises `KeyError`.
+- If a fresh report is needed, update that human call and re-run
+  `materialize.py` once. Do not execute the experiment file.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Approve the scratch probe with `evaluate` + `put`.
-- Treat scratch as a producer of reports.
+- Approve a scratch probe that calls `skore.evaluate` and
+  `project.put`.
+- Say the experiment file is executed to store the report.
 
 ---
 
@@ -407,12 +413,12 @@ violated.
   notebooks`. A placeholder stem is enough. The notebook gate
   continues only on `skip`. `record` is the artifacts action,
   not this gate.
-- On `convert`, name `notebook convert` for every `sources`
-  entry with `--html`, then snapshot and `loop locator` when
-  the experiment script was converted, before record-outcome.
+- On `convert`, name `notebook fill` for every `experiments/`
+  or `audit/` source with `--html`. Do not `notebook convert`
+  those files. Fill does not `put`.
 - Name record-outcome next, after the notebook gate is `skip`,
   since no audit ran this turn, and hand it that locator.
-- Name `python -m skore_skills site build` after record-outcome.
+- Name `python -m skore_skills site build --if-stale` after record-outcome.
 - Name `python -m skore_skills git end-turn --stage evaluate`
   last. If it returns `invoke`, name `persist-ml-git`.
 
@@ -445,15 +451,16 @@ violated.
   `n/a — backend did not expose a locator`) in the return to the
   dispatcher.
 - Return to `model-ml-pipeline` after the evaluation.
-- State that the dispatcher owns record-outcome / convert / site /
-  `git end-turn`.
+- State that the dispatcher owns record-outcome, the close-time
+  notebook gate, and `git end-turn`.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Drop the locator because the dispatcher owns convert.
 - Write the User-facing close (narrative + Open these) here;
   the dispatcher owns it.
-- Run `notebook convert`, `site build`, or `git end-turn` here.
+- Run `notebook convert`, the close-time `loop notebooks`, or
+  `git end-turn` here.
 - Load `manage-ml-backlog` here.
 - Load `triage-ml-task` directly.
 
@@ -588,28 +595,27 @@ violated.
   not fail it. `loop notebooks` continues only on `skip`.
   `record` is `loop artifacts`, not this gate.
 - Name `python -m skore_skills loop notebooks --stem <stem>`
-  before record-outcome. On `convert`, name `notebook convert`
-  on every `sources` entry (`--html` when `html` is true),
-  including `experiments/<stem>.py` and `audit/<stem>.py` when
-  that file exists. Do not add `<!-- results-embed: audit -->`.
-- If the experiment script was converted, name snapshot and
-  `loop locator` before record-outcome.
+  before record-outcome. On `convert`, name `notebook fill`
+  on every `experiments/` or `audit/` source (`--html` when
+  `html` is true), including `experiments/<stem>.py` and
+  `audit/<stem>.py` when that file exists. Do not `notebook
+  convert` those files. Do not add `<!-- results-embed: audit -->`.
 - Name audit when available, then record-outcome with that
   locator, then the close-time `site build --if-stale`, then
-  `git end-turn --stage evaluate`. A post-snapshot
-  `site build --if-stale` may also run earlier so the evaluation
-  notebook is visible; it does not replace this close build.
+  `git end-turn --stage evaluate`. A post-materialize
+  `site build --if-stale` may also run earlier so the result
+  viewers are visible; it does not replace this close build.
 - If git returns `invoke`, name `persist-ml-git` and stop,
   because it returns to triage.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Record before the locator exists.
-- End the turn, or convert only the audit file, while `action`
+- End the turn, or fill only the audit file, while `action`
   is `convert`.
-- Skip `notebook convert` on `experiments/<stem>.py` because the
-  script already contains `skore.evaluate`.
-- Treat the post-snapshot preview as the finished close, or
+- `notebook convert` `experiments/<stem>.py` because the script
+  contains `skore.evaluate`.
+- Treat the post-materialize preview as the finished close, or
   skip the close-time `site build --if-stale` after
   record-outcome.
 - Load triage a second time after `persist-ml-git`.
@@ -916,13 +922,16 @@ violated.
 - Notebook and site export skills are installed.
 
 **Must do:**
-- Execute with `python -m skore_skills notebook convert
+- Run `scratch/results/01_baseline/materialize.py` once. Do not
+  execute `experiments/01_baseline.py`.
+- Run `python -m skore_skills notebook fill
   experiments/01_baseline.py --html`.
-- After the snapshot, run
+- After materialize and the locator, run
   `python -m skore_skills site build --if-stale` before the next
   review or user gate.
 
 **Must NOT do:**
-- Run the experiment script separately before notebook convert.
+- Run `notebook convert` on the experiment script.
+- `project.put` a second time to build the notebook.
 - Wait for final close to expose the completed evaluation.
 - Enable either policy when its value is null or false.

@@ -5,11 +5,12 @@ shell setup, environment fixes, per-cell capture. Cross-referenced
 from SKILL.md § "Execution contract". Prefer `--help` and the
 package docstring; this note is leftover IPython / Agg detail.
 
-The CLI is a **generic** jupytext cell runner in `skore_skills.cells`,
-shared with `explore-ml-data` (which executes `data_analysis/data_analysis.py` the same
-way). It is content-agnostic — it knows nothing about skore reports
-or TableReports. Keep it that way: any change must serve both
-callers, never hard-code audit-specific behaviour.
+The CLI is a **generic** jupytext cell runner in `skore_skills.cells`.
+`explore-ml-data` does not execute `data_analysis/data_analysis.py`
+with `cells run`; `scratch/data_analysis/materialize.py` is that run.
+It is content-agnostic — it knows nothing about skore reports
+or TableReports. Keep it that way: never hard-code audit-specific
+behaviour.
 
 Load when:
 

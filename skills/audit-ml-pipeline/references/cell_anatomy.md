@@ -7,8 +7,8 @@ contract — overview".
 
 The template core is task-agnostic: persisted-report locator +
 checks summary + metrics summary. `help()` trees are not a
-notebook cell. `templates/viewers.py`, copied to
-`scratch/audit/<stem>/viewers.py`, writes them to
+notebook cell. `templates/materialize.py`, copied to
+`scratch/audit/<stem>/materialize.py`, writes them to
 `accessors.txt`. The rendered digest at
 `scratch/audit/<stem>/audit.md` is what `review-ml-experiment`
 reads — only `## Checks summary` and `## Metrics summary`. Do
@@ -86,7 +86,7 @@ project.put("01_baseline", report)           # ← duplicates the row; pollutes 
 The template ships with this cell sequence. Core cells are
 task-agnostic. Leave them as-is; append Display cells only after
 the user picks a name from `accessors.txt`. Snapshot writes stay
-in `viewers.py`.
+in `materialize.py`.
 
 1. **Module-level docstring (markdown cell).** What this file is,
    the read-only rule, where the digest lands. Verbatim from the
@@ -142,7 +142,7 @@ in `viewers.py`.
    report
    ```
    Do not write `report.html` or `locator.txt` in this cell.
-   `viewers.py` writes both (a direct audit has no evaluate
+   `materialize.py` writes both (a direct audit has no evaluate
    snapshot yet). Confirm `_repr_html_` with `api get`. The HTML
    is for the site Results viewer; the digest's `repr(report)` is
    what the agent summarizes. The two report classes share the
@@ -162,7 +162,7 @@ in `viewers.py`.
    checks = report.checks.summarize()
    checks
    ```
-   `viewers.py` writes `checks.html`. The notebook cell does not.
+   `materialize.py` writes `checks.html`. The notebook cell does not.
    The repr opens with the severity counts, then lists issues,
    tips, passed, and not-applicable checks with codes like
    `SKD003`. Actionable lines carry the documentation URL. The
@@ -176,7 +176,7 @@ in `viewers.py`.
    )
    metrics
    ```
-   `viewers.py` writes `metrics.html` from that same frame. The
+   `materialize.py` writes `metrics.html` from that same frame. The
    notebook cell does not.
    The frame is the metric table, with verbose names and the
    estimator/aggregate columns left unflattened. That same HTML is
@@ -184,7 +184,7 @@ in `viewers.py`.
    Do not also paste the values into the design note.
 
 9. **Available report accessors (not a notebook cell).**
-   `help()` prints its tree and returns `None`. `viewers.py`
+   `help()` prints its tree and returns `None`. `materialize.py`
    captures that stdout in `scratch/audit/<stem>/accessors.txt`.
    Do not put the loop in `audit/<stem>.py`. Each tree ends in a
    `Displays` group; Additional report view labels are exactly
@@ -198,7 +198,7 @@ That's the core template. Deeper accessors are appended after
 `## Core audit complete` only when the user picks Additional
 report view (or a Custom query that is still a report accessor).
 Confirm the method with `api get`. The notebook cell is the
-bare Display. Append the HTML write only in `viewers.py`
+bare Display. Append the HTML write only in `materialize.py`
 (`EXTRA`), then re-run that script:
 
 ```python
@@ -213,9 +213,10 @@ disp
 ```
 
 Plot Displays carry `_repr_html_` too. Only when one does not,
-`viewers.py` saves `<slug>.png` from `figure_`. Failed probes stay
+`materialize.py` saves `<slug>.png` from `figure_`. Failed probes stay
 under `scratch/` and do not become Results subsections. Re-run
-`style` + `cells run`, then `viewers.py`, after each append.
+`style`, then `materialize.py` once, after each append. Do not
+`cells run` the audit file.
 
 ## Digest-to-finding contract
 
@@ -244,7 +245,7 @@ The last expression is
 
 The only thing neither path produces is a *standalone* per-item
 HTML file, because the converted notebook is one document. That is
-why `viewers.py` writes `scratch/results/<stem>/<slug>.html` —
+why `materialize.py` writes `scratch/results/<stem>/<slug>.html` —
 the site embeds those under `## Results`. Agents never read them;
 they summarize from the digest. The notebook does not contain
 those writes.

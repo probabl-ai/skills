@@ -47,22 +47,27 @@ normal path. One figure-level call per cell as the last
 expression; facet with `col=` / `col_wrap` instead of looping.
 A bare name inside a `for` loop is not displayed.
 
-`python -m skore_skills cells run` captures `repr()`, so a last-line
-`TableReport` looks empty in the digest. That is expected. Do not
-put TableReport dicts back in the notebook to feed the agent.
+The agent does not execute this file, and does not `notebook convert`
+or `cells run` it. Do not put TableReport dicts in the notebook to
+feed the agent.
 
-## Agent — `scratch/data_analysis/facts.py`
+## Agent — `scratch/data_analysis/materialize.py`
 
-Copy `templates/facts.py` to `scratch/data_analysis/facts.py`
-(gitignored). Reuse the same families, `<TARGET>`, `<TASK>`.
-Build `TableReport(..., plot_distributions=False)` per family and
-write `scratch/data_analysis/<slug>.json` from `report.json()` so
-that snapshot has statistics, not SVG. Also write
-`scratch/data_analysis/extras.json` (`tables[]`, target, top
-feature–target correlations, leakage flags, png and html paths). Confirm
-keys with `api get`; parse JSON files with `.get(...)`. If
-`data_analysis/data_analysis_<slug>.html` is missing, `write_html`
-from a **plotting** TableReport — do not dump that report to JSON.
+Copy `templates/materialize.py` to
+`scratch/data_analysis/materialize.py` (gitignored). This is the
+only run. The matplotlib Agg backend is set before seaborn; do not
+put that in the human notebook. Replace `<ANALYSIS>` with the same
+loads, `TableReport.write_html` calls, and figure or HTML saves as
+the human file. One load per family. Bind `FAMILIES` as
+`(slug, raw)` and `FRAME` to the target family's pandas frame. No
+markdown cells and no bare display expressions. Leave the tail: it
+does not load again and does not write the TableReport HTML again.
+It builds `TableReport(..., plot_distributions=False)` on the
+in-memory frame and writes `scratch/data_analysis/<slug>.json` from
+`report.json()` so that snapshot has statistics, not SVG, then
+`extras.json` (`tables[]`, target, top feature–target correlations,
+leakage flags, png and html paths). Confirm keys with `api get`;
+parse JSON files with `.get(...)`.
 
 Author `data_analysis/data_analysis.md` from those JSON files plus
 the HTML. The glance section is one iframe per family and nothing
@@ -84,7 +89,7 @@ Extra cells after the user picks extras: `references/extra_analyses.md`.
 | `<LOAD_RAW_DATA>` | first family; pandas/polars load; in-memory concat of shards; convert to pandas for seaborn cells |
 | `<slug>` | Python identifier; `data_analysis_<slug>.html` and `<slug>.json` |
 | `<OTHER_SLUG>` / `<LOAD_OTHER>` | `templates/family.py` for each further family |
-| `<TARGET>` | `"column"` in the notebook load cell when a target exists; facts.py may use `None` |
-| `<TASK>` | `classification` \| `regression` \| `none` (facts.py; omit in the notebook when none) |
+| `<TARGET>` | `"column"` in the notebook load cell when a target exists; materialize.py may use `None` |
+| `<TASK>` | `classification` \| `regression` \| `none` (materialize.py; omit in the notebook when none) |
 | `<OTHER_FRAME>` | `templates/drift.py` when two families share column names |
 | `<JOIN_KEY>` | `templates/join_coverage.py` (Keep exploring only) |

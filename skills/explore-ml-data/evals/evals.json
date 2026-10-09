@@ -96,13 +96,15 @@
         "Embed or link that HTML from `data_analysis/data_analysis.md`.",
         "Embed every saved PNG/HTML from extras in Modelling implications, each with a sentence citing extras/JSON numbers.",
         "Put `TableReport.json()` under `scratch/data_analysis/<slug>.json` and extras under `scratch/data_analysis/extras.json`.",
+        "Run `scratch/data_analysis/materialize.py` once. That run writes the TableReport HTML, the figures, and those JSON files. Do not execute `data_analysis/data_analysis.py`.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Describe this EDA execution as model training or smoke testing.",
         "The response does NOT: Put unique-ratio / column-dict / `report.json()` cells in `data_analysis/data_analysis.py`.",
         "The response does NOT: Write HTML under `data/`.",
         "The response does NOT: Modify the user's raw data files.",
         "The response does NOT: Train/test split or install sklearn unless extras were requested.",
-        "The response does NOT: Leave a saved figure unembedded in `data_analysis.md`."
+        "The response does NOT: Leave a saved figure unembedded in `data_analysis.md`.",
+        "The response does NOT: `notebook convert` or `cells run` `data_analysis/data_analysis.py`."
       ],
       "tools": false,
       "sandbox": [],
@@ -110,15 +112,17 @@
     },
     {
       "id": 6,
-      "title": "Missing IPython delegates to add-python-package",
+      "title": "Missing IPython does not block the run",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Scaffold exists. User chose **run**.\n- `ipython` is not importable in the project env.\n- `add-python-package` is installed.]\n\nRun the EDA now.",
-      "expected_output": "Behavioural response satisfying: - Load `add-python-package` for `ipython` (`env route` agent scope). Do not place a fabricated digest. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `pixi add ipython` / `uv add ipython` from this skill. - Hand-write expected exploratory data analysis output.",
+      "expected_output": "Behavioural response satisfying: - Run `scratch/data_analysis/materialize.py`. Do not block on IPython and do not skip the analysis. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Load `add-python-package` for `ipython` before the run. - Run `pixi add ipython` / `uv add ipython` from this skill.",
       "files": [],
       "expectations": [
-        "Load `add-python-package` for `ipython` (`env route` agent scope). Do not place a fabricated digest.",
+        "Run `scratch/data_analysis/materialize.py`. Do not block on IPython and do not skip the analysis.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Load `add-python-package` for `ipython` before the run.",
         "The response does NOT: Run `pixi add ipython` / `uv add ipython` from this skill.",
-        "The response does NOT: Hand-write expected exploratory data analysis output."
+        "The response does NOT: Hand-write expected exploratory data analysis output.",
+        "The response does NOT: Skip the analysis because IPython is missing."
       ],
       "tools": false,
       "sandbox": [],
@@ -127,7 +131,7 @@
     {
       "id": 7,
       "title": "Notebook and site on after EDA",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is true.\n- `export-ml-notebook` and `export-ml-site` are installed.\n- `jupytext`, `nbclient`, `ipywidgets`, and `nbconvert` are installed.\n- The completed EDA execution already wrote a source-current\n  `.ipynb` and `.nb.html`.]\n\nEDA is done. Close the turn.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is true.\n- `export-ml-notebook` and `export-ml-site` are installed.\n- `jupytext`, `nbformat`, and `nbconvert` are installed.\n- The completed `materialize.py` run already wrote the artifacts,\n  and fill already wrote a source-current `.ipynb` and `.nb.html`.]\n\nEDA is done. Close the turn.",
       "expected_output": "Behavioural response satisfying: - Write 2\u20136 sentences of EDA findings. - Name `report.html` and `html/data_analysis.html` in the user-facing close. Do not send the user to `data_analysis/data_analysis.md` instead. - Do not execute `data_analysis.py` again on Close. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Paste the full `data_analysis.md` into chat. - Name `site build` or `--if-stale` in the user-facing close. Housekeeping may name the command.",
       "files": [],
       "expectations": [
@@ -140,8 +144,9 @@
         "The response does NOT: Paste the full `data_analysis.md` into chat.",
         "The response does NOT: Name `site build` or `--if-stale` in the user-facing close. Housekeeping may name the command.",
         "The response does NOT: Fail the data-analysis turn if site build errors; name the error.",
-        "The response does NOT: Run `cells run` as a substitute for convert.",
-        "The response does NOT: Re-run `notebook convert` for the source-current notebook.",
+        "The response does NOT: Run `cells run` or `notebook convert` on `data_analysis/data_analysis.py`.",
+        "The response does NOT: Re-run `notebook fill` for the source-current notebook.",
+        "The response does NOT: Re-run `materialize.py` when the artifacts are already from this human file.",
         "The response does NOT: Run `git commit` in this skill."
       ],
       "tools": false,
@@ -168,16 +173,17 @@
     },
     {
       "id": 9,
-      "title": "Notebooks on, site off converts without HTML",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is false.\n- `export-ml-notebook` is installed.\n- `jupytext`, `nbclient`, and `ipywidgets` are installed.]\n\nEDA is done. Close the turn.",
-      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills notebook convert data_analysis/data_analysis.py`. - Run `python -m skore_skills git end-turn --stage data_analysis`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Pass `--html` when the site gate is off. - Run `python -m skore_skills site build`.",
+      "title": "Notebooks on, site off fills without HTML",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is false.\n- `export-ml-notebook` is installed.\n- `jupytext` and `nbformat` are installed.\n- No source-current `.ipynb` yet.]\n\nEDA is done. Close the turn.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills notebook fill data_analysis/data_analysis.py`. - Run `python -m skore_skills git end-turn --stage data_analysis`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Pass `--html` when the site gate is off. - Run `python -m skore_skills site build`.",
       "files": [],
       "expectations": [
-        "Run `python -m skore_skills notebook convert data_analysis/data_analysis.py`.",
+        "Run `python -m skore_skills notebook fill data_analysis/data_analysis.py`.",
         "Run `python -m skore_skills git end-turn --stage data_analysis`.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Pass `--html` when the site gate is off.",
-        "The response does NOT: Run `python -m skore_skills site build`."
+        "The response does NOT: Run `python -m skore_skills site build`.",
+        "The response does NOT: `notebook convert` or `cells run` `data_analysis/data_analysis.py`."
       ],
       "tools": false,
       "sandbox": [],
@@ -185,15 +191,15 @@
     },
     {
       "id": 10,
-      "title": "Missing convert toolchain skips in one line",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is false.\n- `export-ml-notebook` is installed.\n- `jupytext` and `nbclient` are not importable; `notebook convert`\n  fails with that ImportError.]\n\nEDA is done. Close the turn.",
-      "expected_output": "Behavioural response satisfying: - Skip the convert in one line, naming `add-python-package` for `jupytext` and `nbclient`. - Run `python -m skore_skills git end-turn --stage data_analysis`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Fail the data-analysis turn because convert failed. - Run `pixi add` / `uv add` from this skill.",
+      "title": "Missing fill toolchain skips in one line",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `data_analysis/data_analysis.md` was just written.\n- `policy.notebooks` is true. `policy.site` is false.\n- `export-ml-notebook` is installed.\n- `jupytext` and `nbformat` are not importable; `notebook fill`\n  fails with that ImportError.]\n\nEDA is done. Close the turn.",
+      "expected_output": "Behavioural response satisfying: - Skip the fill in one line, naming `add-python-package` for `jupytext` and `nbformat`. - Run `python -m skore_skills git end-turn --stage data_analysis`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Fail the data-analysis turn because fill failed. - Run `pixi add` / `uv add` from this skill.",
       "files": [],
       "expectations": [
-        "Skip the convert in one line, naming `add-python-package` for `jupytext` and `nbclient`.",
+        "Skip the fill in one line, naming `add-python-package` for `jupytext` and `nbformat`.",
         "Run `python -m skore_skills git end-turn --stage data_analysis`.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
-        "The response does NOT: Fail the data-analysis turn because convert failed.",
+        "The response does NOT: Fail the data-analysis turn because fill failed.",
         "The response does NOT: Run `pixi add` / `uv add` from this skill."
       ],
       "tools": false,
@@ -480,14 +486,14 @@
       "id": 25,
       "title": "Site on rebuilds before the continuation board",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Scaffold exists. G-TABULAR is `pandas`.\n- User chose **run** for G-DATA-ANALYSIS.\n- IPython is available.\n- `policy.site` is true.\n- `export-ml-site` is installed.]\n\nExplore the California housing CSV. Target is MedHouseVal.",
-      "expected_output": "Behavioural response satisfying: - After `data_analysis.md` and JOURNAL, name `python -m skore_skills site build --if-stale`. - Name `report.html` and `html/data_analysis.html`. - Then AskUserQuestion one pick, none recommended: Choose additional pre-defined option; Provide a query to extend the exploration; Automatic exploration related to the data and problem; Describe a plot; Close. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `notebook convert` or `git end-turn` before the user picks Close. - Fail the continuation board if site build errors; name the error.",
+      "expected_output": "Behavioural response satisfying: - After `data_analysis.md` and JOURNAL, name `python -m skore_skills site build --if-stale`. - Name `report.html` and `html/data_analysis.html`. - Then AskUserQuestion one pick, none recommended: Choose additional pre-defined option; Provide a query to extend the exploration; Automatic exploration related to the data and problem; Describe a plot; Close. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `notebook fill` or `git end-turn` before the user picks Close. - Fail the continuation board if site build errors; name the error.",
       "files": [],
       "expectations": [
         "After `data_analysis.md` and JOURNAL, name `python -m skore_skills site build --if-stale`.",
         "Name `report.html` and `html/data_analysis.html`.",
         "Then AskUserQuestion one pick, none recommended: Choose additional pre-defined option; Provide a query to extend the exploration; Automatic exploration related to the data and problem; Describe a plot; Close.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
-        "The response does NOT: Run `notebook convert` or `git end-turn` before the user picks Close.",
+        "The response does NOT: Run `notebook fill` or `git end-turn` before the user picks Close.",
         "The response does NOT: Fail the continuation board if site build errors; name the error."
       ],
       "tools": false,
@@ -559,7 +565,7 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `pixi add` or `uv add`.",
         "The response does NOT: Skip the continuation board.",
-        "The response does NOT: Run `notebook convert` or `git end-turn` before the user picks Close."
+        "The response does NOT: Run `notebook fill` or `git end-turn` before the user picks Close."
       ],
       "tools": false,
       "sandbox": [],

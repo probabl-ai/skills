@@ -493,3 +493,92 @@ def test_convert_raises_when_source_is_missing(
     monkeypatch.setattr(notebook_mod, "NotebookClient", object())
     with pytest.raises(FileNotFoundError, match="notebook source not found"):
         notebook_mod.convert(tmp_path / "missing.py")
+
+
+def test_notebook_fill_writes_empty_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Fill stores the source fingerprint and does not keep cell outputs."""
+    src = tmp_path / "experiment.py"
+    src.write_text("# %%\nreport\n", encoding="utf-8")
+    payload = {
+        "cells": [
+            {
+                "cell_type": "code",
+                "source": "report",
+                "outputs": [{"output_type": "execute_result"}],
+                "execution_count": 1,
+            },
+            {"cell_type": "markdown", "source": "# Title"},
+        ],
+        "metadata": {},
+    }
+    monkeypatch.setattr(
+        notebook_mod, "jupytext", SimpleNamespace(read=lambda path: payload)
+    )
+    monkeypatch.setattr(notebook_mod, "nbformat", _stub_nbformat())
+
+    def fail_client(*args: object, **kwargs: object) -> None:
+        raise AssertionError(args, kwargs)
+
+    monkeypatch.setattr(notebook_mod, "NotebookClient", fail_client)
+    monkeypatch.setattr(notebook_mod, "ipywidgets", None)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["notebook", "fill", str(src)])
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "experiment.ipynb").is_file()
+    assert payload["cells"][0]["outputs"] == []
+    assert payload["cells"][0]["execution_count"] is None
+    assert "outputs" not in payload["cells"][1]
+    assert payload["metadata"]["skore_skills"]["source_sha256"] == (
+        notebook_mod.source_fingerprint(src)
+    )
+
+
+def test_notebook_fill_html(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """``--html`` renders the output-free notebook."""
+    src = tmp_path / "audit.py"
+    src.write_text("# %%\nchecks\n", encoding="utf-8")
+    payload = {"cells": [{"cell_type": "code", "source": "checks"}], "metadata": {}}
+    monkeypatch.setattr(
+        notebook_mod, "jupytext", SimpleNamespace(read=lambda path: payload)
+    )
+    monkeypatch.setattr(notebook_mod, "nbformat", _stub_nbformat())
+    monkeypatch.setattr(
+        notebook_mod,
+        "to_html",
+        lambda ipynb, dest: (
+            dest.write_text("<html>source</html>", encoding="utf-8") or dest
+        ),
+    )
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["notebook", "fill", str(src), "--html"])
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "audit.nb.html").read_text(encoding="utf-8") == (
+        "<html>source</html>"
+    )
+
+
+def test_notebook_fill_import_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Missing jupytext is a Click error and does not mention nbclient."""
+    src = tmp_path / "experiment.py"
+    src.write_text("# %%\n1\n", encoding="utf-8")
+    monkeypatch.setattr(notebook_mod, "jupytext", None)
+    monkeypatch.setattr(notebook_mod, "nbformat", None)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["notebook", "fill", str(src)])
+    assert result.exit_code != 0
+    assert "jupytext" in result.output
+    assert "nbclient" not in result.output
+
+
+def test_fill_raises_when_source_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``fill`` reports a missing percent-format source."""
+    monkeypatch.setattr(notebook_mod, "jupytext", object())
+    monkeypatch.setattr(notebook_mod, "nbformat", object())
+    with pytest.raises(FileNotFoundError, match="notebook source not found"):
+        notebook_mod.fill(tmp_path / "missing.py")

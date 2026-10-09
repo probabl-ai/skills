@@ -1,11 +1,14 @@
-"""Agent-only viewers. Copy to scratch/audit/<stem>/viewers.py.
+"""Agent-only materialize. Copy to scratch/audit/<stem>/materialize.py.
 
-Do not commit. Re-open the stored report. Do not call
+Do not commit. This is the only audit run. Do not execute
+``audit/<stem>.py``, do not ``cells run`` it, and do not
+``notebook convert`` it. Re-open the stored report. Do not call
 ``skore.evaluate`` or ``project.put``. Writes ``checks.html``,
-``metrics.html``, ``report.html``, ``locator.txt``, and
-``accessors.txt`` (``help()`` trees). Append extra Displays to
-``EXTRA`` after the user picks one; the audit notebook stays a
-bare display.
+``metrics.html``, ``report.html``, ``locator.txt``,
+``accessors.txt``, and ``audit.md`` (``repr`` of the checks and
+metrics). Append extra Displays to ``EXTRA``; put a custom query
+or plot in the ``<CALL>`` block. The audit notebook stays a bare
+display and is filled with empty outputs.
 """
 
 import io
@@ -49,8 +52,11 @@ with redirect_stdout(buffer):
             namespace.help()
 (audit_out / "accessors.txt").write_text(buffer.getvalue(), encoding="utf-8")
 
+# <CALL>
 # ("<namespace>", "<slug>") from this turn's Displays group in accessors.txt.
+# Custom query or plot code copied from audit/<stem>.py goes here.
 EXTRA: list[tuple[str, str]] = []
+# </CALL>
 
 for namespace_name, slug in EXTRA:
     disp = getattr(getattr(report, namespace_name), slug)()
@@ -61,3 +67,11 @@ for namespace_name, slug in EXTRA:
     figure = getattr(disp, "figure_", None)
     if figure is not None:
         figure.savefig(results / f"{slug}.png")
+
+(audit_out / "audit.md").write_text(
+    "## Checks summary\n\n"
+    f"{checks!r}\n\n"
+    "## Metrics summary\n\n"
+    f"{metrics!r}\n",
+    encoding="utf-8",
+)

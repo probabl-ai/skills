@@ -243,7 +243,7 @@ also ask in chat whether the note looks right.
    `site build --if-stale` after that snapshot and before Evaluate so Method
    shows that report. Missing or skipped EDA does not defer it.
    The post-loop rebuild refreshes the same unevaluated report;
-   it does not replace this one. Do not convert
+   it does not replace this one. Do not fill
    `experiments/<stem>.py` at this unfitted snapshot if it
    already contains `skore.evaluate`. That ban ends when
    `loop notebooks` returns `convert`.
@@ -324,27 +324,23 @@ Children return locator / digest / finding and do not preview it.
    JSON `action` as authoritative. Do not record-outcome,
    `site build`, or `git end-turn` while `action` is `convert`.
 2. On `convert`, run
-   `python -m skore_skills notebook convert <source>` for every
-   `sources` entry, with `--html` when `html` is true.
-   `audit-ml-pipeline` does not convert on this path. Converting
-   only `audit/<stem>.py` does not finish the close. If
-   `experiments/<stem>.py` was in `sources`, re-run
-   `scratch/results/<stem>/snapshot.py` and
-   `python -m skore_skills loop locator --stem <stem>`. Re-run
-   step 1 until `action` is `skip`. Convert re-executes the
-   script; say so when it is slow. If convert fails because
-   `ipywidgets` is missing, load `add-python-package` for it
-   (agent) and convert again. Missing jupytext / nbclient /
-   nbconvert → one-line skip naming `add-python-package`; do not
-   fail the turn. `skip` / `not_evaluated` means the report is
-   missing: do not convert an unfitted script. When `action` is
-   `convert`, the unfitted-snapshot ban does not apply, including
-   when `experiments/<stem>.py` already contains `skore.evaluate`.
+   `python -m skore_skills notebook fill <source>` for every
+   `experiments/` or `audit/` entry, with `--html` when `html`
+   is true. Do not `notebook convert` those files. Fill does not
+   `put`. Re-run the matching `materialize.py` first only when
+   that human call changed since the run that wrote the current
+   artifacts. Filling only `audit/<stem>.py` does not finish the
+   close. Re-run step 1 until `action` is `skip`. Missing
+   jupytext / nbformat / nbconvert → one-line skip naming
+   `add-python-package`; do not fail the turn. `skip` /
+   `not_evaluated` means the report is missing: do not fill an
+   unfitted script. When `action` is `convert`, the
+   unfitted-snapshot ban does not apply, including when
+   `experiments/<stem>.py` already contains `skore.evaluate`.
 3. record-outcome, only once step 1 is `skip`. Load
    `manage-ml-backlog` only if
    `status.skills.manage-ml-backlog` is true, in **record-outcome
-   mode**, handing it the locator from step 2 when the experiment
-   script was converted, otherwise the locator already returned,
+   mode**, handing it the locator evaluate already returned,
    plus the optional headline and G-AUDIT-FINDING
    (`n/a — audit not run` when skipped). Else one-line skip; do
    not write History from this meta. It writes the
@@ -369,9 +365,8 @@ Children return locator / digest / finding and do not preview it.
    `[report.html](<workspace>/report.html)` and
    `html/<stem>.html` only when `policy.site` is true. Otherwise
    link `[journal/<stem>.md](journal/<stem>.md)`. Then
-   G-REPORT-LOCATOR (the step-2 locator when the experiment
-   script was converted, otherwise the locator evaluate passed
-   up, or `n/a — backend did not expose a locator`) first among
+   G-REPORT-LOCATOR (the locator evaluate passed up, or
+   `n/a — backend did not expose a locator`) first among
    tokens, then G-AUDIT-FINDING. Index strings, not the narrative.
 6. `python -m skore_skills git end-turn --stage implement`. If
    JSON `action` is `invoke`, load `persist-ml-git` only if

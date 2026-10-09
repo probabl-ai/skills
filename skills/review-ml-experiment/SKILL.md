@@ -30,10 +30,11 @@ ids, `cells run`, or the wrapper CLI.
      file and stop. Do not audit. Do not record-outcome.
    - `audit` — report exists, digest does not. Load
      `audit-ml-pipeline` when installed. That skill runs
-     `cells run`.
-   - `proceed` — digest already on disk. Do not `cells run`
-     unless the user asked to re-audit. A re-audit loads
-     `audit-ml-pipeline`; that skill runs `cells run`.
+     `materialize.py` once and does not execute the audit file.
+   - `proceed` — digest already on disk. Do not re-run
+     `materialize.py` unless the user asked to re-audit. A
+     re-audit loads `audit-ml-pipeline`; that skill runs
+     `materialize.py` once.
      Otherwise refresh idea files from the existing digest.
 2. Missing audit skill → one-line skip. Return
    `n/a — audit not run` and write no idea files. Do not open
@@ -71,8 +72,8 @@ ids, `cells run`, or the wrapper CLI.
 
 ## Stop conditions
 
-- On `proceed`, do not `cells run` unless the user asked to
-  re-audit.
+- On `proceed`, do not re-run `materialize.py` unless the user
+  asked to re-audit.
 - Do not write History, Backlog, Status, or a design note.
   The Ideas table is the only `JOURNAL.md` edit.
 - Do not call `skore.evaluate` or `project.put`.

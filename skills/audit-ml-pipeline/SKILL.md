@@ -3,8 +3,8 @@ name: audit-ml-pipeline
 description: >
   Read-only audit of one persisted skore report: `audit/NN_<stem>.py`
   (jupytext percent), 1:1 with `experiments/` and `journal/`.
-  Execute it once according to notebook policy; the digest feeds narrative
-  work. Never call `skore.evaluate` or `project.put`.
+  Do not execute it. Run `materialize.py` once. Never call
+  `skore.evaluate` or `project.put`.
 
   TRIGGER when a completed run needs an audit, the user asks to
   audit, show, or re-audit an experiment, a re-run overwrote the
@@ -19,16 +19,17 @@ description: >
 
   HOW TO USE: confirm journal, experiment, smoke, and report;
   place the file from `templates/audit.py`; copy
-  `templates/viewers.py` to scratch; execute once; derive
+  `templates/materialize.py` to scratch; execute once; derive
   G-AUDIT-FINDING; then the continue-or-close gate. Resolve
   skore symbols with `api get`.
 ---
 
 # Audit ML Pipeline
 
-Per-experiment, human-readable, agent-executable narrative of a skore
-report — produced by **executing** a bare-expression `# %%` file and
-reading the digest. Read-only against the skore Project.
+Per-experiment, human-readable narrative of a skore report. The
+`# %%` file is the human notebook and is not executed. `materialize.py`
+writes the digest and the HTML viewers in one run. Read-only against
+the skore Project.
 
 ## Human-facing prose
 
@@ -60,18 +61,18 @@ and never dispatches audit back.
 
 | Path | Durability | Who writes it | What it holds |
 |---|---|---|---|
-| `audit/<NN>_<short_name>.py` | **Durable** (in git) | This skill, once per experiment | The bare-expression cells. Source of truth. Can be opened as a notebook in JupyterLab / VS Code for the rich HTML view |
-| `scratch/audit/<stem>/audit.md` | Ephemeral (gitignored), optional | The policy-matched audit execution | Per-cell markdown digest: source + stdout + last-expression `repr` |
-| `scratch/results/<stem>/snapshot.py` | Ephemeral (gitignored) | Evaluate, from `templates/snapshot.py` | Re-opens the stored report and writes `report.html`, `report.txt`, `locator.txt`, and the Method viewer (`pipeline/` or `pipeline.html`) |
-| `scratch/results/<stem>/report.html` `report.txt` `locator.txt` `pipeline/` or `pipeline.html` | Ephemeral (gitignored) | `snapshot.py` | Full-report viewer, text fallback, locator, DataOp report or graph fallback |
-| `scratch/audit/<stem>/viewers.py` | Ephemeral (gitignored) | This skill, from `templates/viewers.py` | Re-opens the report. Writes checks, metrics, and extra viewers, plus `accessors.txt` |
-| `scratch/audit/<stem>/accessors.txt` | Ephemeral (gitignored) | `viewers.py` | `help()` trees. Additional report view labels come from the `Displays` groups here, not from the notebook |
-| `scratch/results/<stem>/checks.html` `metrics.html` and extra `<slug>.html` / `.png` | Ephemeral (gitignored) | `viewers.py` | Per-item viewers the site embeds under `## Results`. The digest already carries the text, so no extra `.txt` is written here |
+| `audit/<NN>_<short_name>.py` | **Durable** (in git) | This skill, once per experiment | The bare-expression cells. Source of truth. Not executed by the agent. The site notebook is this file with empty outputs |
+| `scratch/audit/<stem>/audit.md` | Ephemeral (gitignored) | `materialize.py` | `repr` of the checks display and the metrics frame. `audit finding` parses this |
+| `scratch/results/<stem>/materialize.py` | Ephemeral (gitignored) | Evaluate, from `evaluate-ml-pipeline/templates/materialize.py` | The only `skore.evaluate` and `project.put`. Writes `report.html`, `report.txt`, `id.txt`, `checks.html`, `metrics.html`, and the Method viewer |
+| `scratch/results/<stem>/report.html` `report.txt` `locator.txt` `id.txt` `pipeline/` or `pipeline.html` | Ephemeral (gitignored) | Evaluate `materialize.py`, then the agent writes `locator.txt` from `id.txt` | Full-report viewer, text fallback, locator, DataOp report or graph fallback |
+| `scratch/audit/<stem>/materialize.py` | Ephemeral (gitignored) | This skill, from `templates/materialize.py` | Re-opens the report. Writes checks, metrics, `audit.md`, and extra viewers, plus `accessors.txt` |
+| `scratch/audit/<stem>/accessors.txt` | Ephemeral (gitignored) | `materialize.py` | `help()` trees. Additional report view labels come from the `Displays` groups here, not from the notebook |
+| `scratch/results/<stem>/checks.html` `metrics.html` and extra `<slug>.html` / `.png` | Ephemeral (gitignored) | `materialize.py` | Per-item viewers the site embeds under `## Results`. The digest already carries the text, so no extra `.txt` is written here |
 | Execution digest | Captured from CLI output or the digest path | CLI | Streamed or written digest — the agent reads this directly |
 
 **Mnemonic:** `audit/` is *source* (in git); `scratch/audit/` and
 stdout are *output*. Never copy `audit/<stem>.py` under
-`scratch/audit/`. `viewers.py` is the gitignored agent script.
+`scratch/audit/`. `materialize.py` is the gitignored agent script.
 Never commit anything under `scratch/audit/`.
 
 ## Read-only contract
@@ -93,7 +94,7 @@ The central rule. Surfaced as the first Stop condition below.
 - `project.put(...)` — same.
 - Snapshot writes (`write_text` of HTML, `locator.txt`,
   `report.txt`) and `help()` loops in `audit/<stem>.py`. Those
-  live in `scratch/audit/<stem>/viewers.py`, which may write
+  live in `scratch/audit/<stem>/materialize.py`, which may write
   `scratch/results/<stem>/` and `accessors.txt`.
 - Writes to `data/`, `reports/`, or `src/<pkg>/`. The audit
   notebook is a viewer.
@@ -165,7 +166,7 @@ reads the digest as text and does not open the Project. See
   `audit/`.** Durable artifact is `audit/<stem>.py`; the rendered
   digest is ephemeral.
 - **`audit/<stem>.py` does not write snapshot files.** HTML,
-  `locator.txt`, and `help()` trees are `viewers.py`. No writes
+  `locator.txt`, and `help()` trees are `materialize.py`. No writes
   to `data/` or `reports/`.
 - **Don't filter warnings in audit cells.** No
   `warnings.filterwarnings(...)` unless the user explicitly asks
@@ -191,13 +192,13 @@ reads the digest as text and does not open the Project. See
 | `checks.frame()` instead of the bare `checks` Display | The Display `__repr__` already groups issues and tips with their codes and documentation URLs. `.frame()` flattens that into a table the agent then has to re-read, and drops the severity grouping the review mines |
 | `project.get(KEY)` raised `KeyError` → re-run `evaluate` + `put` "to refresh" | Lookup shape is wrong (get is by id, not key). Hub: read the id from the URL printed by `put()`. Local: read `summary["id"]` for the matching key row. Never re-run `evaluate` + `put` to recover |
 | Write `pixi add --feature agent ipython` directly from this skill | Install commands owned by `add-python-package`. This skill **requests**; it does not install |
-| Dump the audit `.py` into `scratch/audit/<stem>/` | The notebook stays in `audit/`. `viewers.py` is the only `.py` that belongs under `scratch/audit/<stem>/`, and it is gitignored |
+| Dump the audit `.py` into `scratch/audit/<stem>/` | The notebook stays in `audit/`. `materialize.py` is the only `.py` that belongs under `scratch/audit/<stem>/`, and it is gitignored |
 | Register a Jupyter kernel "to be safe" | Current runner is in-process; no kernel. Registering creates an orphan kernelspec |
 | Add a fix-up cell that mutates `data/` or `reports/` | Audit files are read-only. State mutations belong in a `scratch/<ts>_*.py` probe or the experiment script |
 | Substitute `<SKORE_PROJECT_INIT>` in `audit/<stem>.py` without reading `experiments/<stem>.py` first | Audit must open the same Project. Always Read experiments/<stem>.py this turn and copy the literal Project init block byte-identical (modulo formatting) |
 | Hub mode: put `skore.login(mode="hub")` after `skore.Project(...)` | `Project(...)` constructor authenticates at init time; without prior `login`, fails. Order is fixed: login first, Project second |
 | Implement-loop audit → write scratch probe first to "double-check metrics" | The audit IS the metric-extraction step. Scratch probes for metrics are the anti-pattern this dispatch replaces |
-| `write_text` or a `help()` loop inside `audit/<stem>.py` | The notebook is the human view. Copy `templates/viewers.py` to `scratch/audit/<stem>/viewers.py` for HTML, the locator file, and `accessors.txt` |
+| `write_text` or a `help()` loop inside `audit/<stem>.py` | The notebook is the human view. Copy `templates/materialize.py` to `scratch/audit/<stem>/materialize.py` for HTML, the locator file, and `accessors.txt` |
 
 ## Pre-flight — emit before any audit-file write or execution
 
@@ -237,10 +238,8 @@ Pre-flight (audit-ml-pipeline):
       summarize / get / report.* only — no evaluate, no put
       Evidence: explicit grep / Read confirmation of the drafted file
 - [ ] Execution command shape confirmed:
-        notebooks true: notebook convert audit/<stem>.py
-          --digest scratch/audit/<stem>/audit.md [--html]
-        notebooks null|false: cells run audit/<stem>.py
-          scratch/audit/<stem>/audit.md
+        python scratch/audit/<stem>/materialize.py
+        notebooks true: notebook fill audit/<stem>.py [--html]
       Evidence: command emitted in the response before running
 - [ ] G-AUDIT-FINDING derived from the executed digest
       Evidence: issue/tip counts + ordered codes + optional metric
@@ -318,7 +317,7 @@ Brief outline; full anatomy with concrete examples →
    mlflow**: read `summary["id"]` for the matching key row), then
    `report = project.get(REPORT_ID)`, then `report` as the last
    expression. Do not write HTML or `locator.txt` in this cell.
-   `viewers.py` does that (confirm `_repr_html_` with `api get`).
+   `materialize.py` does that (confirm `_repr_html_` with `api get`).
 6. **Persisted report** — substitute the exact normalized locator
    from evaluate. For a direct audit, use the selected `REPORT_ID`
    and `policy.skore_mode`: local links `../reports/`; Hub uses the
@@ -328,18 +327,18 @@ Brief outline; full anatomy with concrete examples →
    write `n/a — backend did not expose a locator`. Do not call
    `put`, inspect private storage, or invent a frontend URL.
 7. **Checks summary** — `checks = report.checks.summarize()`, then
-   `checks` as the last expression. `viewers.py` writes
+   `checks` as the last expression. `materialize.py` writes
    `checks.html`. Its repr groups the walk by severity; every
    `issue` / `tip` line ends with the documentation URL. Read that
    page and apply its recommendation (custom `CSTM*` checks may
    have none).
 8. **Metrics summary** —
    `metrics = report.metrics.summarize().frame(verbose_name=True, flat_index=False)`,
-   then `metrics` last. `viewers.py` writes `metrics.html` from
+   then `metrics` last. `materialize.py` writes `metrics.html` from
    that frame. That frame is the only metrics table. Do not also
    paste its values into the design note.
 9. **Available report accessors** — not a notebook cell. Copy
-   `templates/viewers.py` to `scratch/audit/<stem>/viewers.py`
+   `templates/materialize.py` to `scratch/audit/<stem>/materialize.py`
    and run it. It calls `help()` on `report.metrics`,
    `report.checks`, and any other namespace that exists
    (`inspection`, `data`, …) and writes the trees to
@@ -409,15 +408,15 @@ does. A file link is an addition, never the context.
 | Label | Contract |
 |---|---|
 | Additional report view | Menu labels are **exactly** the names under the `Displays` group of this turn's `help()` trees in `scratch/audit/<stem>/accessors.txt`. Confirm the picked name with `python -m skore_skills api get`. The list is task-dependent — a regression report has no `roc`. Omit anything the trees do not list; never show remembered Display names. Ask one pick before editing. |
-| Custom query | Wait for one concrete read-only question about the loaded report. Append only the minimal accessor cells needed to answer it. Prefer a name from the trees when it answers the question. |
-| Custom plot | Only when the trees have no Display for this chart. Load `plot-ml-figure` only if `status.skills.plot-ml-figure` is true; else one-line skip and return to this gate. Append read-only plot cells and keep the figure as notebook output. |
+| Custom query | Wait for one concrete read-only question about the loaded report. Append only the minimal accessor cells needed to answer it, in `audit/<stem>.py` and in the materialize `<CALL>` block. Prefer a name from the trees when it answers the question. |
+| Custom plot | Only when the trees have no Display for this chart. Load `plot-ml-figure` only if `status.skills.plot-ml-figure` is true; else one-line skip and return to this gate. Append the read-only plot to both files. `materialize.py` saves the figure under `scratch/results/<stem>/`. |
 | Close audit | Continue to the existing dispatched or direct close. |
 
 Additional report view / Custom query / Custom plot all edit the
-same durable `audit/<stem>.py`, **below** `## Core audit complete`.
-After an edit: run `style`, then repeat the policy-matched one
-execution below to overwrite `scratch/audit/<stem>/audit.md`,
-re-run `viewers.py`, derive
+same durable `audit/<stem>.py`, **below** `## Core audit complete`,
+and the `<CALL>` block of `materialize.py`. After an edit: run
+`style`, re-run `materialize.py` once, `notebook fill` when
+notebooks are on, derive
 G-AUDIT-FINDING again
 with `python -m skore_skills audit finding --stem <stem>`
 (from checks + metrics only), then run `site build --if-stale`
@@ -437,11 +436,11 @@ Do not invent slugs from docs memory.
 2. Code cell: call the accessor; confirm `_repr_html_` with
    `api get` on the returned Display. Last expression: the bare
    Display.
-3. In `viewers.py` only, append that accessor to `EXTRA`. It
+3. In `materialize.py` only, append that accessor to `EXTRA`. It
    writes `scratch/results/<stem>/<slug>.html` from
    `_repr_html_()` when it exists. Only when it does not, save
    `<slug>.png` so the site can still embed a figure. Re-run
-   `viewers.py`.
+   `materialize.py`.
 4. Failed or inapplicable accessors stay in `scratch/` probes.
    Do not add a Results subsection for them.
 
@@ -461,43 +460,41 @@ Before the first execution for a stem, run
   explicitly asked to re-audit. A re-audit repeats the one
   policy-matched execution.
 
-Read `policy.notebooks` and `policy.site`. When notebooks is
-`true`, the command is:
+Copy `templates/materialize.py` to `scratch/audit/<stem>/materialize.py`,
+substitute the Project init, report id, and locator, and run it
+once with the composed-dev Python from `env verify`. That run
+writes the HTML viewers, `accessors.txt`, and `audit.md`. Do not
+`cells run` the audit file and do not `notebook convert` it.
+When `policy.notebooks` is `true`, then run:
 ```bash
-python -m skore_skills notebook convert audit/<stem>.py --digest scratch/audit/<stem>/audit.md [--html]
+python -m skore_skills notebook fill audit/<stem>.py [--html]
 ```
-Add `--html` only when site is also `true`. This one kernel run
-writes the digest and optional notebook outputs; do not also run
-`cells run`. When notebooks is `null` or `false`, do not change
-policy and use:
-```bash
-python -m skore_skills cells run audit/<stem>.py scratch/audit/<stem>/audit.md
-```
-Then run:
+Add `--html` only when site is also `true`. Fill writes an
+output-free notebook and does not write the digest. When
+notebooks is `null` or `false`, do not change policy and do not
+fill. Then run:
 ```bash
 python -m skore_skills audit finding --stem <stem>
 ```
 
-Copy `templates/viewers.py` to `scratch/audit/<stem>/viewers.py`,
-substitute the Project init, report id, and locator, and run it
-with the composed-dev Python from `env verify` after the audit
-execution and before the continue-or-close gate. The notebook
-does not contain those writes. If site policy is `true` and
-`export-ml-site` is installed, run
-`python -m skore_skills site build --if-stale` after viewers and
-before that gate, then link `report.html` and `html/<stem>.html`.
+The notebook does not contain the materialize writes. If site
+policy is `true` and `export-ml-site` is installed, run
+`python -m skore_skills site build --if-stale` after materialize
+and before that gate, then link `report.html` and
+`html/<stem>.html`.
 
-Paste JSON `finding` verbatim. The CLI streams the digest to stdout when the dest arg is omitted; the second arg also writes the file. Details:
-`python -m skore_skills cells run --help`.
+Paste JSON `finding` verbatim. Read `audit.md`; do not derive it
+from the notebook.
 
 ### Executed notebook
 
-When notebook policy is true, the audit execution above owns the
-executed notebook on direct and dispatched paths. The caller
+When notebook policy is true, `notebook fill` above owns the
+output-free notebook on direct and dispatched paths. The caller
 runs `python -m skore_skills loop notebooks --stem <stem>`
-and obeys `convert`. Naming `notebook convert` is not that
-close. A current source fingerprint makes that gate skip;
-changed or missing outputs convert there as a safety net.
+and obeys `convert` by filling, not by kernel-executing. Naming
+`notebook fill` is not that close. A current source fingerprint
+makes that gate skip; a changed source fills again as a safety
+net.
 
 On a direct close, run the notebook gate in § End of turn before
 record-outcome. The audit has no page of its own. Site build
@@ -568,12 +565,12 @@ the close-time `loop notebooks`, another site build,
 is not repeated. When the caller is
 `model-ml-pipeline` or `evaluate-ml-pipeline`, tell it to run
 `python -m skore_skills loop notebooks --stem <stem>` and obey
-`convert` before record-outcome. That gate continues on `skip`.
-`record` is `loop artifacts`, not the notebook gate. Then
-`site build` and that caller's `git end-turn`
-(`--stage implement` from model, `--stage evaluate` from
-evaluate). Naming the convert commands is not the close.
-Converting only the audit file does not finish that close. Do
+`convert` with `notebook fill` before record-outcome. That gate
+continues on `skip`. `record` is `loop artifacts`, not the
+notebook gate. Then `site build` and that caller's
+`git end-turn` (`--stage implement` from model, `--stage
+evaluate` from evaluate). Naming the fill commands is not the
+close. Filling only the audit file does not finish that close. Do
 not paste the direct-audit close as a preview of what the
 dispatcher will run.
 
@@ -587,16 +584,15 @@ notebook gate. Then this order. Do not reorder it.
    JSON `action` as authoritative. Do not record-outcome,
    `site build`, or `git end-turn` while `action` is `convert`.
    `not_evaluated` does not convert.
-2. On `convert`, run `notebook convert` for every `sources`
-   entry, with `--html` when `html` is true. If
-   `experiments/<stem>.py` was in `sources`, re-run
-   `scratch/results/<stem>/snapshot.py` and
-   `python -m skore_skills loop locator --stem <stem>`. Re-run
-   step 1 until `action` is `skip`. If convert fails because
-   `ipywidgets` is missing, load `add-python-package` for it
-   (agent) and convert again. Missing jupytext / nbclient →
-   one-line skip naming `add-python-package`; do not fail the
-   audit, do not `pixi add`.
+2. On `convert`, run `notebook fill` for every `experiments/`
+   or `audit/` source, with `--html` when `html` is true. Do
+   not `notebook convert` those files. Fill does not `put`.
+   Re-run the matching `materialize.py` first only when that
+   human call changed since the run that wrote the current
+   artifacts. Re-run step 1 until `action` is `skip`. Missing
+   jupytext / nbformat → one-line skip naming
+   `add-python-package`; do not fail the audit, do not
+   `pixi add`.
 3. Load `manage-ml-backlog` in **record-outcome mode** only
    if `status.skills.manage-ml-backlog` is true and hand it the
    digest, G-AUDIT-FINDING, and that locator. Missing skill →
@@ -663,7 +659,7 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 |---|---|
 | `manage-ml-backlog` | Downstream record-outcome consumer; never dispatches audit from record-outcome mode |
 | `review-ml-experiment` | Loop caller. Parses the digest as text and writes one idea file and one Ideas row per candidate. Never opens the Project |
-| `evaluate-ml-pipeline` | Producer side. `skore.evaluate` + `project.put` live only in `experiments/NN_*.py` |
+| `evaluate-ml-pipeline` | Producer side. The experiment file holds the call; `materialize.py` is the only run |
 | `setup-workspace` | Workspace layout; four-way stem pairing |
 | `add-python-package` | Agent feature install (agent tools (ruff / ipython / ipykernel)). This skill requests; that skill installs |
 | `python -m skore_skills api get` | skore symbol lookups, including `help` and extra Display methods. Cache hits first |
@@ -675,8 +671,9 @@ Quick lookup; detailed recovery steps in `references/failure_modes.md`.
 
 - `templates/audit.py` — per-experiment audit file skeleton. Copy
   + substitute; don't rewrite from memory. Bare displays only.
-- `templates/viewers.py` — agent-only HTML, locator, and
-  `help()` trees. Copy to `scratch/audit/<stem>/viewers.py`.
+- `templates/materialize.py` — the only audit run. Copy to
+  `scratch/audit/<stem>/materialize.py`. Writes the HTML
+  viewers, `accessors.txt`, and `audit.md`.
 
 
 ## Need a package?
