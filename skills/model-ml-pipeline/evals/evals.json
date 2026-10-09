@@ -35,11 +35,12 @@
       "id": 2,
       "title": "Missing design note stops before code",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- The Backlog choice is confirmed with stem `02_target_transform`.\n- `journal/02_target_transform.md` does not exist.]\n\nImplement experiment 02 for the selected target transform.",
-      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills scaffold --journal --stem 02_target_transform` to create the packaged design-note shell. - State that Question, Motivation, Method, and Risks are filled only after that command creates the shell, then stop for user approval. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write model or experiment code before the design note is approved. - Recreate or fill the design-note shape from memory when the CLI command did not run this turn.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills scaffold --journal --stem 02_target_transform` to create the packaged design-note shell. - Fill Question, Motivation, Method, and Risks from the selected target-transform proposal after that command creates the shell. - Ask Approve / Modify / Stop. Do not ask Yes / No before the note. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write model or experiment code before the design note is approved. - Recreate or fill the design-note shape from memory when the CLI command did not run this turn.",
       "files": [],
       "expectations": [
         "Run `python -m skore_skills scaffold --journal --stem 02_target_transform` to create the packaged design-note shell.",
-        "State that Question, Motivation, Method, and Risks are filled only after that command creates the shell, then stop for user approval.",
+        "Fill Question, Motivation, Method, and Risks from the selected target-transform proposal after that command creates the shell.",
+        "Ask Approve / Modify / Stop. Do not ask Yes / No before the note.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Write model or experiment code before the design note is approved.",
         "The response does NOT: Recreate or fill the design-note shape from memory when the CLI command did not run this turn.",
@@ -106,17 +107,20 @@
     },
     {
       "id": 6,
-      "title": "First-model menu without EDA or Backlog",
+      "title": "First model writes the baseline note",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Scaffolded workspace.\n- Modeling decisions Status is `locked`. Baseline is\n  `seasonal_naive`. Baseline note is `last observed week`.\n- No experiment scripts or completed/running History rows.\n- `status.data_analysis` is `missing`.\n- Backlog is empty.\n- `python -m skore_skills model choices` returns `choices` whose\n  ids are `baseline` then `discuss`. The baseline reason quotes\n  `seasonal_naive` and `last observed week`.]\n\nLet us start modeling. What can we do?",
-      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills status` and `python -m skore_skills model choices`. - Ask one question with, in order: Build the locked baseline; Discuss the next step. The baseline description quotes `seasonal_naive` and `last observed week`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Offer an EDA-derived proposal. - Offer Pick from the Backlog.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills status` and `python -m skore_skills model choices`. - Run `python -m skore_skills scaffold --journal --stem <NN_short>` and fill the design note from `seasonal_naive` and `last observed week`. - Ask Approve / Modify / Stop. Do not ask Yes / No before the note. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask Build the locked baseline or Discuss the next step. - Mention discuss, an EDA proposal, or the backlog.",
       "files": [],
       "expectations": [
         "Run `python -m skore_skills status` and `python -m skore_skills model choices`.",
-        "Ask one question with, in order: Build the locked baseline; Discuss the next step. The baseline description quotes `seasonal_naive` and `last observed week`.",
+        "Run `python -m skore_skills scaffold --journal --stem <NN_short>` and fill the design note from `seasonal_naive` and `last observed week`.",
+        "Ask Approve / Modify / Stop. Do not ask Yes / No before the note.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Ask Build the locked baseline or Discuss the next step.",
+        "The response does NOT: Mention discuss, an EDA proposal, or the backlog.",
         "The response does NOT: Offer an EDA-derived proposal.",
         "The response does NOT: Offer Pick from the Backlog.",
-        "The response does NOT: Write model code before a proposal and design are approved."
+        "The response does NOT: Write model code before the design note is approved."
       ],
       "tools": false,
       "sandbox": [],
@@ -180,12 +184,13 @@
       "id": 10,
       "title": "Backlog selection consumes one real row",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- CLI returned B1 and B3; B2 was previously consumed.]\n\nPick from the backlog.",
-      "expected_output": "Behavioural response satisfying: - Load `manage-ml-backlog` and present B1 and B3 in that order. - Ask for one selection and preserve the unselected row. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Renumber B3 to B2. - Invent a new Backlog item.",
+      "expected_output": "Behavioural response satisfying: - Load `manage-ml-backlog` and present B1 and B3 in that order. - Ask for one selection and preserve the unselected row. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask Yes / No before a row is picked. - Renumber B3 to B2.",
       "files": [],
       "expectations": [
         "Load `manage-ml-backlog` and present B1 and B3 in that order.",
         "Ask for one selection and preserve the unselected row.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Ask Yes / No before a row is picked.",
         "The response does NOT: Renumber B3 to B2.",
         "The response does NOT: Invent a new Backlog item."
       ],
@@ -386,6 +391,44 @@
     },
     {
       "id": 21,
+      "title": "Discuss does not write the baseline note",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Modeling decisions Status is `locked`. Baseline is\n  `seasonal_naive`.\n- No experiment scripts.\n- `python -m skore_skills model choices` returns `choices` whose\n  ids are `baseline` then `discuss`.]\n\nDiscuss the next step.",
+      "expected_output": "Behavioural response satisfying: - Discuss what to learn, why now, and what changes. - Once an idea is agreed, restate it, then AskUserQuestion Yes / No, before creating a design note. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Write the locked-baseline design note. - Ask Build the locked baseline.",
+      "files": [],
+      "expectations": [
+        "Discuss what to learn, why now, and what changes.",
+        "Once an idea is agreed, restate it, then AskUserQuestion Yes / No, before creating a design note.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Write the locked-baseline design note.",
+        "The response does NOT: Ask Build the locked baseline.",
+        "The response does NOT: Write model code."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 22,
+      "title": "A picked backlog row writes the note",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `experiments/01_baseline.py` exists.\n- B1 Item is \"try robust scaling\", Source is `user`. B3 remains.\n- The missing shaping fact is already in the prompt: numeric\n  columns.]\n\nTake B1. Robust scaling applies to the numeric columns.",
+      "expected_output": "Behavioural response satisfying: - Fill the next design note from that Item, Source, and the numeric-columns fact. - Ask Approve / Modify / Stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Ask Yes / No before the note. - Ask which columns again.",
+      "files": [],
+      "expectations": [
+        "Fill the next design note from that Item, Source, and the numeric-columns fact.",
+        "Ask Approve / Modify / Stop.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Ask Yes / No before the note.",
+        "The response does NOT: Ask which columns again.",
+        "The response does NOT: Add an estimator or a procedure the row and the fact do not state.",
+        "The response does NOT: Renumber B3.",
+        "The response does NOT: Write model code before the design note is approved."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 23,
       "title": "Results are published before the close message",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Review returned a digest, locator, and finding.\n- `manage-ml-backlog` record-outcome just updated JOURNAL and\n  `journal/01_baseline.md`.\n- `policy.site` is true and `export-ml-site` is installed.]\n\nFinish the evaluated baseline.",
       "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills site build --if-stale` after record-outcome and before the user-facing close. - Link the freshly built `report.html` and `html/01_baseline.html`. It must NOT: - Send the site link before the Results Markdown is published. - Re-execute a source-current experiment notebook at Close.",

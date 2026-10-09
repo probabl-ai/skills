@@ -41,20 +41,22 @@ in the file.
 When `model-ml-pipeline` calls with the `backlog` array from
 `python -m skore_skills model choices`:
 
-1. Present exactly those `B<N>` rows in their returned order and
-   AskUserQuestion for one pick. Carry each row's Item and Source
-   as the option context, and say in 2–4 lines what the pick
-   authorizes (a Proposal, then a design note to approve) and what
-   it does not (no model code yet). A file link is an addition,
-   never the context. Do not rescan into a different
-   menu and do not add an idea.
+1. When the user has not named a `B<N>`, present exactly those
+   rows in their returned order and AskUserQuestion for one pick.
+   One row, or a message that already names a `B<N>`, is the
+   pick: do not ask again. Carry each row's Item and Source as
+   the option context, and say in 2–4 lines what the pick
+   authorizes (a design note to approve) and what it does not
+   (no model code yet). A file link is an addition, never the
+   context. Do not rescan into a different menu and do not add
+   an idea.
 2. Turn the selected row's Item + Source into a Proposal. Ask only
    for missing shaping facts; do not invent a Method from a
-   one-line item.
-3. Return the confirmed Proposal to `model-ml-pipeline`. After the
-   model stage creates and populates the design note, remove only
-   the selected Backlog row and add the planned History row.
-   Preserve every other stable B<N> index.
+   one-line item. Do not ask Yes / No on the proposal.
+3. Return that proposal to `model-ml-pipeline`. Do not ask to
+   confirm it. After the model stage creates and populates the
+   design note, remove only the selected Backlog row and add the
+   planned History row. Preserve every other stable B<N> index.
 
 This mode does not require a report/audit digest and does not run
 the outcome-recording procedure below. Empty Backlog is a routing
@@ -229,8 +231,8 @@ locator.
 
 - Do not design or implement the next experiment in this turn.
 - Do not dispatch setup or audit by skill id. Returning a
-  selected row or confirmed proposal to `model-ml-pipeline` is
-  required.
+  selected row or proposal to `model-ml-pipeline` is required.
+  Do not ask Yes / No on that proposal.
 - In model-entry selection mode, do not invent a Backlog row or
   remove it before the paired design note exists.
 - Do not invent metrics.
@@ -249,7 +251,7 @@ locator.
 - Do not delete an idea file. Triage writes its `Triage` line
   and moves or updates its Ideas row.
 - Design approval is owned by `model-ml-pipeline`; this skill only
-  returns a confirmed proposal or selected Backlog row.
+  returns a proposal or selected Backlog row.
 
 ## End of turn
 

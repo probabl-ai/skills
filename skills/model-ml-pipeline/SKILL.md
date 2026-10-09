@@ -1,9 +1,10 @@
 ---
 name: model-ml-pipeline
 description: >
-  Deterministic entry point for modeling. On a generic landing,
-  offer only the choices justified by the workspace (the locked
-  baseline, an EDA proposal, Backlog, discussion). A missing
+  Deterministic entry point for modeling. On a first landing,
+  write the locked baseline design note and ask for approval.
+  Later landings offer only the choices the workspace justifies
+  (an EDA proposal, Backlog, discussion). A missing
   modeling lock loads `frame-ml-problem` and stops.
   After a design is approved, coordinate build (pytest smoke is a
   build sub-step), the user's Evaluate (Recommended) / Modify /
@@ -79,15 +80,23 @@ criteria" section. Keep `## Notebooks` with Evaluation then Audit.
    JSON as authoritative.
    - `action` `stop` / `modeling_decisions_unlocked` — load
      `frame-ml-problem` and stop. Do not offer a model menu.
+   - If `choices` includes `baseline` and the user did not ask to
+     discuss, propose a pipeline from the EDA, or pick a backlog
+     item, do not AskUserQuestion. Take the locked-baseline
+     contract below.
+   - An explicit discuss, EDA, or backlog request takes that
+     branch even when `baseline` is present. Do not show the menu
+     first.
    - Otherwise present exactly `choices[]`, in returned order, in
-     one single-choice **AskUserQuestion**:
-     - `baseline` → **Build the locked baseline**
+     one single-choice **AskUserQuestion**. Drop `baseline` from
+     that question: it is not a menu item.
      - `eda_proposal` → **Propose a pipeline from the EDA**
      - `backlog` → **Pick from the Backlog**
      - `discuss` → **Discuss the next step**
 
    Carry each choice's JSON `reason` as its description so the user
-   reads why it is on offer.
+   reads why it is on offer. Choosing backlog asks which row, not
+   whether to build it.
 
 Do not add a disabled choice, infer availability yourself, or
 reorder the list. In particular: no locked-baseline choice when
@@ -120,11 +129,13 @@ never fill it from memory. Do not `site build` an empty shell.
 
 ## Choice contracts
 
-Every choice first produces a user-confirmed proposal and an
-approved design note. The proposal yes agrees the idea. The note
-is approved only by Design approval below. No branch writes model
-code before that gate is `proceed`. Use the next available numeric
-stem; never overwrite an existing note.
+An EDA proposal or a discussion first produces a user-confirmed
+proposal and an approved design note. The proposal yes agrees
+that idea. A locked baseline and a backlog row do not: the frame
+table or the picked row is the decision. The note is approved
+only by Design approval below. No branch writes model code before
+that gate is `proceed`. Use the next available numeric stem; never
+overwrite an existing note.
 
 - **Locked baseline (`baseline`).** The note names the one
   comparison model the journal already locked. A `dummy` token is a
@@ -133,13 +144,17 @@ stem; never overwrite an existing note.
   smoke, and it is not expected to add predictive value. Any
   other token (`logistic`, `seasonal_naive`, `group_mean`,
   `production`) is that one comparison model. Do not upgrade it
-  to another estimator. Restate the proposal, then one
-  single-choice **AskUserQuestion**: **Yes** / **No**. Do not
-  also ask for a typed yes. "Maybe" is not Yes. No or Stop
-  writes nothing. A later Yes (the tool answer, or an explicit
-  yes on a later turn) is what authorizes the write. On Yes,
-  write the note, then Design approval, before build. Keep the
-  normal post-smoke Evaluate (Recommended) / Modify / Stop gate.
+  to another estimator. Do not AskUserQuestion before the note.
+  This turn runs `python -m skore_skills status` and
+  `python -m skore_skills model choices`, then
+  `python -m skore_skills scaffold --journal --stem <NN_short>`,
+  and fills Question, Motivation, Method, and Risks from the
+  locked baseline, its note, and the comparison metric. Then
+  Design approval, before build. That question is only Approve /
+  Modify / Stop. Do not mention discuss, an EDA proposal, or the
+  backlog in this message unless the user already asked for one
+  of those. Keep the normal post-smoke Evaluate (Recommended) /
+  Modify / Stop gate.
 - **EDA proposal (`eda_proposal`).** Read
   `data_analysis/data_analysis.md` and the project goal. Cite the
   EDA findings that motivate one pipeline proposal. Do not invent
@@ -151,10 +166,15 @@ stem; never overwrite an existing note.
   On Yes, write the note, then Design approval, before build.
 - **Backlog (`backlog`).** Load `manage-ml-backlog` only if
   `status.skills.manage-ml-backlog` is true. Else one-line skip;
-  do not invent a Backlog. Pass the
-  `backlog` rows returned by the CLI; ask the user to pick one
-  `B<N>`, consume only that row into a proposal/design stem, then
-  return here. Do not add a new Backlog idea in this branch.
+  do not invent a Backlog. Pass the `backlog` rows returned by
+  the CLI. That skill asks for one `B<N>` when the user has not
+  named one, and asks only for shaping facts the row does not
+  state. It does not ask Yes / No. When it returns the proposal,
+  run `scaffold --journal --stem <NN_short>` and fill the note
+  from that Item, Source, and the facts just given, then Design
+  approval, before build. Do not add an estimator or a procedure
+  neither the row nor those facts stated. Do not add a new
+  Backlog idea in this branch.
 - **Discussion (`discuss`).** Have an open conversation about what
   to learn, why now, and what changes. Restate the agreed idea,
   then one single-choice **AskUserQuestion**: **Yes** / **No**.
@@ -200,9 +220,11 @@ preview the sequence but never starts local work.
 
 If the design-note shell is missing, this turn only names
 `python -m skore_skills scaffold --journal --stem <NN_short>`
-and stops. Do not fill Question / Motivation / Method / Risks
-from memory. Populate those sections only after that command
-has created the shell, then Design approval.
+and stops, except on the locked-baseline branch and on a backlog
+proposal that skill already returned. Those two run the command
+and populate Question / Motivation / Method / Risks in this same
+turn, then Design approval. Do not fill those sections from
+memory when the command did not run this turn.
 
 ## Design approval
 
@@ -282,10 +304,11 @@ symbols are written, children use
   `python -m skore_skills model choices`.
 - If `journal/NN_<short>.md` is missing, this turn only names
   `python -m skore_skills scaffold --journal --stem
-  <NN_short>` and stops. Do not recreate or fill the template
-  from memory. Populate Question / Motivation / Method / Risks
-  only after that command has created the shell, then Design
-  approval. Do not `site build` before the shell exists.
+  <NN_short>` and stops, except the locked baseline and a
+  returned backlog proposal. Those run that command and populate
+  Question / Motivation / Method / Risks in the same turn, then
+  Design approval. Do not fill the template from memory when the
+  command did not run. Do not `site build` before the shell exists.
 - Require `design consent` `proceed` before code. Do not treat
   "the user asked to build", or a chat yes on the drafted note,
   as approval.

@@ -54,8 +54,19 @@ wrapper CLI.
    facts. Do not ask this again once `data_analysis` is `present`
    or `skipped`.
 2. Run `python -m skore_skills frame show`. When the user is
-   changing a locked constraint and named one cell, add
-   `--revise`. When they are changing a constraint and did not
+   changing a locked constraint and named one cell, do not add
+   `--revise` and do not treat `proceed` as the end of the turn.
+   Run `python -m skore_skills frame clear --cell <key>`, then
+   `frame show` with no `--revise`, and ask the replacement in
+   this turn the way step 5 asks a missing decision. If the
+   message already states the new value, write it and ask only
+   the decisions that are still empty. Do not ask Modify / Keep /
+   Stop. The question names the decision and its current value
+   (the comparison metric is MAE; which metric replaces it). Do
+   not say cell, blank, clear, or reopen, and do not say the new
+   value waits until next turn. Do not
+   load `model-ml-pipeline` or git-close on this turn. When they
+   are changing a constraint and did not
    name a cell, **AskUserQuestion** one pick among the filled
    decisions (skip `n/a`) and stop. Do not also ask for a typed
    answer. Do not `--revise`, do not `frame clear`, and do not
@@ -122,30 +133,21 @@ wrapper CLI.
    change lines from step 5. Run `frame show` again and follow
    step 8. Do not AskUserQuestion. The user sentence that opened
    this screen is not a choice.
-   `ask` / `revise` — quote JSON `context` inline in 2–4 lines,
-   then one single-choice **AskUserQuestion** using only JSON
-   `choices`, in that order, and stop. Labels are **Modify** /
-   **Keep** / **Stop**. Do not also ask for a typed answer. The
-   user sentence that opened this screen is not a choice. Do not
-   set Status to `locked` in that same turn.
-   - `modify` on a revise, when the user named one cell: run
-     `python -m skore_skills frame clear --cell <key>` and stop.
-     Do not write the new value. Do not type `Revised on`; the
-     command stamps that date. Do not blank any other cell by
-     hand. The next `frame show` asks only keys that are still
-     empty or invalid.
-     `modify` with no named cell writes nothing and does not
-     `frame clear`: **AskUserQuestion** one pick among the filled
-     decisions (skip `n/a`) and stop. Do not also ask for a typed
-     answer.
-   - `keep` leaves the locked table unchanged.
-   - `stop` writes nothing further.
-8. `proceed` — the table is locked. If `translation` is null, say
+   `ask` / `revise` is not a user question. Do not present
+   Modify / Keep / Stop. Ignore those `choices`. Clear the named
+   decision and ask the replacement, as in step 2.
+8. `proceed` — the table is locked, and the user is not changing
+   a named decision. If they are, step 2 already handled it. If
+   `translation` is null, say
    that this lock has no splitter translation. Do not load
    `build-ml-pipeline` and do not return to `model-ml-pipeline`.
    Stop. If `model-ml-pipeline` dispatched this turn, return to
    that coordinator and stop. Do not start build, write a design
-   note, or run the git close from here. Otherwise run
+   note, or run the git close from here. If no experiment script
+   exists and History has no running, done, or abandoned model
+   row, and `status.skills.model-ml-pipeline` is true, load that
+   skill and stop. Do not write a design note here. Do not
+   `git end-turn`. Otherwise run
    `python -m skore_skills git end-turn --stage implement`. If
    JSON `action` is `invoke`, load `persist-ml-git` only if
    `status.skills.persist-ml-git` is true and stop. Otherwise
@@ -172,14 +174,14 @@ not build.
 - Do not add an option that is absent from `candidates`.
 - Do not open a reference the JSON did not name, except
   `references/fallback.md` when the command is missing.
-- A locked table changes only through `frame show --revise`, then
-  the same fill. A complete fill sets Status to `locked` again.
-  `keep` does not edit it.
-- On `modify`, `frame clear` is the only journal edit, and only
-  for the cell the user named. It stamps `Revised on`; do not
-  type that date. Do not rewrite `experiments/`,
+- A locked decision changes by clearing that decision, then
+  filling it like any missing one. A complete fill sets Status
+  to `locked` again. Do not ask Modify / Keep / Stop.
+- `frame clear` is the only journal edit that reopens a decision,
+  and only for the decision the user named. It stamps `Revised
+  on`; do not type that date. Do not rewrite `experiments/`,
   `audit/`, or a report in this skill.
-- After a cell is blanked, do not run an existing experiment
+- After a decision is reopened, do not run an existing experiment
   script. Say that it still uses the previous splitter and
-  metric. The next build or evaluate rewrites it after the table
-  is locked again.
+  metric. Do not say cell, blank, clear, or reopen. The next build or
+  evaluate rewrites it after the table is locked again.

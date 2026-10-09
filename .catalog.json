@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "12dbde34c74608ca10edf622cfc794d5749bda5b027f3dd4748d33e233700838",
+  "catalog_hash": "8cd7a64bdfb417fd6a9e2a7f5c785520496999cad3c90e655be8832568d7d726",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -21,7 +21,7 @@
       "summary": "Record the problem, deployment setting, metric, baseline, and fold count before any model code.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "15720f38cb83ca8752895cad829a3404aee1a94cf1a17f1a4e246f7d6eaaa60c"
+      "hash": "ae29165f766ace966099479ae3b4470b503cd7f04b6e22afe5339c539bedb8e4"
     },
     {
       "id": "build-ml-pipeline",
@@ -66,7 +66,7 @@
       "summary": "Record experiment outcomes and triage idea files. A promoted idea moves from the Ideas table into a Backlog row.",
       "category": "action",
       "subcategory": null,
-      "hash": "60030fec4e5aba7f66ce33903a337c27153b5cd7361f63c24fccb9d7f0381204"
+      "hash": "a1016e60519954f9b8949d76196af2c1a4bcf17eb0965bf0622a3b87d08b91b7"
     },
     {
       "id": "organize-ml-workspace",
@@ -162,10 +162,10 @@
       "id": "model-ml-pipeline",
       "path": "skills/model-ml-pipeline",
       "title": "Model ML Pipeline",
-      "summary": "Require locked problem framing, then coordinate modeling choices, build, smoke testing, evaluation, and audit.",
+      "summary": "Require locked problem framing, write the first baseline design note for approval, then coordinate later choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "3ea66e88e21efb6b3b3f590f8ed62fdefe6b6006ba073ac2a8cef24a7d61ba05"
+      "hash": "66e720403a9fe1c4b99769756f64ca4bc25aebbc90b4857eef6dbf4ea1288999"
     },
     {
       "id": "choose-python-library",

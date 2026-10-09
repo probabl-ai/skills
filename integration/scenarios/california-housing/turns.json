@@ -190,21 +190,25 @@
     },
     {
       "id": "frame-fill",
+      "checkpoint": true,
       "say": "Prediction goal: point_predictions. Deployment: iid. Horizon: n/a. Gap: n/a. Generalize to: n/a. Known at predict: n/a. Time role: n/a. Metric role: point_error. Metric: RMSE. Baseline: dummy. Baseline note: mean house value. Folds: 2.",
       "expect": {
         "files": [
           "DATA.md",
           "data/raw/housing.csv",
+          "data_analysis/data_analysis.md",
           "src/housing/pipeline.py",
-          "journal/JOURNAL.md"
+          "journal/JOURNAL.md",
+          "journal/01_*.md"
         ],
         "absent": [
-          "journal/01_*.md",
-          "experiments/*.py"
+          "experiments/*.py",
+          "tests/smoke/test_01_*.py"
         ],
         "contains": {
           "journal/JOURNAL.md": [
-            "| Status | draft |",
+            "| Status | done",
+            "| Status | locked |",
             "| Prediction goal | point_predictions |",
             "| Deployment | iid |",
             "| Horizon | n/a |",
@@ -217,56 +221,6 @@
             "| Baseline | dummy |",
             "| Folds | 2 |"
           ]
-        }
-      }
-    },
-    {
-      "id": "frame-lock",
-      "checkpoint": true,
-      "say": "Lock these decisions.",
-      "expect": {
-        "files": [
-          "DATA.md",
-          "data/raw/housing.csv",
-          "data_analysis/data_analysis.md",
-          "src/housing/pipeline.py",
-          "journal/JOURNAL.md"
-        ],
-        "absent": [
-          "journal/01_*.md",
-          "experiments/*.py"
-        ],
-        "contains": {
-          "journal/JOURNAL.md": [
-            "| Status | done",
-            "| Status | locked |",
-            "| Prediction goal | point_predictions |",
-            "| Deployment | iid |",
-            "| Metric role | point_error |",
-            "| Metric | RMSE |",
-            "| Baseline | dummy |",
-            "| Folds | 2 |"
-          ]
-        }
-      }
-    },
-    {
-      "id": "baseline-choose",
-      "say": "Build the locked baseline.",
-      "expect": {
-        "files": [
-          "journal/JOURNAL.md",
-          "journal/01_*.md",
-          "src/housing/pipeline.py"
-        ],
-        "absent": [
-          "experiments/*.py",
-          "tests/smoke/test_01_*.py"
-        ],
-        "contains": {
-          "journal/JOURNAL.md": [
-            "| Status | locked |"
-          ]
         },
         "contains_any": {
           "journal/01_*.md": [
@@ -277,7 +231,7 @@
     },
     {
       "id": "baseline-approve",
-      "say": "Yes, that proposal.\n\nApprove the design note.",
+      "say": "Approve the design note.",
       "expect": {
         "files": [
           "journal/01_*.md",
@@ -381,27 +335,25 @@
         "files": [
           "journal/JOURNAL.md",
           "journal/ideas/*.md",
-          "journal/01_*.md"
+          "journal/01_*.md",
+          "journal/02_*.md"
         ],
         "absent": [
-          "journal/02_*.md",
           "experiments/02_*.py"
         ],
-        "contains": {
-          "journal/JOURNAL.md": [
-            "| B1 |"
-          ]
-        },
         "contains_any": {
           "journal/ideas/*.md": [
             "Triage: promoted"
+          ],
+          "journal/02_*.md": [
+            "**State:** planned"
           ]
         }
       }
     },
     {
       "id": "iterate-approve",
-      "say": "Yes, that proposal.\n\nApprove the design note.",
+      "say": "Approve the design note.",
       "expect": {
         "files": [
           "journal/01_*.md",
