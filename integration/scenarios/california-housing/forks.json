@@ -196,28 +196,8 @@
       }
     },
     {
-      "id": "skip-review",
-      "after": "baseline-evaluate",
-      "say": "Skip the review.",
-      "expect": {
-        "files": [
-          "scratch/results/01_*/report.html",
-          "experiments/01_*.py",
-          "journal/01_*.md"
-        ],
-        "absent": [
-          "journal/ideas/*.md"
-        ],
-        "contains_any": {
-          "journal/01_*.md": [
-            "**State:** done"
-          ]
-        }
-      }
-    },
-    {
       "id": "discard-ideas",
-      "after": "baseline-review",
+      "after": "baseline-close-audit",
       "say": "Discard every open idea.",
       "expect": {
         "files": [

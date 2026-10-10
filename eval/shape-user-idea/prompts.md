@@ -26,7 +26,9 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Write the file or the Ideas row before yes.
+- Write the idea file or the Ideas row when the user has not
+  confirmed. When the prompt already says they answered yes, the
+  same message may restate Yes / No and then write the file.
 - Write History, Backlog, Status, or a design note.
 - Append a `B<N>` row.
 - Add acceptance criteria.

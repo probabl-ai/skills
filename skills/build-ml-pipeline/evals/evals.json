@@ -170,17 +170,17 @@
       "id": 9,
       "title": "Research measure lane does not edit EDA",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Design note approved.\n- `research-ml-practice` is installed.\n- Scratch research lists a `measure` row (plot id uniqueness)\n  and a `declare` row (drop id inside the graph, not on `data/`).]\n\nShould I drop customer_id? Research the practice and declare\nthe pipeline.",
-      "expected_output": "Behavioural response satisfying: - Load `research-ml-practice` if the concern is not already in scratch. - AskUserQuestion `allow_multiple` on **`declare`** rows. The question's last line is exactly: Select each one you want. - Treat `measure` as revisit-EDA / open question. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Edit `data_analysis/data_analysis.py`. - Drop `customer_id` from raw files under `data/`.",
+      "expected_output": "Behavioural response satisfying: - Load `research-ml-practice` if the concern is not already in scratch. Saying the scratch rows are already the practice answer satisfies this. - AskUserQuestion `allow_multiple` on **`declare`** rows. The question's last line is exactly: Select each one you want. - Treat `measure` as revisit-EDA / open question. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Edit `data_analysis/data_analysis.py`. - Drop `customer_id` from raw files under `data/`.",
       "files": [],
       "expectations": [
-        "Load `research-ml-practice` if the concern is not already in scratch.",
+        "Load `research-ml-practice` if the concern is not already in scratch. Saying the scratch rows are already the practice answer satisfies this.",
         "AskUserQuestion `allow_multiple` on **`declare`** rows. The question's last line is exactly: Select each one you want.",
         "Treat `measure` as revisit-EDA / open question.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Edit `data_analysis/data_analysis.py`.",
         "The response does NOT: Drop `customer_id` from raw files under `data/`.",
         "The response does NOT: Pick a cross-validator in pipeline code.",
-        "The response does NOT: In the question, ask the user to uncheck a box, or say that a box starts checked. A recorded status is not the box's starting state."
+        "The response does NOT: In the question, ask the user to uncheck a box, or say that a box starts checked. A pre-flight checklist is not the question. A recorded status is not the box's starting state."
       ],
       "tools": false,
       "sandbox": [],

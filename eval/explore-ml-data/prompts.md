@@ -346,7 +346,9 @@
 - Call `plt.close` or `import matplotlib.pyplot` for these
   figures.
 - Loop over columns with a trailing `g` (that is not displayed).
-- AskUserQuestion grouping when only one data file is in play.
+- Ask the user how to group files when only one data file is in
+  play. A checklist line that says the grouping question was
+  skipped is not a grouping question.
 
 ---
 
@@ -589,7 +591,9 @@
 - Load `research-ml-practice` with the canned JOURNAL+EDA
   extra-measurement question (problem class, not the dataset
   proper name).
-- Read `scratch/research/survey-<slug>.md`.
+- Read `scratch/research/survey-<slug>.md` when tools ran. A
+  message that says tools did not run, and does not claim the
+  survey was read, satisfies this.
 - AskUserQuestion `allow_multiple` on **only** sourced
   **`measure`** extras from that note. The question's last line is exactly: Select each one you want.
 
@@ -604,8 +608,8 @@
 - Run `git end-turn` in this pass.
 - Name `Close` as recommended on the continuation board.
 - In the question, ask the user to uncheck a box, or say that a
-  box starts checked. A recorded status is not the box's starting
-  state.
+  box starts checked. A pre-flight checklist is not the question.
+  A recorded status is not the box's starting state.
 
 ---
 

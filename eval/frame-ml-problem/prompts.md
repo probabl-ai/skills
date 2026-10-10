@@ -87,8 +87,8 @@
   `context.targets` `["segment"]`. There is no `candidates` list.
 
 **Must do:**
-- Read `references/fallback.md` and no other file under
-  `references/`.
+- Follow the Fallback section in SKILL.md and open no other file
+  under `references/`.
 - Say the closed menu does not cover clustering.
 - Ask what a better result means and what the baseline is.
 - Write Prediction goal `uncovered` plus those two prose cells.
@@ -111,9 +111,10 @@
   'frame'`. There is no JSON.
 
 **Must do:**
-- Read `references/fallback.md`.
-- Record the comparison and the baseline in words, with Prediction
-  goal `uncovered`.
+- Follow the Fallback section in SKILL.md.
+- Write Prediction goal `uncovered` in this message. Ask what a
+  better result and an honest baseline are. Do not invent the
+  metric or the baseline.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -186,7 +187,8 @@
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `frame show --revise` or ask Modify / Keep / Stop.
-- Say "cell", "blank", "clear", or "reopen".
+- Say the decision was reopened. "re-ask" and "opened for a
+  new value" are allowed.
 - Leave Status `locked`.
 - Reopen deployment or folds.
 - Write a model or a splitter.
@@ -211,7 +213,9 @@
 **Must do:**
 - Run `frame clear --cell metric`. Leave metric role, prediction
   goal, and folds filled.
-- Ask which comparison metric replaces `MAE`.
+- Ask which comparison metric replaces `MAE`. Ending with the
+  line "The comparison metric is MAE. Which metric replaces it?"
+  satisfies this.
 - Say `experiments/01_baseline.py` still uses the previous metric
   and is not run. The next build or evaluate rewrites it after
   the table is locked again.
@@ -219,7 +223,8 @@
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `frame show --revise` or ask Modify / Keep / Stop.
-- Say "cell", "blank", "clear", or "reopen".
+- Say the decision was reopened. "re-ask" and "opened for a
+  new value" are allowed.
 - Reopen metric role, prediction goal, or folds.
 - Write the replacement metric in this turn.
 - Rewrite an experiment file or a report.
@@ -473,7 +478,9 @@
 - Link `report.html`.
 
 **Must NOT do:**
-- Enable notebooks or site policy.
+- Run `policy set` to turn notebooks or site on. Building the
+  site because `policy.site` is already true is required, not
+  enabling policy.
 - Build between individual edits in the same Markdown batch.
 - Run `notebook convert`.
 
@@ -525,8 +532,8 @@
   `candidates` list.
 
 **Must do:**
-- Read `references/fallback.md` and no other file under
-  `references/`.
+- Follow the Fallback section in SKILL.md and open no other file
+  under `references/`.
 - Say the closed menu does not cover a mix of regression and
   classification outputs.
 - Ask what a better result means and what the baseline is.
@@ -556,8 +563,8 @@
   `["topic", "priority"]`. There is no `candidates` list.
 
 **Must do:**
-- Read `references/fallback.md` and no other file under
-  `references/`.
+- Follow the Fallback section in SKILL.md and open no other file
+  under `references/`.
 - Say the closed menu does not cover several classification
   outputs.
 - Ask what a better result means and what the baseline is.

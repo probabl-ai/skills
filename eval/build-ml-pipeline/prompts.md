@@ -310,7 +310,8 @@ violated.
 
 **Must do:**
 - Load `research-ml-practice` if the concern is not already in
-  scratch.
+  scratch. Saying the scratch rows are already the practice
+  answer satisfies this.
 - AskUserQuestion `allow_multiple` on **`declare`** rows. The question's last line is exactly: Select each one you want.
 - Treat `measure` as revisit-EDA / open question.
 
@@ -320,8 +321,8 @@ violated.
 - Drop `customer_id` from raw files under `data/`.
 - Pick a cross-validator in pipeline code.
 - In the question, ask the user to uncheck a box, or say that a
-  box starts checked. A recorded status is not the box's starting
-  state.
+  box starts checked. A pre-flight checklist is not the question.
+  A recorded status is not the box's starting state.
 
 ---
 

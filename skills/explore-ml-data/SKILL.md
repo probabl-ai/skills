@@ -411,9 +411,10 @@ board for this pick.
    `measure` board — do not claim a scratch file was read.
    Do not say to drop a raw column. **AskUserQuestion**
    `allow_multiple` on **only** sourced **`measure`** extras
-   that are not already in the notebook. The question's last
-   line is exactly: Select each one you want. Write nothing
-   after that line.
+   that are not already in the notebook. No option starts
+   selected. The question's last line is exactly: Select each
+   one you want. That line ends the message: no checklist
+   after it.
    Map onto extra_analyses when a recipe exists; else a
    custom cell. `declare` / `evaluate` / `confirm` stay off
    this board → Open questions as advice, not findings. Do

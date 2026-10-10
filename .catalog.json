@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "04d75d6aaf9f09eb2743bd2de06d7bceb1a45a01337e7574db76da8f0330d399",
+  "catalog_hash": "98558b383b11f0443b25df01787dd29ac04def13762923c0054d2c135bab8f05",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "cc6ae4a9f73a0c8e2891004bbbf4d75740216bb2d911f83d83661cab4fb8ab64"
+      "hash": "ac4f5e07076551c3b3598a11cce65b95669118c67b6b831d027ac944c52f61f8"
     },
     {
       "id": "frame-ml-problem",
@@ -21,7 +21,7 @@
       "summary": "Record the problem, deployment setting, metric, baseline, and fold count before any model code.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "8f09433284e1a9c68754d3e314d3ba2149870884d1933aaa27fe29c34928a864"
+      "hash": "e655829c1ec15c3131f10ba3b2715c488f335241b9f2b831967a3899cc4ed00d"
     },
     {
       "id": "build-ml-pipeline",
@@ -30,7 +30,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "aa212c15ad3b793e9f3b573381ab4356164fb2c996f12ecd7669d3f7ae4177a2"
+      "hash": "3939b22b60bcc586431a1fc4d20a34ba48c7c250c9f4fb71a820c93c5724f855"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "75a03d0784ff1c1db8ebbb2696d7befe594a0facdb42d0411e8471025f14f09b"
+      "hash": "707eb4b1d930f1802fb72292f03c9767e8083dd16508efe442b4678ba9d68116"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -48,7 +48,7 @@
       "summary": "Structural pytest: prediction count must match the predict-grid row count.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "5cfa1e6186d5320e661ecb077c3fe75ee512de06381259401efdfcbaad271b33"
+      "hash": "c035e84b7926e9efe1d32cf275a5d252f3ae850347ec2c8a175b56485b52b3c2"
     },
     {
       "id": "audit-ml-pipeline",
@@ -120,7 +120,7 @@
       "summary": "Shape a user idea or a named artifact into one idea file and one Ideas row after they confirm.",
       "category": "meta",
       "subcategory": null,
-      "hash": "ff57b92a3c26ff8f3b81a6b287248316fbb1137312e39642aab1d409f9e1db0c"
+      "hash": "1317b5e60055612877fde486354649784447aefb90ffa21ecb04eb6fe657263c"
     },
     {
       "id": "search-ml-literature",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, write the first baseline design note for approval, then coordinate later choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "25d2457a9632b38663ae3f3212c1cb178e2bd8b708d7f318f89c45314dc7e64a"
+      "hash": "7f9dc26bfb95f8842e1621aa5cf00f0b567af92a3908ab6fd0fddeaa35213c1b"
     },
     {
       "id": "choose-python-library",
@@ -246,7 +246,7 @@
       "summary": "Coordinate executed notebooks and an offline MkDocs documentation site.",
       "category": "meta",
       "subcategory": null,
-      "hash": "1dbce879a4dbff8f8689cebf90b2df31f77319b628fcc6121e50f295e81873b3"
+      "hash": "b5d0616d3d9abcfedbe44944b32004412bf114b9e86640d5837240d54c263698"
     },
     {
       "id": "sync-ml-reports",

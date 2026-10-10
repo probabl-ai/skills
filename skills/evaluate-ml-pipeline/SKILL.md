@@ -66,7 +66,7 @@ skill ids, `G-*` names, or the wrapper CLI.
 2. History-dependent pipeline (backward shift, lag, rolling
    window, target shift, or a join with side history): if
    `tests/smoke/test_<stem>.py` is missing or pytest is red,
-   stop. Route to `build-ml-pipeline`. Do not write
+   stop and go back to build (§ Back to build). Do not write
    `skore.evaluate`. Documented n/a only when there is no
    history-dependent step.
 3. `python -m skore_skills evaluate consent --stem <stem>`.
@@ -76,7 +76,7 @@ skill ids, `G-*` names, or the wrapper CLI.
      evaluation" is not consent on a first run.
    - The user already answered **Evaluate** this turn, or JSON
      is `proceed` (a real locator already exists): continue.
-   - `stop` — smoke file missing. Route to build.
+   - `stop` — smoke file missing. Back to build (§ Back to build).
 4. G-SKORE-MODE. Read `status.policy.skore_mode`. If it is
    already set, keep it. If unset, ask local (recommended) /
    hub / mlflow, then `python -m skore_skills policy set
@@ -179,10 +179,10 @@ report = skore.evaluate(
 
 The `cv` on `mark_as_X` is `KFold`, `GroupKFold`, or the
 date-based class from build. If `translation` names a `cv` and
-the marker has none, return to `build-ml-pipeline`. Do not
-wire `split_kwargs` here. Empty `split_kwargs` plus a possible
-group column → return to `build-ml-pipeline`. Do not default
-to `KFold`. `translation.splitter` `prefit` is not a `cv` on
+the marker has none, go back to build (§ Back to build). Do
+not wire `split_kwargs` here. Empty `split_kwargs` plus a
+possible group column → back to build. Do not default to
+`KFold`. `translation.splitter` `prefit` is not a `cv` on
 the marker.
 
 No `Stratified*` for class imbalance. It compresses across-fold
@@ -194,7 +194,7 @@ default list in `build-ml-pipeline` needs no scorer, except
 per output, and the locked aggregate must already be
 `.skb.with_scoring(...)`. Any other name must already be
 `.skb.with_scoring(...)` on the prediction DataOp. If it is
-not, return to `build-ml-pipeline` before `skore.evaluate`.
+not, go back to build (§ Back to build) before `skore.evaluate`.
 Do not call `report.metrics.add`. When the scorer is attached,
 that name is a row in `report.metrics.summarize().frame()`.
 For `multioutput-regression`, that frame also has one row per
@@ -205,7 +205,7 @@ stay in the stored report. `skore.evaluate` has no
 name is attached and still missing from that frame, the
 predictor class is wrong: it must be the mixin, then
 `BaseEstimator` (`RegressorMixin` or `ClassifierMixin` first).
-Return to `build-ml-pipeline`. `BaseEstimator` alone, and
+Go back to build (§ Back to build). `BaseEstimator` alone, and
 `BaseEstimator` before the mixin, both fail.
 
 An extra check the user asks for after the lock:
@@ -366,14 +366,36 @@ Links: `[report.html](<workspace>/report.html)` and
 Tokens after the narrative: JSON `locator` first, then
 G-AUDIT-FINDING (`n/a — audit not run` when skipped).
 
+## Back to build
+
+A missing `cv`, a missing scorer, a wrong predictor class, and a
+missing or red smoke test are pipeline fixes that belong to
+`build-ml-pipeline`. How to get there depends on who loaded this
+skill:
+
+- **Dispatched** — `model-ml-pipeline` or `build-ml-pipeline`
+  loaded this skill this turn: stop and return to that loop, which
+  goes back to build for the fix.
+- **Entered directly** — the user asked to evaluate, or the entry
+  skill routed here: load `model-ml-pipeline` when
+  `status.skills.model-ml-pipeline` is true, and name the stem. It
+  resumes the approved design and re-enters build for the fix, on
+  the model tier that build declares. Do not load
+  `build-ml-pipeline` from here: a sub-step this skill loads runs
+  on at most this skill's own tier. Missing `model-ml-pipeline` →
+  say in one line that the pipeline needs a fix in build, and stop.
+
+Either way, write no `skore.evaluate` this turn.
+
 ## Stops
 
 - Pending setup (`status.setup.pending` non-empty) → load
   `setup-ml-project`. A declined `git` is not asked again. A
   declined env or workspace stops.
-- Smoke missing or red on a history-dependent pipeline → build.
-- Empty `split_kwargs` plus a possible group column → return
-  to `build-ml-pipeline`. Do not default to `KFold`.
+- Smoke missing or red on a history-dependent pipeline → back to
+  build (§ Back to build).
+- Empty `split_kwargs` plus a possible group column → back to
+  build (§ Back to build). Do not default to `KFold`.
 - `import skore` fails → G-SKORE-MODE if unset, then
   `add-python-package`. Do not drop back to `cross_val_score`.
 - Hyperparameter search, serving, and multi-run tracking are

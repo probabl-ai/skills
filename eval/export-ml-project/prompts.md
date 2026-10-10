@@ -68,7 +68,9 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Persist `notebooks` or `site` before the user answers.
+- Run `policy set`, or write `notebooks` or `site` policy values,
+  before the user answers. Describing the two choices and saying
+  they are not recorded yet is not persistence.
 - Run `git end-turn`.
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
