@@ -106,8 +106,8 @@ links); this skill does not narrate the pipeline.
   loaders that actually break in production.
 - **No wrappers, no NaN-handling, no `eval_mode` hacks.** If the
   smoke test only passes after wrapping the predictor or
-  conditioning on `eval_mode`, the pipeline is wrong. Route back
-  to `build-ml-pipeline` and fix the X-marker placement.
+  conditioning on `eval_mode`, the pipeline is wrong. Go back to
+  build (§ Back to build) and fix the X-marker placement.
   Wrappers paper over the failure mode; they don't solve it.
 - **The smoke test uses *only* the predicting package's API.**
   For a `SkrubLearner` produced by `build-ml-pipeline` that means
@@ -184,7 +184,7 @@ Pre-flight (smoke-test-ml-pipeline):
       `journal/NN_<short_name>.md` § Status.headline; the test does
       not import `skore` / read the project store at runtime.
 - [ ] Pytest run this turn on `tests/smoke/test_NN_<short_name>.py`.
-      Red → return to `build-ml-pipeline`. Green (sub-step) →
+      Red → back to build (§ Back to build). Green (sub-step) →
       return to build for the design HITL.
 ```
 
@@ -442,8 +442,8 @@ A failing smoke test is a **pipeline-shape problem**, not a
 metric problem.
 
 - **Hard-assertion failure** (row count) → the pipeline is broken.
-  Re-enter `build-ml-pipeline`, audit the X-marker placement and
-  the history-dependent feature steps. Don't tune the model;
+  Go back to build (§ Back to build), audit the X-marker placement
+  and the history-dependent feature steps. Don't tune the model;
   don't loosen the assertion; don't add a wrapper. Fix the shape.
 - **Soft-assertion failure** (metric way off) → the predictions
   exist but are garbage on the smoke window. Most common cause:
@@ -456,6 +456,26 @@ metric problem.
   the matching smoke test passes.   `evaluate-ml-pipeline` also
   STOPs while `smoke run` is `stop` (or the smoke file is missing on a
   history-dependent pipeline).
+
+## Back to build
+
+A pipeline fix belongs to `build-ml-pipeline`. How to get there
+depends on who loaded this skill:
+
+- **Sub-step** — `build-ml-pipeline` loaded this skill: return to
+  it. Its instructions are still loaded; continue its loop.
+- **Direct debug** — this skill was loaded on its own (for example
+  "why is smoke failing?"): load `model-ml-pipeline` when
+  `status.skills.model-ml-pipeline` is true, and name the stem. It
+  resumes the approved design and re-enters build for the fix, on
+  the model tier that build declares. Do not load
+  `build-ml-pipeline` from here: a sub-step this skill loads runs
+  on at most this skill's own tier. Missing `model-ml-pipeline` →
+  say in one line that the pipeline needs a fix in build, and stop.
+
+On a direct debug request that only asks *why* smoke is failing,
+the diagnosis is the answer; go back to build only when the user
+wants the pipeline fixed.
 
 ## What this skill does NOT do
 
@@ -479,8 +499,8 @@ This is the executable proof. After the test file is written or
 updated, run `python -m skore_skills smoke run --stem
 <NN>_<short_name>`. It streams pytest on
 `tests/smoke/test_NN_<short_name>.py` then prints JSON. Do not
-claim green without `action: proceed`. `stop` / `red` → route to
-`build-ml-pipeline` to modify the pipeline;
+claim green without `action: proceed`. `stop` / `red` → back to
+build to modify the pipeline (§ Back to build);
 do not start evaluate. `proceed` → return to build for the
 design HITL when this skill was loaded as a sub-step.
 
@@ -488,7 +508,8 @@ design HITL when this skill was loaded as a sub-step.
 
 - **`build-ml-pipeline`** — parent. Owns the X-marker placement
   rule the smoke test asserts, and the post-green HITL. Smoke
-  failure typically routes back there for a pipeline-shape fix.
+  failure goes back there for a pipeline-shape fix, through
+  `model-ml-pipeline` on a direct debug (§ Back to build).
   Pytest is the loop: `smoke run` red → modify pipeline → `smoke run` again.
 - **`manage-ml-backlog`** — record-outcome writes `done`. Requires
   the smoke test to pass before an experiment can flip to `done`.

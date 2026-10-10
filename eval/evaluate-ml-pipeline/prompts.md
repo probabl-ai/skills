@@ -111,8 +111,10 @@ violated.
 
 **Must do:**
 - Name `python -m skore_skills frame show`.
-- Return to `build-ml-pipeline` because the locked date splitter
-  is not on the marker. Do not write `skore.evaluate` yet.
+- Go back to build because the locked date splitter is not on
+  the marker. This skill was entered directly, so go through
+  `model-ml-pipeline`, which resumes the approved design. Do not
+  write `skore.evaluate` yet.
 
 **Must NOT do:**
 - Write `skore.evaluate` in this turn.
@@ -174,10 +176,11 @@ violated.
 
 **Must do:**
 - **Refuse to default** to `KFold` silently.
-- Route back to `build-ml-pipeline` (NOT this skill) to wire
-  `split_kwargs` for `region` first.
+- Send the fix back to build (NOT this skill) to wire
+  `split_kwargs` for `region` first, through `model-ml-pipeline`
+  since this skill was entered directly.
 - Cite the stop: `translation.groups` is set and `split_kwargs`
-  is empty → return to `build-ml-pipeline`.
+  is empty → back to build.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -350,7 +353,8 @@ violated.
 
 **Must do:**
 - Run `python -m skore_skills status`.
-- STOP. Route to `build-ml-pipeline` (pytest smoke).
+- STOP. Go back to build for the pytest smoke, through
+  `model-ml-pipeline` since this skill was entered directly.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).

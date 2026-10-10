@@ -55,12 +55,13 @@
         "Refuse to loosen the assertion.",
         "Cite the Stop condition: \"Don't shrink the assertion. Loosening reintroduces the bug.\"",
         "Diagnose this as the **`load \u2192 featurize \u2192 split` anti-pattern** \u2014 late `mark_as_X` is silently dropping cold-start rows.",
-        "Route back to `build-ml-pipeline` to fix the X-marker placement (Layer 2 + history-as-upstream-reference pattern).",
+        "Send the fix back to build to correct the X-marker placement (Layer 2 + history-as-upstream-reference pattern). This is a direct request, not a build sub-step, so go through `model-ml-pipeline`, which resumes the approved design.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Approve the looser assertion.",
         "The response does NOT: Add a wrapper that filters NaN rows.",
         "The response does NOT: Add an `eval_mode` flag to `build_learner` to \"skip lag features at predict time\".",
-        "The response does NOT: Modify `n_predict_grid_rows` to match the smaller number."
+        "The response does NOT: Modify `n_predict_grid_rows` to match the smaller number.",
+        "The response does NOT: Load `build-ml-pipeline` directly from this skill."
       ],
       "tools": false,
       "sandbox": [],

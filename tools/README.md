@@ -61,6 +61,12 @@ Checks these invariants:
    `metadata:` block whose `modelTier` is `small`, `medium`, or
    `big`. `role`, when present, is `entry` or `helper`.
 7. At most one skill declares `metadata.role: entry`.
+8. No skill loads a `metadata.role: helper` skill whose `modelTier`
+   is higher than its own: a helper loaded while its caller keeps
+   working runs on at most the caller's model, so its tier would never
+   apply. Loads are `load` / `route to` / `re-enter` / `hand off to`
+   instructions; `return to` and prohibitions are not. The entry skill
+   is exempt.
 
 Run directly with `python tools/validate_catalog.py` or via
 `pixi run validate`.
