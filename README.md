@@ -34,7 +34,9 @@ models such as Claude Opus and Sonnet and produce great results with smaller mod
 as Qwen 3.7 Flash or DeepSeek v4.1 Flash. Each skill declares `metadata.modelTier`
 (`small`, `medium`, or `big`). The eval maps those tiers to Qwen3.8 27B,
 DeepSeek v4.1 Flash, and Qwen3.8 Max. A skill may also declare `metadata.role`
-(`entry` or `helper`) when its caller continues after it loads.
+(`entry` or `helper`) when its caller continues after it loads. A helper runs on at
+most its caller's tier, so a skill never loads a helper of a higher tier;
+`tools/validate_catalog.py` enforces it.
 
 As for agent harnesses, we tested them with Claude Code, OpenCode, Cursor, and GitHub
 Copilot and found no significant difference in terms of skill invocation.

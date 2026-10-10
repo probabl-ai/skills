@@ -94,8 +94,10 @@ violated.
   reintroduces the bug."
 - Diagnose this as the **`load → featurize → split` anti-pattern**
   — late `mark_as_X` is silently dropping cold-start rows.
-- Route back to `build-ml-pipeline` to fix the X-marker placement
-  (Layer 2 + history-as-upstream-reference pattern).
+- Send the fix back to build to correct the X-marker placement
+  (Layer 2 + history-as-upstream-reference pattern). This is a
+  direct request, not a build sub-step, so go through
+  `model-ml-pipeline`, which resumes the approved design.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -104,6 +106,7 @@ violated.
 - Add an `eval_mode` flag to `build_learner` to "skip lag features
   at predict time".
 - Modify `n_predict_grid_rows` to match the smaller number.
+- Load `build-ml-pipeline` directly from this skill.
 
 ---
 
