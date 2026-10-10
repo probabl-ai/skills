@@ -58,21 +58,20 @@ def test_ruff_executable_belongs_to_this_interpreter() -> None:
     assert executable.parent in {parent, parent / "Scripts"}
 
 
+def test_ruff_executable_skips_a_missing_candidate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The first missing name does not hide a later binary in this env."""
+    monkeypatch.setattr(style_mod.sys, "platform", "win32")
+    executable = style_mod.ruff_executable()
+    assert executable.is_file()
+    assert executable.name in {"ruff", "ruff.exe"}
+
+
 def test_style_missing_ruff(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Missing ruff exits non-zero with an env-manager install hint."""
+    """A missing ruff binary exits non-zero with an env-manager install hint."""
     monkeypatch.chdir(tmp_path)
-
-    def fake_run(argv: list[str], **kwargs: Any) -> Any:
-        class Result:
-            returncode = 1
-            stdout = ""
-            stderr = "No module named ruff"
-
-        if argv[-1:] == ["--version"] or (len(argv) >= 3 and argv[-1] == "--version"):
-            return Result()
-        raise AssertionError(f"unexpected argv {argv}")
-
-    monkeypatch.setattr(style_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(style_mod, "ruff_candidates", lambda: [tmp_path / "ruff"])
     result = CliRunner().invoke(cli, ["style"])
     assert result.exit_code != 0
     assert "env add" in result.output

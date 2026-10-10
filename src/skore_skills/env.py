@@ -896,15 +896,19 @@ def _plugins_unregistered(stderr: str) -> bool:
     return "not recognized" in lowered and "dot -c" in lowered
 
 
+def _script_name(tool: str) -> str:
+    """Return ``tool`` with a ``.exe`` suffix on Windows."""
+    if os.name == "nt" and not tool.endswith(".exe"):
+        return f"{tool}.exe"
+    return tool
+
+
 def _dev_command_argv(manager: str, root: Path, command: list[str]) -> list[str]:
     """Return argv that runs ``command`` inside the composed env."""
     argv = dev_run_argv(manager, root=root)
     if manager == "pip-venv":
         python = Path(argv[-1])
-        tool = command[0]
-        if os.name == "nt" and not tool.endswith(".exe"):
-            tool = f"{tool}.exe"
-        return [str(python.with_name(tool)), *command[1:]]
+        return [str(python.with_name(_script_name(command[0]))), *command[1:]]
     return [*argv[:-1], *command]
 
 
