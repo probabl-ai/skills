@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "c2066878ec11c56689151e90349596336e94d39029e1601ae0a6d2ea0e9153b1",
+  "catalog_hash": "98558b383b11f0443b25df01787dd29ac04def13762923c0054d2c135bab8f05",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "57e90405c210a3758cdfeb4abddc35a0f560c60db7b1668387df8cd43070d20c"
+      "hash": "ac4f5e07076551c3b3598a11cce65b95669118c67b6b831d027ac944c52f61f8"
     },
     {
       "id": "frame-ml-problem",
@@ -138,7 +138,7 @@
       "summary": "Ask setup choices up front, then coordinate workspace, environment, and git.",
       "category": "meta",
       "subcategory": null,
-      "hash": "d3ab57aef781ab7e0bb04cb667cc03d192f7ec4a3ccd3114f573de2291d2796f"
+      "hash": "e0e7d3f5fa31c910158e8d1908b25ed170105a1dc269b3dd5264d3399881cdad"
     },
     {
       "id": "setup-git",
@@ -156,7 +156,7 @@
       "summary": "Commit the current loop stage with the real git CLI when the end-turn hook says invoke.",
       "category": "action",
       "subcategory": null,
-      "hash": "43b9dd4d3f1cf706e4ffa33bd43e4d976c5e34a4a9fa4dfc9195ac630792fdcd"
+      "hash": "49220816418418f33257c673ae697a8f145f80d7c2948d9d60b16905a8d77164"
     },
     {
       "id": "model-ml-pipeline",
@@ -201,7 +201,7 @@
       "summary": "Add a dependency through the project env manager, or ask the user when the environment is user-managed.",
       "category": "action",
       "subcategory": null,
-      "hash": "0577b91169baf26d99961920607c485e1ebf2f7b5a8e57b15309731086bed868"
+      "hash": "a38a79cea2a138fc4bd2ed8343dc3f8e7e9c8ee873f954e51a1dd601885c1469"
     },
     {
       "id": "setup-workspace",

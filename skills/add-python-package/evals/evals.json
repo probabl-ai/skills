@@ -114,10 +114,11 @@
       "id": 7,
       "title": "Editable workspace package",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Managed pixi project.\n- `has_src` is true.\n- User asked for the workspace package (not a named dependency).]\n\nInstall the workspace package in editable mode.",
-      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills env add --editable --execute`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `pip install -e .`. - Run `env add --editable` for a named library such as skrub.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills env add --editable --execute`. - If that command exits non-zero, do not describe the install as done. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `pip install -e .`. - Run `env add --editable` for a named library such as skrub.",
       "files": [],
       "expectations": [
         "Run `python -m skore_skills env add --editable --execute`.",
+        "If that command exits non-zero, do not describe the install as done.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `pip install -e .`.",
         "The response does NOT: Run `env add --editable` for a named library such as skrub."
@@ -225,12 +226,12 @@
       "id": 13,
       "title": "Broken Graphviz reports the CLI repair diagnostic",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Managed uv project.\n- `env route skrub` returns `scope: default`.\n- `env graphviz` returns `action: system` and\n  `dot: C:\\\\Program Files\\\\Graphviz\\\\bin\\\\dot.exe`.\n- `env graphviz --execute` fails with:\n  \"Graphviz SVG rendering failed; repair or reinstall pydot and\n  Graphviz with their existing package managers\".]\n\nAdd skrub to the project.",
-      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills env add --execute skrub`. - Run `python -m skore_skills env graphviz --execute`. - Quote the repair diagnostic and stop. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Recommend admin rights or `dot -c`. - Invent a brew, apt, dnf, pacman, zypper, or winget repair.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills env add --execute skrub`. - Run `python -m skore_skills env graphviz --execute`. - Quote the repair diagnostic and end the turn. This turn's only job was adding the package. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Recommend admin rights or `dot -c`. - Invent a brew, apt, dnf, pacman, zypper, or winget repair.",
       "files": [],
       "expectations": [
         "Run `python -m skore_skills env add --execute skrub`.",
         "Run `python -m skore_skills env graphviz --execute`.",
-        "Quote the repair diagnostic and stop.",
+        "Quote the repair diagnostic and end the turn. This turn's only job was adding the package.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Recommend admin rights or `dot -c`.",
         "The response does NOT: Invent a brew, apt, dnf, pacman, zypper, or winget repair.",

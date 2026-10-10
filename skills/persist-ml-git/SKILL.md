@@ -16,10 +16,13 @@ The hook already ran this turn. Follow its JSON. Run `git` yourself.
 1. If `action` is `skip`, stop. Do not nag. Load `triage-ml-task`
    if installed, else stop.
 2. If `reason` is `resolve-dotfiles` and `ambiguous_dotfiles` is
-   non-empty, ask once which hidden paths to keep. Then
+   non-empty, ask once which hidden paths to keep. Include an
+   explicit **Keep none** option. An empty multi-select is not an
+   answer. Then
    `python -m skore_skills git ignore-merge --decide` plus
    `--keep <path>` for each chosen path (no `--keep` if they keep
-   none). Do not re-ask names gone from the next JSON. Never keep
+   none, including when they pick **Keep none**). Do not re-ask
+   names gone from the next JSON. Never keep
    `.env` or `.skore`. If `ambiguous_dotfiles` is empty or `reason`
    is `persist`, do not ask about hidden paths.
    Exit code 2 from `git ignore-merge` is the structured
@@ -27,12 +30,14 @@ The hook already ran this turn. Follow its JSON. Run `git` yourself.
    failure: read its JSON, ask the decision, and rerun with
    `--decide`.
 3. If `review_paths` is non-empty, ask once which of those paths
-   to keep tracked. List each JSON `path` and `kind`, and say
-   that the rest are ignored. Then
+   to keep tracked. Include an explicit **Keep none** option. An
+   empty multi-select is not an answer. List each JSON `path` and
+   `kind`, and say that the rest are ignored. Then
    `python -m skore_skills git review-decide` with
    `--keep <path>` for each chosen path and `--ignore <path>`
    for every other path in the list (no `--keep` if they keep
-   none). Pass a folder path through with its trailing slash so
+   none, including when they pick **Keep none**). Pass a folder
+   path through with its trailing slash so
    the ignore line is that folder. Copy paths and kinds from the
    JSON; do not invent them. Do not re-ask paths gone from the
    next JSON. Never `--keep` `.env` or `.skore`. If

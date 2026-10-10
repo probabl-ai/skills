@@ -108,6 +108,8 @@ after listing the boxes.
 
    Never `pip install -e .` in a pixi project. If `has_src` is
    false, stop. Name `setup-workspace` only if it is installed.
+   A non-zero exit is not a successful install. Do not describe
+   it as done.
 7. If the package is Skore, read the persisted `policy.skore_mode`
    and run:
 
@@ -156,7 +158,10 @@ after listing the boxes.
    - Unmanaged → do not `--execute`. Show `command` (conda) or
      `instructions` (system) from print-only JSON.
 
-   If `--execute` fails, quote its repair diagnostic and stop.
+   If `--execute` fails, quote its repair diagnostic and end this
+   install sequence. Return that diagnostic to the caller. Do not
+   discard analysis the caller already finished. When this turn's
+   only job was adding the package, that return ends the turn.
    Never prescribe `dot -c`, admin rights, or a package-manager
    repair from memory. Never invent `brew` / `apt` / `dnf` /
    `pacman` / `zypper` / `winget` from memory. Do not pip-install
