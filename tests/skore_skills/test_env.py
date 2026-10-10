@@ -744,8 +744,43 @@ def test_env_add_editable_pixi_execute(
     result = CliRunner().invoke(cli, ["env", "add", "--editable", "--execute"])
     assert result.exit_code == 0, result.output
     spec = _pixi_editable_spec(tmp_path, "demo-pkg")
-    assert seen == [["pixi", "add", "--pypi", "--editable", spec]]
+    assert seen[0] == ["pixi", "add", "--pypi", "--editable", spec]
+    assert seen[1][:5] == ["pixi", "run", "-e", "dev", "python"]
+    assert "demo_pkg" in seen[1][-1]
+    assert len(seen) == 2
     _assert_pixi_editable_spec(spec, root=tmp_path, package="demo-pkg")
+
+
+def test_env_add_editable_execute_fails_when_import_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A successful add that cannot be imported is still a failure."""
+    from skore_skills import env as env_mod
+
+    (tmp_path / "pixi.toml").write_text("[workspace]\n", encoding="utf-8")
+    (tmp_path / "src" / "demo_pkg").mkdir(parents=True)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo-pkg"\nversion = "0.1.0"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        class Result:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+
+        if "import_module" in " ".join(argv):
+            Result.returncode = 1
+            Result.stderr = "ModuleNotFoundError: No module named 'demo_pkg'\n"
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "add", "--editable", "--execute"])
+    assert result.exit_code != 0
+    assert "No module named 'demo_pkg'" in result.output
+    assert "pixi add --pypi --editable" in result.output
 
 
 @pytest.mark.parametrize(
@@ -892,9 +927,12 @@ def test_env_verify_print_pixi(monkeypatch: pytest.MonkeyPatch) -> None:
     payload = json.loads(result.output)
     assert payload["ok"] is None
     assert payload["argv"][:5] == ["pixi", "run", "-e", "dev", "python"]
-    assert "IPython" in payload["argv"][-1]
-    assert "skore" in payload["argv"][-1]
-    assert "skore_skills" in payload["argv"][-1]
+    snippet = payload["argv"][-1]
+    assert "IPython" in snippet
+    assert "skore" in snippet
+    assert "skore_skills" in snippet
+    assert "import ruff" not in snippet
+    assert "with_name" in snippet
 
 
 def test_agent_packages_exclude_transitive_skore_skills() -> None:
@@ -923,6 +961,8 @@ def test_env_verify_execute_mocked(monkeypatch: pytest.MonkeyPatch) -> None:
 
         class Result:
             returncode = 0
+            stdout = "SKORE_SKILLS_VERIFY []\n"
+            stderr = ""
 
         return Result()
 
@@ -931,7 +971,59 @@ def test_env_verify_execute_mocked(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["ok"] is True
+    assert payload["missing"] == []
     assert seen == [payload["argv"]]
+
+
+def test_env_verify_execute_reports_only_failed_probes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A single failed probe is the only name in ``missing``."""
+    from skore_skills import env as env_mod
+
+    monkeypatch.chdir(FIXTURES / "pixi")
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        class Result:
+            returncode = 1
+            stdout = 'SKORE_SKILLS_VERIFY ["ruff"]\n'
+            stderr = ""
+
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "verify", "--execute"])
+    assert result.exit_code != 0
+    payload = json.loads(result.output)
+    assert payload["ok"] is False
+    assert payload["missing"] == ["ruff"]
+
+
+def test_env_verify_execute_without_marker_did_not_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A composed env that never starts does not mark every package missing."""
+    from skore_skills import env as env_mod
+    from skore_skills.env import VERIFY_DID_NOT_RUN
+
+    monkeypatch.chdir(FIXTURES / "pixi")
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        class Result:
+            returncode = 1
+            stdout = ""
+            stderr = "pixi failed\n"
+
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "verify", "--execute"])
+    assert result.exit_code != 0
+    payload, end = json.JSONDecoder().raw_decode(result.output)
+    assert payload["ok"] is False
+    assert payload["missing"] == []
+    assert payload["error"] == VERIFY_DID_NOT_RUN
+    assert "pixi failed" in result.output[end:]
 
 
 def test_env_init_mentions_sync(
@@ -1462,7 +1554,8 @@ def test_env_graphviz_pixi_missing_dot_prints_conda_command(
     assert payload["action"] == "conda"
     assert payload["dot"] is None
     assert payload["command"] == ["pixi", "add", "graphviz"]
-    assert "graphviz.org/download" in payload["instructions"]
+    assert payload["ok"] is None
+    assert payload["instructions"] is None
     assert not any(argv[-1:] == [env_mod.GRAPHVIZ_PROBE_SNIPPET] for argv in seen)
 
 
@@ -1495,6 +1588,7 @@ def test_env_graphviz_pixi_execute_adds_then_probes_svg(
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["dot"] == "/pixi/env/bin/dot"
+    assert payload["ok"] is True
     assert ["pixi", "add", "graphviz"] in seen
     assert any(argv[-1] == env_mod.GRAPHVIZ_PROBE_SNIPPET for argv in seen)
 
@@ -1514,6 +1608,8 @@ def test_env_graphviz_dot_present_execute_only_probes_svg(
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["dot"] == "/usr/bin/dot"
+    assert payload["ok"] is True
+    assert payload["instructions"] is None
     assert payload["command"] is None
     assert ["pixi", "add", "graphviz"] not in seen
     assert any(argv[-1] == env_mod.GRAPHVIZ_PROBE_SNIPPET for argv in seen)
@@ -1534,6 +1630,8 @@ def test_env_graphviz_uv_missing_dot_refuses_os_execute(
     payload = json.loads(printed.output)
     assert payload["action"] == "system"
     assert payload["command"] is None
+    assert payload["ok"] is None
+    assert "graphviz.org/download" in payload["instructions"]
     executed = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
     assert executed.exit_code != 0
     assert not any("brew" in " ".join(argv) for argv in seen)
@@ -1564,23 +1662,34 @@ def test_env_graphviz_uv_dot_present_probes_svg(
 def test_env_graphviz_svg_probe_failure_prints_repair_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A broken renderer names package repair without admin cache mutation."""
+    """An unregistered plugin gets one in-env ``dot -c``, never sudo."""
     from skore_skills import env as env_mod
     from skore_skills.env import GRAPHVIZ_REPAIR
 
     monkeypatch.chdir(FIXTURES / "uv")
     seen: list[list[str]] = []
+    plugin_error = (
+        'Format: "svg" not recognized. No formats found.\n'
+        'Perhaps "dot -c" needs to be run (with installer\'s privileges) '
+        "to register the plugins?\n"
+    )
     monkeypatch.setattr(
         env_mod.subprocess,
         "run",
-        _graphviz_run(seen, which="/usr/bin/dot", probe=1),
+        _graphviz_run(seen, which="/usr/bin/dot", probe=1, probe_error=plugin_error),
     )
     result = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
     assert result.exit_code != 0
     assert GRAPHVIZ_REPAIR in result.output
-    assert "Graphviz returned non-SVG output" in result.output
+    assert "not recognized" in result.output
+    assert '"ok": false' in result.output
+    assert "brew install" not in result.output
+    registrations = [argv for argv in seen if argv[-2:] == ["dot", "-c"]]
+    assert len(registrations) == 1
+    assert registrations[0][:3] == ["uv", "run", "--group"]
     assert not any(argv and argv[0] == "sudo" for argv in seen)
-    assert all("dot -c" not in " ".join(argv) for argv in seen)
+    probes = [argv for argv in seen if argv[-1] == env_mod.GRAPHVIZ_PROBE_SNIPPET]
+    assert len(probes) == 2
 
 
 def test_env_graphviz_missing_pydot_prints_probe_error(
@@ -1602,6 +1711,7 @@ def test_env_graphviz_missing_pydot_prints_probe_error(
     assert result.exit_code != 0
     assert error.strip() in result.output
     assert GRAPHVIZ_REPAIR in result.output
+    assert all("dot -c" not in " ".join(argv) for argv in seen)
 
 
 def test_env_graphviz_unmanaged_prints_json(

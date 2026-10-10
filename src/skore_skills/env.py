@@ -502,10 +502,60 @@ def dev_run_argv(manager: str, *, root: Path) -> list[str]:
     raise ValueError(f"unknown manager {manager!r}")
 
 
+VERIFY_MARKER = "SKORE_SKILLS_VERIFY"
+VERIFY_DID_NOT_RUN = "composed environment did not run the check"
+
+
 def verify_argv(manager: str, packages: Sequence[str], *, root: Path) -> list[str]:
-    """Return the composed-dev import check for ``packages``."""
-    snippet = "import " + ", ".join(_import_name(name) for name in packages)
+    """Return the composed-dev check for ``packages``.
+
+    Python packages are imported. ``ruff`` is the executable beside that
+    environment's interpreter, not ``import ruff``.
+    """
+    checks = [
+        {
+            "package": name,
+            "module": None if _package_key(name) == "ruff" else _import_name(name),
+        }
+        for name in packages
+    ]
+    snippet = (
+        "import importlib, json, sys\n"
+        "from pathlib import Path\n"
+        f"checks = json.loads({json.dumps(json.dumps(checks))})\n"
+        "missing = []\n"
+        "for item in checks:\n"
+        "    module = item['module']\n"
+        "    package = item['package']\n"
+        "    if module is None:\n"
+        "        tool = 'ruff.exe' if sys.platform == 'win32' else 'ruff'\n"
+        "        if not Path(sys.executable).with_name(tool).is_file():\n"
+        "            missing.append(package)\n"
+        "        continue\n"
+        "    try:\n"
+        "        importlib.import_module(module)\n"
+        "    except Exception:\n"
+        "        missing.append(package)\n"
+        f"print({VERIFY_MARKER!r} + ' ' + json.dumps(missing))\n"
+        "raise SystemExit(1 if missing else 0)\n"
+    )
     return [*dev_run_argv(manager, root=root), "-c", snippet]
+
+
+def _parse_verify_report(stdout: str) -> list[str] | None:
+    """Return missing package names, or None if the check did not run."""
+    prefix = VERIFY_MARKER + " "
+    for line in reversed(stdout.splitlines()):
+        if not line.startswith(prefix):
+            continue
+        try:
+            data = json.loads(line[len(prefix) :])
+        except json.JSONDecodeError:
+            return None
+        if isinstance(data, list) and all(isinstance(item, str) for item in data):
+            return data
+        return None
+    return None
 
 
 def reexec_in_dev(root: Path, argv: Sequence[str] | None = None) -> int | None:
@@ -806,11 +856,12 @@ def graphviz_status(root: Path) -> tuple[dict[str, Any], int]:
     detected = detect(root)
     manager = detected["env_manager"]
     payload: dict[str, Any] = {
+        "ok": None,
         "dot": None,
         "manager": manager,
         "action": None,
         "command": None,
-        "instructions": system_graphviz_instructions(),
+        "instructions": None,
         "managed": detected.get("managed"),
     }
     if detected["ambiguous"]:
@@ -829,39 +880,79 @@ def graphviz_status(root: Path) -> tuple[dict[str, Any], int]:
     else:
         payload["action"] = "system"
         payload["command"] = None
+        if payload["dot"] is None:
+            payload["instructions"] = system_graphviz_instructions()
     return payload, 0
+
+
+def _plugins_unregistered(stderr: str) -> bool:
+    """Return True when ``dot`` asked for ``dot -c`` to register plugins."""
+    lowered = stderr.lower()
+    return "not recognized" in lowered and "dot -c" in lowered
+
+
+def _dev_command_argv(manager: str, root: Path, command: list[str]) -> list[str]:
+    """Return argv that runs ``command`` inside the composed env."""
+    argv = dev_run_argv(manager, root=root)
+    if manager == "pip-venv":
+        python = Path(argv[-1])
+        tool = command[0]
+        if os.name == "nt" and not tool.endswith(".exe"):
+            tool = f"{tool}.exe"
+        return [str(python.with_name(tool)), *command[1:]]
+    return [*argv[:-1], *command]
+
+
+def _probe_graphviz(manager: str, root: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        _graphviz_probe_argv(manager, root),
+        check=False,
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _graphviz_json(payload: dict[str, Any]) -> str:
+    return json.dumps(payload, indent=2) + "\n"
 
 
 def ensure_graphviz(root: Path, *, execute: bool = False) -> tuple[str, int]:
     """Print JSON; optionally install conda Graphviz and verify SVG rendering."""
     payload, code = graphviz_status(root)
-    rendered = json.dumps(payload, indent=2) + "\n"
     if code or not execute:
-        return rendered, code
+        return _graphviz_json(payload), code
     if _unmanaged(root):
-        return rendered + UNMANAGED + "\n", 1
+        return _graphviz_json(payload) + UNMANAGED + "\n", 1
     manager = payload["manager"]
     assert manager is not None
     if payload["action"] == "conda" and payload["command"] is not None:
         run_code = _run_argvs(_conda_graphviz_argvs(manager, root), cwd=root)
         if run_code:
-            return rendered, run_code
+            payload["ok"] = False
+            return _graphviz_json(payload), run_code
         payload["dot"] = _which_dot(manager, root)
         payload["command"] = None
-        rendered = json.dumps(payload, indent=2) + "\n"
-    if payload["dot"]:
-        completed = subprocess.run(
-            _graphviz_probe_argv(manager, root),
+    if not payload["dot"]:
+        payload["ok"] = False
+        return _graphviz_json(payload), 1
+    completed = _probe_graphviz(manager, root)
+    if completed.returncode and _plugins_unregistered(completed.stderr or ""):
+        registered = subprocess.run(
+            _dev_command_argv(manager, root, ["dot", "-c"]),
             check=False,
             cwd=root,
             capture_output=True,
             text=True,
         )
-        if completed.returncode:
-            sys.stderr.write(completed.stderr or "")
-            return rendered + GRAPHVIZ_REPAIR + "\n", completed.returncode
-        return rendered, 0
-    return rendered, 1
+        if registered.returncode == 0:
+            completed = _probe_graphviz(manager, root)
+    if completed.returncode:
+        sys.stderr.write(completed.stderr or "")
+        payload["ok"] = False
+        return _graphviz_json(payload) + GRAPHVIZ_REPAIR + "\n", completed.returncode
+    payload["ok"] = True
+    return _graphviz_json(payload), 0
 
 
 def resolve_add_skore_mode(root: Path, mode: str | None) -> str:
@@ -922,7 +1013,29 @@ def add_editable(root: Path, *, execute: bool = False) -> tuple[str, int]:
     rendered = " ".join(argv) + "\n"
     if not execute:
         return rendered, 0
-    return rendered, _run_argvs([argv], cwd=root)
+    code = _run_argvs([argv], cwd=root)
+    if code:
+        return rendered, code
+    module = _import_name(name)
+    snippet = (
+        "import importlib, sys\n"
+        "try:\n"
+        f"    importlib.import_module({module!r})\n"
+        "except Exception as exc:\n"
+        "    print(f'{type(exc).__name__}: {exc}', file=sys.stderr)\n"
+        "    sys.exit(1)\n"
+    )
+    completed = subprocess.run(
+        [*dev_run_argv(manager, root=root), "-c", snippet],
+        check=False,
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode:
+        sys.stderr.write(completed.stderr or completed.stdout or "")
+        return rendered, completed.returncode
+    return rendered, 0
 
 
 def sync_environment(root: Path, *, execute: bool = False) -> tuple[str, int]:
@@ -944,12 +1057,16 @@ def verify_environment(
     *,
     execute: bool = False,
 ) -> tuple[dict[str, Any], int]:
-    """Print a composed-dev import check. ``--execute`` runs it."""
+    """Print a composed-dev import check. ``--execute`` runs it.
+
+    ``missing`` lists only probes that failed. A composed env that never
+    starts leaves ``missing`` empty and sets ``error``.
+    """
     names = list(packages) if packages else list(BOOTSTRAP_PACKAGES)
     manager, error = _ready_manager(root)
     payload: dict[str, Any] = {
         "ok": False,
-        "missing": names,
+        "missing": [],
         "argv": [],
     }
     if error is not None:
@@ -959,13 +1076,25 @@ def verify_environment(
     argv = verify_argv(manager, names, root=root)
     payload["argv"] = argv
     payload["ok"] = None
-    payload["missing"] = []
     if not execute:
         return payload, 0
-    code = _run_argvs([argv], cwd=root)
-    payload["ok"] = code == 0
-    payload["missing"] = [] if code == 0 else names
-    return payload, 0 if code == 0 else 1
+    completed = subprocess.run(
+        argv,
+        check=False,
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    if completed.stderr:
+        sys.stderr.write(completed.stderr)
+    missing = _parse_verify_report(completed.stdout or "")
+    if missing is None:
+        payload["ok"] = False
+        payload["error"] = VERIFY_DID_NOT_RUN
+        return payload, 1
+    payload["missing"] = missing
+    payload["ok"] = not missing
+    return payload, 0 if not missing else 1
 
 
 def _followup(follow: str) -> str:

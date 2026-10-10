@@ -74,9 +74,19 @@ def default_targets(root: Path) -> list[Path]:
     return targets
 
 
+def ruff_executable() -> Path:
+    """Return the ``ruff`` binary next to this interpreter.
+
+    Conda-forge ships that binary and no importable ``ruff`` module.
+    The PyPI wheel ships both. ``python -m ruff`` only works for the wheel.
+    """
+    name = "ruff.exe" if sys.platform == "win32" else "ruff"
+    return Path(sys.executable).with_name(name)
+
+
 def ruff_argv(*args: str, targets: list[Path]) -> list[str]:
-    """Build ``python -m ruff`` argv with skip excludes."""
-    cmd = [sys.executable, "-m", "ruff", *args]
+    """Build a ``ruff`` argv with skip excludes."""
+    cmd = [str(ruff_executable()), *args]
     for name in SKIP_DIR_NAMES:
         cmd.extend(["--exclude", name])
     cmd.extend(str(path) for path in targets)
@@ -84,9 +94,12 @@ def ruff_argv(*args: str, targets: list[Path]) -> list[str]:
 
 
 def ruff_is_installed() -> bool:
-    """Return True if ``python -m ruff --version`` succeeds."""
+    """Return True if the sibling ``ruff`` binary runs ``--version``."""
+    executable = ruff_executable()
+    if not executable.is_file():
+        return False
     completed = subprocess.run(
-        [sys.executable, "-m", "ruff", "--version"],
+        [str(executable), "--version"],
         check=False,
         capture_output=True,
         text=True,

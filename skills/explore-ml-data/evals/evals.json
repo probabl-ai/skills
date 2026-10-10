@@ -611,6 +611,24 @@
       "tools": false,
       "sandbox": [],
       "expect_files": []
+    },
+    {
+      "id": 32,
+      "title": "Graphviz diagnostic does not discard EDA",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Scaffold exists. G-TABULAR is `pandas`.\n- User chose **run** for G-DATA-ANALYSIS.\n- `add-python-package` is installed. Loading it for `skrub`\n  returns the Graphviz repair diagnostic and ends that install\n  sequence.]\n\nExplore the California housing CSV. Target is MedHouseVal.",
+      "expected_output": "Behavioural response satisfying: - Load `add-python-package` for `skrub` (and matplotlib / seaborn if missing). - Quote the Graphviz diagnostic in one line and continue the analysis. Write `data_analysis/data_analysis.py`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - End the turn because Graphviz SVG rendering failed. - Prescribe `dot -c` or a Homebrew Graphviz install from this skill.",
+      "files": [],
+      "expectations": [
+        "Load `add-python-package` for `skrub` (and matplotlib / seaborn if missing).",
+        "Quote the Graphviz diagnostic in one line and continue the analysis. Write `data_analysis/data_analysis.py`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: End the turn because Graphviz SVG rendering failed.",
+        "The response does NOT: Prescribe `dot -c` or a Homebrew Graphviz install from this skill.",
+        "The response does NOT: Discard the analysis that was already underway."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
     }
   ]
 }

@@ -148,8 +148,10 @@ Then step 7 in order env, workspace, editable, git, then step 8.
    again for a choice persisted in step 6. After each loaded
    skill returns, persist
    `python -m skore_skills policy set setup.<piece> done`.
-   Do not mark a skipped piece, or a piece the user does not
-   select, `done`.
+   For editable, do that only when
+   `env add --editable --execute` exits 0. A non-zero exit leaves
+   `setup.editable` missing. Do not mark a skipped piece, or a
+   piece the user does not select, `done`.
 8. Return to the skill that dispatched this turn (a lifecycle
    stage, or triage waiting on a lifecycle request). Do not
    open the entry board and do not start exploratory data

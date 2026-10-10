@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,13 @@ def test_style_init_preserves_existing_config(
     assert result.exit_code == 0, result.output
     assert "already configured" in result.output
     assert config.read_text(encoding="utf-8") == "line-length = 100\n"
+
+
+def test_ruff_executable_sits_beside_the_interpreter() -> None:
+    """Ruff is the binary next to this interpreter, not ``python -m ruff``."""
+    executable = style_mod.ruff_executable()
+    assert executable.parent == Path(sys.executable).parent
+    assert executable.name in {"ruff", "ruff.exe"}
 
 
 def test_style_missing_ruff(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -99,6 +107,8 @@ def test_style_default_globs_skip_vendored(
     assert str(tmp_path / "top.py") in check_argv
     assert "node_modules" in joined  # exclude flag
     assert str(tmp_path / "node_modules") not in check_argv
+    assert check_argv[0] == str(style_mod.ruff_executable())
+    assert "-m" not in check_argv
     assert "no [tool.ruff]" in result.output
 
 

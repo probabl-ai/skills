@@ -117,7 +117,11 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 - **G-TABULAR before `data_analysis/data_analysis.py`.**
   `status.policy.tabular`; else `choose-python-library` (recommend
   pandas) then `add-python-package` for that lib **and** `skrub`,
-  `matplotlib`, and `seaborn`. No silent default. If G-TABULAR,
+  `matplotlib`, and `seaborn`. No silent default. A Graphviz
+  repair diagnostic from that `skrub` install does not discard
+  this analysis. Quote it in one line and continue. The unfitted
+  snapshot in `build-ml-pipeline` is what requires a renderable
+  graph. If G-TABULAR,
   targets, or families are unanswered, **stop after the asks** —
   no default-path notebook, even as a “Deliverable A assuming
   pandas.” Do not install sklearn / skore / pytest unless the

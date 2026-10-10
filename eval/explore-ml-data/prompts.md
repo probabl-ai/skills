@@ -921,3 +921,30 @@
 - Append `templates/target_multioutput_regression.py`.
 - Drop one output and explore the other as the only target.
 - Write a scalar `target` or `task` field in `extras.json`.
+
+---
+
+## CASE_32 — Graphviz diagnostic does not discard EDA
+
+**User prompt:**
+> Explore the California housing CSV. Target is MedHouseVal.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Scaffold exists. G-TABULAR is `pandas`.
+- User chose **run** for G-DATA-ANALYSIS.
+- `add-python-package` is installed. Loading it for `skrub`
+  returns the Graphviz repair diagnostic and ends that install
+  sequence.
+
+**Must do:**
+- Load `add-python-package` for `skrub` (and matplotlib / seaborn
+  if missing).
+- Quote the Graphviz diagnostic in one line and continue the
+  analysis. Write `data_analysis/data_analysis.py`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- End the turn because Graphviz SVG rendering failed.
+- Prescribe `dot -c` or a Homebrew Graphviz install from this skill.
+- Discard the analysis that was already underway.
