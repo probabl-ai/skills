@@ -74,14 +74,32 @@ def default_targets(root: Path) -> list[Path]:
     return targets
 
 
+def ruff_candidates() -> list[Path]:
+    """Return ``ruff`` paths owned by this interpreter, first preferred.
+
+    Unix and Windows venvs keep the binary next to ``python``. A conda or
+    pixi prefix on Windows keeps ``python.exe`` in the prefix root and
+    ``ruff.exe`` in ``Scripts``.
+    """
+    executable = Path(sys.executable)
+    names = ("ruff.exe", "ruff") if sys.platform == "win32" else ("ruff",)
+    candidates = [executable.with_name(name) for name in names]
+    if sys.platform == "win32":
+        candidates.append(executable.parent / "Scripts" / "ruff.exe")
+    return candidates
+
+
 def ruff_executable() -> Path:
-    """Return the ``ruff`` binary next to this interpreter.
+    """Return the ``ruff`` binary for this interpreter.
 
     Conda-forge ships that binary and no importable ``ruff`` module.
     The PyPI wheel ships both. ``python -m ruff`` only works for the wheel.
     """
-    name = "ruff.exe" if sys.platform == "win32" else "ruff"
-    return Path(sys.executable).with_name(name)
+    candidates = ruff_candidates()
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return candidates[0]
 
 
 def ruff_argv(*args: str, targets: list[Path]) -> list[str]:

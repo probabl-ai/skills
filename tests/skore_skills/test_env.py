@@ -933,6 +933,7 @@ def test_env_verify_print_pixi(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "skore_skills" in snippet
     assert "import ruff" not in snippet
     assert "with_name" in snippet
+    assert "Scripts" in snippet
 
 
 def test_agent_packages_exclude_transitive_skore_skills() -> None:

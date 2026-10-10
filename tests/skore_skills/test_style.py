@@ -39,11 +39,23 @@ def test_style_init_preserves_existing_config(
     assert config.read_text(encoding="utf-8") == "line-length = 100\n"
 
 
-def test_ruff_executable_sits_beside_the_interpreter() -> None:
-    """Ruff is the binary next to this interpreter, not ``python -m ruff``."""
+def test_ruff_candidates_include_windows_scripts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A Windows conda prefix keeps ``ruff.exe`` in ``Scripts``."""
+    monkeypatch.setattr(style_mod.sys, "platform", "win32")
+    candidates = style_mod.ruff_candidates()
+    assert any(
+        path.name == "ruff.exe" and path.parent.name == "Scripts" for path in candidates
+    )
+
+
+def test_ruff_executable_belongs_to_this_interpreter() -> None:
+    """Ruff is this interpreter's binary, not ``python -m ruff``."""
     executable = style_mod.ruff_executable()
-    assert executable.parent == Path(sys.executable).parent
+    parent = Path(sys.executable).parent
     assert executable.name in {"ruff", "ruff.exe"}
+    assert executable.parent in {parent, parent / "Scripts"}
 
 
 def test_style_missing_ruff(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
