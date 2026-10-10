@@ -1779,7 +1779,9 @@ def test_dev_command_argv_pip_venv_uses_the_venv_binary(tmp_path: Path) -> None:
     from skore_skills.env import _dev_command_argv
 
     argv = _dev_command_argv("pip-venv", tmp_path, ["dot", "-c"])
-    assert argv == [str(Path(".venv") / "bin" / "dot"), "-c"]
+    python = Path(_venv_bin("python"))
+    dot = python.with_name(f"dot{python.suffix}")
+    assert argv == [str(dot), "-c"]
 
 
 def test_script_name_adds_exe_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
