@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "ccb90cd7dd212cebf19637619e72fc9c0624ceac7c7dbee93fe2fc5eb322b6d6",
+  "catalog_hash": "ac87c1fde99e78fc712e3e6d9f15225dc5e059021124ceba8712b39e086342a6",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "ed679447669869478dba86b365f032a0e8c17c8c581a6fc78e6ed700b6a500af"
+      "hash": "57e90405c210a3758cdfeb4abddc35a0f560c60db7b1668387df8cd43070d20c"
     },
     {
       "id": "frame-ml-problem",
@@ -21,7 +21,7 @@
       "summary": "Record the problem, deployment setting, metric, baseline, and fold count before any model code.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "8f09433284e1a9c68754d3e314d3ba2149870884d1933aaa27fe29c34928a864"
+      "hash": "e655829c1ec15c3131f10ba3b2715c488f335241b9f2b831967a3899cc4ed00d"
     },
     {
       "id": "build-ml-pipeline",
@@ -30,7 +30,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "aa212c15ad3b793e9f3b573381ab4356164fb2c996f12ecd7669d3f7ae4177a2"
+      "hash": "3939b22b60bcc586431a1fc4d20a34ba48c7c250c9f4fb71a820c93c5724f855"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -120,7 +120,7 @@
       "summary": "Shape a user idea or a named artifact into one idea file and one Ideas row after they confirm.",
       "category": "meta",
       "subcategory": null,
-      "hash": "ff57b92a3c26ff8f3b81a6b287248316fbb1137312e39642aab1d409f9e1db0c"
+      "hash": "1317b5e60055612877fde486354649784447aefb90ffa21ecb04eb6fe657263c"
     },
     {
       "id": "search-ml-literature",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, write the first baseline design note for approval, then coordinate later choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "25d2457a9632b38663ae3f3212c1cb178e2bd8b708d7f318f89c45314dc7e64a"
+      "hash": "7f9dc26bfb95f8842e1621aa5cf00f0b567af92a3908ab6fd0fddeaa35213c1b"
     },
     {
       "id": "choose-python-library",
@@ -246,7 +246,7 @@
       "summary": "Coordinate executed notebooks and an offline MkDocs documentation site.",
       "category": "meta",
       "subcategory": null,
-      "hash": "1dbce879a4dbff8f8689cebf90b2df31f77319b628fcc6121e50f295e81873b3"
+      "hash": "b5d0616d3d9abcfedbe44944b32004412bf114b9e86640d5837240d54c263698"
     },
     {
       "id": "sync-ml-reports",

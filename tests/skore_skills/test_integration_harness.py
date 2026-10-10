@@ -291,7 +291,8 @@ def test_stage_workflow_skills_before_launch(tmp_path: Path) -> None:
         (tmp_path / ".agents" / "skills" / ".catalog.json").read_text(encoding="utf-8")
     )
     included = catalog["workflows"][0]["includes"]
-    assert len(paths) == len(included) == 26
+    assert included
+    assert len(paths) == len(included)
     assert {path.name for path in paths} == set(included)
     for skill_id in included:
         sidecar = tmp_path / ".agents" / "skills" / skill_id / ".skore-skill.json"

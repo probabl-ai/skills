@@ -85,7 +85,13 @@ criteria" section. Keep `## Notebooks` with Evaluation then Audit.
    - If `choices` includes `baseline` and the user did not ask to
      discuss, propose a pipeline from the EDA, or pick a backlog
      item, do not AskUserQuestion. Take the locked-baseline
-     contract below.
+     contract below. On this turn, run that contract in order —
+     `python -m skore_skills status`, `python -m skore_skills
+     model choices`, `python -m skore_skills scaffold --journal
+     --stem <NN_short>`, then fill the note — before any
+     design-note prose or question. The only gate after the note
+     is the three lines in the locked-baseline contract, not
+     Yes / No.
    - An explicit discuss, EDA, or backlog request takes that
      branch even when `baseline` is present. Do not show the menu
      first.
@@ -111,7 +117,10 @@ empty. Discussion is present only after the lock.
 Every approval question carries its own context. Before asking,
 state in 2–4 lines what the answer authorizes, the facts it rests
 on — echoed inline — and what each option does, in data-science
-terms (Approve / Modify / Stop; dummy vs baseline). Do not name
+terms (Approve / Modify / Stop; dummy vs baseline). On the
+locked-baseline branch, those lines name the baseline and its
+note only, and the options are the three lines in that contract.
+Do not name
 skill ids or `G-*` tokens in the question. A file link is an
 addition, never the context: "read `journal/<stem>.md` and
 approve" is not an approval request.
@@ -147,16 +156,29 @@ overwrite an existing note.
   other token (`logistic`, `seasonal_naive`, `group_mean`,
   `production`) is that one comparison model. Do not upgrade it
   to another estimator. Do not AskUserQuestion before the note.
-  This turn runs `python -m skore_skills status` and
-  `python -m skore_skills model choices`, then
-  `python -m skore_skills scaffold --journal --stem <NN_short>`,
-  and fills Question, Motivation, Method, and Risks from the
-  locked baseline, its note, and the comparison metric. Then
-  Design approval, before build. That question is only Approve /
-  Modify / Stop. Do not mention discuss, an EDA proposal, or the
-  backlog in this message unless the user already asked for one
+  The message lists these three commands, in order, before any
+  design-note text. A workspace summary is not a substitute:
+
+  ```
+  python -m skore_skills status
+  python -m skore_skills model choices
+  python -m skore_skills scaffold --journal --stem <NN_short>
+  ```
+
+  Then fill Question, Motivation, Method, and Risks from the
+  locked baseline, its note, and the comparison metric. Before
+  the question, two to four lines name that baseline and its
+  note. They do not say what Approve allows. The question is
+  only these three lines:
+
+  - **Approve** — accept this note
+  - **Modify** — change this note
+  - **Stop** — leave this note unchanged
+
+  Nothing follows those lines. Do not mention discuss, an EDA
+  proposal, or the backlog unless the user already asked for one
   of those. Keep the normal post-smoke Evaluate (Recommended) /
-  Modify / Stop gate.
+  Modify / Stop gate for a later turn.
 - **EDA proposal (`eda_proposal`).** Read
   `data_analysis/data_analysis.md` and the project goal. Cite the
   EDA findings that motivate one pipeline proposal. Do not invent

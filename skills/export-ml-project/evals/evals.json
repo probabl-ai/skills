@@ -41,12 +41,12 @@
       "id": 3,
       "title": "Null flags do not select either box",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `policy.notebooks` is null.\n- `policy.site` is null.\n- `export-ml-notebook` and `export-ml-site` are installed.]\n\nExport the project.",
-      "expected_output": "Behavioural response satisfying: - AskUserQuestion `allow_multiple`. The preamble states that neither notebooks nor the site is recorded yet. The question's last line is exactly: Select each one you want. Do not treat `null` as on. This turn stops at the question. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Persist `notebooks` or `site` before the user answers. - Run `git end-turn`.",
+      "expected_output": "Behavioural response satisfying: - AskUserQuestion `allow_multiple`. The preamble states that neither notebooks nor the site is recorded yet. The question's last line is exactly: Select each one you want. Do not treat `null` as on. This turn stops at the question. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `policy set`, or write `notebooks` or `site` policy values, before the user answers. Describing the two choices and saying they are not recorded yet is not persistence. - Run `git end-turn`.",
       "files": [],
       "expectations": [
         "AskUserQuestion `allow_multiple`. The preamble states that neither notebooks nor the site is recorded yet. The question's last line is exactly: Select each one you want. Do not treat `null` as on. This turn stops at the question.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
-        "The response does NOT: Persist `notebooks` or `site` before the user answers.",
+        "The response does NOT: Run `policy set`, or write `notebooks` or `site` policy values, before the user answers. Describing the two choices and saying they are not recorded yet is not persistence.",
         "The response does NOT: Run `git end-turn`.",
         "The response does NOT: In the question, ask the user to uncheck a box, or say that a box starts checked. A recorded status is not the box's starting state."
       ],

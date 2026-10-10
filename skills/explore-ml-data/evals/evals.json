@@ -228,7 +228,7 @@
         "The response does NOT: Write skill ids, `skore_skills`, `cells run`, or \"generated from \u2026\" process notes into `data_analysis/data_analysis.py` / `data_analysis.md` markdown or `#` comments.",
         "The response does NOT: Call `plt.close` or `import matplotlib.pyplot` for these figures.",
         "The response does NOT: Loop over columns with a trailing `g` (that is not displayed).",
-        "The response does NOT: AskUserQuestion grouping when only one data file is in play."
+        "The response does NOT: Ask the user how to group files when only one data file is in play. A checklist line that says the grouping question was skipped is not a grouping question."
       ],
       "tools": false,
       "sandbox": [],
@@ -390,11 +390,11 @@
       "id": 20,
       "title": "Automatic exploration uses the problem class",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `data_analysis/data_analysis.md` exists with Open questions.\n- JOURNAL names California housing / MedHouseVal.\n- User picked **Automatic exploration related to the data and\n  problem**.\n- `status.skills.research-ml-practice` is true.]\n\nKeep exploring. Research extra analyses for this table.",
-      "expected_output": "Behavioural response satisfying: - Load `research-ml-practice` with the canned JOURNAL+EDA extra-measurement question (problem class, not the dataset proper name). - Read `scratch/research/survey-<slug>.md`. - AskUserQuestion `allow_multiple` on **only** sourced **`measure`** extras from that note. The question's last line is exactly: Select each one you want. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Search `california_housing`, `sklearn.datasets`, or a sklearn fetcher name. - Offer pipeline / learner / `GridSearch` extras on the EDA board.",
+      "expected_output": "Behavioural response satisfying: - Load `research-ml-practice` with the canned JOURNAL+EDA extra-measurement question (problem class, not the dataset proper name). - Read `scratch/research/survey-<slug>.md` when tools ran. A message that says tools did not run, and does not claim the survey was read, satisfies this. - AskUserQuestion `allow_multiple` on **only** sourced **`measure`** extras from that note. The question's last line is exactly: Select each one you want. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Search `california_housing`, `sklearn.datasets`, or a sklearn fetcher name. - Offer pipeline / learner / `GridSearch` extras on the EDA board.",
       "files": [],
       "expectations": [
         "Load `research-ml-practice` with the canned JOURNAL+EDA extra-measurement question (problem class, not the dataset proper name).",
-        "Read `scratch/research/survey-<slug>.md`.",
+        "Read `scratch/research/survey-<slug>.md` when tools ran. A message that says tools did not run, and does not claim the survey was read, satisfies this.",
         "AskUserQuestion `allow_multiple` on **only** sourced **`measure`** extras from that note. The question's last line is exactly: Select each one you want.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Search `california_housing`, `sklearn.datasets`, or a sklearn fetcher name.",
@@ -403,7 +403,7 @@
         "The response does NOT: Write a ranked pipeline action table in the survey note.",
         "The response does NOT: Run `git end-turn` in this pass.",
         "The response does NOT: Name `Close` as recommended on the continuation board.",
-        "The response does NOT: In the question, ask the user to uncheck a box, or say that a box starts checked. A recorded status is not the box's starting state."
+        "The response does NOT: In the question, ask the user to uncheck a box, or say that a box starts checked. A pre-flight checklist is not the question. A recorded status is not the box's starting state."
       ],
       "tools": false,
       "sandbox": [],

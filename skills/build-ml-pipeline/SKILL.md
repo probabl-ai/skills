@@ -119,11 +119,15 @@ Implement the approved design. Do not silently upgrade it.
 - **Backlog / discussion** — Method is the boundary.
 
 On a feature, transform, or leakage question, load
-`research-ml-practice` if it is installed. Abstract the problem
-class. AskUserQuestion `allow_multiple` on `declare` rows that
-do not violate a stop. The question's last line is exactly:
-Select each one you want. Write nothing after that line.
-`measure` revisits EDA and does not edit `data_analysis.py`.
+`research-ml-practice` if it is installed and the concern is
+not already in scratch. Abstract the problem class. If scratch
+already lists `declare` or `measure` rows, do not load research
+again and do not write pipeline code. AskUserQuestion
+`allow_multiple` on the `declare` rows that do not violate a
+stop, and stop. The question's last line is exactly: Select each
+one you want. Nothing follows that line. Name each `measure`
+row as an open EDA question. `measure` revisits EDA and does not
+edit `data_analysis.py`.
 The splitter still comes from
 `frame show`.
 `evaluate` names `evaluate-ml-pipeline`. `confirm` asks the

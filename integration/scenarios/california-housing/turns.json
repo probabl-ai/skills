@@ -151,6 +151,8 @@
           "data_analysis/data_analysis.py",
           "data_analysis/data_analysis.md",
           "data_analysis/data_analysis_*.html",
+          "scratch/data_analysis/materialize.py",
+          "scratch/data_analysis/*.json",
           "scratch/data_analysis/extras.json",
           "journal/JOURNAL.md",
           "src/housing/pipeline.py"
@@ -258,6 +260,15 @@
           "experiments/01_*.py",
           "tests/smoke/test_01_*.py",
           "scratch/results/01_*/report.html",
+          "scratch/results/01_*/report.txt",
+          "scratch/results/01_*/checks.html",
+          "scratch/results/01_*/metrics.html",
+          "scratch/results/01_*/locator.txt",
+          "scratch/results/01_*/materialize.py",
+          "audit/01_*.py",
+          "scratch/audit/01_*/audit.md",
+          "scratch/audit/01_*/accessors.txt",
+          "scratch/audit/01_*/materialize.py",
           ".skore"
         ],
         "absent": [
@@ -277,12 +288,16 @@
       }
     },
     {
-      "id": "baseline-review",
+      "id": "baseline-close-audit",
       "checkpoint": true,
-      "say": "Review.",
+      "say": "Close audit.",
       "expect": {
         "files": [
           "scratch/results/01_*/report.html",
+          "scratch/results/01_*/checks.html",
+          "scratch/results/01_*/metrics.html",
+          "audit/01_*.py",
+          "scratch/audit/01_*/audit.md",
           "journal/ideas/*.md",
           "journal/01_*.md",
           "experiments/01_*.py"
@@ -390,7 +405,10 @@
           "scratch/results/01_*/report.html",
           "journal/ideas/*.md",
           "data_analysis/data_analysis.py",
-          "data_analysis/data_analysis.md"
+          "data_analysis/data_analysis.md",
+          "scratch/data_analysis/materialize.py",
+          "audit/01_*.py",
+          "scratch/audit/01_*/audit.md"
         ],
         "absent": [
           "scratch/results/02_*/report.html"

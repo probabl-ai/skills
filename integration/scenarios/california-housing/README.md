@@ -24,7 +24,8 @@ turn once the agent has stopped again. `baseline-approve` and
 `iterate-approve` are the design-note approval. Check after the smoke
 test. After `eda-run`, if the continuation board is still on screen,
 paste `Close. Do not add another analysis.` The `eda-run` check still
-applies. After `frame-fill`, the question is Approve / Modify / Stop.
+applies. After `baseline-evaluate`, the audit continuation board is on
+screen; `baseline-close-audit` closes it and lets review write the ideas.
 
 ## Spine
 
@@ -40,8 +41,8 @@ applies. After `frame-fill`, the question is Approve / Modify / Stop.
 | `frame-open` | | Frame from `DATA.md` and the written analysis. |
 | `frame-fill` | yes | Answer the frame questions. The table locks and the baseline design note stays `planned`. |
 | `baseline-approve` | | Approve, build, and smoke-test. No report yet. |
-| `baseline-evaluate` | | Evaluate and keep the report local. |
-| `baseline-review` | yes | Close the audit, then review. Idea files are `Triage: open`. |
+| `baseline-evaluate` | | Evaluate, keep the report local, and materialize the audit up to its continuation board. |
+| `baseline-close-audit` | yes | Close the audit. Review writes idea files with `Triage: open`. |
 | `backlog-promote` | yes | Promote the first idea to `B1`. |
 | `iterate-choose` | | Take that backlog item. `02_*` stays `planned`. No experiment file. |
 | `iterate-approve` | | Approve and smoke-test `02_*`. No second report. |
@@ -68,8 +69,7 @@ the fork reply instead of continuing the spine.
 | `stop-design` | `frame-fill` | Stop. | Design note stays `planned`. No experiment script. |
 | `modify-design` | `frame-fill` | Modify the method, then ask me again. | State stays `planned`. |
 | `stop-after-smoke` | `baseline-approve` | Stop. | Smoke files exist. No `report.html`. |
-| `skip-review` | `baseline-evaluate` | Skip the review. | Baseline is `done`. No idea files. |
-| `discard-ideas` | `baseline-review` | Discard every open idea. | An idea file says `Triage: discarded`. No `02_*`. |
+| `discard-ideas` | `baseline-close-audit` | Discard every open idea. | An idea file says `Triage: discarded`. No `02_*`. |
 | `discuss-iterate` | `backlog-promote` | Discuss what to try instead. | `B1` remains. No `02_*`. |
 
 ```bash
@@ -100,8 +100,8 @@ and `--model ~deepseek/deepseek-flash-latest`. Pass `--model` to choose
 another model, or repeat `--harness-arg` for any other flag. Install the
 required extension once with `pi install npm:@probabl/pi-skore`.
 
-Before Pi starts, the runner stages all 26 workflow sidecars and passes
-their checkout directories with `--skill`. It also supplies the checkout
+Before Pi starts, the runner stages every workflow sidecar and passes its
+checkout directory with `--skill`. It also supplies the checkout
 CLI on `PYTHONPATH`. The agent must enter every stage through
 `skill("<id>")`, never by reading `SKILL.md`, and adds the checkout as an
 editable pixi dependency after pixi initialization. No reload is needed.
