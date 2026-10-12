@@ -17,6 +17,7 @@ from skore_skills.policy import load_policy
 from skore_skills.style import RUFF_PYPROJECT_TABLE, ensure_ruff_in_pyproject
 from skore_skills.workspace import (
     MANAGER_ORDER,
+    load_pyproject,
     manager_detection,
     package_name,
 )
@@ -34,6 +35,10 @@ EDITABLE_UNSUPPORTED = (
 )
 NO_SRC = "has_src is false; scaffold before editable install"
 NO_PACKAGE = "no package name; scaffold src/ before editable install"
+UV_NOT_PACKAGE = (
+    "uv will not install this project; add [build-system] or set "
+    "[tool.uv] package = true"
+)
 SYNC_HINT = "python -m skore_skills env sync"
 AGENT_PACKAGES = ("ruff", "ipython", "ipykernel")
 BOOTSTRAP_PACKAGES = ("skore", "skore-skills", *AGENT_PACKAGES)
@@ -449,8 +454,23 @@ def skore_requirements(manager: str, mode: str) -> list[str]:
     return packages
 
 
+def _uv_installs_project(root: Path) -> bool:
+    """Return whether ``uv sync`` installs this project."""
+    pyproject = load_pyproject(root)
+    tool = pyproject.get("tool")
+    uv_tool = tool.get("uv") if isinstance(tool, dict) else None
+    flag = uv_tool.get("package") if isinstance(uv_tool, dict) else None
+    if isinstance(flag, bool):
+        return flag
+    return "build-system" in pyproject
+
+
 def editable_argv(manager: str, package: str, *, root: Path) -> list[str] | None:
-    """Return the editable-install argv, or None if unsupported."""
+    """Return the editable-install argv, or None if unsupported.
+
+    uv syncs the project. ``add_editable`` refuses when uv would not
+    install it.
+    """
     pixi_spec = f"{package} @ {root.resolve().as_uri()}"
     commands: dict[str, list[str]] = {
         "pixi": [
@@ -460,7 +480,7 @@ def editable_argv(manager: str, package: str, *, root: Path) -> list[str] | None
             "--editable",
             pixi_spec,
         ],
-        "uv": ["uv", "add", "--editable", "."],
+        "uv": sync_argv("uv")[0],
         "poetry": ["poetry", "add", "--editable", "."],
         "pip-venv": ["pip", "install", "-e", "."],
     }
@@ -886,6 +906,8 @@ def add_editable(root: Path, *, execute: bool = False) -> tuple[str, int]:
     if not name:
         return NO_PACKAGE + "\n", 1
     assert manager is not None
+    if manager == "uv" and not _uv_installs_project(root):
+        return UV_NOT_PACKAGE + "\n", 1
     argv = editable_argv(manager, name, root=root)
     if argv is None:
         return EDITABLE_UNSUPPORTED.format(manager=manager) + "\n", 1
