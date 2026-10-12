@@ -12,8 +12,10 @@ description: >
 ## Human-facing prose
 
 Details: `setup-workspace` `references/human_facing_prose.md`.
-Tell the user to open `report.html`. Do not quote `site init` /
-`site build` as something they should run.
+Tell the user the website has been updated and to open
+`report.html` in a browser. Do not say double-click or "no
+server". Do not name the markdown file that was edited. Do not
+quote `site init` / `site build` as something they should run.
 
 The site is a derived index of files other skills already write.
 Markdown is the report: its figures, TableReport HTML, and existing
@@ -68,12 +70,13 @@ without `--if-stale`.
    for `mkdocs-material` (agent) and build once more. Do not
    `pixi add` / `uv add`. If that skill is missing, or the
    retry still fails, name the error in one line. Name a build
-   error; the markdown sources remain the record. Tell the user
-   to open `report.html` at
-   the workspace root (double-click; no server). Do not send
-   them to the markdown instead. Stage owners that just ran
-   `site build` must name that launcher (and the stage page:
-   `html/data_analysis.html` or `html/<stem>.html`) in the same
+   error; the markdown sources remain the record. Do not claim
+   the website was updated. When the build succeeds, tell the
+   user the website has been updated and to open `report.html`
+   at the workspace root in a browser. Do not say double-click
+   or "no server". Do not name the markdown file or a stage
+   page (`html/data_analysis.html`, `html/<stem>.html`). Stage
+   owners that just ran `site build` say that same line in the
    User-facing close.
 
 ## Preview before markdown-review gates
@@ -89,11 +92,12 @@ that AskUserQuestion / consent stop — not only at End of turn.
    (agent) and build once more. Do not `pixi add` / `uv add`.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the gate.
-2. In the same message as the gate, **Open these**: the `.md`
-   path, plus `report.html` and the stage page
-   (`html/<stem>.html`, `html/data_analysis.html`, or the home
-   page for `JOURNAL.md`) when the build ran. A file link is an
-   addition, never the context.
+2. In the same message as the gate, when the build ran or
+   reported the site current: the website has been updated, and
+   open `report.html` in a browser. Do not name the `.md` path
+   or the stage page. A file link is an addition, never the
+   context. If the build failed, name the error in one line and
+   do not claim the website was updated.
 3. Do **not** `notebook convert`, `git end-turn`, or `git commit`
    on this preview rebuild. Do not re-run `site init`.
 4. Close-time conversion and build remain a freshness safety

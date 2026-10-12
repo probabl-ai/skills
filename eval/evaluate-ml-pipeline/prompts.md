@@ -398,9 +398,11 @@ violated.
 
 **Must do:**
 - Write 2–6 sentences of the evaluation result.
-- Name `report.html` and `html/01_baseline.html` in the
-  user-facing close, because `policy.site` is true. Do not send
-  the user to the design-note markdown instead.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser, because
+  `policy.site` is true. Do not name the design-note markdown
+  or `html/01_baseline.html`. Do not say double-click or "no
+  server".
 - Include the G-REPORT-LOCATOR value (or
   `n/a — backend did not expose a locator`) in the user-facing
   close (first among tokens, after the narrative). When the
@@ -587,9 +589,11 @@ violated.
 
 **Must do:**
 - After `put`, write a 2–6 sentence narrative, then surface
-  G-REPORT-LOCATOR first among tokens. Name `report.html` and
-  `html/<stem>.html` because the site is enabled. Do not send
-  the user to the design-note markdown instead.
+  G-REPORT-LOCATOR first among tokens. Say the website has been
+  updated and name `report.html` at the workspace root as the
+  file to open in a browser, because the site is enabled. Do
+  not name the design-note markdown or `html/<stem>.html`. Do
+  not say double-click or "no server".
 - Name this order. A no-tools turn that lists each command
   satisfies the step. Saying the command was not executed does
   not fail it. `loop notebooks` continues only on `skip`.

@@ -311,12 +311,12 @@
       "id": 17,
       "title": "Journal edit refreshes the live site",
       "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `frame show` asks for `generalize_to`.\n- `policy.site` is true and `export-ml-site` is installed.]\n\nUse grouped validation by hospital.",
-      "expected_output": "Behavioural response satisfying: - Write the answered Modeling decisions cell. - Run `python -m skore_skills site build --if-stale` after the Markdown batch and before the next framing question. - Link `report.html`. It must NOT: - Enable notebooks or site policy. - Build between individual edits in the same Markdown batch. - Run `notebook convert`.",
+      "expected_output": "Behavioural response satisfying: - Write the answered Modeling decisions cell. - Run `python -m skore_skills site build --if-stale` after the Markdown batch and before the next framing question. - Say the website has been updated and name `report.html` at the workspace root as the file to open in a browser. Do not name `journal/JOURNAL.md`. Do not say double-click or \"no server\". It must NOT: - Enable notebooks or site policy. - Build between individual edits in the same Markdown batch. - Run `notebook convert`.",
       "files": [],
       "expectations": [
         "Write the answered Modeling decisions cell.",
         "Run `python -m skore_skills site build --if-stale` after the Markdown batch and before the next framing question.",
-        "Link `report.html`.",
+        "Say the website has been updated and name `report.html` at the workspace root as the file to open in a browser. Do not name `journal/JOURNAL.md`. Do not say double-click or \"no server\".",
         "The response does NOT: Enable notebooks or site policy.",
         "The response does NOT: Build between individual edits in the same Markdown batch.",
         "The response does NOT: Run `notebook convert`."

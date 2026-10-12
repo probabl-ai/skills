@@ -350,8 +350,9 @@ and `frame show` already returned `proceed` with a non-null
 - Name record-outcome next, with the exact locator
   `[Open report](https://example.invalid/report/42) · hub · id: 42`
   and that G-AUDIT-FINDING, before site build.
-- Write 2–6 sentences of the result and link `journal/<stem>.md`,
-  because this workspace does not set `policy.site`.
+- Write 2–6 sentences of the result. Do not name
+  `journal/<stem>.md`. Do not claim the website has been
+  updated, because this workspace does not set `policy.site`.
 - Include that locator in the user-facing close (first among
   tokens).
 - Name `git end-turn --stage implement` last. Do not name
@@ -412,14 +413,19 @@ and `frame show` already returned `proceed` with a non-null
   Method snapshot (`pipeline/` or `pipeline.html`) and before
   the Evaluate question, inside that build.
 - Keep the post-loop `site build` for the same unevaluated report.
-- Name `report.html` when each site build runs.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser when each
+  site build runs. Do not name the design-note markdown or
+  `html/<stem>.html`. Do not say double-click or "no server".
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Defer the first `site build` until after `skore.evaluate`.
 - Skip the pre-Evaluate site build because EDA was skipped.
-- Point the user at the design-note markdown instead of
-  `report.html` after a site build.
+- Point the user at the design-note markdown or
+  `html/<stem>.html` instead of `report.html` after a site
+  build.
+- Say double-click or "no server".
 
 ---
 
@@ -499,15 +505,18 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after the
   note is populated and before Approve / Modify / Stop.
-- Name `report.html` and `html/01_dummy.html` as the pages to
-  open. The design note may be listed beside them.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser. Do not
+  name `journal/01_dummy.md` or `html/01_dummy.html`. Do not
+  say double-click or "no server".
 - State the design question, planned change, and recorded risk
   inline, then ask Approve / Modify / Stop and stop there.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Write model, experiment, or pytest code before approval.
-- Open only `journal/01_dummy.md` and omit `report.html`.
+- Open only `journal/01_dummy.md` or `html/01_dummy.html` and
+  omit `report.html`.
 - Run `notebook convert` or `git end-turn` on this preview rebuild.
 - Fail the approval gate if site build errors; name the error.
 
@@ -647,8 +656,11 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after
   record-outcome and before the user-facing close.
-- Link the freshly built `report.html` and
-  `html/01_baseline.html`.
+- Say the website has been updated and name the freshly built
+  `report.html` at the workspace root as the file to open in a
+  browser. Do not name `journal/01_baseline.md` or
+  `html/01_baseline.html`. Do not say double-click or "no
+  server".
 
 **Must NOT do:**
 - Send the site link before the Results Markdown is published.

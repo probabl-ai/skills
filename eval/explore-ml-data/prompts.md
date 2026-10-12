@@ -14,7 +14,8 @@
 **Must do:**
 - Write 2–6 sentences of EDA findings (shape / target /
   leakage or duplicates that shape modelling).
-- Link `data_analysis/data_analysis.md`.
+- Do not name `data_analysis/data_analysis.md`. Do not claim
+  the website has been updated.
 - Run `python -m skore_skills git end-turn --stage data_analysis`.
 - If that command returns `invoke`, load `persist-ml-git`.
 
@@ -199,9 +200,11 @@
 
 **Must do:**
 - Write 2–6 sentences of EDA findings.
-- Name `report.html` and `html/data_analysis.html` in the
-  user-facing close. Do not send the user to
-  `data_analysis/data_analysis.md` instead.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser. Do not
+  name `data_analysis/data_analysis.md` or
+  `html/data_analysis.html`. Do not say double-click or "no
+  server".
 - Do not execute `data_analysis.py` again on Close.
 - Run `python -m skore_skills site build --if-stale` before git
   end-turn; it may report that the site is current.
@@ -233,8 +236,9 @@
 - `policy.site` is false.
 
 **Must do:**
-- Write 2–6 sentences of EDA findings and link
-  `data_analysis/data_analysis.md`.
+- Write 2–6 sentences of EDA findings. Do not name
+  `data_analysis/data_analysis.md`. Do not claim the website
+  has been updated.
 - Skip site build in one line.
 - Run `python -m skore_skills git end-turn --stage data_analysis`.
 
@@ -412,8 +416,9 @@
   pre-defined option; Provide a query to extend the exploration;
   Automatic exploration related to the data and problem;
   Describe a plot; Close.
-- After Close, write 2–6 sentences of findings and link
-  `data_analysis/data_analysis.md`.
+- After Close, write 2–6 sentences of findings. Do not name
+  `data_analysis/data_analysis.md`. Do not claim the website
+  has been updated.
 - Run `python -m skore_skills git end-turn --stage data_analysis`
   after Close.
 
@@ -439,7 +444,10 @@
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after the md and
   before the continuation board.
-- Name `report.html` and `html/data_analysis.html`.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser. Do not
+  name `data_analysis.md` or `html/data_analysis.html`. Do not
+  say double-click or "no server".
 - AskUserQuestion one pick, none recommended: Choose additional
   pre-defined option; Provide a query to extend the exploration;
   Automatic exploration related to the data and problem;
@@ -742,7 +750,10 @@
 **Must do:**
 - After `data_analysis.md` and JOURNAL, name
   `python -m skore_skills site build --if-stale`.
-- Name `report.html` and `html/data_analysis.html`.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser. Do not
+  name `data_analysis.md` or `html/data_analysis.html`. Do not
+  say double-click or "no server".
 - Then AskUserQuestion one pick, none recommended: Choose
   additional pre-defined option; Provide a query to extend the
   exploration; Automatic exploration related to the data and
@@ -852,6 +863,11 @@
 - After `data_analysis.md` and JOURNAL, load `add-python-package`
   for `mkdocs-material` and run `python -m skore_skills site build --if-stale`
   again.
+- After that retry succeeds, say the website has been updated
+  and name `report.html` at the workspace root as the file to
+  open in a browser. Do not name `data_analysis.md` or
+  `html/data_analysis.html`. Do not say double-click or "no
+  server".
 - Then AskUserQuestion one pick, none recommended: Choose
   additional pre-defined option; Provide a query to extend the
   exploration; Automatic exploration related to the data and

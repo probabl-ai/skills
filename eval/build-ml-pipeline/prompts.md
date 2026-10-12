@@ -607,9 +607,11 @@ violated.
   accepts `eval`, otherwise `pipeline.html`), run
   `python -m skore_skills site build --if-stale` before `smoke run` and
   before the Evaluate question.
-- In the checkpoint, link `report.html` and
-  `html/01_baseline.html` (Method DataOp report). Do not link the
-  design-note markdown instead.
+- In the checkpoint, say the website has been updated and name
+  `report.html` at the workspace root as the file to open in a
+  browser. Do not name the design-note markdown or
+  `html/01_baseline.html`. Do not say double-click or "no
+  server". The Method DataOp report stays on the site.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).

@@ -159,10 +159,11 @@ After any turn that changes `journal/JOURNAL.md` (filled
 decisions, Status, `frame clear`, or lock), coalesce all edits,
 then, when `policy.site` is `true` and `export-ml-site` is
 installed, run `python -m skore_skills site build --if-stale`
-before the next question or stop. Link `report.html` in that
-message. `policy.site` `null` or `false` does not enable or build
-the site. A read-only `frame show` with no Markdown change does
-not build.
+before the next question or stop. In that message, say the
+website has been updated and to open `report.html` in a
+browser. Do not name `journal/JOURNAL.md`. `policy.site`
+`null` or `false` does not enable or build the site. A
+read-only `frame show` with no Markdown change does not build.
 
 ## Stop conditions
 

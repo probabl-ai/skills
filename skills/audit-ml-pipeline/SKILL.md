@@ -480,8 +480,9 @@ python -m skore_skills audit finding --stem <stem>
 The notebook does not contain the materialize writes. If site
 policy is `true` and `export-ml-site` is installed, run
 `python -m skore_skills site build --if-stale` after materialize
-and before that gate, then link `report.html` and
-`html/<stem>.html`.
+and before that gate. When the build ran, say the website has
+been updated and link `report.html` to open in a browser. Do
+not name the design-note markdown or `html/<stem>.html`.
 
 Paste JSON `finding` verbatim. Read `audit.md`; do not derive it
 from the notebook.
@@ -607,12 +608,15 @@ notebook gate. Then this order. Do not reorder it.
    `pixi add` / `uv add`. Name a build error; do not fail the
    audit.
 5. User-facing close. The message is 2–6 sentences from Checks +
-   Metrics. Do not invent a metric or paste the digest. Link
-   `[report.html](<workspace>/report.html)` and
-   `html/<stem>.html` only when step 4 succeeded. Otherwise link
-   `[journal/<stem>.md](journal/<stem>.md)`. Then JSON `locator`
-   from step 2 verbatim (local: also the absolute `reports/`
-   path), then G-AUDIT-FINDING. Index strings, not the narrative.
+   Metrics. Do not invent a metric or paste the digest. When
+   step 4 succeeded, say the website has been updated and link
+   `[report.html](<workspace>/report.html)` to open in a
+   browser. Do not name `html/<stem>.html` or
+   `journal/<stem>.md`. When the site was not built, do not
+   claim it was updated and do not name the markdown. Then JSON
+   `locator` from step 2 verbatim (local: also the absolute
+   `reports/` path), then G-AUDIT-FINDING. Index strings, not
+   the narrative.
    Dispatched audit never writes this message.
 6. `python -m skore_skills git end-turn --stage evaluate`. The
    audit continues the evaluate stage; there is no `audit` stage.

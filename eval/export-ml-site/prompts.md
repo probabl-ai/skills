@@ -15,7 +15,9 @@
 **Must do:**
 - Run `python -m skore_skills site init`.
 - Run `python -m skore_skills site build`.
-- Name `report.html` at the workspace root as the file to open.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser. Do not
+  say double-click or "no server".
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -37,7 +39,9 @@
 **Must do:**
 - Run `python -m skore_skills site build`.
 - Do not run `site init` again.
-- Name `report.html` at the workspace root as the file to open.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser. Do not
+  say double-click or "no server".
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -100,7 +104,9 @@
 **Must do:**
 - Load `add-python-package` for `mkdocs-material`, then run
   `python -m skore_skills site build` again.
-- Name `report.html` at the workspace root as the file to open.
+- Say the website has been updated and name `report.html` at
+  the workspace root as the file to open in a browser. Do not
+  say double-click or "no server".
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -124,8 +130,10 @@
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` once before
   the user decision.
-- Link `report.html` whether MkDocs rebuilt or reported the site
-  current.
+- Say the website has been updated and link `report.html` at
+  the workspace root as the file to open in a browser, whether
+  MkDocs rebuilt or reported the site current. Do not say
+  double-click or "no server".
 
 **Must NOT do:**
 - Rebuild between individual Markdown edits in the same batch.

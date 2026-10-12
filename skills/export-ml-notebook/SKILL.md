@@ -111,8 +111,10 @@ the source or required HTML changed.
    (agent) and build once more. Do not `pixi add` / `uv add`.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the
-   fill. Point the user at the HTML viewer / `report.html`,
-   not the CLI.
+   fill, and do not claim the website was updated. When the
+   build ran, say the website has been updated and to open
+   `report.html` in a browser. Do not name the markdown file
+   or the HTML viewer path. Do not quote the CLI.
 
 ## Stop conditions
 

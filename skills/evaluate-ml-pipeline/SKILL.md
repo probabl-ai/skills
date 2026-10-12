@@ -336,8 +336,11 @@ only on `skip`.
    `mkdocs-material` (agent) and build once more. Do not
    `pixi add` / `uv add`. Name a build error; do not fail the
    turn.
-5. Checkpoint, below. Link `report.html` only when `policy.site`
-   is true and the checkpoint build succeeded.
+5. Checkpoint, below. When `policy.site` is true and the
+   checkpoint build succeeded, say the website has been updated
+   and link `report.html` to open in a browser. Do not name the
+   design-note markdown. When the site was not built, do not
+   claim it was updated and do not name the markdown.
 6. `python -m skore_skills git end-turn --stage evaluate`. If
    JSON `action` is `invoke`, load `persist-ml-git` when
    installed and stop. Otherwise load `triage-ml-task` when
@@ -350,9 +353,12 @@ headline or, when audit was skipped, `report.txt`. If audit
 ran, ground the story in its Checks and Metrics. Do not invent
 a metric.
 
-Links: `[report.html](<workspace>/report.html)` and
-`html/<stem>.html` only when `policy.site` is true. Otherwise
-`[journal/<stem>.md](journal/<stem>.md)`.
+Links: when `policy.site` is true and the build succeeded, say
+the website has been updated and link
+`[report.html](<workspace>/report.html)` to open in a browser.
+Do not name `html/<stem>.html` or `journal/<stem>.md`. When the
+site was not built, do not claim it was updated and do not name
+the markdown.
 
 Tokens after the narrative: JSON `locator` first, then
 G-AUDIT-FINDING (`n/a — audit not run` when skipped).
