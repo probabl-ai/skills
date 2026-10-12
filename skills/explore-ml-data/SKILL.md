@@ -19,8 +19,10 @@ description: >
   package root or a root `JOURNAL.md` while setup is pending.
 
   HOW TO USE: G-TABULAR via `add-python-package`, infer or ask
-  the target, load `plot-ml-figure` if installed, then ask the
+  the targets, load `plot-ml-figure` if installed, then ask the
   five-option continuation board, including Close.
+metadata:
+  modelTier: medium
 ---
 
 # Explore ML Data
@@ -52,13 +54,14 @@ in this skill. `style` is ruff only.
 | `data_analysis/data_analysis.md` | Human + later modelling — TableReport iframes, implications |
 | `scratch/data_analysis/materialize.py` | Agent — the only run; gitignored |
 | `scratch/data_analysis/<slug>.json` | Agent — `TableReport.json()` per family; gitignored |
-| `scratch/data_analysis/extras.json` | Agent — `tables[]`, target, leakage, png and html paths |
+| `scratch/data_analysis/extras.json` | Agent — `tables[]`, `targets`, leakage, png and html paths |
 | JOURNAL § Data understanding | Index: status, 2–4 line summary, link |
 
 TableReport owns dtypes, missingness, univariate distributions,
 cardinality, and top pairwise associations. Extra cells cover
-duplicates, target distribution, feature-vs-target, and leakage
-candidates. Do not duplicate TableReport in extra cells.
+duplicates, each target's distribution, feature-vs-target, and
+leakage candidates. Sibling targets are not features. Do not
+duplicate TableReport in extra cells.
 
 Details: `references/cell_anatomy.md`. Extra recipes:
 `references/extra_analyses.md`.
@@ -114,27 +117,39 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 - **G-TABULAR before `data_analysis/data_analysis.py`.**
   `status.policy.tabular`; else `choose-python-library` (recommend
   pandas) then `add-python-package` for that lib **and** `skrub`,
-  `matplotlib`, and `seaborn`. No silent default. If G-TABULAR,
-  target, or families are unanswered, **stop after the asks** —
+  `matplotlib`, and `seaborn`. No silent default. A Graphviz
+  repair diagnostic from that `skrub` install does not discard
+  this analysis. Quote it in one line and continue. The unfitted
+  snapshot in `build-ml-pipeline` is what requires a renderable
+  graph. If G-TABULAR,
+  targets, or families are unanswered, **stop after the asks** —
   no default-path notebook, even as a “Deliverable A assuming
   pandas.” Do not install sklearn / skore / pytest unless the
   user picked an extra that needs them.
-- **Target.** Infer from JOURNAL Status / the user prompt when the
-  column is obvious. Otherwise AskUserQuestion (column names plus
-  "no target yet") and **stop** — write no notebook yet. Do not
-  list feature-vs-target / leakage as always-on next steps.
-  After a named column, append that one target snippet. After
-  “no target yet” or Decline → `<TARGET>=None`, `<TASK>=none`;
-  TableReport + duplicates only. Do not persist a policy key.
+- **Targets.** Infer from JOURNAL Status / the user prompt when
+  the columns are obvious, including every named output. Otherwise
+  AskUserQuestion `allow_multiple` (column names plus "no target
+  yet") and **stop** — write no notebook yet. "no target yet" is
+  exclusive. Do not list feature-vs-target / leakage as always-on
+  next steps. A numeric column with many distinct values is
+  regression. A column with few labels, or non-numeric labels, is
+  classification. One column → that one target snippet. Two or
+  more regression columns are one multi-output regression: append
+  `templates/target_multioutput_regression.py` once. Several
+  classification columns, or a mix of classification and
+  regression, are not a joint model skore can report: record each
+  column and its task, and do not append that snippet. After
+  “no target yet” or Decline → `TARGETS=[]`. TableReport +
+  duplicates only. Do not persist a policy key.
 - **No train/test split.** The modeling-decisions lock owns that
   choice later. Do not split during EDA. If the files already
   are a training table and a test table, name both in the
   summary and do not concatenate them. Exploration does not
   choose the evaluation.
   Leakage cells are qualitative flags on the raw family that
-  holds the target. Further families use `templates/family.py`
+  holds every target. Further families use `templates/family.py`
   only (TableReport + duplicates) — no leakage / target /
-  bivariate cells on a family that does not hold the target.
+  bivariate cells on a family that does not hold the targets.
   Do not persist a joined modeling table.
 - **Families before the notebook.** More than one data file →
   AskUserQuestion grouping (none recommended): Use a proposed
@@ -154,14 +169,16 @@ Details: `references/cell_anatomy.md`. Extra recipes:
   column-dicts, or `report.json()` cells. The duplicate cell
   prints the duplicate count only, not a uniqueness percentage
   and not `nunique()/n`. Leakage is the
-  template table, not a comment. Default figures: seaborn
-  `displot` for the target only inside
-  `templates/target_regression.py` /
-  `target_classification.py` (describe + one target figure).
-  Copy that snippet into the live notebook; do not invent a
-  second target histogram next to `TableReport`. One
-  faceted `relplot` → `bivariate_grid.png`, last expression
-  `g`. Do not `import matplotlib.pyplot` on the default path.
+  template table, not a comment. One target: seaborn `displot`
+  inside `templates/target_regression.py` /
+  `target_classification.py` (describe + one target figure) and
+  one faceted `relplot` → `bivariate_grid.png`. Several
+  regression targets: `templates/target_multioutput_regression.py`
+  once (`target_distributions.png`, `bivariate_targets.png`).
+  Do not copy a single-target snippet beside it, and do not
+  invent another target histogram next to `TableReport`. Last
+  expression `g`. Do not `import matplotlib.pyplot` on the
+  default path.
 - **Do not design the model.** Implications in
   `data_analysis.md` only.
 - Do not gitignore `data_analysis/`. Ignore specific raw patterns
@@ -174,7 +191,7 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 - [ ] Detect: status.data_analysis present|skipped|missing
 - [ ] G-DATA-ANALYSIS: run | skip when the analysis file is absent (skip → JOURNAL only, STOP). present → keep or re-run; never write skipped
 - [ ] G-TABULAR + add frame lib + skrub + matplotlib + seaborn
-- [ ] Target: inferred | AskUserQuestion | none
+- [ ] Targets: inferred | AskUserQuestion | none
 - [ ] Families: one file | AskUserQuestion grouping
 - [ ] Load plot-ml-figure if installed; place
       data_analysis/data_analysis.py from the template (edit to
@@ -193,7 +210,7 @@ evidence. End of turn only after Close.
 
 ## Before execution
 
-After G-DATA-ANALYSIS, G-TABULAR, target, and families are
+After G-DATA-ANALYSIS, G-TABULAR, targets, and families are
 resolved, emit 1–3 natural sentences immediately before the
 first write. Say that this is **local
 computation**: it profiles the confirmed full table family or
@@ -218,37 +235,46 @@ not write or execute the notebook.
 
 ## Procedure (run path)
 
-1. Resolve `<TARGET>` / `<TASK>` (`classification` | `regression`
-   | `none`) first. Resolve families (stop condition above).
-   Copy `templates/data_analysis.py` if it fits, then **edit**
+1. Resolve `TARGETS` and one task per column (`classification`
+   | `regression`) first. An empty list is no target. Two or
+   more regression columns are multi-output regression. Resolve
+   families (stop condition above). Copy
+   `templates/data_analysis.py` if it fits, then **edit**
    — do not paste unused branches. The first family is the one
-   that contains `<TARGET>` when a target exists; substitute
+   that contains every target when any exist; substitute
    `<pkg>`, `<LOAD_RAW_DATA>` (in-memory concat of that family's
    shards; optional `_source_file`), `<slug>` (Python
    identifier). Each further family → `templates/family.py` (`<OTHER_SLUG>`,
-   `<LOAD_OTHER>`). Append
+   `<LOAD_OTHER>`). One target → append
    `templates/target_regression.py` **or**
-   `templates/target_classification.py` (set `TARGET` / `TASK`
-   in the first-family load cell). No target → neither snippet,
-   no `TARGET` / `TASK` lines. Datetime columns on a family →
+   `templates/target_classification.py` and set `TARGET` in the
+   first-family load cell. Two or more regression targets →
+   append `templates/target_multioutput_regression.py` once and
+   set `TARGETS` to that list. No target, several classification
+   columns, or a mix → none of those snippets and no `TARGET` /
+   `TARGETS` assignment. Datetime columns on a family →
    `templates/datetime.py` for that family (drop the relplot
-   cell if there is no numeric target). Two families that share
-   column names → `templates/drift.py` with `<OTHER_FRAME>`.
-   Disjoint schemas → no drift on the default pass. Do not
-   append join-coverage cells here. Generated notebook must
-   not contain `if TARGET`, `if TASK`, `OTHER = None`, empty
-   datetime loops, or “skip this cell”. Load `plot-ml-figure`
-   if installed **before** writing figure cells (including this
-   first write). Markdown is about **this** analysis.
-   `python -m skore_skills style` after the write. Do not
-   execute this file.
+   cell unless there is exactly one numeric target). Two
+   families that share column names → `templates/drift.py` with
+   `<OTHER_FRAME>`. Disjoint schemas → no drift on the default
+   pass. Do not append join-coverage cells here. Generated
+   notebook must not contain `if TARGET`, `if TASK`,
+   `OTHER = None`, empty datetime loops, or “skip this cell”.
+   Load `plot-ml-figure` if installed **before** writing figure
+   cells (including this first write). Markdown is about
+   **this** analysis. `python -m skore_skills style` after the
+   write. Do not execute this file.
 2. Copy `templates/materialize.py` to
    `scratch/data_analysis/materialize.py`. Substitute `<pkg>`,
-   `<TARGET>`, `<TASK>`, and the `<ANALYSIS>` block: the same
+   `<TARGETS>`, `<TASKS>`, and the `<ANALYSIS>` block: the same
    loads, `TableReport.write_html` calls, and figure or HTML
-   saves as the human file. One load per family. Bind
-   `FAMILIES` as `(slug, raw)` and `FRAME` to the target
-   family's pandas frame. Leave the tail. Run that file once.
+   saves as the human file. `<TARGETS>` is a list of column
+   names (`[]` when there is no target). `<TASKS>` is the
+   parallel list of `classification` | `regression`, including
+   columns that have no joint snippet. One load per family.
+   Bind `FAMILIES` as `(slug, raw)` and `FRAME` to the pandas
+   frame that contains every target. Leave the tail. Run that
+   file once.
    It writes the TableReport HTML, figures, `<slug>.json`, and
    `extras.json`. Do not execute
    `data_analysis/data_analysis.py`. Do not `notebook convert`
@@ -279,7 +305,8 @@ not write or execute the notebook.
 5. JOURNAL § Data understanding table: run
    `python -m skore_skills eda stamp --status done` for the Status
    cell. Do not type the date. Write the short summary (shape,
-   target balance/skew, one or two findings that shape modelling)
+   each target's balance or skew, one or two findings that shape
+   modelling)
    and Report
    `[data_analysis/data_analysis.md](../data_analysis/data_analysis.md)`.
    Skip path: `eda stamp --status skipped` only. Do not fill or
@@ -385,9 +412,10 @@ board for this pick.
    `measure` board — do not claim a scratch file was read.
    Do not say to drop a raw column. **AskUserQuestion**
    `allow_multiple` on **only** sourced **`measure`** extras
-   that are not already in the notebook. The question's last
-   line is exactly: Select each one you want. Write nothing
-   after that line.
+   that are not already in the notebook. No option starts
+   selected. The question's last line is exactly: Select each
+   one you want. That line ends the message: no checklist
+   after it.
    Map onto extra_analyses when a recipe exists; else a
    custom cell. `declare` / `evaluate` / `confirm` stay off
    this board → Open questions as advice, not findings. Do
@@ -440,7 +468,7 @@ commands in that message.
 
 1. **Narrative first** — 2–6 sentences of findings for this
    stage, grounded in Modelling implications / the JSON facts
-   (shape, target, leakage or duplicates that shape modelling).
+   (shape, targets, leakage or duplicates that shape modelling).
    Do not invent columns. Do not paste `data_analysis.md`.
 2. **Open these** — when `site build` ran or reported the site
    current, say the website has been updated and link

@@ -5,6 +5,8 @@ description: >
   offline MkDocs documentation site. Trigger on a generic
   "export" request, or to flip the notebooks/site gates after
   setup.
+metadata:
+  modelTier: small
 ---
 
 # Export ML Project

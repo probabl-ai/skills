@@ -17,8 +17,8 @@ violated.
 - pixi is on PATH.
 
 **Must do:**
-- Emit the Pre-flight then run the commands (do not stop after
-  listing boxes).
+- Read the lookup table and take the matching row (do not stop
+  after listing the rows).
 - Run `python -m skore_skills env detect` and treat this as
   bootstrap, not a package add.
 - AskUserQuestion which env manager to use, using `recommended`

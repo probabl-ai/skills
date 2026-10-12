@@ -744,8 +744,74 @@ def test_env_add_editable_pixi_execute(
     result = CliRunner().invoke(cli, ["env", "add", "--editable", "--execute"])
     assert result.exit_code == 0, result.output
     spec = _pixi_editable_spec(tmp_path, "demo-pkg")
-    assert seen == [["pixi", "add", "--pypi", "--editable", spec]]
+    assert seen[0] == ["pixi", "add", "--pypi", "--editable", spec]
+    assert seen[1][:5] == ["pixi", "run", "-e", "dev", "python"]
+    assert "demo_pkg" in seen[1][-1]
+    assert len(seen) == 2
     _assert_pixi_editable_spec(spec, root=tmp_path, package="demo-pkg")
+
+
+def test_env_add_editable_execute_fails_when_import_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A successful add that cannot be imported is still a failure."""
+    from skore_skills import env as env_mod
+
+    (tmp_path / "pixi.toml").write_text("[workspace]\n", encoding="utf-8")
+    (tmp_path / "src" / "demo_pkg").mkdir(parents=True)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo-pkg"\nversion = "0.1.0"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        class Result:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+
+        if "import_module" in " ".join(argv):
+            Result.returncode = 1
+            Result.stderr = "ModuleNotFoundError: No module named 'demo_pkg'\n"
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "add", "--editable", "--execute"])
+    assert result.exit_code != 0
+    assert "No module named 'demo_pkg'" in result.output
+    assert "pixi add --pypi --editable" in result.output
+
+
+def test_env_add_editable_execute_stops_when_add_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A failed editable add does not run the import check."""
+    from skore_skills import env as env_mod
+
+    (tmp_path / "pixi.toml").write_text("[workspace]\n", encoding="utf-8")
+    (tmp_path / "src" / "demo_pkg").mkdir(parents=True)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "demo-pkg"\nversion = "0.1.0"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        if "import_module" in " ".join(argv):
+            raise AssertionError("import check ran after a failed add")
+
+        class Result:
+            returncode = 1
+            stdout = ""
+            stderr = ""
+
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "add", "--editable", "--execute"])
+    assert result.exit_code != 0
+    assert "pixi add --pypi --editable" in result.output
 
 
 @pytest.mark.parametrize(
@@ -892,9 +958,13 @@ def test_env_verify_print_pixi(monkeypatch: pytest.MonkeyPatch) -> None:
     payload = json.loads(result.output)
     assert payload["ok"] is None
     assert payload["argv"][:5] == ["pixi", "run", "-e", "dev", "python"]
-    assert "IPython" in payload["argv"][-1]
-    assert "skore" in payload["argv"][-1]
-    assert "skore_skills" in payload["argv"][-1]
+    snippet = payload["argv"][-1]
+    assert "IPython" in snippet
+    assert "skore" in snippet
+    assert "skore_skills" in snippet
+    assert "import ruff" not in snippet
+    assert "with_name" in snippet
+    assert "Scripts" in snippet
 
 
 def test_agent_packages_exclude_transitive_skore_skills() -> None:
@@ -923,6 +993,8 @@ def test_env_verify_execute_mocked(monkeypatch: pytest.MonkeyPatch) -> None:
 
         class Result:
             returncode = 0
+            stdout = "SKORE_SKILLS_VERIFY []\n"
+            stderr = ""
 
         return Result()
 
@@ -931,7 +1003,68 @@ def test_env_verify_execute_mocked(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["ok"] is True
+    assert payload["missing"] == []
     assert seen == [payload["argv"]]
+
+
+def test_env_verify_execute_reports_only_failed_probes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A single failed probe is the only name in ``missing``."""
+    from skore_skills import env as env_mod
+
+    monkeypatch.chdir(FIXTURES / "pixi")
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        class Result:
+            returncode = 1
+            stdout = 'SKORE_SKILLS_VERIFY ["ruff"]\n'
+            stderr = ""
+
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "verify", "--execute"])
+    assert result.exit_code != 0
+    payload = json.loads(result.output)
+    assert payload["ok"] is False
+    assert payload["missing"] == ["ruff"]
+
+
+def test_env_verify_execute_without_marker_did_not_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A composed env that never starts does not mark every package missing."""
+    from skore_skills import env as env_mod
+    from skore_skills.env import VERIFY_DID_NOT_RUN
+
+    monkeypatch.chdir(FIXTURES / "pixi")
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        class Result:
+            returncode = 1
+            stdout = ""
+            stderr = "pixi failed\n"
+
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "verify", "--execute"])
+    assert result.exit_code != 0
+    payload, end = json.JSONDecoder().raw_decode(result.output)
+    assert payload["ok"] is False
+    assert payload["missing"] == []
+    assert payload["error"] == VERIFY_DID_NOT_RUN
+    assert "pixi failed" in result.output[end:]
+
+
+def test_parse_verify_report_rejects_a_bad_payload() -> None:
+    """Noise, invalid JSON, and a non-list payload are not a package list."""
+    from skore_skills.env import VERIFY_MARKER, _parse_verify_report
+
+    assert _parse_verify_report(f"{VERIFY_MARKER} []\nnoise\n") == []
+    assert _parse_verify_report(f"{VERIFY_MARKER} not-json") is None
+    assert _parse_verify_report(f"{VERIFY_MARKER} " + '{"no": "list"}') is None
 
 
 def test_env_init_mentions_sync(
@@ -1392,6 +1525,17 @@ def test_env_add_skrub_pip_adds_pydot_not_graphviz(
     assert "graphviz" not in result.output
 
 
+def test_env_add_skrub_poetry_adds_pydot_not_graphviz(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Poetry gets pydot but leaves the native Graphviz install to the OS."""
+    monkeypatch.chdir(FIXTURES / "poetry")
+    result = CliRunner().invoke(cli, ["env", "add", "skrub"])
+    assert result.exit_code == 0, result.output
+    assert result.output.strip() == "poetry add skrub pydot"
+    assert "graphviz" not in result.output
+
+
 def test_env_add_skrub_hatch_writes_pydot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1407,10 +1551,14 @@ def test_env_add_skrub_hatch_writes_pydot(
 
 
 def _graphviz_run(
-    seen: list[list[str]], *, which: str | None = "/usr/bin/dot", dot_c: int = 0
+    seen: list[list[str]],
+    *,
+    which: str | None = "/usr/bin/dot",
+    probe: int = 0,
+    probe_error: str = "RuntimeError: Graphviz returned non-SVG output\n",
 ) -> Any:
     """Return a subprocess.run stand-in for ``env graphviz`` probes."""
-    from skore_skills.env import DOT_C_SNIPPET, WHICH_DOT_SNIPPET
+    from skore_skills.env import GRAPHVIZ_PROBE_SNIPPET, WHICH_DOT_SNIPPET
 
     def fake_run(argv: list[str], **kwargs: Any) -> Any:
         seen.append(list(argv))
@@ -1424,9 +1572,9 @@ def _graphviz_run(
         if snippet == WHICH_DOT_SNIPPET:
             Result.stdout = (which or "") + "\n"
             Result.returncode = 0
-        elif snippet == DOT_C_SNIPPET:
-            Result.returncode = dot_c
-            Result.stderr = "plugin cache locked\n" if dot_c else ""
+        elif snippet == GRAPHVIZ_PROBE_SNIPPET:
+            Result.returncode = probe
+            Result.stderr = probe_error if probe else ""
         return Result()
 
     return fake_run
@@ -1447,14 +1595,15 @@ def test_env_graphviz_pixi_missing_dot_prints_conda_command(
     assert payload["action"] == "conda"
     assert payload["dot"] is None
     assert payload["command"] == ["pixi", "add", "graphviz"]
-    assert "graphviz.org/download" in payload["instructions"]
-    assert not any(argv[-1:] == [env_mod.DOT_C_SNIPPET] for argv in seen)
+    assert payload["ok"] is None
+    assert payload["instructions"] is None
+    assert not any(argv[-1:] == [env_mod.GRAPHVIZ_PROBE_SNIPPET] for argv in seen)
 
 
-def test_env_graphviz_pixi_execute_adds_then_dot_c(
+def test_env_graphviz_pixi_execute_adds_then_probes_svg(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Managed pixi ``--execute`` installs Graphviz then rebuilds the cache."""
+    """Managed pixi ``--execute`` installs Graphviz then verifies SVG."""
     from skore_skills import env as env_mod
 
     monkeypatch.chdir(FIXTURES / "pixi")
@@ -1480,14 +1629,15 @@ def test_env_graphviz_pixi_execute_adds_then_dot_c(
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["dot"] == "/pixi/env/bin/dot"
+    assert payload["ok"] is True
     assert ["pixi", "add", "graphviz"] in seen
-    assert any(argv[-1] == env_mod.DOT_C_SNIPPET for argv in seen)
+    assert any(argv[-1] == env_mod.GRAPHVIZ_PROBE_SNIPPET for argv in seen)
 
 
-def test_env_graphviz_dot_present_execute_only_dot_c(
+def test_env_graphviz_dot_present_execute_only_probes_svg(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """When ``dot`` is already on the env PATH, ``--execute`` only runs ``dot -c``."""
+    """An existing Graphviz is verified without reinstalling or mutating it."""
     from skore_skills import env as env_mod
 
     monkeypatch.chdir(FIXTURES / "pixi")
@@ -1499,9 +1649,12 @@ def test_env_graphviz_dot_present_execute_only_dot_c(
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["dot"] == "/usr/bin/dot"
+    assert payload["ok"] is True
+    assert payload["instructions"] is None
     assert payload["command"] is None
     assert ["pixi", "add", "graphviz"] not in seen
-    assert any(argv[-1] == env_mod.DOT_C_SNIPPET for argv in seen)
+    assert any(argv[-1] == env_mod.GRAPHVIZ_PROBE_SNIPPET for argv in seen)
+    assert all("dot -c" not in " ".join(argv) for argv in seen)
 
 
 def test_env_graphviz_uv_missing_dot_refuses_os_execute(
@@ -1518,46 +1671,148 @@ def test_env_graphviz_uv_missing_dot_refuses_os_execute(
     payload = json.loads(printed.output)
     assert payload["action"] == "system"
     assert payload["command"] is None
+    assert payload["ok"] is None
+    assert "graphviz.org/download" in payload["instructions"]
     executed = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
     assert executed.exit_code != 0
     assert not any("brew" in " ".join(argv) for argv in seen)
     assert not any(argv[:2] == ["uv", "add"] for argv in seen)
 
 
-def test_env_graphviz_uv_dot_present_runs_dot_c(
+def test_env_graphviz_uv_dot_present_probes_svg(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """System Graphviz already on PATH: ``--execute`` still rebuilds the cache."""
+    """Homebrew Graphviz already on PATH is verified without cache writes."""
     from skore_skills import env as env_mod
 
     monkeypatch.chdir(FIXTURES / "uv")
     seen: list[list[str]] = []
     monkeypatch.setattr(
-        env_mod.subprocess, "run", _graphviz_run(seen, which="/usr/bin/dot")
+        env_mod.subprocess,
+        "run",
+        _graphviz_run(seen, which="/opt/homebrew/bin/dot"),
     )
     result = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
     assert result.exit_code == 0, result.output
-    assert any(argv[-1] == env_mod.DOT_C_SNIPPET for argv in seen)
+    assert json.loads(result.output)["dot"] == "/opt/homebrew/bin/dot"
+    assert any(argv[-1] == env_mod.GRAPHVIZ_PROBE_SNIPPET for argv in seen)
+    assert not any(argv[:2] == ["uv", "add"] for argv in seen)
+    assert all("dot -c" not in " ".join(argv) for argv in seen)
 
 
-def test_env_graphviz_dot_c_permission_message(
+def test_env_graphviz_svg_probe_failure_prints_repair_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A failed ``dot -c`` names admin rerun; the CLI never sudoes."""
+    """An unregistered plugin gets one in-env ``dot -c``, never sudo."""
     from skore_skills import env as env_mod
-    from skore_skills.env import DOT_C_ADMIN
+    from skore_skills.env import GRAPHVIZ_REPAIR
 
-    monkeypatch.chdir(FIXTURES / "pixi")
+    monkeypatch.chdir(FIXTURES / "uv")
     seen: list[list[str]] = []
+    plugin_error = (
+        'Format: "svg" not recognized. No formats found.\n'
+        'Perhaps "dot -c" needs to be run (with installer\'s privileges) '
+        "to register the plugins?\n"
+    )
     monkeypatch.setattr(
         env_mod.subprocess,
         "run",
-        _graphviz_run(seen, which="/usr/bin/dot", dot_c=1),
+        _graphviz_run(seen, which="/usr/bin/dot", probe=1, probe_error=plugin_error),
     )
     result = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
     assert result.exit_code != 0
-    assert DOT_C_ADMIN in result.output
+    assert GRAPHVIZ_REPAIR in result.output
+    assert "not recognized" in result.output
+    assert '"ok": false' in result.output
+    assert "brew install" not in result.output
+    registrations = [argv for argv in seen if argv[-2:] == ["dot", "-c"]]
+    assert len(registrations) == 1
+    assert registrations[0][:3] == ["uv", "run", "--group"]
     assert not any(argv and argv[0] == "sudo" for argv in seen)
+    probes = [argv for argv in seen if argv[-1] == env_mod.GRAPHVIZ_PROBE_SNIPPET]
+    assert len(probes) == 2
+
+
+def test_env_graphviz_does_not_reprobe_when_registration_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A failed ``dot -c`` is not followed by a second SVG probe."""
+    from skore_skills import env as env_mod
+    from skore_skills.env import (
+        GRAPHVIZ_PROBE_SNIPPET,
+        GRAPHVIZ_REPAIR,
+        WHICH_DOT_SNIPPET,
+    )
+
+    monkeypatch.chdir(FIXTURES / "uv")
+    seen: list[list[str]] = []
+    plugin_error = 'Format: "svg" not recognized.\nPerhaps "dot -c" needs to be run\n'
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        seen.append(list(argv))
+
+        class Result:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+
+        if argv[-1:] == [WHICH_DOT_SNIPPET]:
+            Result.stdout = "/usr/bin/dot\n"
+        elif argv[-1:] == [GRAPHVIZ_PROBE_SNIPPET]:
+            Result.returncode = 1
+            Result.stderr = plugin_error
+        elif argv[-2:] == ["dot", "-c"]:
+            Result.returncode = 1
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
+    assert result.exit_code != 0
+    assert GRAPHVIZ_REPAIR in result.output
+    assert any(argv[-2:] == ["dot", "-c"] for argv in seen)
+    probes = [argv for argv in seen if argv[-1:] == [GRAPHVIZ_PROBE_SNIPPET]]
+    assert len(probes) == 1
+
+
+def test_dev_command_argv_pip_venv_uses_the_venv_binary(tmp_path: Path) -> None:
+    """Graphviz registration in a venv calls that venv's ``dot``."""
+    from skore_skills.env import _dev_command_argv
+
+    argv = _dev_command_argv("pip-venv", tmp_path, ["dot", "-c"])
+    python = Path(_venv_bin("python"))
+    dot = python.with_name(f"dot{python.suffix}")
+    assert argv == [str(dot), "-c"]
+
+
+def test_script_name_adds_exe_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Windows script names gain ``.exe``; an existing suffix is kept."""
+    from skore_skills import env as env_mod
+
+    monkeypatch.setattr(env_mod.os, "name", "nt")
+    assert env_mod._script_name("dot") == "dot.exe"
+    assert env_mod._script_name("dot.exe") == "dot.exe"
+
+
+def test_env_graphviz_missing_pydot_prints_probe_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The SVG probe preserves a concise pydot import failure."""
+    from skore_skills import env as env_mod
+    from skore_skills.env import GRAPHVIZ_REPAIR
+
+    monkeypatch.chdir(FIXTURES / "uv")
+    seen: list[list[str]] = []
+    error = "ModuleNotFoundError: No module named 'pydot'\n"
+    monkeypatch.setattr(
+        env_mod.subprocess,
+        "run",
+        _graphviz_run(seen, probe=1, probe_error=error),
+    )
+    result = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
+    assert result.exit_code != 0
+    assert error.strip() in result.output
+    assert GRAPHVIZ_REPAIR in result.output
+    assert all("dot -c" not in " ".join(argv) for argv in seen)
 
 
 def test_env_graphviz_unmanaged_prints_json(
@@ -1805,14 +2060,49 @@ def test_env_add_hatch_execute_syncs(
 def test_graphviz_instructions_follow_the_platform(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Graphviz instructions name the package manager for the host OS."""
+    """Graphviz instructions cover common OS package managers and PATH refresh."""
     from skore_skills import env as env_mod
     from skore_skills.env import system_graphviz_instructions
 
+    monkeypatch.setattr(env_mod.sys, "platform", "darwin")
+    assert system_graphviz_instructions().startswith("brew install graphviz")
     monkeypatch.setattr(env_mod.sys, "platform", "linux")
+    monkeypatch.setattr(
+        env_mod.platform,
+        "freedesktop_os_release",
+        lambda: {"ID": "ubuntu", "ID_LIKE": "debian"},
+    )
     assert system_graphviz_instructions().startswith("sudo apt-get install graphviz")
+    monkeypatch.setattr(
+        env_mod.platform,
+        "freedesktop_os_release",
+        lambda: {"ID": "fedora"},
+    )
+    assert system_graphviz_instructions().startswith("sudo dnf install graphviz")
+    monkeypatch.setattr(
+        env_mod.platform,
+        "freedesktop_os_release",
+        lambda: {"ID": "arch"},
+    )
+    assert system_graphviz_instructions().startswith("sudo pacman -S graphviz")
+    monkeypatch.setattr(
+        env_mod.platform,
+        "freedesktop_os_release",
+        lambda: {"ID": "opensuse-tumbleweed", "ID_LIKE": "suse"},
+    )
+    assert system_graphviz_instructions().startswith("sudo zypper install graphviz")
+
+    def missing_release() -> dict[str, str]:
+        raise OSError
+
+    monkeypatch.setattr(env_mod.platform, "freedesktop_os_release", missing_release)
+    assert system_graphviz_instructions().startswith(
+        "install Graphviz with your system"
+    )
     monkeypatch.setattr(env_mod.sys, "platform", "win32")
-    assert system_graphviz_instructions().startswith("winget install")
+    windows = system_graphviz_instructions()
+    assert windows.startswith("winget install")
+    assert "Restart the terminal or IDE" in windows
     monkeypatch.setattr(env_mod.sys, "platform", "freebsd")
     assert "system package manager" in system_graphviz_instructions()
 
@@ -1896,9 +2186,9 @@ def test_env_graphviz_conda_execute_installs_both_envs(
 def test_env_graphviz_execute_stops_when_install_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A failed conda Graphviz install is returned and ``dot -c`` is not run."""
+    """A failed conda Graphviz install stops before the SVG probe."""
     from skore_skills import env as env_mod
-    from skore_skills.env import DOT_C_SNIPPET, WHICH_DOT_SNIPPET
+    from skore_skills.env import GRAPHVIZ_PROBE_SNIPPET, WHICH_DOT_SNIPPET
 
     monkeypatch.chdir(FIXTURES / "pixi")
     seen: list[list[str]] = []
@@ -1914,14 +2204,14 @@ def test_env_graphviz_execute_stops_when_install_fails(
         snippet = argv[-1] if argv else ""
         if snippet == WHICH_DOT_SNIPPET:
             Result.returncode = 0
-        elif snippet != DOT_C_SNIPPET:
+        elif snippet != GRAPHVIZ_PROBE_SNIPPET:
             Result.returncode = 7
         return Result()
 
     monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
     result = CliRunner().invoke(cli, ["env", "graphviz", "--execute"])
     assert result.exit_code == 7
-    assert all(argv[-1] != DOT_C_SNIPPET for argv in seen)
+    assert all(argv[-1] != GRAPHVIZ_PROBE_SNIPPET for argv in seen)
 
 
 def test_editable_refuses_unmanaged_and_unnamed_package(

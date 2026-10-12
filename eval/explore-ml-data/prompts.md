@@ -350,7 +350,9 @@
 - Call `plt.close` or `import matplotlib.pyplot` for these
   figures.
 - Loop over columns with a trailing `g` (that is not displayed).
-- AskUserQuestion grouping when only one data file is in play.
+- Ask the user how to group files when only one data file is in
+  play. A checklist line that says the grouping question was
+  skipped is not a grouping question.
 
 ---
 
@@ -597,7 +599,9 @@
 - Load `research-ml-practice` with the canned JOURNAL+EDA
   extra-measurement question (problem class, not the dataset
   proper name).
-- Read `scratch/research/survey-<slug>.md`.
+- Read `scratch/research/survey-<slug>.md` when tools ran. A
+  message that says tools did not run, and does not claim the
+  survey was read, satisfies this.
 - AskUserQuestion `allow_multiple` on **only** sourced
   **`measure`** extras from that note. The question's last line is exactly: Select each one you want.
 
@@ -612,8 +616,8 @@
 - Run `git end-turn` in this pass.
 - Name `Close` as recommended on the continuation board.
 - In the question, ask the user to uncheck a box, or say that a
-  box starts checked. A recorded status is not the box's starting
-  state.
+  box starts checked. A pre-flight checklist is not the question.
+  A recorded status is not the box's starting state.
 
 ---
 
@@ -879,3 +883,88 @@
 - Skip the continuation board.
 - Run `notebook fill` or `git end-turn` before the user picks
   Close.
+
+---
+
+## CASE_30 — Two regression targets are one multi-output analysis
+
+**User prompt:**
+> Explore `data/energy.csv`. Predict both `load` and `temp`.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Scaffold exists. G-TABULAR is `pandas`.
+- User chose **run** for G-DATA-ANALYSIS.
+- IPython is available.
+- `load` and `temp` are numeric columns with many distinct values.
+  Other columns are features.
+
+**Must do:**
+- Append `templates/target_multioutput_regression.py` once and set
+  `TARGETS` to `load` and `temp`.
+- Save `target_distributions.png` and `bivariate_targets.png`.
+- Keep both targets out of the feature list and the leakage flags.
+- Report target-vs-target correlation and the count of rows where
+  every target is present.
+- Write `extras.json` `targets` with one entry per column, plus
+  `complete_target_rows` and `target_target_corr`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Copy `templates/target_regression.py` once per column or beside
+  the multi-output snippet.
+- Treat `temp` as a feature of `load`, or the reverse.
+- Choose one column as the only target.
+- Leave `if TARGET` or `if TASK` in the notebook.
+- Write a scalar `target` or `task` field in `extras.json`.
+
+---
+
+## CASE_31 — Mixed targets are recorded, not jointly modeled
+
+**User prompt:**
+> Explore `data/claims.csv`. The outputs are `amount` and `fraud`.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Scaffold exists. G-TABULAR is `pandas`.
+- User chose **run** for G-DATA-ANALYSIS.
+- `amount` is numeric with many distinct values. `fraud` is binary.
+
+**Must do:**
+- Record both columns in materialize `<TARGETS>` and `<TASKS>`:
+  `amount` regression, `fraud` classification.
+- Leave the notebook without a target snippet.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Append `templates/target_multioutput_regression.py`.
+- Drop one output and explore the other as the only target.
+- Write a scalar `target` or `task` field in `extras.json`.
+
+---
+
+## CASE_32 — Graphviz diagnostic does not discard EDA
+
+**User prompt:**
+> Explore the California housing CSV. Target is MedHouseVal.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Scaffold exists. G-TABULAR is `pandas`.
+- User chose **run** for G-DATA-ANALYSIS.
+- `add-python-package` is installed. Loading it for `skrub`
+  returns the Graphviz repair diagnostic and ends that install
+  sequence.
+
+**Must do:**
+- Load `add-python-package` for `skrub` (and matplotlib / seaborn
+  if missing).
+- Quote the Graphviz diagnostic in one line and continue the
+  analysis. Write `data_analysis/data_analysis.py`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- End the turn because Graphviz SVG rendering failed.
+- Prescribe `dot -c` or a Homebrew Graphviz install from this skill.
+- Discard the analysis that was already underway.

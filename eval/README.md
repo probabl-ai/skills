@@ -134,15 +134,13 @@ timeout so a hung socket still fails and retries.
 
 Defaults (override in `pixi.toml` or on the CLI):
 
-- **Tiers** (`SKILL_EVAL_TIER=assigned`): each skill runs on one model
-  - small — `openrouter/qwen/qwen3.7-flash`: no default assignment
-  - medium — `openrouter/deepseek/deepseek-v4.1-flash`:
-    `setup-workspace`, `setup-python-env`, `evaluate-ml-pipeline`,
-    `smoke-test-ml-pipeline`, `review-ml-experiment`,
-    `shape-user-idea`, `search-ml-literature`,
-    `explore-ml-data`, `audit-ml-pipeline`
-  - big — `openrouter/deepseek/deepseek-v4.1-flash`:
-    `build-ml-pipeline`
+- **Tiers** (`SKILL_EVAL_TIER=assigned`): each skill runs on the model
+  for the tier declared in `SKILL.md` `metadata.modelTier`
+  (`small`, `medium`, or `big`). `tests/eval/tiers.py` reads that
+  field. A missing or unknown tier falls back to medium. The model
+  ids are `SKILL_EVAL_TIER_SMALL`, `SKILL_EVAL_TIER_MEDIUM`, and
+  `SKILL_EVAL_TIER_BIG` in `pixi.toml`: Qwen3.8 27B, DeepSeek
+  v4.1 Flash, and Qwen3.8 Max (0902).
 - judge: `~typesafe/jev-latest` (not tiered)
 - mode: `with` (SKILL.md as system prompt)
 - Must-do pass ratio: `0.7` (diagnostic metric only; Must-NOT is

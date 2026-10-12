@@ -179,6 +179,38 @@ scoring node.
 
 Attach with `.skb.apply(MeanRegressor(), y=y)`.
 
+## 8. Multi-output regression
+
+`translation.task` `multioutput-regression` names every output in
+`translation.targets`. Mark that matrix as `y`. A native
+multi-output regressor fits the matrix in one estimator and can
+use correlation among the outputs. `MultiOutputRegressor` fits
+one independent estimator per output when the base regressor
+cannot.
+
+```python
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.linear_model import ElasticNet
+
+TARGET_COLS = ["load", "temp"]
+X = data.drop(columns=TARGET_COLS).skb.mark_as_X()
+y = data[TARGET_COLS].skb.mark_as_y()
+
+native = X.skb.apply(HistGradientBoostingRegressor(random_state=0), y=y)
+wrapped = X.skb.apply(
+    MultiOutputRegressor(ElasticNet()),
+    y=y,
+)
+```
+
+Confirm the estimator and, when used, `MultiOutputRegressor` with
+`api get`. Do not wrap an estimator that already accepts a
+two-dimensional `y`. Do not use `MultiOutputClassifier`. The
+scalar comparison metric uses `multioutput="uniform_average"`
+unless the user named another aggregation; skore still reports
+each output.
+
 ## When the pattern you need isn't here
 
 Drop a `scratch/<ts>_<short>.py` probe to explore the skrub

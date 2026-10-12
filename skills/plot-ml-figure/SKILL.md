@@ -13,6 +13,9 @@ description: >
   figure as the cell output; never `plt.close`. Convert polars at
   the plot boundary. Missing lib → add-python-package. Confirm
   symbols with `api get`. The caller names the figure directory.
+metadata:
+  role: helper
+  modelTier: small
 ---
 
 # Plot ML Figure

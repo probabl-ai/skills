@@ -1,48 +1,51 @@
 """Per-skill eval model tiers.
 
-Each skill has a minimum tier. ``assigned`` runs only that tier's model;
-``all`` runs every skill on all three models. Unknown skill names fall
+Each skill declares ``metadata.modelTier`` in its ``SKILL.md``.
+``assigned`` runs only that tier's model; ``all`` runs every skill on
+all three models. A skill with no tier, or an unknown tier name, falls
 back to medium so a new evals.json is never silently skipped.
 """
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
+from functools import lru_cache
+from pathlib import Path
 
 TIERS = ("small", "medium", "big")
 TIER_MODES = ("assigned", "all", "small", "medium", "big")
 DEFAULT_TIER = "medium"
 DEFAULT_TIER_MODELS = {
-    "small": "openrouter/qwen/qwen3.7-flash",
+    "small": "openrouter/qwen/qwen3.8-27b",
     "medium": "openrouter/deepseek/deepseek-v4.1-flash",
-    "big": "openrouter/deepseek/deepseek-v4.1-flash",
+    "big": "openrouter/qwen/qwen3.8-max-0902",
 }
 
-# Skills with no evals.json yet are listed so a later converter run
-# picks the right model without a harness edit.
-SKILL_TIER: dict[str, str] = {
-    "setup-workspace": "medium",
-    "setup-python-env": "medium",
-    "evaluate-ml-pipeline": "medium",
-    "smoke-test-ml-pipeline": "medium",
-    "review-ml-experiment": "medium",
-    "shape-user-idea": "medium",
-    "search-ml-literature": "medium",
-    "explore-ml-data": "medium",
-    "frame-ml-problem": "medium",
-    "research-ml-practice": "medium",
-    "plot-ml-figure": "medium",
-    "audit-ml-pipeline": "medium",
-    "build-ml-pipeline": "big",
-    "export-ml-notebook": "medium",
-    "export-ml-site": "medium",
-    "export-ml-project": "medium",
-    "sync-ml-reports": "medium",
-}
+SKILLS_DIR = Path(__file__).resolve().parents[2] / "skills"
+_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
+_MODEL_TIER = re.compile(r"^  modelTier:\s*([A-Za-z]+)\s*$", re.MULTILINE)
+
+
+@lru_cache(maxsize=None)
+def _declared_tiers() -> dict[str, str]:
+    tiers: dict[str, str] = {}
+    if not SKILLS_DIR.is_dir():
+        return tiers
+    for skill_dir in sorted(SKILLS_DIR.iterdir()):
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.is_file():
+            continue
+        match = _FRONTMATTER.match(skill_md.read_text(encoding="utf-8"))
+        found = match and _MODEL_TIER.search(match.group(1))
+        if found and found.group(1).lower() in TIERS:
+            tiers[skill_dir.name] = found.group(1).lower()
+    return tiers
 
 
 def skill_tier(skill_name: str) -> str:
-    return SKILL_TIER.get(skill_name, DEFAULT_TIER)
+    """Tier declared in SKILL.md; unannotated or unknown skills fall back to medium."""
+    return _declared_tiers().get(skill_name, DEFAULT_TIER)
 
 
 def models_for_skill(

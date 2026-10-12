@@ -86,11 +86,20 @@ def _question(payload: dict, key: str) -> dict:
     return next(item for item in questions if item["key"] == key)
 
 
+def _targets(*items: tuple[str, str]) -> str:
+    return (
+        json.dumps(
+            {"targets": [{"column": column, "task": task} for column, task in items]}
+        )
+        + "\n"
+    )
+
+
 def test_blank_journal_asks_every_missing_decision(tmp_path: Path) -> None:
     _journal(tmp_path)
     _write(
         tmp_path / "scratch" / "data_analysis" / "extras.json",
-        json.dumps({"task": "classification"}) + "\n",
+        _targets(("label", "classification")),
     )
 
     payload = frame_show(tmp_path)
@@ -176,6 +185,8 @@ def test_locked_iid_translates_to_kfold(tmp_path: Path) -> None:
         "groups": None,
         "report": None,
         "metric": "MAE",
+        "task": "",
+        "targets": [],
     }
 
 
@@ -430,7 +441,7 @@ def test_unsupported_task_uses_the_fallback(tmp_path: Path) -> None:
     _journal(tmp_path)
     _write(
         tmp_path / "scratch" / "data_analysis" / "extras.json",
-        json.dumps({"task": "clustering"}) + "\n",
+        _targets(("segment", "clustering")),
     )
 
     payload = frame_show(tmp_path)
@@ -438,7 +449,7 @@ def test_unsupported_task_uses_the_fallback(tmp_path: Path) -> None:
     assert payload["action"] == "ask"
     assert payload["reason"] == "uncovered"
     assert payload["reference"] == "references/fallback.md"
-    assert payload["context"] == {"task": "clustering"}
+    assert payload["context"] == {"task": "clustering", "targets": ["segment"]}
     assert "candidates" not in payload
 
 
@@ -507,12 +518,45 @@ def test_alignment_row_and_corrupt_task_file(tmp_path: Path) -> None:
     ]
 
 
+def test_unusable_target_entries_leave_the_full_menu(tmp_path: Path) -> None:
+    """A targets payload that is not column/task pairs records no task."""
+    _journal(tmp_path)
+    extras = tmp_path / "scratch" / "data_analysis" / "extras.json"
+    full_menu = [
+        "probabilities",
+        "point_labels",
+        "intervals",
+        "point_predictions",
+        "uncovered",
+    ]
+    payloads = [
+        "[]",
+        json.dumps({"targets": {"column": "label", "task": "classification"}}),
+        json.dumps({"targets": []}),
+        json.dumps(
+            {
+                "targets": [
+                    "label",
+                    {"column": 1, "task": "regression"},
+                    {"column": "amount", "task": None},
+                    {"column": " ", "task": "classification"},
+                    {"column": "label", "task": " "},
+                ]
+            }
+        ),
+    ]
+    for text in payloads:
+        _write(extras, text)
+        payload = frame_show(tmp_path)
+        assert _question(payload, "prediction_goal")["candidates"] == full_menu
+
+
 def test_regression_task_offers_interval_goals(tmp_path: Path) -> None:
     """A recorded regression task asks for intervals or point predictions."""
     _journal(tmp_path)
     _write(
         tmp_path / "scratch" / "data_analysis" / "extras.json",
-        json.dumps({"task": "regression"}) + "\n",
+        _targets(("amount", "regression")),
     )
     payload = frame_show(tmp_path)
     assert _question(payload, "prediction_goal")["candidates"] == [
@@ -520,6 +564,64 @@ def test_regression_task_offers_interval_goals(tmp_path: Path) -> None:
         "point_predictions",
         "uncovered",
     ]
+
+
+def test_multioutput_regression_offers_interval_goals(tmp_path: Path) -> None:
+    """Several regression outputs use the regression goal menu."""
+    _journal(tmp_path)
+    _write(
+        tmp_path / "scratch" / "data_analysis" / "extras.json",
+        _targets(("load", "regression"), ("temp", "regression")),
+    )
+    payload = frame_show(tmp_path)
+    assert _question(payload, "prediction_goal")["candidates"] == [
+        "intervals",
+        "point_predictions",
+        "uncovered",
+    ]
+
+
+def test_multioutput_regression_translates_the_target_list(tmp_path: Path) -> None:
+    """A locked multi-output problem exposes every target column."""
+    _journal(tmp_path, **_locked_iid())
+    _write(
+        tmp_path / "scratch" / "data_analysis" / "extras.json",
+        _targets(("load", "regression"), ("temp", "regression")),
+    )
+    payload = frame_show(tmp_path)
+    assert payload["action"] == "proceed"
+    assert payload["translation"]["task"] == "multioutput-regression"
+    assert payload["translation"]["targets"] == ["load", "temp"]
+
+
+def test_multioutput_classification_is_uncovered(tmp_path: Path) -> None:
+    """Several classification outputs are not a supported joint task."""
+    _journal(tmp_path)
+    _write(
+        tmp_path / "scratch" / "data_analysis" / "extras.json",
+        _targets(("label_a", "classification"), ("label_b", "classification")),
+    )
+    payload = frame_show(tmp_path)
+    assert payload["reason"] == "uncovered"
+    assert payload["context"] == {
+        "task": "multioutput-classification",
+        "targets": ["label_a", "label_b"],
+    }
+
+
+def test_mixed_targets_are_uncovered(tmp_path: Path) -> None:
+    """A mix of regression and classification outputs is not modeled jointly."""
+    _journal(tmp_path)
+    _write(
+        tmp_path / "scratch" / "data_analysis" / "extras.json",
+        _targets(("amount", "regression"), ("label", "classification")),
+    )
+    payload = frame_show(tmp_path)
+    assert payload["reason"] == "uncovered"
+    assert payload["context"] == {
+        "task": "mixed",
+        "targets": ["amount", "label"],
+    }
 
 
 @pytest.mark.parametrize(

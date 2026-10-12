@@ -27,10 +27,10 @@ Graphviz is required for that call. If `dot` is null, or output
 contains `install Pydot and Graphviz` or `Format: "svg" not
 recognized`, a finished `pipeline.html` does not authorize a
 skip. Load `add-python-package` for `skrub` once. That load is
-what runs `dot -c` (`env graphviz --execute`). Then run the
-report once more. Do not run `dot -c` or call `env graphviz`
-from this skill. Do not `pip install graphviz`. If that skill
-is missing, or the retry still fails, write
+what installs or verifies Graphviz (`env graphviz --execute`).
+Then run the report once more. Do not call `env graphviz` from
+this skill. Do not run `dot -c` or `pip install graphviz`. If
+that skill is missing, or the retry still fails, write
 `scratch/results/<stem>/pipeline.html` from `_repr_html_` or
 `sklearn.utils.estimator_html_repr`. Confirm with `api get`.
 Do not rewrite the pipeline.

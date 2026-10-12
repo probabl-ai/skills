@@ -55,12 +55,13 @@
         "Refuse to loosen the assertion.",
         "Cite the Stop condition: \"Don't shrink the assertion. Loosening reintroduces the bug.\"",
         "Diagnose this as the **`load \u2192 featurize \u2192 split` anti-pattern** \u2014 late `mark_as_X` is silently dropping cold-start rows.",
-        "Route back to `build-ml-pipeline` to fix the X-marker placement (Layer 2 + history-as-upstream-reference pattern).",
+        "Send the fix back to build to correct the X-marker placement (Layer 2 + history-as-upstream-reference pattern). This is a direct request, not a build sub-step, so go through `model-ml-pipeline`, which resumes the approved design.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Approve the looser assertion.",
         "The response does NOT: Add a wrapper that filters NaN rows.",
         "The response does NOT: Add an `eval_mode` flag to `build_learner` to \"skip lag features at predict time\".",
-        "The response does NOT: Modify `n_predict_grid_rows` to match the smaller number."
+        "The response does NOT: Modify `n_predict_grid_rows` to match the smaller number.",
+        "The response does NOT: Load `build-ml-pipeline` directly from this skill."
       ],
       "tools": false,
       "sandbox": [],
@@ -154,6 +155,26 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Tell the user or CI to run pytest. Naming `smoke run` and noting a no-tools turn cannot execute it is allowed.",
         "The response does NOT: AskUserQuestion Evaluate (Recommended) / Modify / Stop (that gate is build's).",
+        "The response does NOT: Write `skore.evaluate`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 9,
+      "title": "Multi-output smoke checks width and names",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- `journal/04_energy.md` approved with Status.headline\n  `MAE 0.42 (5-fold CV)`.\n- `translation.task` is `multioutput-regression`.\n  `translation.targets` is `[\"load\", \"temp\"]`.\n- `experiments/04_energy.py` exists.\n- `pytest` is installed.\n- `tests/smoke/test_04_energy.py` is an empty scaffold.]\n\nWrite the smoke test for `04_energy`. Predict `load` and `temp`.",
+      "expected_output": "Behavioural response satisfying: - Wire `assert len(predictions) == n_predict_grid_rows`. - Assert the prediction width is 2 and the column names are `load` and `temp`. - Wire the soft MAE assertion with literal `0.42`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Stop after the row-count assertion. - Import `skore` in the test.",
+      "files": [],
+      "expectations": [
+        "Wire `assert len(predictions) == n_predict_grid_rows`.",
+        "Assert the prediction width is 2 and the column names are `load` and `temp`.",
+        "Wire the soft MAE assertion with literal `0.42`.",
+        "Run `python -m skore_skills smoke run --stem 04_energy`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Stop after the row-count assertion.",
+        "The response does NOT: Import `skore` in the test.",
         "The response does NOT: Write `skore.evaluate`."
       ],
       "tools": false,

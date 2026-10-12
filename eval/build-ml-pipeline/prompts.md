@@ -310,7 +310,8 @@ violated.
 
 **Must do:**
 - Load `research-ml-practice` if the concern is not already in
-  scratch.
+  scratch. Saying the scratch rows are already the practice
+  answer satisfies this.
 - AskUserQuestion `allow_multiple` on **`declare`** rows. The question's last line is exactly: Select each one you want.
 - Treat `measure` as revisit-EDA / open question.
 
@@ -320,8 +321,8 @@ violated.
 - Drop `customer_id` from raw files under `data/`.
 - Pick a cross-validator in pipeline code.
 - In the question, ask the user to uncheck a box, or say that a
-  box starts checked. A recorded status is not the box's starting
-  state.
+  box starts checked. A pre-flight checklist is not the question.
+  A recorded status is not the box's starting state.
 
 ---
 
@@ -769,3 +770,37 @@ violated.
 - Skip the report because `pipeline.html` already exists or
   because `draw_graph` was optional.
 - Call `full_report`, or `learner.report` without `eval=False`.
+
+---
+
+## CASE_27 — Multi-output regression keeps a target matrix
+
+**User prompt:**
+> Write the baseline learner. Compare on MAE. Predict both `load`
+> and `temp`.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- `frame show` returned `proceed`. `translation.task` is
+  `multioutput-regression`. `translation.targets` is `["load",
+  "temp"]`. `translation.metric` is `MAE`.
+- IID, `translation.splitter` `KFold`, `n_splits` 5.
+- No existing `src/<pkg>/pipeline.py`.
+
+**Must do:**
+- Set `TARGET_COLS` to `load` and `temp`.
+- Drop both columns from X and mark `y` as that two-column frame.
+- Use a regressor that fits a numeric target matrix, or
+  `MultiOutputRegressor` around a single-output regressor.
+- Confirm the new sklearn symbols with `api get`.
+- Attach `.skb.with_scoring(...)` for MAE with
+  `multioutput="uniform_average"`.
+- Keep `cv=KFold(n_splits=5)` on `mark_as_X`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Mark only one column as `y`.
+- Leave the other target in X.
+- Use `MultiOutputClassifier`.
+- Skip `with_scoring` because MAE is a single-output skore default.
+- Call `skore.evaluate`.

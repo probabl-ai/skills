@@ -559,24 +559,32 @@ def _assistant_message_dict(message: Any) -> dict[str, Any]:
     return payload
 
 
-def generate_response(*, model: str, system: str, user: str) -> GenerationResult:
-    """Call the target with no max_tokens cap so reasoning models can finish."""
+def _target_completion(**kwargs: Any) -> Any:
     from litellm import completion
 
+    return completion(**kwargs)
+
+
+_EMPTY_RETRY = {"reasoning_effort": "low", "max_completion_tokens": 16384}
+
+
+def generate_response(*, model: str, system: str, user: str) -> GenerationResult:
+    """Call the target with no max_tokens cap so reasoning models can finish."""
     messages: list[dict[str, Any]] = []
     if system:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": user})
 
-    def _once():
-        return completion(
+    def _once(**extra: Any) -> Any:
+        return _target_completion(
             model=litellm_model_name(model),
             messages=messages,
             temperature=0,
             timeout=TARGET_TRANSPORT_TIMEOUT,
+            **extra,
         )
 
-    response = call_with_retries(_once)
+    response = call_with_retries(lambda: _once())
     choice = response.choices[0]
     message = choice.message
     content = message.content or ""
@@ -586,7 +594,7 @@ def generate_response(*, model: str, system: str, user: str) -> GenerationResult
     if not (content or "").strip():
         messages.append(_assistant_message_dict(message))
         messages.append({"role": "user", "content": CONTENT_NUDGE})
-        response = call_with_retries(_once)
+        response = call_with_retries(lambda: _once(**_EMPTY_RETRY))
         usage = _merge_usage(usage, _usage_dict(response))
         choice = response.choices[0]
         message = choice.message

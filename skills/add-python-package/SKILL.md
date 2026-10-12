@@ -20,6 +20,9 @@ description: >
   name the package and the manager, then return. Do not ask and
   do not wait.
   Never --execute while managed is false.
+metadata:
+  role: helper
+  modelTier: small
 ---
 
 # Add Python Package
@@ -47,7 +50,7 @@ after listing the boxes.
 - [ ] status + env detect
 - [ ] env.managed: null and setup-ml-project installed → load it and stop | null → say unresolved and stop | false and setup already chose unmanaged → name package and manager, return | false → ask, no --execute | true → continue
 - [ ] classify: editable | add-skore | env route then env add
-- [ ] skrub → env graphviz (execute conda/`dot -c` when allowed)
+- [ ] skrub → env graphviz (install conda Graphviz and verify SVG when allowed)
 ```
 
 ## Sequence
@@ -105,6 +108,8 @@ after listing the boxes.
 
    Never `pip install -e .` in a pixi project. If `has_src` is
    false, stop. Name `setup-workspace` only if it is installed.
+   A non-zero exit is not a successful install. Do not describe
+   it as done.
 7. If the package is Skore, read the persisted `policy.skore_mode`
    and run:
 
@@ -124,9 +129,12 @@ after listing the boxes.
    - `refuse` → stop. Quote `message`. Do not install.
    - `default` → `env add --execute <pkg>`
    - `agent` → `env add --feature agent --execute <pkg>`
-   - `ask` → G-ENV-SCOPE: ask project runtime vs a named optional
-     extra / agent tools. Map the answer to `--feature` / `--group`
-     privately, then `env add` with that flag.
+   - `ask` → One question, then stop. Two options only: the
+     project runtime, or a named optional extra / agent tools.
+     Do not add a context line, a manager command, or a flag to
+     either option. Do not preview `pixi add`. Record only
+     `python -m skore_skills env route <pkg>`. The install
+     command waits until the next turn, after they answer.
 
    When `managed` is true and `scope` is not `refuse`, pass
    `--execute` on that one command. Never paste `pixi add` /
@@ -139,22 +147,27 @@ after listing the boxes.
 
    - `dot` is set, or `action` is `conda` and managed →
      `python -m skore_skills env graphviz --execute` (installs
-     conda Graphviz when needed, then always `dot -c` in the
-     composed env).
+     conda Graphviz when needed, then verifies pydot can render
+     SVG in the composed env).
    - `action` is `system` and `dot` is null → AskUserQuestion
      with two options, quoting JSON `instructions` only:
      1. **I will install Graphviz** (default) — do not wait;
         return.
      2. **Please wait until I confirm** — wait, then re-run
-        `env graphviz --execute` so `dot -c` still runs.
+        `env graphviz --execute` to verify SVG rendering.
    - Unmanaged → do not `--execute`. Show `command` (conda) or
      `instructions` (system) from print-only JSON.
 
-   Never invent `brew` / `apt` / `winget` / `dot -c` from
-   memory. Do not pip-install Graphviz or add it as a Python
-   package on uv / poetry / hatch / pip-venv. Refuse that in
-   prose; do not paste `env add graphviz` or `uv add graphviz`
-   as a command fence.
+   If `--execute` fails, quote its repair diagnostic and end this
+   install sequence. Return that diagnostic to the caller. Do not
+   discard analysis the caller already finished. When this turn's
+   only job was adding the package, that return ends the turn.
+   Never prescribe `dot -c`, admin rights, or a package-manager
+   repair from memory. Never invent `brew` / `apt` / `dnf` /
+   `pacman` / `zypper` / `winget` from memory. Do not pip-install
+   Graphviz or add it as a Python package on uv / poetry / hatch /
+   pip-venv. Refuse that in prose; do not paste
+   `env add graphviz` or `uv add graphviz` as a command fence.
 
 Return when the import is available, when the user confirmed they
 installed it, when they chose to handle it themselves, or when

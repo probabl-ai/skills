@@ -13,6 +13,8 @@ description: >
   the user selects. Git may ask once, just before the first
   commit, which unknown files to keep. Return to the skill that
   dispatched this turn.
+metadata:
+  modelTier: small
 ---
 
 # Set Up ML Project
@@ -28,21 +30,34 @@ whether we manage the Python environment, Python import name,
 automatic commits). Do not put skill ids, `G-*` names, or the
 wrapper CLI in the question.
 
-## Pre-flight
+## Lookup
 
-Tick, then immediately run the matching sequence step. Do not stop
-after listing the boxes.
+Run `status` and `env detect` first. Take the first row that
+matches. Do not stop after reading the table.
 
-```
-- [ ] status + env detect (read-only)
-- [ ] pending empty → return to caller
-- [ ] ask pending pieces only (user selects each one)
-- [ ] persist declined (after the answer; not in the question)
-- [ ] editable without workspace and no src → stop
-- [ ] ask remaining choices; persist
-- [ ] load selected | skip; persist done
-- [ ] return to the dispatching skill, else triage
-```
+| `setup.pending` | Then |
+|---|---|
+| empty | step 8. Do not ask. |
+| every pending piece's skill id is false | name the missing skills in one line, then step 8 |
+| non-empty | step 3 multi-select, then step 4, then the stop row, then the choice table |
+
+Stop row: editable is selected, `has_src` is false, and workspace
+is not selected → one-line stop. Do not ask the remaining choices.
+Do not scaffold from this skill.
+
+Choice table. Apply every row that matches. Skip a row whose
+piece was not selected, was not on the board, or whose value is
+already recorded. Ask and persist before any write.
+
+| Selected piece | Recorded state | Action |
+|---|---|---|
+| Python environment | detected manager is not `"none"`, not ambiguous, not a mismatch, and `policy.env_manager` is unset | persist that manager. Do not ask. |
+| Python environment | `env_manager` is `"none"` and `policy.env_manager` is unset, or `ambiguous`, or `mismatch` | ask, then `policy set env_manager` |
+| Python environment | `policy.env.managed` is null | ask whether we manage the env (default yes), then persist |
+| Workspace layout | fresh or manager-only, `policy.package` unset, `src/<pkg>/` does not name it | ask the import name (folder name is the default), then `policy set package` |
+| Git | `policy.git.autocommit` is null | ask `on` or `off` once, then persist |
+
+Then step 7 in order env, workspace, editable, git, then step 8.
 
 ## Sequence
 
@@ -133,8 +148,10 @@ after listing the boxes.
    again for a choice persisted in step 6. After each loaded
    skill returns, persist
    `python -m skore_skills policy set setup.<piece> done`.
-   Do not mark a skipped piece, or a piece the user does not
-   select, `done`.
+   For editable, do that only when
+   `env add --editable --execute` exits 0. A non-zero exit leaves
+   `setup.editable` missing. Do not mark a skipped piece, or a
+   piece the user does not select, `done`.
 8. Return to the skill that dispatched this turn (a lifecycle
    stage, or triage waiting on a lifecycle request). Do not
    open the entry board and do not start exploratory data

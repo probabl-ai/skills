@@ -8,6 +8,8 @@ description: >
   for a source that is itself the execution. Trigger on notebook,
   ipynb, HTML, or executed-report requests, or when export-ml-project
   dispatches notebooks.
+metadata:
+  modelTier: small
 ---
 
 # Export ML Notebook
@@ -51,6 +53,20 @@ stays only for a source that is itself the execution (the unfitted
 experiment snapshot). A generated notebook records its source
 fingerprint; `loop notebooks` fills or converts again only when
 the source or required HTML changed.
+
+## Lookup
+
+Run `status` and read `policy.notebooks`. Take the first row that
+matches. Fill leaves code-cell outputs empty. Do not stop after
+reading the table.
+
+| `policy.notebooks` | Request | Then |
+|---|---|---|
+| `null` | any | step 2, then match this table again. Do not take the convert row only because it is listed first. |
+| `false` | any | step 3. Do not fill until the policy is `true`. |
+| `true` | the user asked for HTML, a site viewer, or the notebook on the site | step 4 `notebook fill --html`, then step 5. `data_analysis/`, `experiments/<stem>.py`, and `audit/<stem>.py` stay `notebook fill`, not `notebook convert`. |
+| `true` | the source is itself the execution (unfitted experiment snapshot, before `skore.evaluate`) and the user did not ask for HTML or a site viewer | kernel `notebook convert`, not `notebook fill` |
+| `true` | notebook, ipynb, or convert, with no HTML and no site viewer | step 4 `notebook fill` only. No `--html`. No `site build`. |
 
 ## Sequence
 

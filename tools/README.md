@@ -45,7 +45,7 @@ to POSIX so digests are stable across operating systems.
 
 ## validate_catalog.py
 
-Checks four invariants:
+Checks these invariants:
 
 1. Every directory under `skills/` has a matching entry in
    `.catalog.json`'s `skills` array, and vice versa.
@@ -57,6 +57,16 @@ Checks four invariants:
 5. Every `SKILL.md` description is shorter than 1024 characters.
    The count is the folded `description: >` text, including the
    final newline YAML clip chomping keeps.
+6. Every `SKILL.md` ends its frontmatter with an unindented
+   `metadata:` block whose `modelTier` is `small`, `medium`, or
+   `big`. `role`, when present, is `entry` or `helper`.
+7. At most one skill declares `metadata.role: entry`.
+8. No skill loads a `metadata.role: helper` skill whose `modelTier`
+   is higher than its own: a helper loaded while its caller keeps
+   working runs on at most the caller's model, so its tier would never
+   apply. Loads are `load` / `route to` / `re-enter` / `hand off to`
+   instructions; `return to` and prohibitions are not. The entry skill
+   is exempt.
 
 Run directly with `python tools/validate_catalog.py` or via
 `pixi run validate`.

@@ -17,6 +17,9 @@ description: >
   HOW TO USE: before the first declarative line and on every
   structural edit. Read the stops and emit Pre-flight before
   code. Confirm new names with `python -m skore_skills api get`.
+metadata:
+  role: helper
+  modelTier: big
 ---
 
 # Build ML Pipeline
@@ -118,11 +121,15 @@ Implement the approved design. Do not silently upgrade it.
 - **Backlog / discussion** — Method is the boundary.
 
 On a feature, transform, or leakage question, load
-`research-ml-practice` if it is installed. Abstract the problem
-class. AskUserQuestion `allow_multiple` on `declare` rows that
-do not violate a stop. The question's last line is exactly:
-Select each one you want. Write nothing after that line.
-`measure` revisits EDA and does not edit `data_analysis.py`.
+`research-ml-practice` if it is installed and the concern is
+not already in scratch. Abstract the problem class. If scratch
+already lists `declare` or `measure` rows, do not load research
+again and do not write pipeline code. AskUserQuestion
+`allow_multiple` on the `declare` rows that do not violate a
+stop, and stop. The question's last line is exactly: Select each
+one you want. Nothing follows that line. Name each `measure`
+row as an open EDA question. `measure` revisits EDA and does not
+edit `data_analysis.py`.
 The splitter still comes from
 `frame show`.
 `evaluate` names `evaluate-ml-pipeline`. `confirm` asks the
@@ -160,6 +167,27 @@ def build_learner(data_dir_preview=None):
     )
     return predictions.skb.make_learner()
 ```
+
+`translation.task` `multioutput-regression` predicts every column
+in `translation.targets` together. Drop all of them from X. `y`
+stays a DataFrame, one column per output:
+
+```python
+TARGET_COLS = ["load", "temp"]
+X = data.drop(columns=TARGET_COLS).skb.mark_as_X()
+y = data[TARGET_COLS].skb.mark_as_y()
+predictions = X.skb.apply(
+    HistGradientBoostingRegressor(random_state=0), y=y
+)
+```
+
+Use an estimator that fits a numeric target matrix, such as
+`HistGradientBoostingRegressor`, `RandomForestRegressor`, or
+`Ridge`. When the chosen estimator fits only one output, wrap it
+with `MultiOutputRegressor`. Confirm both symbols with `api get`.
+Do not use `MultiOutputClassifier` for this task, and do not leave
+a target column in X. One column still uses `TARGET_COL` as above.
+Details: `references/common_patterns.md`.
 
 A quick traditional baseline uses `skrub.tabular_pipeline` (or
 `TableVectorizer`) plus one task-appropriate estimator. Confirm
@@ -216,13 +244,19 @@ structure, open `references/custom-splitter.md` and write
   `translation` null — no `cv`. This holdout is one split drawn
   from a single table. It is not the shipped train/test pair.
 
-Scoring uses `translation.metric`. If that name is one skore
-already reports for the task (regression: MSE, RMSE, MAE, R²;
-binary: accuracy, precision, recall, F1, ROC-AUC; multiclass:
-macro and micro variants; multilabel: per-label and averages),
-do not attach a scorer. Otherwise
-`.skb.with_scoring(...)` in this same late step. The callable
-shape is `evaluate-ml-pipeline/references/custom-metrics.md`.
+Scoring uses `translation.metric`. For
+`multioutput-regression`, skore already shows each output of MSE,
+RMSE, MAE, and R² (`multioutput="raw_values"`). The locked
+comparison is still one number, so attach `.skb.with_scoring(...)`
+for that name with an explicit aggregation: `uniform_average`
+unless the user named `variance_weighted` or a weight per output.
+That aggregate is the headline. Leave the per-output metrics in
+the report. For any other task, if the name is one skore already
+reports (regression: MSE, RMSE, MAE, R²; binary: accuracy,
+precision, recall, F1, ROC-AUC; multiclass: macro and micro
+variants; multilabel: per-label and averages), do not attach a
+scorer. Otherwise `.skb.with_scoring(...)` in this same late step.
+The callable shape is `evaluate-ml-pipeline/references/custom-metrics.md`.
 Do not pass `scoring=` to `skore.evaluate`.
 
 Do not write `skore.evaluate(...)` here. Do not call
@@ -359,7 +393,8 @@ Pre-flight (build-ml-pipeline):
       (date class | GroupKFold | KFold | no cv on holdout
       | prefit: training table only, test table not joined)
 - [ ] Non-default translation.metric uses with_scoring
-      before make_learner (n/a for a listed skore default)
+      before make_learner (n/a for a listed skore default;
+      required for a multi-output regression aggregate)
 - [ ] data_dir_preview=None; no path literal in pipeline.py
 ```
 

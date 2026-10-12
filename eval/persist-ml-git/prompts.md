@@ -82,7 +82,8 @@
 
 **Must do:**
 - Ask once which review paths to keep, listing `data/raw/` and kind
-  `dataset`, and saying the rest are ignored.
+  `dataset`, and saying the rest are ignored. Include an explicit
+  "Keep none" option. An empty multi-select is not an answer.
 - Run `python -m skore_skills git review-decide --ignore data/raw/`.
 - Stage `data_analysis/data_analysis.py` with `git add`.
 - Run `git commit -m` with a one-line subject from this turn.
@@ -91,6 +92,7 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Ask about hidden paths.
 - `--keep` `data/raw/`.
+- Treat an empty multi-select as the keep-none answer.
 - Stage `data/raw/`.
 - Choose the ignore path by size or extension instead of the JSON.
 - Run `git push`.

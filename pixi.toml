@@ -69,9 +69,9 @@ joblib = "<1.5"
 # `--skill-tier`, `--skill-judge-model`, `--skill-mode`, and
 # `--skill-pass-ratio`.
 [feature.eval.activation.env]
-SKILL_EVAL_TIER_SMALL = "openrouter/qwen/qwen3.7-flash"
+SKILL_EVAL_TIER_SMALL = "openrouter/qwen/qwen3.8-27b"
 SKILL_EVAL_TIER_MEDIUM = "openrouter/deepseek/deepseek-v4.1-flash"
-SKILL_EVAL_TIER_BIG = "openrouter/deepseek/deepseek-v4.1-flash"
+SKILL_EVAL_TIER_BIG = "openrouter/qwen/qwen3.8-max-0902"
 SKILL_EVAL_TIER = "assigned"
 # SKILL_EVAL_JUDGE_MODEL = "openrouter/deepseek/deepseek-v4.1-flash"
 SKILL_EVAL_JUDGE_MODEL = "~typesafe/jev-latest"
