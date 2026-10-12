@@ -904,7 +904,7 @@ def test_env_add_editable_uv_prints_sync(
 def test_env_add_editable_uv_execute(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """``--execute`` runs ``uv sync --group agent``."""
+    """``--execute`` syncs the uv project, then imports it."""
     from skore_skills import env as env_mod
 
     _write_uv_project(tmp_path, _UV_BUILD_SYSTEM)
@@ -922,7 +922,10 @@ def test_env_add_editable_uv_execute(
     monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
     result = CliRunner().invoke(cli, ["env", "add", "--editable", "--execute"])
     assert result.exit_code == 0, result.output
-    assert seen == [["uv", "sync", "--group", "agent"]]
+    assert seen[0] == ["uv", "sync", "--group", "agent"]
+    assert seen[1][:5] == ["uv", "run", "--group", "agent", "python"]
+    assert "demo_pkg" in seen[1][-1]
+    assert len(seen) == 2
 
 
 @pytest.mark.parametrize(
