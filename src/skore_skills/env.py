@@ -492,7 +492,7 @@ def editable_argv(manager: str, package: str, *, root: Path) -> list[str] | None
             "--editable",
             pixi_spec,
         ],
-        "uv": sync_argv("uv")[0],
+        "uv": ["uv", "sync", "--group", "agent"],
         "poetry": ["poetry", "add", "--editable", "."],
         "pip-venv": ["pip", "install", "-e", "."],
     }
