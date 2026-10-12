@@ -817,7 +817,6 @@ def test_env_add_editable_execute_stops_when_add_fails(
 @pytest.mark.parametrize(
     ("files", "expected"),
     [
-        ({"uv.lock": ""}, "uv add --editable ."),
         ({"poetry.lock": ""}, "poetry add --editable ."),
         (
             {"requirements.txt": "click\n", ".venv": None},
@@ -831,7 +830,7 @@ def test_env_add_editable_other_managers_print(
     files: dict[str, str | None],
     expected: str,
 ) -> None:
-    """uv, poetry, and pip-venv already emit an editable argv."""
+    """poetry and pip-venv already emit an editable argv."""
     for name, body in files.items():
         path = tmp_path / name
         if body is None:
@@ -847,6 +846,120 @@ def test_env_add_editable_other_managers_print(
     result = CliRunner().invoke(cli, ["env", "add", "--editable"])
     assert result.exit_code == 0, result.output
     assert result.output.strip() == expected
+
+
+_UV_BUILD_SYSTEM = """\
+[project]
+name = "demo-pkg"
+version = "0.1.0"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+"""
+
+_UV_PACKAGE_TRUE = """\
+[project]
+name = "demo-pkg"
+version = "0.1.0"
+
+[tool.uv]
+package = true
+"""
+
+_UV_PACKAGE_FALSE = """\
+[project]
+name = "demo-pkg"
+version = "0.1.0"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = false
+"""
+
+
+def _write_uv_project(root: Path, pyproject: str) -> None:
+    (root / "uv.lock").write_text("", encoding="utf-8")
+    (root / "src" / "demo_pkg").mkdir(parents=True)
+    (root / "pyproject.toml").write_text(pyproject, encoding="utf-8")
+
+
+@pytest.mark.parametrize("pyproject", [_UV_BUILD_SYSTEM, _UV_PACKAGE_TRUE])
+def test_env_add_editable_uv_prints_sync(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    pyproject: str,
+) -> None:
+    """uv syncs a packaged project instead of adding it to itself."""
+    _write_uv_project(tmp_path, pyproject)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["env", "add", "--editable"])
+    assert result.exit_code == 0, result.output
+    assert result.output.strip() == "uv sync --group agent"
+
+
+def test_env_add_editable_uv_execute(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``--execute`` syncs the uv project, then imports it."""
+    from skore_skills import env as env_mod
+
+    _write_uv_project(tmp_path, _UV_BUILD_SYSTEM)
+    monkeypatch.chdir(tmp_path)
+    seen: list[list[str]] = []
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        seen.append(argv)
+
+        class Result:
+            returncode = 0
+
+        return Result()
+
+    monkeypatch.setattr(env_mod.subprocess, "run", fake_run)
+    result = CliRunner().invoke(cli, ["env", "add", "--editable", "--execute"])
+    assert result.exit_code == 0, result.output
+    assert seen[0] == ["uv", "sync", "--group", "agent"]
+    assert seen[1][:5] == ["uv", "run", "--group", "agent", "python"]
+    assert "demo_pkg" in seen[1][-1]
+    assert len(seen) == 2
+
+
+@pytest.mark.parametrize(
+    "pyproject",
+    ['[project]\nname = "demo-pkg"\nversion = "0.1.0"\n', _UV_PACKAGE_FALSE],
+)
+def test_env_add_editable_uv_refuses_non_package(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    pyproject: str,
+) -> None:
+    """uv refuses when sync would not install the project."""
+    _write_uv_project(tmp_path, pyproject)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["env", "add", "--editable"])
+    assert result.exit_code != 0
+    assert "will not install" in result.output
+    assert not result.output.startswith("uv add")
+
+
+def test_env_add_editable_uv_after_init_and_scaffold(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Init plus scaffold is a uv package, so editable prints sync."""
+    monkeypatch.chdir(tmp_path)
+    init = CliRunner().invoke(cli, ["env", "init", "--manager", "uv"])
+    assert init.exit_code == 0, init.output
+    scaffolded = CliRunner().invoke(
+        cli, ["scaffold", "--package", "accidents_severity"]
+    )
+    assert scaffolded.exit_code == 0, scaffolded.output
+    result = CliRunner().invoke(cli, ["env", "add", "--editable"])
+    assert result.exit_code == 0, result.output
+    assert result.output.strip() == "uv sync --group agent"
 
 
 def test_env_add_editable_conda_refuses(
