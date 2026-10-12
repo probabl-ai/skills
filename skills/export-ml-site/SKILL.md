@@ -5,6 +5,8 @@ description: >
   MkDocs site opened via report.html at the workspace root. Embeds existing notebook HTML
   companions in their associated reports. Never executes Python. Trigger
   when the user asks for a website, mkdocs, or documentation site.
+metadata:
+  modelTier: small
 ---
 
 # Export ML Site
@@ -48,6 +50,21 @@ not build between related Markdown edits. Only `policy.site`
 `true` enables these automatic builds. `null` and `false` do not
 change policy. A direct user request to rebuild uses `site build`
 without `--if-stale`.
+
+## Lookup
+
+Run `status` and read `policy.site`. Take the first row that
+matches. `site build` writes the site. Do not stop after reading
+the table.
+
+| `policy.site` | Turn | Then |
+|---|---|---|
+| `null` | direct request | step 2: persist `true`, install `mkdocs-material`, `site init`, then build |
+| `false` | direct request | step 3. Do not init or build until it is `true`. |
+| `true` | direct request, and `site build` reports `mkdocs-material is required` | load `add-python-package` for `mkdocs-material`, then build once more. Do not `site init` again. |
+| `true` | direct request, first site turn | step 4 `site init`, then step 5 `site build` |
+| `true` | direct request, later turn (`site init` already ran) | step 5 `site build` only. Do not `site init`. |
+| `true` | workflow checkpoint, not a direct request to build | `site build --if-stale` (preview section, including its one retry). Unchanged inputs skip MkDocs. |
 
 ## Sequence
 
@@ -102,6 +119,7 @@ that AskUserQuestion / consent stop — not only at End of turn.
 
 ## Stop conditions
 
+- Do not assemble the site by hand. `site build` writes the site.
 - Do not `git commit` or `git end-turn`.
 - Do not `pixi add` / `uv add`; load `add-python-package`.
 - Do not convert or execute `# %%` scripts.

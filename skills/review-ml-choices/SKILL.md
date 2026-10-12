@@ -12,6 +12,8 @@ description: >
 
   HOW TO USE: run `review choices`, show that board, then load
   one owning skill. Do not policy set from here.
+metadata:
+  modelTier: small
 ---
 
 # Review ML Choices
@@ -44,9 +46,13 @@ ids, `G-*` names, or the wrapper CLI in the question.
    `not_offered` are context, not options. Use each row's
    `value`. For `not_offered`, say that row's `reason`. When
    `framing_reason` is set, say it and do not offer framing rows.
+   "Who manages the environment" is whether this project manages
+   it (`policy.env.managed`). An installed skill is not that
+   value. Do not write a skill id on the board.
 3. **Keep these** → stop. Do not load a skill.
-4. One `changeable` row → load that row's `skill` and stop. Do
-   not `policy set`. Do not run the child's commands from memory.
+4. One `changeable` row → load that row's `skill` and stop. The
+   close names the decision being re-opened, not the skill id.
+   Do not `policy set`. Do not run the child's commands from memory.
 
    - `skore_mode` → the user asked to change where reports go.
    - `notebooks_site` → notebooks and the documentation site.

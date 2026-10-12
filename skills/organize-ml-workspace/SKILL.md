@@ -3,6 +3,8 @@ name: organize-ml-workspace
 description: >
   Deprecated compatibility skill. Trigger only when an installed
   workflow still references this old id.
+metadata:
+  modelTier: small
 ---
 
 # Moved to `setup-workspace`

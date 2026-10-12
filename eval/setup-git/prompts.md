@@ -16,8 +16,8 @@
 - `python -m skore_skills git review` returns `review_paths` empty.
 
 **Must do:**
-- Emit the Pre-flight then run the commands (do not stop after
-  listing boxes).
+- Read the lookup table and take the matching row (do not stop
+  after listing the rows).
 - Run `git init -b main` so the initial branch is `main`.
 - Run `python -m skore_skills git ignore-merge`.
 - Ask once whether later stages may autocommit (`on` vs `off`) and

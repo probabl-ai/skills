@@ -7,6 +7,8 @@ description: >
   skore mode, upload reports to Hub or MLflow, or pull Hub/MLflow
   reports onto disk. First G-SKORE-MODE pick stays
   evaluate-ml-pipeline.
+metadata:
+  modelTier: medium
 ---
 
 # Sync ML Reports

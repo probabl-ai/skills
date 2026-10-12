@@ -161,6 +161,62 @@ def test_api_get_skrub_learner_fit(
     assert "env-dict" in result.output
 
 
+def test_api_get_multiple_symbols(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``api get`` prints and caches one card per symbol."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(
+        cli,
+        [
+            "api",
+            "get",
+            "sklearn.model_selection.KFold",
+            "sklearn.dummy.DummyRegressor.fit",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "KFold" in result.output
+    assert "DummyRegressor" in result.output or "fit" in result.output
+    caches = sorted((tmp_path / "scratch" / "api").rglob("*.md"))
+    assert len(caches) == 2
+    printed = result.output
+    for cache in caches:
+        text = cache.read_text(encoding="utf-8")
+        assert text in printed
+
+
+def test_api_get_stops_at_first_unknown_symbol(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A later unknown symbol fails after the earlier card is cached."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(
+        cli,
+        [
+            "api",
+            "get",
+            "sklearn.model_selection.KFold",
+            "sklearn.model_selection.NotARealEstimator",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "NotARealEstimator" in result.output
+    caches = list((tmp_path / "scratch" / "api").rglob("*.md"))
+    assert len(caches) == 1
+    assert "KFold" in caches[0].read_text(encoding="utf-8")
+
+
+def test_api_get_missing_symbols(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``api get`` with no symbols is a usage error."""
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["api", "get"])
+    assert result.exit_code != 0
+    assert not (tmp_path / "scratch" / "api").exists()
+
+
 def test_symbol_card_unavailable_signature() -> None:
     """Objects without a signature still render a card."""
     from skore_skills.api import symbol_card

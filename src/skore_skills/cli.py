@@ -206,12 +206,13 @@ def api_group() -> None:
 
 
 @api_group.command("get")
-@click.argument("symbol")
-def api_get(symbol: str) -> None:
-    """Print a signature card and cache it under ``scratch/api/``."""
-    _reexec_library_command(["api", "get", symbol])
+@click.argument("symbols", nargs=-1, required=True, metavar="SYMBOL...")
+def api_get(symbols: tuple[str, ...]) -> None:
+    """Print signature cards and cache them under ``scratch/api/``."""
+    _reexec_library_command(["api", "get", *symbols])
     try:
-        click.echo(get_symbol(symbol), nl=False)
+        for symbol in symbols:
+            click.echo(get_symbol(symbol), nl=False)
     except ImportError as exc:
         raise click.ClickException(str(exc)) from exc
     except LookupError as exc:
@@ -710,10 +711,10 @@ def env_stack() -> None:
 @click.option(
     "--execute",
     is_flag=True,
-    help="Install conda Graphviz when possible and run dot -c.",
+    help="Install conda Graphviz when possible and verify SVG rendering.",
 )
 def env_graphviz(execute: bool) -> None:
-    """Print JSON for Graphviz; optionally install and rebuild the plugin cache."""
+    """Print JSON for Graphviz; optionally install and verify it with pydot."""
     from skore_skills.env import ensure_graphviz
 
     text, code = ensure_graphviz(Path.cwd(), execute=execute)

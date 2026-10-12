@@ -25,8 +25,8 @@ violated. Overall: ≥ 9/10 cases pass and no Must NOT in any transcript.
   `true`.
 
 **Must do:**
-- Emit the Pre-flight then run the commands (do not stop after
-  listing boxes).
+- Read the lookup table and take the matching row (do not stop
+  after listing the rows).
 - Identify as a **fresh** layout (no detection signals matched).
 - AskUserQuestion for the Python import name (`src/<pkg>/`), with
   the folder name as the default. Do not pick it silently.

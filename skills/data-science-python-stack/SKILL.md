@@ -3,6 +3,8 @@ name: data-science-python-stack
 description: >
   Deprecated compatibility skill. Trigger only when an installed
   workflow still references this old id.
+metadata:
+  modelTier: small
 ---
 
 # Folded into `choose-python-library`

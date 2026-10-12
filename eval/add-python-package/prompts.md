@@ -157,6 +157,7 @@
 
 **Must do:**
 - Run `python -m skore_skills env add --editable --execute`.
+- If that command exits non-zero, do not describe the install as done.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -266,4 +267,58 @@
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Return before Graphviz setup because the import works.
+- Run `pip install graphviz`.
+
+---
+
+## CASE_12 — Existing system Graphviz passes SVG verification
+
+**User prompt:**
+> Add skrub to the project.
+
+**Assumed workspace state:**
+- Managed uv project.
+- `env route skrub` returns `scope: default`.
+- `env graphviz` returns `action: system`,
+  `dot: /opt/homebrew/bin/dot`, and `managed: true`.
+- `env graphviz --execute` succeeds after verifying pydot can
+  render SVG.
+
+**Must do:**
+- Run `python -m skore_skills env add --execute skrub`.
+- Run `python -m skore_skills env graphviz --execute`.
+- Finish without asking the user to install or repair Graphviz.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask the Graphviz installation question.
+- Run or recommend `dot -c`.
+- Run `pip install graphviz`.
+
+---
+
+## CASE_13 — Broken Graphviz reports the CLI repair diagnostic
+
+**User prompt:**
+> Add skrub to the project.
+
+**Assumed workspace state:**
+- Managed uv project.
+- `env route skrub` returns `scope: default`.
+- `env graphviz` returns `action: system` and
+  `dot: C:\\Program Files\\Graphviz\\bin\\dot.exe`.
+- `env graphviz --execute` fails with:
+  "Graphviz SVG rendering failed; repair or reinstall pydot and
+  Graphviz with their existing package managers".
+
+**Must do:**
+- Run `python -m skore_skills env add --execute skrub`.
+- Run `python -m skore_skills env graphviz --execute`.
+- Quote the repair diagnostic and end the turn. This turn's only
+  job was adding the package.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Recommend admin rights or `dot -c`.
+- Invent a brew, apt, dnf, pacman, zypper, or winget repair.
 - Run `pip install graphviz`.

@@ -20,6 +20,9 @@ description: >
   env verify. When setup-ml-project dispatched this turn, skip
   each ask whose answer is already recorded. One recorded
   answer does not skip the other ask.
+metadata:
+  role: helper
+  modelTier: small
 ---
 
 # Set Up Python Environment
@@ -36,18 +39,25 @@ Ask which manager to use and whether we manage the env in
 plain language. Do not name `G-ENV-MGR`, skill ids, or the
 wrapper CLI to the user. Do not mention `skore-skills`.
 
-## Pre-flight
+## Lookup
 
-Tick, then immediately run the matching sequence step. Do not stop
-after listing the boxes.
+Run `env detect` and `status` first. Take the first row that
+matches, then run Sequence steps 3–6 only where the row says ask
+or continue. Do not stop after reading the table.
 
-```
-- [ ] env detect + status
-- [ ] dispatched → skip each ask that is already recorded
-- [ ] G-ENV-MGR: ask if none / ambiguous / mismatch; else keep recorded
-- [ ] env.managed: ask (default true) and persist
-- [ ] unmanaged → stop | managed → env init, env sync, add-skore (no --mode), env verify
-```
+| Caller | `policy.env_manager` | `policy.env.managed` | Manager question | Managed question |
+|---|---|---|---|---|
+| dispatched | set | `true` or `false` | skip | skip |
+| dispatched | set | `null` | skip | ask |
+| dispatched | unset | `true` or `false` | ask when detect is `none`, `ambiguous`, or `mismatch` | skip |
+| dispatched | unset | `null` | ask when detect is `none`, `ambiguous`, or `mismatch` | ask |
+| standalone | any | any | ask when detect is `none`, `ambiguous`, or `mismatch` | ask |
+
+A standalone turn still asks when a manager is only recorded and
+nothing is on disk yet (`env_manager` is `"none"`). After the
+questions this row allows: `env.managed` false stops at step 5;
+`true` runs step 6 (`env init`, `env sync`, `env add-skore` with
+no `--mode`, `env verify`).
 
 ## Not this skill
 

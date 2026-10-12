@@ -6,23 +6,33 @@ description: >
   the first commit. This action owns first-time git setup only.
   Before the first commit, ask once which unknown hidden files and
   review paths to keep tracked.
+metadata:
+  role: helper
+  modelTier: small
 ---
 
 # Set Up Git
 
-## Pre-flight
+## Lookup
 
-Tick, then immediately run the matching sequence step. Do not stop
-after listing the boxes.
+Run `status` first. Take the first row that matches, then run its
+steps from the Sequence below. Do not stop after reading the table.
 
-```
-- [ ] status (skip autocommit ask if already on/off, unless the user asked to change it)
-- [ ] git init -b main if no .git
-- [ ] git ignore-merge (record ambiguous_dotfiles; do not ask yet)
-- [ ] git.autocommit ask if null
-- [ ] off, or on and HEAD exists → stop; no file question; no commit
-- [ ] on and no HEAD → git review; one keep-or-ignore question if either list is non-empty; first commit
-```
+| `policy.git.autocommit` | Situation | Steps | Ask | Commit |
+|---|---|---|---|---|
+| `on` or `off`, user asks to change it | HEAD exists, or the new value is `off` | 1, 9 | the autocommit question only | no |
+| `on` or `off`, user asks to change it | new value `on`, no HEAD | 1, 7, 8, 9 | autocommit, then one keep question if `review_paths` is non-empty | yes |
+| `null` | any | 2, 3, 4, then only the Ask and Commit of the row for the persisted answer. Do not run steps 2 or 3 again | autocommit once | per that row |
+| `off` | any | 2, 3, 5, 9 | nothing | no |
+| `on` | HEAD exists | 2, 3, 6, 9 | nothing | no |
+| `on` | no HEAD | 2, 3, 7, 8, 9 | one keep question only if `ambiguous_dotfiles` or `review_paths` is non-empty | yes |
+
+The keep question is one question. After step 3 it lists every
+hidden path and every review `path` with its `kind`. The
+change-to-`on` row did not run ignore-merge: list only
+`review_paths`. Exit code 2 from `git ignore-merge`,
+`git review`, or `git review-decide` is structured JSON, not a
+command failure.
 
 ## Sequence
 

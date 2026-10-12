@@ -6,6 +6,8 @@ description: >
   and its Ideas row. Comes after review, beside the backlog. Do
   not call research-ml-practice. Do not write History, Backlog,
   or a design note. Do not pick a winner.
+metadata:
+  modelTier: medium
 ---
 
 # Search ML Literature

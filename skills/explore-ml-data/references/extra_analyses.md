@@ -32,9 +32,10 @@ Lib: scikit-learn. UMAP only if the user insists (`umap-learn`).
 
 Numeric columns, median-impute in the cell for the plot only — do
 not write an imputed table. `PCA(n_components=2)`, then
-`sns.relplot` of the two components colored by target if set.
-Save `pca.png`. Last expression: the relplot grid. Do not use PCA
-as a model preprocessor here.
+`sns.relplot` of the two components colored by the single target
+when one is set. Several targets: do not pick an output to color
+by unless the user named it. Save `pca.png`. Last expression: the
+relplot grid. Do not use PCA as a model preprocessor here.
 
 ## Hypothesis tests
 
@@ -46,15 +47,19 @@ Lib: scipy.
 | categorical | classification | chi-square on a crosstab |
 | numeric | regression | Spearman via `scipy.stats.spearmanr` |
 
-Last expression: a small p-value table. Interpret as a signal, not
-a modelling decision. No figure unless you also add a separate
-cell whose last expression is that figure.
+One row set per confirmed target, using that column's task.
+Sibling targets are not features. Last expression: a small p-value
+table. Interpret as a signal, not a modelling decision. No figure
+unless you also add a separate cell whose last expression is that
+figure.
 
 ## Subgroup / segment
 
 Ask which grouping column if the user did not name one.
 
-Table cell: `groupby(group)[TARGET]` summary (rate or mean); last
+Table cell: `groupby(group)[TARGET]` for one target, or
+`groupby(group)[TARGETS]` when several outputs are confirmed
+(rate or mean of each). Last
 expression is that frame. If a facet plot is worth a sentence in
 `data_analysis.md`, a **second** cell: seaborn figure-level facet,
 save `subgroup_<group>.png`, last expression the grid. Otherwise
@@ -64,8 +69,9 @@ do not save a PNG.
 
 Only if a datetime column exists. Lib: statsmodels.
 
-Table cell: ADF on the target (if numeric) or on one numeric
-series; last expression is the statistic table. Figure cell:
+Table cell: ADF on each numeric confirmed target, or on one
+numeric series when there is no target; last expression is the
+statistic table. Figure cell:
 ACF/PACF via seaborn/statsmodels plot, save `acf.png`, last
 expression the figure. Additive seasonal decomposition only when
 the series is regular, same split (table vs figure cells).

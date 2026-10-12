@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate ``.catalog.json`` against the on-disk ``skills/`` directory.
 
-The validator enforces five invariants:
+The validator enforces eight invariants:
 
 1. Every directory under ``skills/`` has a matching entry in
    ``.catalog.json``'s ``skills`` array, and vice versa.
@@ -13,6 +13,18 @@ The validator enforces five invariants:
 4. Every workflow's ``includes`` list references known skill ids.
 5. Every ``SKILL.md`` description is shorter than 1024 characters,
    counted the way Cursor counts a folded ``description: >`` block.
+6. Every ``SKILL.md`` ends its frontmatter with an unindented
+   ``metadata:`` block whose ``modelTier`` is ``small``, ``medium``,
+   or ``big``. ``role``, when present, is ``entry`` or ``helper``.
+7. At most one skill declares ``metadata.role: entry``.
+8. No skill loads a ``metadata.role: helper`` skill whose
+   ``modelTier`` is higher than its own. A helper loaded while its
+   caller keeps working runs on at most the caller's model, so its
+   tier would never apply. A load is a ``load`` / ``route to`` /
+   ``re-enter`` / ``hand off to`` instruction naming the helper;
+   ``return to`` (back to the skill that loaded this one) and
+   prohibitions ("Do not load ...") are not loads. The entry skill
+   is exempt: it is not a caller.
 
 Usage
 -----
@@ -26,12 +38,33 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
 # Cursor rejects a skill description at this length. The count includes
 # the trailing newline that YAML ``>`` (clip) keeps.
 DESCRIPTION_MAX_LENGTH = 1024
+MODEL_TIERS = {"small", "medium", "big"}
+ROLES = {"entry", "helper"}
+TIER_RANK = {"small": 0, "medium": 1, "big": 2}
+_FIELD = re.compile(r"^  ([A-Za-z]+):[ \t]*(\S+)[ \t]*$")
+# A negation governing a load-like verb, then a skill name: not a load.
+# Same rule as pi-skill-lifecycle's caller detection.
+_PROHIBITION = re.compile(
+    r"\b(?:do not|don't|never|must not|should not|shouldn't|not to)\s+"
+    r"(?:\w+\s+)?(?:load|call|invoke|use|route to|hand off to)\s+"
+    r"[`'\"]?[\w-]+[`'\"]?",
+    re.IGNORECASE,
+)
+# An instruction to load another skill. ``return to`` is excluded on
+# purpose: it continues the skill that loaded this one.
+_LOAD = re.compile(
+    r"\b(?:load|loads|loading|route to|routes to|route back to|routed to|"
+    r"re-enter|re-enters|hand off to|hands off to)\s+(?:[\w-]+\s+)?"
+    r"[`'\"]?([a-z][\w-]+)[`'\"]?",
+    re.IGNORECASE,
+)
 
 
 def folded_description_length(text: str) -> int | None:
@@ -80,6 +113,86 @@ def folded_description_length(text: str) -> int | None:
     if inline in {">", "|"}:
         folded += "\n"
     return len(folded)
+
+
+def metadata_fields(text: str) -> dict[str, str] | None:
+    """Return the keys of the unindented ``metadata:`` block.
+
+    ``metadata:`` must be unindented. An indented key is inside the
+    folded description and is not part of this block. Returns
+    ``None`` when the block is missing or a nested line is not
+    ``key: value``.
+    """
+    if not text.startswith("---\n"):
+        return None
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return None
+    lines = text[4:end].splitlines()
+    try:
+        start = next(i for i, line in enumerate(lines) if line == "metadata:")
+    except StopIteration:
+        return None
+    fields: dict[str, str] = {}
+    for line in lines[start + 1 :]:
+        if line == "":
+            continue
+        if not line.startswith((" ", "\t")):
+            break
+        match = _FIELD.match(line)
+        if match is None:
+            return None
+        fields[match.group(1)] = match.group(2)
+    return fields
+
+
+def loaded_skills(text: str, names: set[str], self_name: str) -> set[str]:
+    """Return the skills a ``SKILL.md`` body tells the model to load.
+
+    Frontmatter is skipped, line breaks are folded so a wrapped
+    sentence still matches, and prohibitions are removed first.
+    """
+    end = text.find("\n---\n", 4) if text.startswith("---\n") else -1
+    body = text[end + 5 :] if end != -1 else text
+    body = _PROHIBITION.sub(" ", re.sub(r"\s+", " ", body))
+    return {
+        m.group(1)
+        for m in _LOAD.finditer(body)
+        if m.group(1) in names and m.group(1) != self_name
+    }
+
+
+def helper_tier_errors(skills: dict[str, tuple[str | None, str | None, str]]) -> list[str]:
+    """Invariant 8: no skill loads a helper of a higher tier than its own.
+
+    Parameters
+    ----------
+    skills : dict
+        Skill id -> ``(role, modelTier, SKILL.md text)``.
+
+    Returns
+    -------
+    list[str]
+        One message per offending load.
+    """
+    errors: list[str] = []
+    names = set(skills)
+    for caller, (role, tier, text) in sorted(skills.items()):
+        if role == "entry" or tier not in TIER_RANK:
+            continue
+        for helper in sorted(loaded_skills(text, names, caller)):
+            h_role, h_tier, _ = skills[helper]
+            if h_role != "helper" or h_tier not in TIER_RANK:
+                continue
+            if TIER_RANK[h_tier] > TIER_RANK[tier]:
+                errors.append(
+                    f"skills/{caller}/SKILL.md ({tier}) loads helper "
+                    f"{helper!r} ({h_tier}): a helper runs on at most its "
+                    "caller's model, so its tier never applies. Route "
+                    f"through a skill of tier {h_tier} or more, or return "
+                    "to the skill that loaded this one."
+                )
+    return errors
 
 
 # Allow-list: category -> set of permitted subcategories.
@@ -131,6 +244,8 @@ def validate(catalog_path: Path) -> list[str]:
             f"{sorted(missing_folders)}"
         )
 
+    entries: list[str] = []
+    declared: dict[str, tuple[str | None, str | None, str]] = {}
     for skill in catalog["skills"]:
         sid = skill["id"]
         skill_path = repo_root / skill["path"]
@@ -138,12 +253,29 @@ def validate(catalog_path: Path) -> list[str]:
         if not skill_md.is_file():
             errors.append(f"{skill['path']}/SKILL.md is missing")
         else:
-            length = folded_description_length(skill_md.read_text(encoding="utf-8"))
+            text = skill_md.read_text(encoding="utf-8")
+            length = folded_description_length(text)
             if length is not None and length >= DESCRIPTION_MAX_LENGTH:
                 errors.append(
                     f"{skill['path']}/SKILL.md description exceeds "
                     f"{DESCRIPTION_MAX_LENGTH - 1} characters ({length})"
                 )
+            fields = metadata_fields(text)
+            tier = None if fields is None else fields.get("modelTier")
+            if tier not in MODEL_TIERS:
+                errors.append(
+                    f"{skill['path']}/SKILL.md metadata.modelTier must be "
+                    "small, medium, or big, in an unindented metadata block"
+                )
+            role = None if fields is None else fields.get("role")
+            if role is not None and role not in ROLES:
+                errors.append(
+                    f"{skill['path']}/SKILL.md metadata.role must be "
+                    f"entry or helper, got {role!r}"
+                )
+            if role == "entry":
+                entries.append(sid)
+            declared[sid] = (role, tier, text)
 
         cat = skill.get("category")
         sub = skill.get("subcategory")
@@ -165,6 +297,14 @@ def validate(catalog_path: Path) -> list[str]:
                 f"skill {sid!r}: category {cat!r} takes no subcategory, "
                 f"got {sub!r}"
             )
+
+    if len(entries) > 1:
+        errors.append(
+            "more than one skill declares metadata.role entry: "
+            + ", ".join(entries)
+        )
+
+    errors.extend(helper_tier_errors(declared))
 
     for workflow in catalog.get("workflows", []):
         unknown = [s for s in workflow.get("includes", []) if s not in catalog_ids]

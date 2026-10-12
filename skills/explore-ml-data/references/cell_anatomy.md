@@ -25,27 +25,33 @@ cardinality, univariate histograms, pairwise associations,
 (`nunique()/n`) or column-dict cells.
 
 Start from `templates/data_analysis.py` if it fits, then **edit**.
-The first family holds `<TARGET>` when a target exists. Each
-further family: `templates/family.py`. Append
+The first family holds every target when any exist. Each
+further family: `templates/family.py`. One target: append
 `templates/target_regression.py` or
-`templates/target_classification.py` after the target is known;
-append `templates/datetime.py` / `templates/drift.py` only when
-those data exist (datetime per family; include the datetime
-relplot only when TARGET is numeric; copy the datetime block per
-family with `FRAME_<OTHER_SLUG>`; drift only when two
-families share column names — omit on disjoint schemas). Join coverage is Keep exploring
+`templates/target_classification.py`. Two or more regression
+targets: append `templates/target_multioutput_regression.py`
+once. Several classification columns, or a mix, get no target
+snippet. Append `templates/datetime.py` / `templates/drift.py`
+only when those data exist (datetime per family; include the
+datetime relplot only when there is exactly one numeric target;
+copy the datetime block per family with `FRAME_<OTHER_SLUG>`;
+drift only when two families share column names — omit on
+disjoint schemas). Join coverage is Keep exploring
 only (`templates/join_coverage.py`: diagnostic coverage, do not
 write a joined frame or TableReport on the join). Do not leave `if TARGET` /
 `if TASK` / `OTHER = None` / empty datetime loops / “skip this
 cell” in the notebook. Load `plot-ml-figure` before figure cells. Save each
 PNG, then leave the figure/grid as the cell output — never
 `plt.close`. Prefer seaborn figure-level (`displot`, `relplot`,
-`catplot`, `pairplot`); default target vs features is one
-faceted `relplot` saved as `bivariate_grid.png`, last
+`catplot`, `pairplot`); one target uses one faceted `relplot`
+saved as `bivariate_grid.png`. Multi-output regression uses
+`target_distributions.png` and `bivariate_targets.png`. Last
 expression `g`. Do not `import matplotlib.pyplot` on the
 normal path. One figure-level call per cell as the last
 expression; facet with `col=` / `col_wrap` instead of looping.
-A bare name inside a `for` loop is not displayed.
+A bare name inside a `for` loop is not displayed. The
+multi-output leakage loop is the template's last expression,
+the summary frame, not a trailing grid.
 
 The agent does not execute this file, and does not `notebook convert`
 or `cells run` it. Do not put TableReport dicts in the notebook to
@@ -59,14 +65,17 @@ only run. The matplotlib Agg backend is set before seaborn; do not
 put that in the human notebook. Replace `<ANALYSIS>` with the same
 loads, `TableReport.write_html` calls, and figure or HTML saves as
 the human file. One load per family. Bind `FAMILIES` as
-`(slug, raw)` and `FRAME` to the target family's pandas frame. No
+`(slug, raw)` and `FRAME` to the pandas frame that contains every
+target (the first family when there is no target). No
 markdown cells and no bare display expressions. Leave the tail: it
 does not load again and does not write the TableReport HTML again.
 It builds `TableReport(..., plot_distributions=False)` on the
 in-memory frame and writes `scratch/data_analysis/<slug>.json` from
 `report.json()` so that snapshot has statistics, not SVG, then
-`extras.json` (`tables[]`, target, top feature–target correlations,
-leakage flags, png and html paths). Confirm keys with `api get`;
+`extras.json` (`tables[]`, `targets` with one entry per confirmed
+column, `complete_target_rows`, `target_target_corr`, png and html
+paths). A single target is a one-item `targets` list. There is no
+scalar `target` or `task` field. Confirm keys with `api get`;
 parse JSON files with `.get(...)`.
 
 Author `data_analysis/data_analysis.md` from those JSON files plus
@@ -89,7 +98,8 @@ Extra cells after the user picks extras: `references/extra_analyses.md`.
 | `<LOAD_RAW_DATA>` | first family; pandas/polars load; in-memory concat of shards; convert to pandas for seaborn cells |
 | `<slug>` | Python identifier; `data_analysis_<slug>.html` and `<slug>.json` |
 | `<OTHER_SLUG>` / `<LOAD_OTHER>` | `templates/family.py` for each further family |
-| `<TARGET>` | `"column"` in the notebook load cell when a target exists; materialize.py may use `None` |
-| `<TASK>` | `classification` \| `regression` \| `none` (materialize.py; omit in the notebook when none) |
+| `<TARGET>` | `"column"` in the notebook load cell when exactly one target exists |
+| `<TARGETS>` | list of column names in the multi-output notebook and in materialize.py; `[]` when there is no target |
+| `<TASKS>` | list parallel to `<TARGETS>`: `classification` \| `regression` (materialize.py only) |
 | `<OTHER_FRAME>` | `templates/drift.py` when two families share column names |
 | `<JOIN_KEY>` | `templates/join_coverage.py` (Keep exploring only) |

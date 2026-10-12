@@ -6,8 +6,9 @@
 
 ## Modelling implications
 
-Translate TableReport **and** extras (duplicates, target
-balance/skew, feature-vs-target, leakage flags) into *candidate*
+Translate TableReport **and** extras (duplicates, each target's
+balance/skew, feature-vs-target, target-vs-target, leakage flags)
+into *candidate*
 modelling choices (splitter, metric, leakage risk). The owning
 gates make the picks.
 Every saved PNG and extra HTML is embedded here —

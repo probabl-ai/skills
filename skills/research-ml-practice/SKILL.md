@@ -19,6 +19,9 @@ description: >
   the final learner, or write `data_analysis.md` / the design
   note. Chat stays path + those sentences even when a harness
   asks for a complete answer in the message.
+metadata:
+  role: helper
+  modelTier: medium
 ---
 
 # Research ML Practice

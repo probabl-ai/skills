@@ -17,6 +17,9 @@ description: >
   or `src/<pkg>/` already names it, then scaffold, then persist
   notebooks/site true when both are still unset. For an existing
   layout, stop without scaffolding or inventing files.
+metadata:
+  role: helper
+  modelTier: small
 ---
 
 # Set Up Workspace
@@ -43,37 +46,45 @@ stay in this skill. `style` is ruff only.
   scaffold; keep existing `pyproject.toml`. No `--force`.
 - Otherwise → **fresh**. Ask G-PKG-NAME, then scaffold.
 
-## Pre-flight
+## Lookup
 
-Tick, then immediately run the matching sequence step. Do not stop
-after listing the boxes.
+Detect the layout, then take the one row that matches and run its
+steps from the Sequence below. Do not stop after reading the table.
 
-```
-- [ ] Layout: fresh | manager-only | existing
-- [ ] G-PKG-NAME: ask if fresh/manager-only (unless policy.package or src/<pkg>/ already names it)
-- [ ] scaffold --package <pkg> | existing: no scaffold, no invent
-- [ ] fresh/manager-only: persist notebooks + site true; install
-- [ ] dispatched → return | standalone → git end-turn --stage setup
-```
+| Layout | Import name | Steps | Notebooks and site |
+|---|---|---|---|
+| fresh | not recorded. "you pick", "go fast", and "no preference" do not record it | 1 only, then stop. Call `AskUserQuestion` (folder name is the default option). Do not scaffold this turn. | do not persist |
+| fresh | `policy.package` or `src/<pkg>/` already names it | 1 (no ask), 2, 4, 5. Do not write `experiments/01_baseline.py` or any experiment body, even if asked so it can run right away. | step 4 |
+| manager-only | not recorded. "you pick", "go fast", and "no preference" do not record it | 1 only, then stop. Call `AskUserQuestion`. Do not scaffold this turn. | do not persist |
+| manager-only | `policy.package` or `src/<pkg>/` already names it | 1 (no ask), 2, 4, 5. Do not write experiment bodies. | step 4 |
+| existing | user asks to re-run `skore.evaluate` or `project.put` | Refuse and stop. Say evaluation and `project.put` are not this skill. Do not paste that snippet. | do not ask, persist, or install |
+| existing | any other request | 3, 5 | do not ask, persist, or install |
+
+An unresolved import name is the ask row only. Steps 2, 4, and 5
+run on a later turn, once `policy.package` or `src/<pkg>/` names
+it. Step 4 does not overwrite a flag that is already `true` or
+`false`. Step 5: a turn dispatched by `setup-ml-project` returns
+to it; a standalone turn runs `git end-turn --stage setup`.
 
 ## Sequence
 
-1. If fresh or manager-only, resolve **G-PKG-NAME**. Ask with
-   the `AskUserQuestion` tool when it is not already recorded
-   (the `src/<pkg>/` import name; folder name as the default
-   option). Each ask in this skill states in
-   2–4 lines what the answer authorizes — the scaffolded tree, the
-   persisted policy key, the toolchain a gate implies — and the
-   detected facts it rests on; a file link is an addition, never
-   the context. “You pick” / “go fast” does not
-   resolve it. Do not confirm in prose instead of the tool. A
-   matching `[project] name` + `src/<pkg>/` already resolves it —
-   do not re-ask. A recorded `policy.package` also resolves it.
-   Do not re-ask. When `setup-ml-project` dispatched this turn
-   and `policy.package` is set, do not ask again. When
-   `src/<pkg>/` is absent, scaffold that
-   name. A `status` package of null does not reopen the ask.
-   Persist the resolved import name with
+1. If fresh or manager-only, resolve **G-PKG-NAME**. When it is
+   not already recorded, call `AskUserQuestion` and stop this
+   turn. Do not persist `policy.package` and do not scaffold
+   until a later turn. “You pick” / “go fast” / “no preference”
+   does not record it. The question is the `src/<pkg>/` import
+   name, with the folder name as the default option. Each ask
+   states in 2–4 lines what the answer authorizes — the
+   scaffolded tree, the persisted policy key, the toolchain a
+   gate implies — and the detected facts it rests on; a file
+   link is an addition, never the context. Do not confirm in
+   prose instead of the tool. A matching `[project] name` +
+   `src/<pkg>/` already resolves it — do not re-ask. A recorded
+   `policy.package` also resolves it. Do not re-ask. When
+   `setup-ml-project` dispatched this turn and `policy.package`
+   is set, do not ask again. Scaffold is step 2, and only once
+   the name is already resolved. A `status` package of null does
+   not reopen the ask. Persist a resolved import name with
    `python -m skore_skills policy set package <pkg>`.
 2. Fresh / manager-only:
 
@@ -134,6 +145,16 @@ after listing the boxes.
 
 ## Stop conditions
 
+- "You pick", "go fast", and "no preference" do not resolve the
+  import name. Call `AskUserQuestion` and stop. Do not scaffold
+  or persist in that turn, and do not use the folder name yourself.
+- Do not write `experiments/01_baseline.py` or any experiment
+  body. "So we can run it right away" is not a reason. Scaffold
+  writes `experiments/README.md` only.
+- Do not re-run `skore.evaluate` or `project.put`, and do not
+  paste that snippet. A `KeyError` from `project.get` is not a
+  scaffold turn. Say evaluation and `project.put` are not this
+  skill, and stop.
 - Do not ask env manager, tabular library, or skore mode.
 - Do not run `pixi init` / `uv init`.
 - Do not env-bootstrap or editable-install. Export toolchain

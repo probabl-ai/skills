@@ -63,7 +63,9 @@ _GOALS = (
     "point_predictions",
 )
 _FALLBACK = "references/fallback.md"
-_SUPPORTED_TASKS = frozenset({"", "none", "classification", "regression"})
+_SUPPORTED_TASKS = frozenset(
+    {"", "classification", "regression", "multioutput-regression"}
+)
 _REVISE = ["modify", "keep", "stop"]
 
 
@@ -112,23 +114,54 @@ def modeling_decisions_state(root: Path) -> str:
     return "missing"
 
 
-def _recorded_task(root: Path) -> str:
+def _recorded_targets(root: Path) -> tuple[str, list[str]]:
+    """Return the joint task and the confirmed target columns.
+
+    ``extras.json`` stores ``targets``, a list of ``{column, task}``.
+    One entry keeps that entry's task. Several regression entries are
+    ``multioutput-regression``. Any other combination is returned as
+    its own task name so framing can refuse it.
+    """
     path = root / "scratch" / "data_analysis" / "extras.json"
     if not path.is_file():
-        return ""
+        return "", []
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return ""
-    task = payload.get("task") if isinstance(payload, dict) else None
-    return task.strip() if isinstance(task, str) else ""
+        return "", []
+    entries = payload.get("targets") if isinstance(payload, dict) else None
+    if not isinstance(entries, list):
+        return "", []
+    columns: list[str] = []
+    tasks: list[str] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        column = entry.get("column")
+        task = entry.get("task")
+        if not isinstance(column, str) or not isinstance(task, str):
+            continue
+        column = column.strip()
+        task = task.strip()
+        if column and task:
+            columns.append(column)
+            tasks.append(task)
+    if not columns:
+        return "", []
+    if len(columns) == 1:
+        return tasks[0], columns
+    if all(task == "regression" for task in tasks):
+        return "multioutput-regression", columns
+    if all(task == "classification" for task in tasks):
+        return "multioutput-classification", columns
+    return "mixed", columns
 
 
 def _goal_candidates(root: Path) -> list[str]:
-    task = _recorded_task(root)
+    task, _targets = _recorded_targets(root)
     if task == "classification":
         goals = ["probabilities", "point_labels"]
-    elif task == "regression":
+    elif task in {"regression", "multioutput-regression"}:
         goals = ["intervals", "point_predictions"]
     else:
         goals = list(_GOALS)
@@ -332,7 +365,7 @@ def _conflict(rows: dict[str, str]) -> str:
     return ""
 
 
-def _translation(rows: dict[str, str]) -> dict[str, Any] | None:
+def _translation(root: Path, rows: dict[str, str]) -> dict[str, Any] | None:
     if rows["prediction_goal"] == "uncovered":
         return None
     effective = _effective(rows)
@@ -354,6 +387,7 @@ def _translation(rows: dict[str, str]) -> dict[str, Any] | None:
         splitter, pattern = "KFold", "A"
     folds = effective["folds"]
     scored_once = holdout or predefined
+    task, targets = _recorded_targets(root)
     return {
         "splitter": splitter,
         "pattern": pattern,
@@ -368,6 +402,8 @@ def _translation(rows: dict[str, str]) -> dict[str, Any] | None:
         "groups": groups,
         "report": "EstimatorReport" if scored_once else None,
         "metric": effective["metric"],
+        "task": task,
+        "targets": targets,
     }
 
 
@@ -413,10 +449,10 @@ def frame_show(root: Path, *, revise: bool = False) -> dict[str, Any]:
         return {"action": "stop", "reason": "missing_scaffold"}
 
     rows = _raw_rows(root)
-    recorded = _recorded_task(root)
+    recorded, targets = _recorded_targets(root)
     if recorded not in _SUPPORTED_TASKS and not rows["prediction_goal"]:
         payload = _ask("uncovered", rows, reference=_FALLBACK)
-        payload["context"] = {"task": recorded}
+        payload["context"] = {"task": recorded, "targets": targets}
         return payload
 
     locked = rows["status"].split()[:1] == ["locked"]
@@ -472,7 +508,7 @@ def frame_show(root: Path, *, revise: bool = False) -> dict[str, Any]:
             "action": "proceed",
             "reason": "locked",
             "decisions": _effective(rows),
-            "translation": _translation(rows),
+            "translation": _translation(root, rows),
         }
     return _ask("set", rows, full=True)
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -38,21 +39,39 @@ def test_style_init_preserves_existing_config(
     assert config.read_text(encoding="utf-8") == "line-length = 100\n"
 
 
+def test_ruff_candidates_include_windows_scripts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A Windows conda prefix keeps ``ruff.exe`` in ``Scripts``."""
+    monkeypatch.setattr(style_mod.sys, "platform", "win32")
+    candidates = style_mod.ruff_candidates()
+    assert any(
+        path.name == "ruff.exe" and path.parent.name == "Scripts" for path in candidates
+    )
+
+
+def test_ruff_executable_belongs_to_this_interpreter() -> None:
+    """Ruff is this interpreter's binary, not ``python -m ruff``."""
+    executable = style_mod.ruff_executable()
+    parent = Path(sys.executable).parent
+    assert executable.name in {"ruff", "ruff.exe"}
+    assert executable.parent in {parent, parent / "Scripts"}
+
+
+def test_ruff_executable_skips_a_missing_candidate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The first missing name does not hide a later binary in this env."""
+    monkeypatch.setattr(style_mod.sys, "platform", "win32")
+    executable = style_mod.ruff_executable()
+    assert executable.is_file()
+    assert executable.name in {"ruff", "ruff.exe"}
+
+
 def test_style_missing_ruff(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Missing ruff exits non-zero with an env-manager install hint."""
+    """A missing ruff binary exits non-zero with an env-manager install hint."""
     monkeypatch.chdir(tmp_path)
-
-    def fake_run(argv: list[str], **kwargs: Any) -> Any:
-        class Result:
-            returncode = 1
-            stdout = ""
-            stderr = "No module named ruff"
-
-        if argv[-1:] == ["--version"] or (len(argv) >= 3 and argv[-1] == "--version"):
-            return Result()
-        raise AssertionError(f"unexpected argv {argv}")
-
-    monkeypatch.setattr(style_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(style_mod, "ruff_candidates", lambda: [tmp_path / "ruff"])
     result = CliRunner().invoke(cli, ["style"])
     assert result.exit_code != 0
     assert "env add" in result.output
@@ -99,6 +118,8 @@ def test_style_default_globs_skip_vendored(
     assert str(tmp_path / "top.py") in check_argv
     assert "node_modules" in joined  # exclude flag
     assert str(tmp_path / "node_modules") not in check_argv
+    assert check_argv[0] == str(style_mod.ruff_executable())
+    assert "-m" not in check_argv
     assert "no [tool.ruff]" in result.output
 
 

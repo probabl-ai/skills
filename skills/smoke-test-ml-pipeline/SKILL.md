@@ -24,6 +24,9 @@ description: >
   `python -m skore_skills smoke run --stem <stem>`. Red JSON
   means fix the pipeline in `build-ml-pipeline`. Do not loosen
   the assertion.
+metadata:
+  role: helper
+  modelTier: medium
 ---
 
 # Smoke Test ML Pipeline
@@ -77,10 +80,10 @@ links); this skill does not narrate the pipeline.
   `dev` env, default + agent).
 - **Symbol from memory is forbidden.** Any skrub /
   scikit-learn name you write in the smoke test must come from
-  `python -m skore_skills api get <dotted>` or a matching cache
-  read **in this turn**. The smoke test is a small file but it imports the
-  predicting-package API surface; the same memory-forbidden rule
-  applies.
+  `python -m skore_skills api get <dotted>...` or a matching cache
+  read **in this turn**. Several symbols go in one call. The smoke
+  test is a small file but it imports the predicting-package API
+  surface; the same memory-forbidden rule applies.
 - **Don't shrink the assertion.** The hard assertion is exact
   row-count equality. Not "approximately equal", not "at least 80%
   of expected rows". A row-count mismatch *is* the failure mode the
@@ -103,8 +106,8 @@ links); this skill does not narrate the pipeline.
   loaders that actually break in production.
 - **No wrappers, no NaN-handling, no `eval_mode` hacks.** If the
   smoke test only passes after wrapping the predictor or
-  conditioning on `eval_mode`, the pipeline is wrong. Route back
-  to `build-ml-pipeline` and fix the X-marker placement.
+  conditioning on `eval_mode`, the pipeline is wrong. Go back to
+  build (§ Back to build) and fix the X-marker placement.
   Wrappers paper over the failure mode; they don't solve it.
 - **The smoke test uses *only* the predicting package's API.**
   For a `SkrubLearner` produced by `build-ml-pipeline` that means
@@ -155,7 +158,7 @@ Pre-flight (smoke-test-ml-pipeline):
       portable to any skrub-capable environment
 - [ ] API confirmed for skrub / sklearn symbols used in
       the test: <symbols, or "none">
-      Evidence: python -m skore_skills api get <dotted>
+      Evidence: python -m skore_skills api get <dotted>...
                 | Read scratch/api/<lib>/<version>/<topic>.md (this turn)
                 | Write scratch/api/<lib>/<version>/<topic>.md (this turn)
                 | "n/a — test only uses symbols already present in
@@ -172,14 +175,16 @@ Pre-flight (smoke-test-ml-pipeline):
       the failure mode (default: a single horizon-length slice; for
       time series, the most recent N steps such that the target is
       *just* observable for assertion)
-- [ ] Hard assertion wired: `len(predictions) == n_predict_grid_rows`
+- [ ] Hard assertion wired: `len(predictions) == n_predict_grid_rows`,
+      plus output width (1 for one target; `translation.targets`
+      for multi-output regression, including column names)
 - [ ] Soft assertion wired (or explicitly skipped): smoke MAE within
       `3 × CV_MEAN_HARDCODED_FROM_PLAN` (or task-appropriate
       analogue). Value is a literal pulled from the matching
       `journal/NN_<short_name>.md` § Status.headline; the test does
       not import `skore` / read the project store at runtime.
 - [ ] Pytest run this turn on `tests/smoke/test_NN_<short_name>.py`.
-      Red → return to `build-ml-pipeline`. Green (sub-step) →
+      Red → back to build (§ Back to build). Green (sub-step) →
       return to build for the design HITL.
 ```
 
@@ -207,6 +212,12 @@ target-time rows in the predict-time grid. If the pipeline's
 source binding is a directory of raw files, it's the row count of
 the supervised frame derived from the predict env at predict time
 (usable via `build_supervised_frame(predict_dir)`).
+
+`len` counts rows. Also assert the output width: 1 for one
+target. For multi-output regression, the width and, when
+`predict` returns a DataFrame, the column names equal
+`translation.targets`. A matrix with the right row count and
+the wrong outputs is still a shape failure.
 
 ### Soft — the metric-vs-CV gap
 
@@ -339,8 +350,10 @@ a buggy one. What the smoke test still catches in the IID case:
 - Loader bugs that drop or duplicate rows on a smaller input
   than CV used.
 - Shape mismatches between `learner.predict(env)`'s output and
-  the predict-env row count (e.g. an estimator that returns
-  `(N, 2)` predictions when the test only checks `len(...)`).
+  the predict-env row count. `len` on a DataFrame is the row
+  count, so also check the output width. One target has width 1.
+  Multi-output regression must match `translation.targets` in
+  width and column names.
 - Accidental NaN-poisoning when an encoder has never seen a
   category present in the predict subset (the soft assertion
   on smoke-MAE-vs-CV-mean catches this; keep it on).
@@ -387,7 +400,11 @@ def test_NN_<short_name>(train_predict_envs):
     learner.fit(train_env)
     predictions = learner.predict(predict_env)
 
-    # HARD: structural correctness.
+    # HARD: structural correctness. n_outputs is 1 for one target.
+    # Multi-output regression sets n_outputs and target_names from
+    # translation.targets.
+    n_outputs = 1
+    target_names: list[str] = []
     assert len(predictions) == n_predict_grid_rows, (
         f"got {len(predictions)} predictions for "
         f"{n_predict_grid_rows} predict-grid rows — pipeline is "
@@ -395,6 +412,12 @@ def test_NN_<short_name>(train_predict_envs):
         f"and that history-dependent features reference an "
         f"upstream history node, not a per-slice computation."
     )
+    width = predictions.shape[1] if getattr(predictions, "ndim", 1) == 2 else 1
+    assert width == n_outputs, (
+        f"got {width} outputs, expected {n_outputs}"
+    )
+    if target_names:
+        assert list(predictions.columns) == target_names, list(predictions.columns)
 
     # SOFT: predictions are not NaN-poisoned.
     from sklearn.metrics import mean_absolute_error
@@ -419,8 +442,8 @@ A failing smoke test is a **pipeline-shape problem**, not a
 metric problem.
 
 - **Hard-assertion failure** (row count) → the pipeline is broken.
-  Re-enter `build-ml-pipeline`, audit the X-marker placement and
-  the history-dependent feature steps. Don't tune the model;
+  Go back to build (§ Back to build), audit the X-marker placement
+  and the history-dependent feature steps. Don't tune the model;
   don't loosen the assertion; don't add a wrapper. Fix the shape.
 - **Soft-assertion failure** (metric way off) → the predictions
   exist but are garbage on the smoke window. Most common cause:
@@ -433,6 +456,26 @@ metric problem.
   the matching smoke test passes.   `evaluate-ml-pipeline` also
   STOPs while `smoke run` is `stop` (or the smoke file is missing on a
   history-dependent pipeline).
+
+## Back to build
+
+A pipeline fix belongs to `build-ml-pipeline`. How to get there
+depends on who loaded this skill:
+
+- **Sub-step** — `build-ml-pipeline` loaded this skill: return to
+  it. Its instructions are still loaded; continue its loop.
+- **Direct debug** — this skill was loaded on its own (for example
+  "why is smoke failing?"): load `model-ml-pipeline` when
+  `status.skills.model-ml-pipeline` is true, and name the stem. It
+  resumes the approved design and re-enters build for the fix, on
+  the model tier that build declares. Do not load
+  `build-ml-pipeline` from here: a sub-step this skill loads runs
+  on at most this skill's own tier. Missing `model-ml-pipeline` →
+  say in one line that the pipeline needs a fix in build, and stop.
+
+On a direct debug request that only asks *why* smoke is failing,
+the diagnosis is the answer; go back to build only when the user
+wants the pipeline fixed.
 
 ## What this skill does NOT do
 
@@ -456,8 +499,8 @@ This is the executable proof. After the test file is written or
 updated, run `python -m skore_skills smoke run --stem
 <NN>_<short_name>`. It streams pytest on
 `tests/smoke/test_NN_<short_name>.py` then prints JSON. Do not
-claim green without `action: proceed`. `stop` / `red` → route to
-`build-ml-pipeline` to modify the pipeline;
+claim green without `action: proceed`. `stop` / `red` → back to
+build to modify the pipeline (§ Back to build);
 do not start evaluate. `proceed` → return to build for the
 design HITL when this skill was loaded as a sub-step.
 
@@ -465,7 +508,8 @@ design HITL when this skill was loaded as a sub-step.
 
 - **`build-ml-pipeline`** — parent. Owns the X-marker placement
   rule the smoke test asserts, and the post-green HITL. Smoke
-  failure typically routes back there for a pipeline-shape fix.
+  failure goes back there for a pipeline-shape fix, through
+  `model-ml-pipeline` on a direct debug (§ Back to build).
   Pytest is the loop: `smoke run` red → modify pipeline → `smoke run` again.
 - **`manage-ml-backlog`** — record-outcome writes `done`. Requires
   the smoke test to pass before an experiment can flip to `done`.

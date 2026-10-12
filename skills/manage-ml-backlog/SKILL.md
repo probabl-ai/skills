@@ -10,6 +10,8 @@ description: >
   audit, when a run finishes, when the user asks what to try next
   or to triage idea files, or when model-ml-pipeline routes its
   Backlog choice here. This is cadence, not a methodology owner.
+metadata:
+  modelTier: medium
 ---
 
 # Manage ML Backlog

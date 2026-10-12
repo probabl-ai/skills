@@ -13,7 +13,8 @@
   `true`.
 
 **Must do:**
-- Emit the Pre-flight then ask (do not stop after listing boxes).
+- Read the lookup table and take the matching row (do not stop
+  after listing the rows).
 - Run `status` and `env detect` before any write.
 - AskUserQuestion multi-select of installed pieces (env,
   workspace, editable, git). The question's last line is exactly: Select each
@@ -78,8 +79,9 @@
   manage the environment.
 - If the user keeps workspace + git: load `setup-workspace` then
   `setup-git`; schedule editable only after `has_src`. After each
-  loaded skill returns, persist `setup.<piece> done`. Do not
-  install sklearn or skrub.
+  loaded skill returns, persist `setup.<piece> done`. Persist
+  `setup.editable` done only when `env add --editable --execute`
+  exits 0. Do not install sklearn or skrub.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -89,6 +91,8 @@
 - Pass `--force` to `scaffold`.
 - Wire the editable install before the layout exists.
 - Offer a piece whose `status.setup` value is `done`.
+- Persist `setup.editable` done when `env add --editable --execute`
+  exits non-zero.
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.

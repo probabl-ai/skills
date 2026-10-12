@@ -6,6 +6,8 @@ description: >
   after a successful evaluate, on "review this stem", or when
   review consent is audit or proceed. Do not write History,
   Backlog, or a design note.
+metadata:
+  modelTier: medium
 ---
 
 # Review ML Experiment
