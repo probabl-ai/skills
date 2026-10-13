@@ -2,7 +2,7 @@
 name: export-ml-site
 description: >
   Package JOURNAL, exploratory data analysis markdown, and design notes into an offline
-  MkDocs site opened via report.html at the workspace root. Embeds existing notebook HTML
+  MkDocs site opened in a browser at a local URL. Embeds existing notebook HTML
   companions in their associated reports. Never executes Python. Trigger
   when the user asks for a website, mkdocs, or documentation site.
 metadata:
@@ -14,10 +14,13 @@ metadata:
 ## Human-facing prose
 
 Details: `setup-workspace` `references/human_facing_prose.md`.
-Tell the user the website has been updated and to open
-`report.html` in a browser. Do not say double-click or "no
-server". Do not name the markdown file that was edited. Do not
-quote `site init` / `site build` as something they should run.
+Tell the user the website has been updated and include the
+`http://` URL from `site open`. Run
+`python -m skore_skills site open` after a successful or
+already-current build. Do not link `report.html`. Do not say
+double-click or "no server". Do not name the markdown file that
+was edited. Do not quote `site init` / `site build` /
+`site open` as something they should run.
 
 The site is a derived index of files other skills already write.
 Markdown is the report: its figures, TableReport HTML, and existing
@@ -89,11 +92,13 @@ the table.
    retry still fails, name the error in one line. Name a build
    error; the markdown sources remain the record. Do not claim
    the website was updated. When the build succeeds, tell the
-   user the website has been updated and to open `report.html`
-   at the workspace root in a browser. Do not say double-click
-   or "no server". Do not name the markdown file or a stage
-   page (`html/data_analysis.html`, `html/<stem>.html`). Stage
-   owners that just ran `site build` say that same line in the
+   user the website has been updated and include the `http://`
+   URL printed by `python -m skore_skills site open`. Run that
+   command when the build succeeds or reports the site current.
+   Do not link `report.html`. Do not say double-click or "no
+   server". Do not name the markdown file or a stage page
+   (`html/data_analysis.html`, `html/<stem>.html`). Stage owners
+   that just ran `site build` say that same line in the
    User-facing close.
 
 ## Preview before markdown-review gates
@@ -110,11 +115,13 @@ that AskUserQuestion / consent stop — not only at End of turn.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the gate.
 2. In the same message as the gate, when the build ran or
-   reported the site current: the website has been updated, and
-   open `report.html` in a browser. Do not name the `.md` path
-   or the stage page. A file link is an addition, never the
-   context. If the build failed, name the error in one line and
-   do not claim the website was updated.
+   reported the site current: run
+   `python -m skore_skills site open`. The website has been
+   updated, and the message includes the printed `http://` URL.
+   Do not link `report.html`. Do not name the `.md` path or the
+   stage page. A file link is an addition, never the context.
+   If the build failed, name the error in one line and do not
+   claim the website was updated. Do not run `site open` then.
 3. Do **not** `notebook convert`, `git end-turn`, or `git commit`
    on this preview rebuild. Do not re-run `site init`.
 4. Close-time conversion and build remain a freshness safety

@@ -1,15 +1,22 @@
-"""Initialize and build an offline MkDocs site from workspace markdown."""
+"""Initialize, build, and serve an offline MkDocs site from workspace markdown."""
 
 from __future__ import annotations
 
 import hashlib
 import html
 import json
+import os
 import re
 import shutil
+import socket
 import subprocess
+import sys
+import time
 from dataclasses import dataclass
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 
 from skore_skills.workspace import is_scaffolded, package_name
 
@@ -19,6 +26,12 @@ BUILD_DIR = Path("_build")
 DOCS_DIR = BUILD_DIR / "docs"
 GENERATED_CONFIG = BUILD_DIR / CONFIG_NAME
 BUILD_STATE = BUILD_DIR / "site-state.json"
+SERVER_STATE = BUILD_DIR / "site-server.json"
+PORT_BASE = 18000
+PORT_SPAN = 2000
+MISSING_SITE = "html/index.html is missing; run site build"
+NO_PORT = "no free port for the report server"
+SERVER_DID_NOT_START = "report server did not start"
 SITE_ASSETS = Path(__file__).with_name("site_assets")
 STAGED_ASSETS = Path("assets") / "skore"
 GITIGNORE_LINES = (f"{BUILD_DIR.as_posix()}/", f"{HTML_DIR}/")
@@ -817,3 +830,154 @@ def build_site(root: Path, *, if_stale: bool = False) -> str:
     if extra:
         return f"{extra}\n{launcher}"
     return str(launcher)
+
+
+def site_port(root: Path) -> int:
+    """Return the preferred localhost port for this workspace."""
+    digest = hashlib.sha256(str(root.resolve()).encode()).digest()
+    return PORT_BASE + int.from_bytes(digest[:2], "big") % PORT_SPAN
+
+
+def _pid_alive(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    if sys.platform == "win32":
+        return _windows_pid_alive(pid)
+    return _posix_pid_alive(pid)
+
+
+def _posix_pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _windows_pid_alive(pid: int, kernel: Any = None) -> bool:
+    if kernel is None:
+        import ctypes
+        from ctypes import wintypes
+
+        kernel = ctypes.CDLL("kernel32", use_last_error=True)
+        kernel.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+        kernel.OpenProcess.restype = wintypes.HANDLE
+        kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+        kernel.CloseHandle.restype = wintypes.BOOL
+    handle = kernel.OpenProcess(0x1000, False, pid)
+    if not handle:
+        return False
+    kernel.CloseHandle(handle)
+    return True
+
+
+def _read_state(path: Path) -> dict | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _write_state(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+
+def _state_pid(state: dict | None) -> int | None:
+    if not state:
+        return None
+    pid = state.get("pid")
+    if isinstance(pid, bool) or not isinstance(pid, int) or pid <= 0:
+        return None
+    return pid
+
+
+def _port_is_free(port: int) -> bool:
+    with socket.socket() as sock:
+        try:
+            sock.bind(("127.0.0.1", port))
+        except OSError:
+            return False
+    return True
+
+
+def _free_port(preferred: int) -> int:
+    for port in range(preferred, preferred + 20):
+        if _port_is_free(port):
+            return port
+    raise RuntimeError(NO_PORT)
+
+
+def html_server(directory: Path, port: int) -> ThreadingHTTPServer:
+    """Return a server for ``directory`` bound to ``127.0.0.1``."""
+    handler = partial(SimpleHTTPRequestHandler, directory=str(directory))
+    return ThreadingHTTPServer(("127.0.0.1", port), handler)
+
+
+def serve_html(directory: str, port: int) -> None:
+    """Serve ``directory`` on ``127.0.0.1`` until the process is killed."""
+    html_server(Path(directory), port).serve_forever()
+
+
+def _wait_until_listening(port: int) -> None:
+    for _ in range(40):
+        with socket.socket() as sock:
+            try:
+                sock.connect(("127.0.0.1", port))
+            except OSError:
+                time.sleep(0.05)
+            else:
+                return
+    raise RuntimeError(SERVER_DID_NOT_START)
+
+
+def _spawn_server(directory: Path, port: int) -> int:
+    proc = subprocess.Popen(
+        [
+            sys.executable,
+            "-c",
+            "import sys; from skore_skills.site import serve_html; "
+            "serve_html(sys.argv[1], int(sys.argv[2]))",
+            str(directory),
+            str(port),
+        ],
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        _wait_until_listening(port)
+    except RuntimeError:
+        proc.kill()
+        raise
+    return proc.pid
+
+
+def _ensure_server(root: Path) -> str:
+    state = _read_state(root / SERVER_STATE)
+    pid = _state_pid(state)
+    if (
+        state is not None
+        and pid is not None
+        and _pid_alive(pid)
+        and isinstance(state.get("url"), str)
+    ):
+        return str(state["url"])
+    port = _free_port(site_port(root))
+    server_pid = _spawn_server(root / HTML_DIR, port)
+    url = f"http://127.0.0.1:{port}/"
+    _write_state(root / SERVER_STATE, {"pid": server_pid, "port": port, "url": url})
+    return url
+
+
+def open_site(root: Path) -> str:
+    """Serve ``html/`` on localhost and return its URL.
+
+    A live server is left as it is.
+    """
+    if not (root / HTML_DIR / "index.html").is_file():
+        raise FileNotFoundError(MISSING_SITE)
+    return _ensure_server(root)

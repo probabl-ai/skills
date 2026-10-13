@@ -86,8 +86,9 @@
 - Run `python -m skore_skills notebook fill data_analysis/data_analysis.py --html`.
 - Leave code-cell outputs empty.
 - Run `python -m skore_skills site build --if-stale`.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL. Do not link `report.html`. Do not
   name `data_analysis.md` or the HTML viewer path. Do not say
   double-click or "no server".
 

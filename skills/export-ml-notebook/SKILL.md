@@ -128,9 +128,11 @@ reading the table.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the
    fill, and do not claim the website was updated. When the
-   build ran, say the website has been updated and to open
-   `report.html` in a browser. Do not name the markdown file
-   or the HTML viewer path. Do not quote the CLI.
+   build ran or reported the site current, run
+   `python -m skore_skills site open`, say the website has been
+   updated, and include the printed `http://` URL. Do not link
+   `report.html`. Do not name the markdown file or the HTML
+   viewer path. Do not quote the CLI.
 
 ## Stop conditions
 

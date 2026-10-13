@@ -131,9 +131,11 @@ On `design consent` `ask`, the JSON `context` holds those facts:
 first, then the risks the user may push back on). After the note
 is populated, and before **Approve** / **Modify** / **Stop**, run
 `python -m skore_skills site build --if-stale` when site policy
-is true. In that same question, say the website has been
-updated and open `report.html` in a browser. Do not name the
-design-note markdown or `html/<stem>.html`. An empty
+is true. In that same question, run
+`python -m skore_skills site open`, say the website has been
+updated, and include the printed `http://` URL. Do not link
+`report.html`. Do not name the design-note markdown or
+`html/<stem>.html`. An empty
 field means the note does not state that fact: say
 the note is not ready for approval and offer to populate it;
 never fill it from memory. Do not `site build` an empty shell.
@@ -410,12 +412,13 @@ Children return locator / digest / finding and do not preview it.
 5. User-facing close. 2–6 sentences of the result, grounded in
    the audit digest when present (Checks + Metrics), else the
    user's headline / `report.txt`. Do not invent a metric. When
-   `policy.site` is true and the build ran, say the website has
-   been updated and link
-   `[report.html](<workspace>/report.html)` to open in a
-   browser. Do not name `html/<stem>.html` or
-   `journal/<stem>.md`. When the site was not built, do not
-   claim it was updated and do not name the markdown. Then
+   `policy.site` is true and the build ran or reported the site
+   current, run `python -m skore_skills site open`, say the
+   website has been updated, and include the printed `http://`
+   URL. Do not link `report.html`. Do not name
+   `html/<stem>.html` or `journal/<stem>.md`. When the site was
+   not built, do not claim it was updated and do not name the
+   markdown or a URL. Then
    G-REPORT-LOCATOR (the locator evaluate passed up, or
    `n/a — backend did not expose a locator`) first among
    tokens, then G-AUDIT-FINDING. Index strings, not the narrative.

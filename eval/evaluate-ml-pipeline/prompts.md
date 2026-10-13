@@ -402,10 +402,11 @@ violated.
 
 **Must do:**
 - Write 2–6 sentences of the evaluation result.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser, because
-  `policy.site` is true. Do not name the design-note markdown
-  or `html/01_baseline.html`. Do not say double-click or "no
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL, because `policy.site` is true. Do not
+  link `report.html`. Do not name the design-note markdown or
+  `html/01_baseline.html`. Do not say double-click or "no
   server".
 - Include the G-REPORT-LOCATOR value (or
   `n/a — backend did not expose a locator`) in the user-facing
@@ -593,11 +594,12 @@ violated.
 
 **Must do:**
 - After `put`, write a 2–6 sentence narrative, then surface
-  G-REPORT-LOCATOR first among tokens. Say the website has been
-  updated and name `report.html` at the workspace root as the
-  file to open in a browser, because the site is enabled. Do
-  not name the design-note markdown or `html/<stem>.html`. Do
-  not say double-click or "no server".
+  G-REPORT-LOCATOR first among tokens. Run
+  `python -m skore_skills site open` after the build. Say the
+  website has been updated and include the printed
+  `http://127.0.0.1` URL, because the site is enabled. Do not
+  link `report.html`. Do not name the design-note markdown or
+  `html/<stem>.html`. Do not say double-click or "no server".
 - Name this order. A no-tools turn that lists each command
   satisfies the step. Saying the command was not executed does
   not fail it. `loop notebooks` continues only on `skip`.

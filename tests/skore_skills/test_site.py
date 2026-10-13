@@ -1,8 +1,12 @@
-"""Tests for ``skore_skills site init`` and ``site build``."""
+"""Tests for ``skore_skills site init``, ``site build``, and ``site open``."""
 
 from __future__ import annotations
 
 import json
+import os
+import signal
+import socket
+import urllib.request
 from pathlib import Path
 
 import pytest
@@ -1339,3 +1343,197 @@ def test_inject_notebook_adds_a_trailing_newline() -> None:
     text = site_mod.inject_notebook("hello", page)
     assert text.startswith("hello\n")
     assert "## Notebook" in text
+
+
+def _built_site(tmp_path: Path) -> None:
+    html = tmp_path / "html"
+    html.mkdir()
+    (html / "index.html").write_text("home", encoding="utf-8")
+
+
+def test_site_open_requires_the_built_site(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Opening without ``html/index.html`` does not start a server."""
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise AssertionError("server started")
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(site_mod.subprocess, "Popen", fail)
+    result = CliRunner().invoke(cli, ["site", "open"])
+    assert result.exit_code != 0
+    assert "index.html" in result.output
+
+
+def test_site_open_reuses_a_live_server(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A second open prints the same URL and does not start another server."""
+    _built_site(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    alive: set[int] = set()
+    spawned: list[int] = []
+
+    def spawn(directory: Path, port: int) -> int:
+        del directory
+        spawned.append(port)
+        alive.add(100)
+        return 100
+
+    monkeypatch.setattr(site_mod, "_spawn_server", spawn)
+    monkeypatch.setattr(site_mod, "_pid_alive", lambda pid: pid in alive)
+    first = CliRunner().invoke(cli, ["site", "open"])
+    second = CliRunner().invoke(cli, ["site", "open"])
+    url = f"http://127.0.0.1:{spawned[0]}/"
+    assert first.exit_code == 0, first.output
+    assert first.output.strip() == url
+    assert second.output.strip() == url
+    assert spawned == [spawned[0]]
+    alive.clear()
+    third = CliRunner().invoke(cli, ["site", "open"])
+    assert third.output.strip().startswith("http://127.0.0.1:")
+    assert len(spawned) == 2
+
+
+def test_html_server_is_local_and_serves_only_html(tmp_path: Path) -> None:
+    """The listener is bound to ``127.0.0.1`` and cannot read the workspace."""
+    html = tmp_path / "html"
+    html.mkdir()
+    (html / "index.html").write_text("home", encoding="utf-8")
+    (tmp_path / "secret.txt").write_text("nope", encoding="utf-8")
+    bound = site_mod.html_server(html, 0)
+    assert bound.server_address[0] == "127.0.0.1"
+    bound.server_close()
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    pid = site_mod._spawn_server(html, port)
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=2) as response:
+            assert response.read() == b"home"
+        with socket.create_connection(("127.0.0.1", port), timeout=2) as client:
+            client.sendall(b"GET /../secret.txt HTTP/1.0\r\nHost: 127.0.0.1\r\n\r\n")
+            payload = b""
+            while chunk := client.recv(4096):
+                payload += chunk
+        assert b"nope" not in payload
+    finally:
+        os.kill(pid, signal.SIGTERM)
+
+
+def test_spawn_server_stops_when_the_port_stays_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A server that never accepts connections is killed."""
+    seen: dict[str, object] = {}
+
+    class Proc:
+        pid = 5
+
+        def kill(self) -> None:
+            seen["killed"] = True
+
+    def popen(argv: list[str], **kwargs: object) -> Proc:
+        seen["argv"] = argv
+        seen["new_session"] = kwargs["start_new_session"]
+        return Proc()
+
+    def fail(port: int) -> None:
+        del port
+        raise RuntimeError(site_mod.SERVER_DID_NOT_START)
+
+    monkeypatch.setattr(site_mod.subprocess, "Popen", popen)
+    monkeypatch.setattr(site_mod, "_wait_until_listening", fail)
+    with pytest.raises(RuntimeError, match="did not start"):
+        site_mod._spawn_server(Path("html"), 9)
+    assert seen["killed"] is True
+    assert seen["new_session"] is True
+    argv = seen["argv"]
+    assert isinstance(argv, list)
+    assert "serve_html" in argv[2]
+    assert argv[-2:] == ["html", "9"]
+
+
+def test_wait_until_listening_times_out(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A closed port does not count as a running report server."""
+    monkeypatch.setattr(site_mod.time, "sleep", lambda seconds: None)
+    with socket.socket() as held:
+        held.bind(("127.0.0.1", 0))
+        port = held.getsockname()[1]
+        with pytest.raises(RuntimeError, match="did not start"):
+            site_mod._wait_until_listening(port)
+
+
+def test_free_port_skips_a_taken_port_and_reports_when_none_remain(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The preferred port is skipped when it is already bound."""
+    with socket.socket() as held:
+        held.bind(("127.0.0.1", 0))
+        preferred = held.getsockname()[1]
+        chosen = site_mod._free_port(preferred)
+    assert chosen != preferred
+    monkeypatch.setattr(site_mod, "_port_is_free", lambda port: False)
+    with pytest.raises(RuntimeError, match="no free port"):
+        site_mod._free_port(18000)
+
+
+def test_site_port_stays_in_range(tmp_path: Path) -> None:
+    """Each workspace maps to one port in the local range."""
+    port = site_mod.site_port(tmp_path)
+    assert port == site_mod.site_port(tmp_path)
+    assert site_mod.PORT_BASE <= port < site_mod.PORT_BASE + site_mod.PORT_SPAN
+
+
+def test_pid_alive(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A recorded server pid is treated as live only while the process exists."""
+    assert not site_mod._pid_alive(0)
+    assert site_mod._pid_alive(os.getpid())
+    assert not site_mod._pid_alive(2**31 - 1)
+
+    def deny(pid: int, sig: int) -> None:
+        del pid, sig
+        raise PermissionError
+
+    def missing(pid: int, sig: int) -> None:
+        del pid, sig
+        raise ProcessLookupError
+
+    monkeypatch.setattr(site_mod.os, "kill", deny)
+    assert site_mod._posix_pid_alive(1)
+    monkeypatch.setattr(site_mod.os, "kill", missing)
+    assert not site_mod._posix_pid_alive(1)
+
+    class Kernel:
+        def __init__(self) -> None:
+            self.closed: list[int] = []
+
+        def OpenProcess(self, access: int, inherit: bool, pid: int) -> int:
+            del access, inherit
+            return 7 if pid == 5 else 0
+
+        def CloseHandle(self, handle: int) -> None:
+            self.closed.append(handle)
+
+    kernel = Kernel()
+    assert site_mod._windows_pid_alive(5, kernel)
+    assert kernel.closed == [7]
+    assert not site_mod._windows_pid_alive(4, kernel)
+
+
+def test_server_state_ignores_unusable_values(tmp_path: Path) -> None:
+    """Saved server state ignores missing and unusable pid values."""
+    state = tmp_path / "state.json"
+    assert site_mod._read_state(state) is None
+    state.write_text("{", encoding="utf-8")
+    assert site_mod._read_state(state) is None
+    state.write_text("[]\n", encoding="utf-8")
+    assert site_mod._read_state(state) is None
+    assert site_mod._state_pid(None) is None
+    assert site_mod._state_pid({"pid": True}) is None
+    assert site_mod._state_pid({"pid": 4}) == 4
+    site_mod._write_state(tmp_path / "_build" / "site-server.json", {"pid": 4})
+    assert site_mod._read_state(tmp_path / "_build" / "site-server.json") == {"pid": 4}

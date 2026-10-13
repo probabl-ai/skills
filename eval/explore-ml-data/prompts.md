@@ -200,8 +200,9 @@
 
 **Must do:**
 - Write 2–6 sentences of EDA findings.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL. Do not link `report.html`. Do not
   name `data_analysis/data_analysis.md` or
   `html/data_analysis.html`. Do not say double-click or "no
   server".
@@ -244,9 +245,9 @@
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
-- Name `report.html` or `html/data_analysis.html` as if the
-  site was built.
-- Run `python -m skore_skills site build`.
+- Name `report.html`, `html/data_analysis.html`, or an
+  `http://127.0.0.1` URL as if the site was built.
+- Run `python -m skore_skills site build` or `site open`.
 
 ---
 
@@ -446,8 +447,9 @@
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after the md and
   before the continuation board.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL. Do not link `report.html`. Do not
   name `data_analysis.md` or `html/data_analysis.html`. Do not
   say double-click or "no server".
 - AskUserQuestion one pick, none recommended: Choose additional
@@ -754,8 +756,9 @@
 **Must do:**
 - After `data_analysis.md` and JOURNAL, name
   `python -m skore_skills site build --if-stale`.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL. Do not link `report.html`. Do not
   name `data_analysis.md` or `html/data_analysis.html`. Do not
   say double-click or "no server".
 - Then AskUserQuestion one pick, none recommended: Choose
@@ -867,11 +870,11 @@
 - After `data_analysis.md` and JOURNAL, load `add-python-package`
   for `mkdocs-material` and run `python -m skore_skills site build --if-stale`
   again.
-- After that retry succeeds, say the website has been updated
-  and name `report.html` at the workspace root as the file to
-  open in a browser. Do not name `data_analysis.md` or
-  `html/data_analysis.html`. Do not say double-click or "no
-  server".
+- After that retry succeeds, run `python -m skore_skills site
+  open`. Say the website has been updated and include the
+  printed `http://127.0.0.1` URL. Do not link `report.html`.
+  Do not name `data_analysis.md` or `html/data_analysis.html`.
+  Do not say double-click or "no server".
 - Then AskUserQuestion one pick, none recommended: Choose
   additional pre-defined option; Provide a query to extend the
   exploration; Automatic exploration related to the data and

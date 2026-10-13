@@ -15,8 +15,9 @@
 **Must do:**
 - Run `python -m skore_skills site init`.
 - Run `python -m skore_skills site build`.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL. Do not link `report.html`. Do not
   say double-click or "no server".
 
 **Must NOT do:**
@@ -39,8 +40,9 @@
 **Must do:**
 - Run `python -m skore_skills site build`.
 - Do not run `site init` again.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL. Do not link `report.html`. Do not
   say double-click or "no server".
 
 **Must NOT do:**
@@ -104,8 +106,9 @@
 **Must do:**
 - Load `add-python-package` for `mkdocs-material`, then run
   `python -m skore_skills site build` again.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
+- Run `python -m skore_skills site open` after the build. Say
+  the website has been updated and include the printed
+  `http://127.0.0.1` URL. Do not link `report.html`. Do not
   say double-click or "no server".
 
 **Must NOT do:**
@@ -130,10 +133,11 @@
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` once before
   the user decision.
-- Say the website has been updated and link `report.html` at
-  the workspace root as the file to open in a browser, whether
-  MkDocs rebuilt or reported the site current. Do not say
-  double-click or "no server".
+- Run `python -m skore_skills site open` whether MkDocs rebuilt
+  or reported the site current. Say the website has been
+  updated and include the printed `http://127.0.0.1` URL. Do
+  not link `report.html`. Do not say double-click or "no
+  server".
 
 **Must NOT do:**
 - Rebuild between individual Markdown edits in the same batch.

@@ -156,7 +156,7 @@ def notebook_fill(src: Path, out: Path | None, html: bool) -> None:
 
 @cli.group("site")
 def site_group() -> None:
-    """Initialize and build an offline MkDocs documentation site."""
+    """Initialize, build, and serve an offline MkDocs documentation site."""
 
 
 @site_group.command("init")
@@ -197,6 +197,18 @@ def site_build(if_stale: bool) -> None:
     try:
         click.echo(build_site(Path.cwd(), if_stale=if_stale))
     except (ValueError, FileNotFoundError, RuntimeError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
+
+@site_group.command("open")
+def site_open() -> None:
+    """Serve ``html/`` on localhost and print its URL."""
+    from skore_skills.site import open_site
+
+    _reexec_library_command(["site", "open"])
+    try:
+        click.echo(open_site(Path.cwd()))
+    except (FileNotFoundError, RuntimeError) as exc:
         raise click.ClickException(str(exc)) from exc
 
 

@@ -166,8 +166,9 @@ workspace, workflow stages publish them at completed checkpoints before
 the next user decision. Python percent files execute once: that run can
 write the notebook, optional notebook HTML, and audit digest together.
 Site checkpoints rebuild only when Markdown, notebook viewers, figures,
-or result viewers changed. Unset or disabled notebook/site policies do
-not enable these artifacts automatically.
+or result viewers changed. The same checkpoints serve that site at one
+local `http://127.0.0.1` URL. Unset or disabled notebook/site policies
+do not enable these artifacts automatically.
 
 ### Compatibility and removed skills
 

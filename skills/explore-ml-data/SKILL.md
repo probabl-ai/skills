@@ -320,9 +320,10 @@ not write or execute the notebook.
    (agent) and build once more. Do not `pixi add` / `uv add`.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the gate.
-   When the build ran or reported the site current, say the
-   website has been updated and to open `report.html` in a
-   browser. Do not name `data_analysis.md` or
+   When the build ran or reported the site current, run
+   `python -m skore_skills site open`. Say the website has been
+   updated and include the printed `http://` URL. Do not link
+   `report.html`. Do not name `data_analysis.md` or
    `html/data_analysis.html`. Do not
    `notebook fill` or `git end-turn` on this preview. Then
    **AskUserQuestion** one pick. None is recommended or
@@ -471,18 +472,20 @@ commands in that message.
    (shape, targets, leakage or duplicates that shape modelling).
    Do not invent columns. Do not paste `data_analysis.md`.
 2. **Open these** — when `site build` ran or reported the site
-   current, say the website has been updated and link
-   `[report.html](<workspace>/report.html)` to open in a
-   browser. Do not name the markdown or
+   current, run `python -m skore_skills site open`. Say the
+   website has been updated and include the printed `http://`
+   URL. Do not link `report.html`. Do not name the markdown or
    `html/data_analysis.html`. When the site was not built, do
-   not claim it was updated and do not name the markdown.
+   not claim it was updated and do not name the markdown or a
+   URL.
    No Skore locator on this stage.
 3. **Normalized tokens second** — none for EDA (no
    G-REPORT-LOCATOR / G-AUDIT-FINDING).
 
 This skill owns the close. Keep exploring stays a 1–2 sentence
-summary (when a build ran: the website has been updated, open
-`report.html` in a browser); it never reaches fill /
+summary (when a build ran: run `site open`, then the website
+has been updated and the printed `http://` URL); it never
+reaches fill /
 `git end-turn`.
 
 If `policy.notebooks` is true, `export-ml-notebook` is installed,
@@ -503,10 +506,11 @@ disk. Skip in one line otherwise. If `site build` errors with
 `mkdocs-material` (agent) and build once more. Do not
 `pixi add` / `uv add`. If that skill is missing, or the retry
 still fails, name the error in one line. Name a build error;
-do not fail the data-analysis turn. When the build ran, say
-the website has been updated and name `report.html` (open in
-a browser). Do not name the markdown or
-`html/data_analysis.html`.
+do not fail the data-analysis turn. When the build ran or
+reported the site current, run `python -m skore_skills site
+open`, say the website has been updated, and include the
+printed `http://` URL. Do not link `report.html`. Do not name
+the markdown or `html/data_analysis.html`.
 
 `python -m skore_skills git end-turn --stage data_analysis`. If
 JSON `action` is `invoke`, load `persist-ml-git` only if

@@ -97,12 +97,12 @@ After `smoke run` `proceed`, before the Evaluate menu. 2–6
 sentences: what was declared, that smoke is green, the learner.
 Ground them in Method. Do not invent a metric. No locator yet.
 
-Then links. When `site build` ran this turn, say the website
-has been updated and link
-`[report.html](<workspace>/report.html)` to open in a browser.
-Do not name the design-note markdown or `html/<stem>.html`.
-Otherwise do not claim the website was updated and do not name
-the markdown. Still link
+Then links. When `site build` ran or reported the site current,
+run `python -m skore_skills site open`, say the website has been
+updated, and include the printed `http://` URL. Do not link
+`report.html`. Do not name the design-note markdown or
+`html/<stem>.html`. Otherwise do not claim the website was
+updated and do not name the markdown or a URL. Still link
 `[experiments/<stem>.py](experiments/<stem>.py)`.
 
 ## Entry contracts
