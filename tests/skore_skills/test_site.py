@@ -6,6 +6,7 @@ import json
 import os
 import signal
 import socket
+import threading
 import urllib.request
 from pathlib import Path
 
@@ -1394,6 +1395,39 @@ def test_site_open_reuses_a_live_server(
     third = CliRunner().invoke(cli, ["site", "open"])
     assert third.output.strip().startswith("http://127.0.0.1:")
     assert len(spawned) == 2
+
+
+def test_serve_html_answers_on_localhost(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The detached process entrypoint serves the html directory."""
+    html = tmp_path / "html"
+    html.mkdir()
+    (html / "index.html").write_text("home", encoding="utf-8")
+    real = site_mod.html_server
+    started = threading.Event()
+    servers: list[object] = []
+
+    def tracking(directory: Path, port: int):
+        server = real(directory, port)
+        servers.append(server)
+        started.set()
+        return server
+
+    monkeypatch.setattr(site_mod, "html_server", tracking)
+    thread = threading.Thread(
+        target=site_mod.serve_html, args=(str(html), 0), daemon=True
+    )
+    thread.start()
+    assert started.wait(2)
+    server = servers[0]
+    try:
+        port = server.server_address[1]
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=2) as response:
+            assert response.read() == b"home"
+    finally:
+        server.shutdown()
+        thread.join(timeout=2)
 
 
 def test_html_server_is_local_and_serves_only_html(tmp_path: Path) -> None:
