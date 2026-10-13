@@ -132,8 +132,8 @@ first, then the risks the user may push back on). After the note
 is populated, and before **Approve** / **Modify** / **Stop**, run
 `python -m skore_skills site build --if-stale` when site policy
 is true. In that same question, say the website has been
-updated and show the absolute `file://` URL of `report.html`
-that `site build` printed. Do not name the
+updated and paste the `file://` line from that output
+verbatim. Do not name the
 design-note markdown or `html/<stem>.html`. An empty
 field means the note does not state that fact: say
 the note is not ready for approval and offer to populate it;
@@ -412,8 +412,8 @@ Children return locator / digest / finding and do not preview it.
    the audit digest when present (Checks + Metrics), else the
    user's headline / `report.txt`. Do not invent a metric. When
    `policy.site` is true and the build ran, say the website has
-   been updated and show the absolute `file://` URL of
-   `report.html` that `site build` printed. Do not name
+   been updated and paste the `file://` line from that output
+   verbatim. Do not name
    `html/<stem>.html` or
    `journal/<stem>.md`. When the site was not built, do not
    claim it was updated and do not name the markdown. Then

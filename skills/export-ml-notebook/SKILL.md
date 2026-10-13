@@ -128,9 +128,9 @@ reading the table.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the
    fill, and do not claim the website was updated. When the
-   build ran, say the website has been updated and show the
-   absolute `file://` URL of `report.html` that `site build`
-   printed. Do not name the markdown file
+   build ran, say the website has been updated and paste the
+   `file://` line from that output verbatim. Do not name the
+   markdown file
    or the HTML viewer path. Do not quote the CLI.
 
 ## Stop conditions

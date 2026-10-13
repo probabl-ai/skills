@@ -470,15 +470,15 @@
 **Assumed workspace state:**
 - `frame show` asks for `generalize_to`.
 - `policy.site` is true and `export-ml-site` is installed.
+- When `site build` runs, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - Write the answered Modeling decisions cell.
 - Run `python -m skore_skills site build --if-stale` after the
   Markdown batch and before the next framing question.
-- Say the website has been updated and show the absolute
-  `file://` URL of `report.html` that `site build` printed. Do
-  not name `journal/JOURNAL.md`. Do not say double-click or
-  "no server".
+- Say the website has been updated and include
+  `file:///workspace/report.html`. Do not name
+  `journal/JOURNAL.md`. Do not say double-click or "no server".
 
 **Must NOT do:**
 - Run `policy set` to turn notebooks or site on. Building the

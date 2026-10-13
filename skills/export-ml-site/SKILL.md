@@ -14,12 +14,12 @@ metadata:
 ## Human-facing prose
 
 Details: `setup-workspace` `references/human_facing_prose.md`.
-Tell the user the website has been updated and show the
-absolute `file://` URL of `report.html` that `site build`
-printed, so a click opens it in a browser. Do not link a
-workspace-relative path. Do not say double-click or "no
-server". Do not name the markdown file that was edited. Do not
-quote `site init` / `site build` as something they should run.
+Tell the user the website has been updated and paste the
+`file://` line from that output verbatim, so a click opens the
+browser. Do not describe the line. Do not link a
+workspace-relative path. Do not say double-click or
+"no server". Do not name the markdown file that was edited. Do
+not quote `site init` / `site build` as something they should run.
 
 The site is a derived index of files other skills already write.
 Markdown is the report: its figures, TableReport HTML, and existing
@@ -91,10 +91,9 @@ the table.
    retry still fails, name the error in one line. Name a build
    error; the markdown sources remain the record. Do not claim
    the website was updated. When the build succeeds, tell the
-   user the website has been updated and show the absolute
-   `file://` URL of `report.html` that `site build` printed. Do
-   not say double-click or "no server". Do not name the
-   markdown file or a stage
+   user the website has been updated and paste the `file://`
+   line from that output verbatim. Do not say double-click or
+   "no server". Do not name the markdown file or a stage
    page (`html/data_analysis.html`, `html/<stem>.html`). Stage
    owners that just ran `site build` say that same line in the
    User-facing close.
@@ -114,8 +113,8 @@ that AskUserQuestion / consent stop — not only at End of turn.
    error in one line. Name a build error; do not fail the gate.
 2. In the same message as the gate, when the build ran or
    reported the site current: the website has been updated, and
-   show the absolute `file://` URL of `report.html` that
-   `site build` printed. Do not name the `.md` path
+   paste the `file://` line from that output verbatim. Do not
+   name the `.md` path
    or the stage page. A file link is an addition, never the
    context. If the build failed, name the error in one line and
    do not claim the website was updated.

@@ -347,8 +347,8 @@ only on `skip`.
    turn.
 5. Checkpoint, below. When `policy.site` is true and the
    checkpoint build succeeded, say the website has been updated
-   and show the absolute `file://` URL of `report.html` that
-   `site build` printed. Do not name the
+   and paste the `file://` line from that output verbatim. Do
+   not name the
    design-note markdown. When the site was not built, do not
    claim it was updated and do not name the markdown.
 6. `python -m skore_skills git end-turn --stage evaluate`. If
@@ -364,8 +364,8 @@ ran, ground the story in its Checks and Metrics. Do not invent
 a metric.
 
 Links: when `policy.site` is true and the build succeeded, say
-the website has been updated and show the absolute `file://`
-URL of `report.html` that `site build` printed.
+the website has been updated and paste the `file://` line from
+that output verbatim.
 Do not name `html/<stem>.html` or `journal/<stem>.md`. When the
 site was not built, do not claim it was updated and do not name
 the markdown.

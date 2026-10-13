@@ -399,14 +399,15 @@ violated.
 - These results are already known. Name the close from them.
   Do not stop for another lookup, and do not invent a second
   metric.
+- When `site build` runs, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - Write 2–6 sentences of the evaluation result.
-- Say the website has been updated and show the absolute
-  `file://` URL of `report.html` that `site build` printed,
-  because `policy.site` is true. Do not name the design-note
-  markdown or `html/01_baseline.html`. Do not say double-click
-  or "no server".
+- Say the website has been updated and include
+  `file:///workspace/report.html`, because `policy.site` is
+  true. Do not name the design-note markdown or
+  `html/01_baseline.html`. Do not say double-click or "no
+  server".
 - Include the G-REPORT-LOCATOR value (or
   `n/a — backend did not expose a locator`) in the user-facing
   close (first among tokens, after the narrative). When the
@@ -590,14 +591,14 @@ violated.
 - `status.setup.pending` is empty.
 - This is a standalone evaluate invocation.
 - Notebooks and site are enabled.
+- When `site build` runs, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - After `put`, write a 2–6 sentence narrative, then surface
   G-REPORT-LOCATOR first among tokens. Say the website has been
-  updated and show the absolute `file://` URL of `report.html`
-  that `site build` printed, because the site is enabled. Do
-  not name the design-note markdown or `html/<stem>.html`. Do
-  not say double-click or "no server".
+  updated and include `file:///workspace/report.html`, because
+  the site is enabled. Do not name the design-note markdown or
+  `html/<stem>.html`. Do not say double-click or "no server".
 - Name this order. A no-tools turn that lists each command
   satisfies the step. Saying the command was not executed does
   not fail it. `loop notebooks` continues only on `skip`.

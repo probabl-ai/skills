@@ -197,14 +197,14 @@
 - `jupytext`, `nbformat`, and `nbconvert` are installed.
 - The completed `materialize.py` run already wrote the artifacts,
   and fill already wrote a source-current `.ipynb` and `.nb.html`.
+- When `site build` runs, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - Write 2–6 sentences of EDA findings.
-- Say the website has been updated and show the absolute
-  `file://` URL of `report.html` that `site build` printed. Do
-  not name `data_analysis/data_analysis.md` or
-  `html/data_analysis.html`. Do not say double-click or "no
-  server".
+- Say the website has been updated and include
+  `file:///workspace/report.html`. Do not name
+  `data_analysis/data_analysis.md` or `html/data_analysis.html`.
+  Do not say double-click or "no server".
 - Do not execute `data_analysis.py` again on Close.
 - Run `python -m skore_skills site build --if-stale` before git
   end-turn; it may report that the site is current.
@@ -442,14 +442,15 @@
 - `policy.site` is true.
 - `export-ml-site` is installed.
 - The user has not picked Close.
+- When `site build` runs, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after the md and
   before the continuation board.
-- Say the website has been updated and show the absolute
-  `file://` URL of `report.html` that `site build` printed. Do
-  not name `data_analysis.md` or `html/data_analysis.html`. Do
-  not say double-click or "no server".
+- Say the website has been updated and include
+  `file:///workspace/report.html`. Do not name `data_analysis.md`
+  or `html/data_analysis.html`. Do not say double-click or "no
+  server".
 - AskUserQuestion one pick, none recommended: Choose additional
   pre-defined option; Provide a query to extend the exploration;
   Automatic exploration related to the data and problem;
@@ -750,14 +751,15 @@
 - IPython is available.
 - `policy.site` is true.
 - `export-ml-site` is installed.
+- When `site build` runs, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - After `data_analysis.md` and JOURNAL, name
   `python -m skore_skills site build --if-stale`.
-- Say the website has been updated and show the absolute
-  `file://` URL of `report.html` that `site build` printed. Do
-  not name `data_analysis.md` or `html/data_analysis.html`. Do
-  not say double-click or "no server".
+- Say the website has been updated and include
+  `file:///workspace/report.html`. Do not name `data_analysis.md`
+  or `html/data_analysis.html`. Do not say double-click or "no
+  server".
 - Then AskUserQuestion one pick, none recommended: Choose
   additional pre-defined option; Provide a query to extend the
   exploration; Automatic exploration related to the data and
@@ -862,16 +864,16 @@
 - `add-python-package` is installed.
 - `python -m skore_skills site build --if-stale` printed
   `mkdocs-material is required; add it with add-python-package`.
+- When the retry succeeds, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - After `data_analysis.md` and JOURNAL, load `add-python-package`
   for `mkdocs-material` and run `python -m skore_skills site build --if-stale`
   again.
 - After that retry succeeds, say the website has been updated
-  and show the absolute `file://` URL of `report.html` that
-  `site build` printed. Do not name `data_analysis.md` or
-  `html/data_analysis.html`. Do not say double-click or "no
-  server".
+  and include `file:///workspace/report.html`. Do not name
+  `data_analysis.md` or `html/data_analysis.html`. Do not say
+  double-click or "no server".
 - Then AskUserQuestion one pick, none recommended: Choose
   additional pre-defined option; Provide a query to extend the
   exploration; Automatic exploration related to the data and

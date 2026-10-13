@@ -321,9 +321,8 @@ not write or execute the notebook.
    If that skill is missing, or the retry still fails, name the
    error in one line. Name a build error; do not fail the gate.
    When the build ran or reported the site current, say the
-   website has been updated and show the absolute `file://`
-   URL of `report.html` that `site build` printed. Do not name
-   `data_analysis.md` or
+   website has been updated and paste the `file://` line from
+   that output verbatim. Do not name `data_analysis.md` or
    `html/data_analysis.html`. Do not
    `notebook fill` or `git end-turn` on this preview. Then
    **AskUserQuestion** one pick. None is recommended or
@@ -472,9 +471,9 @@ commands in that message.
    (shape, targets, leakage or duplicates that shape modelling).
    Do not invent columns. Do not paste `data_analysis.md`.
 2. **Open these** — when `site build` ran or reported the site
-   current, say the website has been updated and show the
-   absolute `file://` URL of `report.html` that `site build`
-   printed. Do not name the markdown or
+   current, say the website has been updated and paste the
+   `file://` line from that output verbatim. Do not name the
+   markdown or
    `html/data_analysis.html`. When the site was not built, do
    not claim it was updated and do not name the markdown.
    No Skore locator on this stage.
@@ -483,7 +482,7 @@ commands in that message.
 
 This skill owns the close. Keep exploring stays a 1–2 sentence
 summary (when a build ran: the website has been updated and
-the absolute `file://` URL of `report.html`); it never reaches fill /
+the pasted `file://` line); it never reaches fill /
 `git end-turn`.
 
 If `policy.notebooks` is true, `export-ml-notebook` is installed,
@@ -505,9 +504,8 @@ disk. Skip in one line otherwise. If `site build` errors with
 `pixi add` / `uv add`. If that skill is missing, or the retry
 still fails, name the error in one line. Name a build error;
 do not fail the data-analysis turn. When the build ran, say
-the website has been updated and show the absolute `file://`
-URL of `report.html` that `site build` printed. Do not name the
-markdown or
+the website has been updated and paste the `file://` line from
+that output verbatim. Do not name the markdown or
 `html/data_analysis.html`.
 
 `python -m skore_skills git end-turn --stage data_analysis`. If

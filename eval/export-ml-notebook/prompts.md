@@ -80,16 +80,17 @@
 - `add-python-package` is installed.
 - `policy.site` is true.
 - `export-ml-site` is installed.
+- When `site build` runs, its output ends with `file:///workspace/report.html`.
 
 **Must do:**
 - Load `add-python-package` for `nbconvert`.
 - Run `python -m skore_skills notebook fill data_analysis/data_analysis.py --html`.
 - Leave code-cell outputs empty.
 - Run `python -m skore_skills site build --if-stale`.
-- Say the website has been updated and show the absolute
-  `file://` URL of `report.html` that `site build` printed. Do
-  not name `data_analysis.md` or the HTML viewer path. Do not
-  say double-click or "no server".
+- Say the website has been updated and include
+  `file:///workspace/report.html`. Do not name `data_analysis.md`
+  or the HTML viewer path. Do not say double-click or "no
+  server".
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
