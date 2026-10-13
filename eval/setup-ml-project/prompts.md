@@ -17,8 +17,10 @@
   after listing the rows).
 - Run `status` and `env detect` before any write.
 - AskUserQuestion multi-select of installed pieces (env,
-  workspace, editable, git). The question's last line is exactly: Select each
-  one you want.
+  workspace, editable, git). The preamble starts by saying that
+  before any modeling, the workspace should be set up. Do not
+  say the order the selected pieces will run. The question's
+  last line is exactly: Select each one you want.
   Do not auto-run all four before the answer.
 - In that same opening phase, before `env init`, `scaffold`,
   package install, or `git init`, ask the unrecorded choices:
@@ -43,6 +45,8 @@
 - Write a runnable baseline experiment.
 - Run `git push`.
 - Omit a setup box because the folder is empty.
+- In the setup multi-select, state the order the selected pieces
+  will run.
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.
@@ -68,9 +72,11 @@
 **Must do:**
 - Read `status` first and do not offer Python environment.
 - Ask the multi-select with workspace layout, editable install,
-  and Git. The question's last line is exactly: Select each one you want. Editable is on
-  the board because workspace is pending and editable is still
-  missing.
+  and Git. The preamble starts by saying that before any
+  modeling, the workspace should be set up. Do not say the order
+  the selected pieces will run. The question's last line is
+  exactly: Select each one you want. Editable is on the board
+  because workspace is pending and editable is still missing.
 - Before any setup command, persist
   `python -m skore_skills policy set setup.<piece> declined` for
   each piece the user does not select.
@@ -93,6 +99,8 @@
 - Offer a piece whose `status.setup` value is `done`.
 - Persist `setup.editable` done when `env add --editable --execute`
   exits non-zero.
+- In the setup multi-select, state the order the selected pieces
+  will run.
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.
@@ -113,8 +121,11 @@
 
 **Must do:**
 - Ask the multi-select of **installed** pieces only. The
-  question's last line is exactly: Select each one you want.
-  Omit git because `setup-git` is not installed.
+  preamble starts by saying that before any modeling, the
+  workspace should be set up. Do not say the order the selected
+  pieces will run. The question's last line is exactly: Select
+  each one you want. Omit git because `setup-git` is not
+  installed.
 - Do not ask about automatic commits.
 - In the opening phase, ask the environment manager, whether we
   manage the environment, and the Python import name, then
@@ -131,6 +142,8 @@
   missing skill.
 - Invent the `setup-git` procedure from memory.
 - Treat the missing skill as an error that aborts setup.
+- In the setup multi-select, state the order the selected pieces
+  will run.
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.
@@ -149,8 +162,11 @@
   workspace, editable, and git.
 
 **Must do:**
-- Ask the multi-select with every installed box. The question's
-  last line is exactly: Select each one you want.
+- Ask the multi-select with every installed box. The preamble
+  starts by saying that before any modeling, the workspace
+  should be set up. Do not say the order the selected pieces
+  will run. The question's last line is exactly: Select each one
+  you want.
 - Skip `setup-python-env` in one line because the user did not
   select it.
 - Persist `python -m skore_skills policy set setup.env declined`
@@ -166,6 +182,8 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - Run `env init` anyway.
 - Invent the env manager procedure from memory.
+- In the setup multi-select, state the order the selected pieces
+  will run.
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.
@@ -184,6 +202,10 @@
   editable.
 
 **Must do:**
+- Ask the multi-select. The preamble starts by saying that
+  before any modeling, the workspace should be set up. Do not
+  say the order the selected pieces will run. The question's
+  last line is exactly: Select each one you want.
 - Stop in one line: editable needs `src/` or a selected workspace
   skill. Do not scaffold from this meta.
 - Do not ask the environment manager, import name, or automatic
@@ -195,6 +217,8 @@
 - Run `env add --editable`.
 - Ask the import name or the environment-manager question after
   the stop.
+- In the setup multi-select, state the order the selected pieces
+  will run.
 
 ---
 
@@ -212,8 +236,11 @@
 - Every `skills` entry is `true`.
 
 **Must do:**
-- Ask the multi-select with every installed box. The question's
-  last line is exactly: Select each one you want.
+- Ask the multi-select with every installed box. The preamble
+  starts by saying that before any modeling, the workspace
+  should be set up. Do not say the order the selected pieces
+  will run. The question's last line is exactly: Select each one
+  you want.
 - Do not ask which environment manager to use.
 - Persist `python -m skore_skills policy set env_manager pixi`
   before loading `setup-python-env`.
@@ -226,6 +253,8 @@
   names pixi.
 - Run `env init` or `scaffold` before the remaining opening
   questions are answered.
+- In the setup multi-select, state the order the selected pieces
+  will run.
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.

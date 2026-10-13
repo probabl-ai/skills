@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "0cda7e33730e55cbcb796728816a238d93102b7e9b3202d9f3d1521fdcc74366",
+  "catalog_hash": "dfd2e762710d5f3aef1ab10c9941a1c150e7e9aebbd53c69418957aef4319c05",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -138,7 +138,7 @@
       "summary": "Ask setup choices up front, then coordinate workspace, environment, and git.",
       "category": "meta",
       "subcategory": null,
-      "hash": "e0e7d3f5fa31c910158e8d1908b25ed170105a1dc269b3dd5264d3399881cdad"
+      "hash": "c945af98810ab524fe6e94391fa644024e5f03b6dc5561b7c4e2bd11e39099a3"
     },
     {
       "id": "setup-git",

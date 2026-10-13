@@ -5,6 +5,8 @@ description: >
   or bootstrap a workspace, or when a pipeline stage finds
   status.setup.pending non-empty. Ask only those pending pieces.
   The question tells the user to select each piece they want.
+  It starts by saying that before any modeling, the workspace
+  should be set up. Do not say the order the pieces will run.
   Do not offer a piece that is already done or declined.
   Then, in that same opening phase, ask the environment manager,
   whether we manage the env, the import name, and git autocommit
@@ -73,11 +75,12 @@ Then step 7 in order env, workspace, editable, git, then step 8.
    offer them. Do not ask their environment manager, whether we
    manage the env, import name, or automatic commits again.
 3. **AskUserQuestion** with `allow_multiple` for `setup.pending`
-   only. Say first, in 2–4 lines, what the answer authorizes
-   (which pieces run, in which order) and the `status` facts
-   each box rests on — detected manager, `has_src`, git
-   presence, and which pieces are already recorded. A file link
-   is an addition, never the context. Include a box only when
+   only. Start by saying that before any modeling, the workspace
+   should be set up. Then the `status` facts each box rests on —
+   detected manager, `has_src`, git presence, and which pieces
+   are already recorded. Stay within 2–4 lines. Do not say the
+   order the selected pieces will run. A file link is an
+   addition, never the context. Include a box only when
    **that** id is true **and** the piece is `missing`. Option
    labels (user-visible, no ids):
 
