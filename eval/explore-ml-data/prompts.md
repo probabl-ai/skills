@@ -200,9 +200,9 @@
 
 **Must do:**
 - Write 2–6 sentences of EDA findings.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
-  name `data_analysis/data_analysis.md` or
+- Say the website has been updated and show the absolute
+  `file://` URL of `report.html` that `site build` printed. Do
+  not name `data_analysis/data_analysis.md` or
   `html/data_analysis.html`. Do not say double-click or "no
   server".
 - Do not execute `data_analysis.py` again on Close.
@@ -446,10 +446,10 @@
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after the md and
   before the continuation board.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
-  name `data_analysis.md` or `html/data_analysis.html`. Do not
-  say double-click or "no server".
+- Say the website has been updated and show the absolute
+  `file://` URL of `report.html` that `site build` printed. Do
+  not name `data_analysis.md` or `html/data_analysis.html`. Do
+  not say double-click or "no server".
 - AskUserQuestion one pick, none recommended: Choose additional
   pre-defined option; Provide a query to extend the exploration;
   Automatic exploration related to the data and problem;
@@ -754,10 +754,10 @@
 **Must do:**
 - After `data_analysis.md` and JOURNAL, name
   `python -m skore_skills site build --if-stale`.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
-  name `data_analysis.md` or `html/data_analysis.html`. Do not
-  say double-click or "no server".
+- Say the website has been updated and show the absolute
+  `file://` URL of `report.html` that `site build` printed. Do
+  not name `data_analysis.md` or `html/data_analysis.html`. Do
+  not say double-click or "no server".
 - Then AskUserQuestion one pick, none recommended: Choose
   additional pre-defined option; Provide a query to extend the
   exploration; Automatic exploration related to the data and
@@ -868,8 +868,8 @@
   for `mkdocs-material` and run `python -m skore_skills site build --if-stale`
   again.
 - After that retry succeeds, say the website has been updated
-  and name `report.html` at the workspace root as the file to
-  open in a browser. Do not name `data_analysis.md` or
+  and show the absolute `file://` URL of `report.html` that
+  `site build` printed. Do not name `data_analysis.md` or
   `html/data_analysis.html`. Do not say double-click or "no
   server".
 - Then AskUserQuestion one pick, none recommended: Choose

@@ -413,10 +413,11 @@ and `frame show` already returned `proceed` with a non-null
   Method snapshot (`pipeline/` or `pipeline.html`) and before
   the Evaluate question, inside that build.
 - Keep the post-loop `site build` for the same unevaluated report.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser when each
-  site build runs. Do not name the design-note markdown or
-  `html/<stem>.html`. Do not say double-click or "no server".
+- Say the website has been updated and show the absolute
+  `file://` URL of `report.html` that `site build` printed when
+  each site build runs. Do not name the design-note markdown
+  or `html/<stem>.html`. Do not say double-click or "no
+  server".
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -505,10 +506,10 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after the
   note is populated and before Approve / Modify / Stop.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
-  name `journal/01_dummy.md` or `html/01_dummy.html`. Do not
-  say double-click or "no server".
+- Say the website has been updated and show the absolute
+  `file://` URL of `report.html` that `site build` printed. Do
+  not name `journal/01_dummy.md` or `html/01_dummy.html`. Do
+  not say double-click or "no server".
 - State the design question, planned change, and recorded risk
   inline, then ask Approve / Modify / Stop and stop there.
 
@@ -656,9 +657,9 @@ and `frame show` already returned `proceed` with a non-null
 **Must do:**
 - Run `python -m skore_skills site build --if-stale` after
   record-outcome and before the user-facing close.
-- Say the website has been updated and name the freshly built
-  `report.html` at the workspace root as the file to open in a
-  browser. Do not name `journal/01_baseline.md` or
+- Say the website has been updated and show the absolute
+  `file://` URL of the freshly built `report.html` that `site
+  build` printed. Do not name `journal/01_baseline.md` or
   `html/01_baseline.html`. Do not say double-click or "no
   server".
 

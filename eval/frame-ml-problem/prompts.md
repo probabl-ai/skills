@@ -475,10 +475,10 @@
 - Write the answered Modeling decisions cell.
 - Run `python -m skore_skills site build --if-stale` after the
   Markdown batch and before the next framing question.
-- Say the website has been updated and name `report.html` at
-  the workspace root as the file to open in a browser. Do not
-  name `journal/JOURNAL.md`. Do not say double-click or "no
-  server".
+- Say the website has been updated and show the absolute
+  `file://` URL of `report.html` that `site build` printed. Do
+  not name `journal/JOURNAL.md`. Do not say double-click or
+  "no server".
 
 **Must NOT do:**
 - Run `policy set` to turn notebooks or site on. Building the

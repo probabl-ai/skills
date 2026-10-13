@@ -58,11 +58,13 @@ this table, approve this design, evaluate on the full dataset.
   plain-language intent. Never paste the wrapper CLI.
 - Trailing close tokens: `G-REPORT-LOCATOR` / `G-AUDIT-FINDING`
   (or `n/a — …`) after the narrative. Index strings, not prose.
-- `report.html` at the workspace root, opened in a browser, with
-  the sentence that the website has been updated. Do not name
-  the markdown file that was edited. Do not name
-  `html/<stem>.html` or `html/data_analysis.html`. Do not say
-  double-click or "no server".
+- The absolute `file://` URL of workspace-root `report.html`
+  (the URL `site build` printed), with the sentence that the
+  website has been updated. A click opens the browser. Do not
+  link a workspace-relative path. Do not name the markdown
+  file that was edited. Do not name `html/<stem>.html` or
+  `html/data_analysis.html`. Do not say double-click or "no
+  server".
 
 Gate context stays 2–4 lines of **scientific** authorization
 (what the pick allows on this data/experiment, facts echoed
@@ -74,6 +76,6 @@ Examples:
 - Ask: **What should the Python import name be?** — not
   “Resolve G-PKG-NAME”.
 - Option: **Explore the data** — not ``explore-ml-data``.
-- Close: findings, then the website has been updated and open
-  `report.html` in a browser. Do not name the markdown file.
-  Do not say “I ran `site build`”.
+- Close: findings, then the website has been updated and the
+  absolute `file://` URL of `report.html`. Do not name the
+  markdown file. Do not say “I ran `site build`”.

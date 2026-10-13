@@ -98,8 +98,8 @@ sentences: what was declared, that smoke is green, the learner.
 Ground them in Method. Do not invent a metric. No locator yet.
 
 Then links. When `site build` ran this turn, say the website
-has been updated and link
-`[report.html](<workspace>/report.html)` to open in a browser.
+has been updated and show the absolute `file://` URL of
+`report.html` that `site build` printed.
 Do not name the design-note markdown or `html/<stem>.html`.
 Otherwise do not claim the website was updated and do not name
 the markdown. Still link

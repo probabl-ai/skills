@@ -166,7 +166,8 @@ def test_site_build_runs_mkdocs(
     launcher = tmp_path / "report.html"
     assert launcher.is_file()
     assert "url=html/index.html" in launcher.read_text(encoding="utf-8")
-    assert str(launcher) in result.output
+    assert site_mod.launcher_url(tmp_path) in result.output
+    assert site_mod.launcher_url(tmp_path).startswith("file://")
     assert "report.html" in (tmp_path / ".gitignore").read_text(encoding="utf-8")
 
 
@@ -188,7 +189,7 @@ def test_site_build_if_stale_skips_until_an_input_changes(
     second = CliRunner().invoke(cli, ["site", "build", "--if-stale"])
     assert first.exit_code == 0, first.output
     assert second.exit_code == 0, second.output
-    assert "site is current" in second.output
+    assert f"site is current: {site_mod.launcher_url(tmp_path)}" in second.output
     assert calls == 1
 
     asset = tmp_path / "scratch" / "results" / "01_baseline" / "pipeline" / "app.css"
@@ -1296,7 +1297,7 @@ def test_site_build_includes_mkdocs_stdout(
     result = CliRunner().invoke(cli, ["site", "build"])
     assert result.exit_code == 0, result.output
     assert result.output.startswith("Documentation built in 1.00 seconds\n")
-    assert "report.html" in result.output
+    assert result.output.endswith(f"{site_mod.launcher_url(tmp_path)}\n")
 
 
 def test_inject_skips_missing_heading_and_loose_markers(tmp_path: Path) -> None:

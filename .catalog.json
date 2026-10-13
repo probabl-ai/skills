@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "dfd2e762710d5f3aef1ab10c9941a1c150e7e9aebbd53c69418957aef4319c05",
+  "catalog_hash": "288582fdb1142937fe2d48672b98d19b77c6036068f5177dfbea515b4271266a",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -12,7 +12,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "edaf8d42f3aaa4775c7c699f4440cdf8eb922746938949e25dee07c1b608fb12"
+      "hash": "967899ddb381208b377a43a571151ad7380a0ad216b3dc86ea4aa2fb457249de"
     },
     {
       "id": "frame-ml-problem",
@@ -21,7 +21,7 @@
       "summary": "Record the problem, deployment setting, metric, baseline, and fold count before any model code.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "ec6f539a3c3947c92d3f2d0b2aa28394a8d4f12102925e2074ad3abcb1eb6bae"
+      "hash": "6011ca11beb122172bab24d7560b8b0b99f979b9ca9b950bf6cdf2dded749a55"
     },
     {
       "id": "build-ml-pipeline",
@@ -30,7 +30,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "af72287b142789370e70b217a34d0828a0f25dc27b1d12ca1620264ed9818ffd"
+      "hash": "84bd33bf4a4eebf359271e9a0bb909db682d034899a4770fefaa39b334e3261c"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -39,7 +39,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "af10a78c5a9a6e3f05266d09e40bc709d3c40de7dcf9bd974fa7bef8c8c4a286"
+      "hash": "3bd10c8fab22352bdf9cc8797c9c6102ccabf3411a0dfeb5f5e60c7aa30a8c44"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -57,7 +57,7 @@
       "summary": "Audit a persisted skore report read-only and produce a reusable digest.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "2f1fbb5545b49062b2b74120546d4a7feed1b7692b63930eb388003172fb286b"
+      "hash": "8efc845625bd84889dc392397750537d943ef4e556b17050a43bb1f1fc8ba00c"
     },
     {
       "id": "manage-ml-backlog",
@@ -165,7 +165,7 @@
       "summary": "Require locked problem framing, write the first baseline design note for approval, then coordinate later choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "3be17f2de7016a7c73fc711f62371b83cecf0bda78accacccc345d9a9ff7e353"
+      "hash": "4820c396c56f83e978608c13b71fa91617a0868c107a08208888d06b27e296e9"
     },
     {
       "id": "choose-python-library",
@@ -210,7 +210,7 @@
       "summary": "Detect or scaffold the standard ML workspace layout.",
       "category": "action",
       "subcategory": null,
-      "hash": "05d69483b1f0351ed0b1af7e6c6bf168084bf863d3b03ffe36ca7ca993469011"
+      "hash": "83000be33bc46c8186509e23763eb4afefd1ae697ca0081656fdbe788dcd2a43"
     },
     {
       "id": "setup-python-env",
@@ -228,7 +228,7 @@
       "summary": "Write a jupytext percent file out as a notebook with empty outputs.",
       "category": "tooling",
       "subcategory": "code-quality",
-      "hash": "5da99d792de0bd487fbd7fc564930a498931835632c320dcc4dbe13f73868471"
+      "hash": "74d35f718dfebaa10326d39abbad81d7e7bce2aec88268623473b95ffb7d203b"
     },
     {
       "id": "export-ml-site",
@@ -237,7 +237,7 @@
       "summary": "Package workspace markdown and existing notebook HTML into an offline MkDocs site.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "43476fd2560231d9ac72d358997d8237b4dd78b93ca552d7e00245a429cec32f"
+      "hash": "e7f1d9b836e788ad41b68f8b6b70d7cb6a6f950cde6c67d5a076010745f48755"
     },
     {
       "id": "export-ml-project",

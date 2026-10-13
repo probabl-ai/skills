@@ -608,9 +608,9 @@ violated.
   accepts `eval`, otherwise `pipeline.html`), run
   `python -m skore_skills site build --if-stale` before `smoke run` and
   before the Evaluate question.
-- In the checkpoint, say the website has been updated and name
-  `report.html` at the workspace root as the file to open in a
-  browser. Do not name the design-note markdown or
+- In the checkpoint, say the website has been updated and show
+  the absolute `file://` URL of `report.html` that `site build`
+  printed. Do not name the design-note markdown or
   `html/01_baseline.html`. Do not say double-click or "no
   server". The Method DataOp report stays on the site.
 

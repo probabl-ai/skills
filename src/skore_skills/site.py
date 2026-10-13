@@ -217,6 +217,11 @@ def launcher_name(root: Path) -> str:
     return LAUNCHER_NAME
 
 
+def launcher_url(root: Path) -> str:
+    """Return a clickable ``file://`` URL for the root launcher."""
+    return (root / launcher_name(root)).resolve().as_uri()
+
+
 def render_launcher(title: str) -> str:
     """Return a ``file://``-safe redirect into ``html/index.html``."""
     safe = html.escape(title)
@@ -788,7 +793,7 @@ def build_site(root: Path, *, if_stale: bool = False) -> str:
         raise ValueError("workspace is not scaffolded")
     fingerprint = site_fingerprint(root)
     if if_stale and _site_is_current(root, fingerprint):
-        return f"site is current: {root / launcher_name(root)}"
+        return f"site is current: {launcher_url(root)}"
     ensure_site_gitignore(root)
     _docs, pages, stub_home = stage_docs(root)
     write_generated_config(root, pages, stub_home=stub_home)
@@ -814,6 +819,7 @@ def build_site(root: Path, *, if_stale: bool = False) -> str:
     state.parent.mkdir(parents=True, exist_ok=True)
     state.write_text(json.dumps({"fingerprint": fingerprint}) + "\n", encoding="utf-8")
     extra = (completed.stdout or "").strip()
+    url = launcher_url(root)
     if extra:
-        return f"{extra}\n{launcher}"
-    return str(launcher)
+        return f"{extra}\n{url}"
+    return url

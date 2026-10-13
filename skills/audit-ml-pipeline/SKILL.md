@@ -484,7 +484,8 @@ The notebook does not contain the materialize writes. If site
 policy is `true` and `export-ml-site` is installed, run
 `python -m skore_skills site build --if-stale` after materialize
 and before that gate. When the build ran, say the website has
-been updated and link `report.html` to open in a browser. Do
+been updated and show the absolute `file://` URL of
+`report.html` that `site build` printed. Do
 not name the design-note markdown or `html/<stem>.html`.
 
 Paste JSON `finding` verbatim. Read `audit.md`; do not derive it
@@ -612,9 +613,9 @@ notebook gate. Then this order. Do not reorder it.
    audit.
 5. User-facing close. The message is 2–6 sentences from Checks +
    Metrics. Do not invent a metric or paste the digest. When
-   step 4 succeeded, say the website has been updated and link
-   `[report.html](<workspace>/report.html)` to open in a
-   browser. Do not name `html/<stem>.html` or
+   step 4 succeeded, say the website has been updated and show
+   the absolute `file://` URL of `report.html` that `site build`
+   printed. Do not name `html/<stem>.html` or
    `journal/<stem>.md`. When the site was not built, do not
    claim it was updated and do not name the markdown. Then JSON
    `locator` from step 2 verbatim (local: also the absolute
