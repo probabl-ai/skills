@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from skore_skills.policy import LOOP_STAGES, load_policy
+from skore_skills.policy import LOOP_STAGES, SNAPSHOT_VALUES, load_policy
 from skore_skills.scaffold import template_root
 
 PERSIST_SKILL = "persist-ml-git"
@@ -614,6 +614,97 @@ def run_end_turn(root: Path, stage: str) -> tuple[dict[str, Any], int]:
         reason = "clean" if not blocked else "nothing_to_commit"
         return (_payload(**common, action="skip", reason=reason), 0)
     return (_payload(**common, action="invoke", reason="persist"), 0)
+
+
+def _is_must_ignore(rel: str) -> bool:
+    return any(part in MUST_IGNORE_DOTFILES for part in PurePosixPath(rel).parts)
+
+
+def _list_workspace_files(root: Path) -> list[str]:
+    """Return files outside must-ignore directories. ``.git`` is skipped."""
+    found: list[str] = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = sorted(
+            name
+            for name in dirnames
+            if name not in MUST_IGNORE_DOTFILES and name != ".git"
+        )
+        base = Path(dirpath)
+        found.extend(
+            (base / name).relative_to(root).as_posix() for name in sorted(filenames)
+        )
+    return found
+
+
+def _ambiguous_among(root: Path, paths: Sequence[str]) -> list[str]:
+    keys = set(paths)
+    tops = {path.split("/", 1)[0] for path in paths}
+    selected: list[str] = []
+    for name in list_ambiguous_dotfiles(root):
+        key = _dotfile_key(name)
+        if name in keys or key in keys or key in tops:
+            selected.append(name)
+    return selected
+
+
+def _drop_ambiguous(paths: Sequence[str], ambiguous: Sequence[str]) -> list[str]:
+    exact: set[str] = set()
+    prefixes: list[str] = []
+    for name in ambiguous:
+        key = _dotfile_key(name)
+        exact.add(key)
+        exact.add(name)
+        prefixes.append(f"{key}/")
+    return [
+        path
+        for path in paths
+        if path not in exact and not any(path.startswith(prefix) for prefix in prefixes)
+    ]
+
+
+def run_snapshot(root: Path) -> tuple[dict[str, Any], int]:
+    """Report whether to commit the tree before setup writes. Never commits."""
+    git = load_policy(root).get("git", {})
+    autocommit = git.get("autocommit")
+    recorded = git.get("snapshot")
+    repo = _has_repo(root)
+    if recorded in SNAPSHOT_VALUES:
+        return (
+            _payload(
+                autocommit=autocommit,
+                repo=repo,
+                skill="setup-git",
+                action="skip",
+                reason="already",
+            ),
+            0,
+        )
+
+    status = _porcelain_paths(root) if repo else _list_workspace_files(root)
+    considered = [
+        path for path in status if _is_blocked(path) or not _is_must_ignore(path)
+    ]
+    review = list_review_paths(root, considered)
+    staged, blocked = _commit_candidates(root, review, considered)
+    ambiguous = _ambiguous_among(root, considered)
+    staged = _drop_ambiguous(
+        [path for path in staged if not _is_must_ignore(path)], ambiguous
+    )
+    common = {
+        "autocommit": autocommit,
+        "repo": repo,
+        "skill": "setup-git",
+        "status": status,
+        "staged": staged,
+        "blocked": blocked,
+        "ambiguous_dotfiles": ambiguous,
+        "review_paths": review,
+    }
+    if staged or review or ambiguous:
+        return (_payload(**common, action="ask", reason="dirty"), 0)
+    if repo and not status:
+        return (_payload(**common, action="skip", reason="clean"), 0)
+    return (_payload(**common, action="skip", reason="nothing_to_commit"), 0)
 
 
 def run_review(root: Path) -> tuple[dict[str, Any], int]:

@@ -29,6 +29,12 @@
   automatically. Persist those answers, then load the selected
   skills. Do not ask tabular library, report destination,
   notebooks, or the documentation site.
+- When Git is selected, before `env init` or `scaffold`, load
+  `setup-git` for the pre-change snapshot only. An empty folder
+  makes `python -m skore_skills git snapshot` return
+  `nothing_to_commit`. Persist
+  `python -m skore_skills policy set git.snapshot skipped`.
+  Do not ask to commit the current files.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -51,6 +57,8 @@
   box starts checked. A recorded status is not the box's starting
   state.
 - Ask executed notebooks or documentation site in this meta.
+- Ask to commit the current files on this empty folder.
+- `git commit` before any setup write.
 
 ---
 
@@ -66,6 +74,7 @@
   `policy.env_manager: pixi`, `policy.env.managed: true`,
   `has_src: false`, `git: false`.
 - `policy.package` and `policy.git.autocommit` are unset.
+- `policy.git.snapshot` is `skipped`.
 - `pixi.toml` and a `pixi init` `pyproject.toml` exist; no `src/`.
 - Every `skills` entry is `true`.
 
@@ -104,6 +113,8 @@
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.
+- Ask to commit the current files. `git.snapshot` is already
+  `skipped`.
 
 ---
 
@@ -141,6 +152,8 @@
 - Run `git init`, `git add`, or `git commit` to cover for the
   missing skill.
 - Invent the `setup-git` procedure from memory.
+- Load `setup-git` for a pre-change snapshot, or ask to commit
+  the current files.
 - Treat the missing skill as an error that aborts setup.
 - In the setup multi-select, state the order the selected pieces
   will run.
@@ -175,6 +188,11 @@
   environment.
 - Before `scaffold` or `git init`, ask the Python import name and
   whether later stages commit automatically, and persist both.
+- Before `scaffold`, load `setup-git` for the pre-change snapshot
+  only. An empty folder makes `git snapshot` return
+  `nothing_to_commit`. Persist
+  `python -m skore_skills policy set git.snapshot skipped`.
+  Do not ask to commit the current files.
 - Load `setup-workspace` then git after layout exists; do not run
   env init.
 
@@ -187,6 +205,7 @@
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.
+- Ask to commit the current files on this empty folder.
 
 ---
 
@@ -217,6 +236,8 @@
 - Run `env add --editable`.
 - Ask the import name or the environment-manager question after
   the stop.
+- Load `setup-git` for a pre-change snapshot. Git was not
+  selected.
 - In the setup multi-select, state the order the selected pieces
   will run.
 
@@ -232,6 +253,7 @@
   `ambiguous: false`, `mismatch: false`.
 - `policy.env_manager` is unset. `policy.env.managed`,
   `policy.package`, and `policy.git.autocommit` are unset.
+- `policy.git.snapshot` is `skipped`.
 - No `src/` and no `journal/`.
 - Every `skills` entry is `true`.
 
@@ -258,6 +280,8 @@
 - In the question, ask the user to uncheck a box, or say that a
   box starts checked. A recorded status is not the box's starting
   state.
+- Ask to commit the current files. `git.snapshot` is already
+  `skipped`.
 
 ---
 
@@ -282,3 +306,133 @@
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
 - AskUserQuestion for a piece that is already `done`.
 - Run `env init`, `scaffold`, or `git init`.
+- Ask to commit the current files. Setup is already finished.
+
+---
+
+## CASE_08 — Commit a dirty tree before scaffold
+
+**User prompt:**
+> Set up this project.
+
+**Assumed workspace state:**
+- `status.setup.env` is `done`. `status.setup.pending` is
+  `workspace`, `git`.
+- `has_src` is false. A git repository exists. `notes.txt` is
+  dirty.
+- `policy.package` is `demo`. `policy.git.autocommit` is `on`.
+  `policy.git.snapshot` is null.
+- `python -m skore_skills git snapshot` returns `action: ask`,
+  `reason: dirty`, `repo: true`, `staged` includes `notes.txt`,
+  `ambiguous_dotfiles` empty, and `review_paths` empty.
+- Every `skills` entry is `true`.
+- The user selects workspace layout and Git, not editable
+  install, and agrees to the snapshot commit.
+
+**Must do:**
+- Ask the multi-select. The preamble starts by saying that
+  before any modeling, the workspace should be set up. Do not
+  say the order the selected pieces will run. The question's
+  last line is exactly: Select each one you want.
+- Do not re-ask the import name or automatic commits.
+- Before `scaffold`, load `setup-git` for the pre-change snapshot
+  only. That commit happens before `scaffold`.
+- Then load `setup-workspace`, then `setup-git` for the rest of
+  git setup.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Run `scaffold` or `env init` before the snapshot commit.
+- Run `python -m skore_skills git ignore-merge` before that
+  commit.
+- Skip the snapshot question.
+- In the setup multi-select, state the order the selected pieces
+  will run.
+
+---
+
+## CASE_09 — Decline the snapshot, then continue setup
+
+**User prompt:**
+> Set up this project.
+
+**Assumed workspace state:**
+- `status.setup.env` is `done`. `status.setup.pending` is
+  `workspace`, `git`.
+- `has_src` is false. A git repository exists. `notes.txt` is
+  dirty.
+- `policy.package` is `demo`. `policy.git.autocommit` is `on`.
+  `policy.git.snapshot` is null.
+- `python -m skore_skills git snapshot` returns `action: ask`,
+  `reason: dirty`, `repo: true`.
+- Every `skills` entry is `true`.
+- The user selects workspace layout and Git, and declines the
+  snapshot commit.
+
+**Must do:**
+- Before `scaffold`, load `setup-git` for the pre-change snapshot
+  only. Ask, recommending the commit.
+- Persist `python -m skore_skills policy set git.snapshot declined`
+  by that skill. Do not `git commit`.
+- Then load `setup-workspace`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- `git commit` the dirty tree.
+- Run `scaffold` before the snapshot question is answered.
+
+---
+
+## CASE_10 — Clean repository skips the snapshot question
+
+**User prompt:**
+> Set up this project.
+
+**Assumed workspace state:**
+- `status.setup.env` is `done`. `status.setup.pending` is
+  `workspace`, `git`.
+- `has_src` is false. A git repository exists and the worktree
+  is clean.
+- `policy.package` is `demo`. `policy.git.autocommit` is `on`.
+  `policy.git.snapshot` is null.
+- `python -m skore_skills git snapshot` returns `action: skip`,
+  `reason: clean`.
+- Every `skills` entry is `true`.
+- The user selects workspace layout and Git.
+
+**Must do:**
+- Before `scaffold`, load `setup-git` for the pre-change snapshot
+  only. Persist
+  `python -m skore_skills policy set git.snapshot skipped`.
+  Do not ask to commit the current files.
+- Then load `setup-workspace`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- AskUserQuestion about committing the current files.
+- Run `git commit`.
+
+---
+
+## CASE_11 — Git not selected, no snapshot
+
+**User prompt:**
+> Set up this project.
+
+**Assumed workspace state:**
+- `status.setup.pending` is `workspace`, `git`. A git repository
+  exists and `notes.txt` is dirty. `policy.git.snapshot` is null.
+- `policy.package` is `demo`.
+- Every `skills` entry is `true`.
+- The user selects workspace layout only.
+
+**Must do:**
+- Ask the multi-select, then the import name is already recorded,
+  so do not ask it.
+- Persist `python -m skore_skills policy set setup.git declined`.
+- Load `setup-workspace`. Do not load the pre-change snapshot.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Ask to commit the current files.
+- Run `git commit` or `git init`.

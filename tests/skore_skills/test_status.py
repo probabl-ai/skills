@@ -116,7 +116,7 @@ def test_status_organized_fixture(
             "notebooks": None,
             "site": None,
             "env": {"managed": None},
-            "git": {"autocommit": None},
+            "git": {"autocommit": None, "snapshot": None},
             "loop": {"stage": None, "stem": None},
             "setup": {
                 "env": None,

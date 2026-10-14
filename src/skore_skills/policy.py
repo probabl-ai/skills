@@ -17,6 +17,7 @@ LEGACY_POLICY_FILENAME = ".skore-workspace.json"
 WORKSPACE_KEY = "workspace"
 
 AUTOCOMMIT_VALUES = ("off", "on")
+SNAPSHOT_VALUES = ("committed", "declined", "skipped")
 LOOP_STAGES = (
     "setup",
     "data_analysis",
@@ -37,6 +38,7 @@ POLICY_SET_KEYS = (
     "notebooks",
     "site",
     "git.autocommit",
+    "git.snapshot",
     "loop.stage",
     "loop.stem",
     "setup.env",
@@ -74,7 +76,7 @@ def empty_policy() -> dict[str, Any]:
         "notebooks": None,
         "site": None,
         "env": {"managed": None},
-        "git": {"autocommit": None},
+        "git": {"autocommit": None, "snapshot": None},
         "loop": {"stage": None, "stem": None},
         "setup": dict.fromkeys(SETUP_PIECES),
     }
@@ -109,11 +111,12 @@ def _merge_loaded(raw: Any) -> dict[str, Any]:
         elif isinstance(managed, str) and managed.lower() in MANAGED_FALSE:
             data["env"] = {"managed": False}
     git = raw.get("git")
-    if isinstance(git, dict) and "autocommit" in git:
+    if isinstance(git, dict):
+        autocommit = git.get("autocommit")
+        recorded = git.get("snapshot")
         data["git"] = {
-            "autocommit": git["autocommit"]
-            if git["autocommit"] in AUTOCOMMIT_VALUES
-            else None
+            "autocommit": autocommit if autocommit in AUTOCOMMIT_VALUES else None,
+            "snapshot": recorded if recorded in SNAPSHOT_VALUES else None,
         }
     loop = raw.get("loop")
     if isinstance(loop, dict):
@@ -221,6 +224,8 @@ def set_policy_value(root: Path, key: str, value: str) -> dict[str, Any]:
         and parsed not in AUTOCOMMIT_VALUES
     ):
         raise ValueError("git.autocommit must be off or on")
+    if key == "git.snapshot" and parsed is not None and parsed not in SNAPSHOT_VALUES:
+        raise ValueError("git.snapshot must be committed, declined, or skipped")
     if key == "loop.stage" and parsed is not None and parsed not in LOOP_STAGES:
         raise ValueError(f"loop.stage must be one of {', '.join(LOOP_STAGES)}")
     if key.startswith("setup.") and parsed is not None and parsed not in SETUP_VALUES:

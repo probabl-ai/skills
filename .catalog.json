@@ -3,7 +3,7 @@
   "repository": "probabl-ai/skills",
   "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "bdd9331fd273b5e7121494b9fbc29ee47c0e0cd7100cc6aee81e63ed777a514c",
+  "catalog_hash": "44f5855cdb4fb078ffbb4f4449ac3a41e2b0361547566013c6811e2d85670645",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -135,19 +135,19 @@
       "id": "setup-ml-project",
       "path": "skills/setup-ml-project",
       "title": "Set Up ML Project",
-      "summary": "Ask setup choices up front, then coordinate workspace, environment, and git.",
+      "summary": "Ask setup choices up front, offer a commit of the current files when Git is selected, then coordinate workspace, environment, and git.",
       "category": "meta",
       "subcategory": null,
-      "hash": "c945af98810ab524fe6e94391fa644024e5f03b6dc5561b7c4e2bd11e39099a3"
+      "hash": "a1045c954e9b5cfbb8981b6e2466f299481979c935c352e310ddc96cf055c47d"
     },
     {
       "id": "setup-git",
       "path": "skills/setup-git",
       "title": "Set Up Git",
-      "summary": "Initialize safe version control for an ML workspace.",
+      "summary": "Initialize safe version control, including an optional commit of the tree before setup changes it.",
       "category": "action",
       "subcategory": null,
-      "hash": "0be130782bb9404a6fd56450ddc2b4bcee1da16ba18b63a01e3b49870ea88f8b"
+      "hash": "2e1a1b9b14def34c75cd9493f8323afcb54f03554814cab551ef83f42b058216"
     },
     {
       "id": "persist-ml-git",

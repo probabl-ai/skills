@@ -835,6 +835,14 @@ def git_review_cmd() -> None:
     _emit_git(lambda: run_review(Path.cwd()))
 
 
+@git_group.command("snapshot")
+def git_snapshot_cmd() -> None:
+    """Print whether to commit the tree before setup writes. Never commits."""
+    from skore_skills.git import run_snapshot
+
+    _emit_git(lambda: run_snapshot(Path.cwd()))
+
+
 @git_group.command("review-decide")
 @click.option(
     "--keep",

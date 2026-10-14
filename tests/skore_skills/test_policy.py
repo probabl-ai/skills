@@ -82,6 +82,21 @@ def test_policy_set_rejects_invalid_autocommit(tmp_path: Path) -> None:
         set_policy_value(tmp_path, "git.autocommit", "maybe")
 
 
+def test_policy_set_snapshot_round_trip(tmp_path: Path) -> None:
+    """``git.snapshot`` survives a later autocommit write and reloads."""
+    from skore_skills.policy import load_policy
+
+    policy = set_policy_value(tmp_path, "git.snapshot", "skipped")
+    assert policy["git"]["snapshot"] == "skipped"
+    assert policy["git"]["autocommit"] is None
+    policy = set_policy_value(tmp_path, "git.autocommit", "on")
+    assert policy["git"]["snapshot"] == "skipped"
+    assert policy["git"]["autocommit"] == "on"
+    assert load_policy(tmp_path)["git"]["snapshot"] == "skipped"
+    with pytest.raises(ValueError, match="committed, declined, or skipped"):
+        set_policy_value(tmp_path, "git.snapshot", "maybe")
+
+
 def test_policy_set_setup_piece(tmp_path: Path) -> None:
     """Setup pieces persist ``done`` or ``declined``."""
     policy = set_policy_value(tmp_path, "setup.env", "done")
