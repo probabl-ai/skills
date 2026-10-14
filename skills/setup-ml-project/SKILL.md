@@ -12,7 +12,9 @@ description: >
   whether we manage the env, the import name, and git autocommit
   — only for pieces the user selects, and answers that are not
   already recorded. Persist those answers. When Git is selected,
-  suggest one commit of the current files before any setup write.
+  run the pre-change snapshot check before any setup write. Ask
+  to commit the current files only when that check says ask. An
+  empty folder or a clean tree records skipped and does not ask.
   Then run only what the user selects. Git may ask once, just
   before the first commit, which unknown files to keep. Return
   to the skill that dispatched this turn.
@@ -152,11 +154,14 @@ workspace, editable, git, then step 9.
    `policy.git.snapshot` is null. Load `setup-git` and do only
    its pre-change snapshot section, then return here. Do not
    `env init`, `scaffold`, or `git ignore-merge` in this step.
-   Do not ask the snapshot question in this skill. If Git was
-   not selected, `git.snapshot` is already set, or `setup-git`
-   is not installed, skip this step. A missing `setup-git` is
-   one line, then continue. This commit is still offered when
-   autocommit is `off`.
+   Do not ask the snapshot question in this skill. The loaded
+   section asks only when `git snapshot` returns `ask`. `clean`
+   and `nothing_to_commit`, including an empty folder, persist
+   `skipped` and do not ask. If Git was not selected,
+   `git.snapshot` is already set, or `setup-git` is not
+   installed, skip this step. A missing `setup-git` is one
+   line, then continue. When the check returns `ask`, the
+   commit is still offered if autocommit is `off`.
 8. Load **selected** skills only, in this order: env →
    workspace → editable (`has_src`) → git. Load `<id>` only if
    `status.skills.<id>` is true; else one-line skip. Do not

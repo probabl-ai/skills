@@ -120,7 +120,7 @@ also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-c
 | [triage-ml-task](skills/triage-ml-task/SKILL.md) | Session owner: list installed entry skills and ask which to run. |
 | [review-ml-choices](skills/review-ml-choices/SKILL.md) | Show stored project choices and re-enter the skill that can change one. |
 | [review-ml-experiment](skills/review-ml-experiment/SKILL.md) | Read the stored report, then write one idea file and one Ideas row per candidate. |
-| [setup-ml-project](skills/setup-ml-project/SKILL.md) | Ask only the setup pieces that are not already recorded. When Git is selected, offer a commit of the current files before coordinating workspace, environment, and git. |
+| [setup-ml-project](skills/setup-ml-project/SKILL.md) | Ask only the setup pieces that are not already recorded. When Git is selected, commit the current files before setup writes only if that check finds files to preserve. |
 | [setup-workspace](skills/setup-workspace/SKILL.md) | Detect or scaffold the standard ML workspace layout. |
 | [setup-python-env](skills/setup-python-env/SKILL.md) | Detect the env manager and bootstrap the runtime, agent-tools, and composed development environments. |
 | [setup-git](skills/setup-git/SKILL.md) | Initialize safe version control, including an optional commit of the tree before setup changes it. |

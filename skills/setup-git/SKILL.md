@@ -66,7 +66,8 @@ Do not ask whether later stages commit. Then return to
    another must-ignore tool directory. Never stage a review path
    that was not kept.
 8. `git commit -m "<one-line subject>"`. The subject states that
-   this is the workspace before setup changes it.
+   this is the workspace before setup changes it. Only this
+   section uses that subject.
 
 ## Lookup
 
@@ -172,9 +173,10 @@ command failure.
    `.skore`.
 8. Then `git status`. `git add -- <paths>` only paths that are
    not still listed in `review_paths`, and
-   `git commit -m "<one-line subject>"` from this setup turn. Do
-   not ask a second time about autocommit. Never stage `.env` or
-   `.skore`.
+   `git commit -m "<one-line subject>"` from this setup turn. The
+   subject describes the files committed now. It does not say
+   this commit is the state before setup changes. Do not ask a
+   second time about autocommit. Never stage `.env` or `.skore`.
 9. When `setup-ml-project` dispatched this turn and is in this
    session, return control to it. Otherwise load `triage-ml-task`
    if `status.skills` reports it installed, else stop.
@@ -194,3 +196,4 @@ command failure.
   create the first commit.
 - The pre-change snapshot does not `scaffold`. It does not run
   `git ignore-merge` unless `ambiguous_dotfiles` was non-empty.
+- Lookup does not use the pre-change snapshot commit subject.
