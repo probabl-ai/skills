@@ -2,7 +2,7 @@
   "name": "probabl-skills",
   "repository": "probabl-ai/skore-skills",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "c410c600dbf482967eae1158963ae24508caf4ff65e4bd6ccf77f0662a4c62d4",
+  "catalog_hash": "ed55c282855de26ec7d17f6f79e318452c26265013c6f233efa5892bdc8786f3",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -11,7 +11,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "9439d558325b8eaac5da484d63ccb741411ed7ab759e01ca4aba1384282a1c9d"
+      "hash": "8e2fa13a2abda8efeb6ce573162e9895cfa4d2cb7e301c88433c5ee2fa065e23"
     },
     {
       "id": "frame-ml-problem",
@@ -29,7 +29,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "9efbf42c74fa2e7dc6c1660d0b28874737990f494a80e9e57de2b0bb003a8b63"
+      "hash": "1dbbcd550ce162d67dd19804fc0f2a2ab6d57cfb907da91168c3ddb6fe6139f2"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -38,7 +38,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "d0bca172ab40ef4c41bc6c4fa662f4c1c70237613bb9b56114f45280d7d2027a"
+      "hash": "5624df1bf6a896d05ff89df7d66a5c8512d589c748cad4eb0f99a47669a3ea0c"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -56,7 +56,7 @@
       "summary": "Audit a persisted skore report read-only and produce a reusable digest.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "f6f42f80f3e99bc8dd78fed244688ed0f676122a71d3e33c6583c63f79a3e7c6"
+      "hash": "ccd707b30b343351c871252907b28ada51fa94e6955117c70bd0f09171396d17"
     },
     {
       "id": "manage-ml-backlog",
@@ -164,7 +164,7 @@
       "summary": "Require locked problem framing, write the first baseline design note for approval, then coordinate later choices, build, smoke testing, evaluation, and audit.",
       "category": "meta",
       "subcategory": null,
-      "hash": "69be76115a7052e0b8c9f5638c9c8c4e17e34a74571482a7e99bb3f8d3b2fafc"
+      "hash": "39d048ab45f54cc2d607eb32bdcaf1bcac3553ec0cf3df10c78de6636bdc5ad7"
     },
     {
       "id": "choose-python-library",
@@ -227,7 +227,7 @@
       "summary": "Write a jupytext percent file out as a notebook with empty outputs.",
       "category": "tooling",
       "subcategory": "code-quality",
-      "hash": "980f136206ab336d19f8acf0ce95190b0948a6948402df0371fa5e83f6b661bb"
+      "hash": "86bb812b7297934800157efb7bd3c23f40ce649383a0ebe9aa9bcab4e7f48ba0"
     },
     {
       "id": "export-ml-site",
@@ -236,7 +236,7 @@
       "summary": "Package workspace markdown and existing notebook HTML into an offline MkDocs site.",
       "category": "tooling",
       "subcategory": "project-setup",
-      "hash": "55b65d3095f1e79b2dd3a01a945ba30878c7b2934b9011ebe367c6f95a4ea52a"
+      "hash": "0ffab4dfe34705f8046e8381c42fcdb9d9515c94b3e2868529fa4678acd65d5b"
     },
     {
       "id": "export-ml-project",
