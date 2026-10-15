@@ -18,7 +18,6 @@ from typing import Any
 
 SIDECAR = ".skore-skill.json"
 LOCAL_CATALOG = ".catalog.json"
-LEGACY_CATALOG = "catalog.json"
 
 # skore-cli installs into ``<dot-dir>/skills`` or
 # ``<dot-dir>/<sub>/skills`` for every harness it supports, so match
@@ -90,15 +89,13 @@ def _ids_from_catalog_data(data: Any) -> set[str]:
 
 
 def _catalog_ids(target: Path) -> set[str]:
-    for name in (LOCAL_CATALOG, LEGACY_CATALOG):
-        path = target / name
-        if not path.is_file():
-            continue
-        try:
-            return _ids_from_catalog_data(json.loads(path.read_text(encoding="utf-8")))
-        except (OSError, json.JSONDecodeError):
-            continue
-    return set()
+    path = target / LOCAL_CATALOG
+    if not path.is_file():
+        return set()
+    try:
+        return _ids_from_catalog_data(json.loads(path.read_text(encoding="utf-8")))
+    except (OSError, json.JSONDecodeError):
+        return set()
 
 
 def _released_skill_ids() -> set[str]:

@@ -1,9 +1,8 @@
 {
   "name": "probabl-skills",
-  "repository": "probabl-ai/skills",
-  "version": "0.7.0",
+  "repository": "probabl-ai/skore-skills",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "99b65b16565d1dc3b8d36117e2ba646f6ed630868d1e044ee56b4e9604173162",
+  "catalog_hash": "1c62c6986776e1a78e988a2a9b1c913ca3ab0fc34fa8df43d992c4e1e5da2280",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -135,19 +134,19 @@
       "id": "setup-ml-project",
       "path": "skills/setup-ml-project",
       "title": "Set Up ML Project",
-      "summary": "Ask setup choices up front, then coordinate workspace, environment, and git.",
+      "summary": "Ask setup choices up front. When Git is selected, commit the current files before setup writes only if that check finds files to preserve.",
       "category": "meta",
       "subcategory": null,
-      "hash": "c945af98810ab524fe6e94391fa644024e5f03b6dc5561b7c4e2bd11e39099a3"
+      "hash": "6224a849176f61456260c4d9883669f99775d55dd3cc9d79c93191026325d527"
     },
     {
       "id": "setup-git",
       "path": "skills/setup-git",
       "title": "Set Up Git",
-      "summary": "Initialize safe version control for an ML workspace.",
+      "summary": "Initialize safe version control, including an optional commit of the tree before setup changes it.",
       "category": "action",
       "subcategory": null,
-      "hash": "0be130782bb9404a6fd56450ddc2b4bcee1da16ba18b63a01e3b49870ea88f8b"
+      "hash": "2d4c8859e92f7dfa353ab19aa0c5166d7540748ee6324aa5b933b631d02ab763"
     },
     {
       "id": "persist-ml-git",

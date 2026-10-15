@@ -1,14 +1,13 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "probabl-skills",
-  "version": "0.7.0",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
   "author": {
     "name": "Probabl",
     "url": "https://probabl.ai"
   },
-  "homepage": "https://github.com/probabl-ai/skills",
-  "repository": "https://github.com/probabl-ai/skills",
+  "homepage": "https://github.com/probabl-ai/skore-skills",
+  "repository": "https://github.com/probabl-ai/skore-skills",
   "license": "BSD-3-Clause",
   "keywords": [
     "machine-learning",

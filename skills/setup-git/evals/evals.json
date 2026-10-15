@@ -4,7 +4,7 @@
     {
       "id": 1,
       "title": "First repository, autocommit on",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `.env` is present and must remain untracked. Raw inputs are\n  already ignored and are not in `git status`.\n- `policy.git.autocommit` is `null` (never asked).\n- The user answers the autocommit question with `on`.\n- `python -m skore_skills git review` returns `review_paths` empty.]\n\nInitialize git here and make the first commit.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `.env` is present and must remain untracked. Raw inputs are\n  already ignored and are not in `git status`.\n- `policy.git.autocommit` is `null` (never asked).\n- `policy.git.snapshot` is `skipped`.\n- The user answers the autocommit question with `on`.\n- `python -m skore_skills git review` returns `review_paths` empty.]\n\nInitialize git here and make the first commit.",
       "expected_output": "Behavioural response satisfying: - Read the lookup table and take the matching row (do not stop after listing the rows). - Run `git init -b main` so the initial branch is `main`. - Run `python -m skore_skills git ignore-merge`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave the initial branch as `master`. - Stage `.env` or raw data.",
       "files": [],
       "expectations": [
@@ -20,7 +20,8 @@
         "The response does NOT: Ask a second time before the first commit after `on`.",
         "The response does NOT: Ask which review paths to keep when `review_paths` is empty.",
         "The response does NOT: Push or create a remote.",
-        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit."
+        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit.",
+        "The response does NOT: Run the pre-change snapshot section."
       ],
       "tools": false,
       "sandbox": [],
@@ -29,7 +30,7 @@
     {
       "id": 2,
       "title": "Autocommit already persisted",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- A git repository exists and already has a HEAD commit.\n- `policy.git.autocommit` is already `on`.]\n\nGit is already initialized. Check ignore rules.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- A git repository exists and already has a HEAD commit.\n- `policy.git.autocommit` is already `on`.\n- `policy.git.snapshot` is `skipped`.]\n\nGit is already initialized. Check ignore rules.",
       "expected_output": "Behavioural response satisfying: - Run or run `python -m skore_skills git ignore-merge`. - Skip the autocommit policy question because it is already `on`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Re-ask whether later stages may autocommit. - Invent another `git commit` on this turn.",
       "files": [],
       "expectations": [
@@ -38,7 +39,8 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Re-ask whether later stages may autocommit.",
         "The response does NOT: Invent another `git commit` on this turn.",
-        "The response does NOT: Run `git push`."
+        "The response does NOT: Run `git push`.",
+        "The response does NOT: Run the pre-change snapshot section."
       ],
       "tools": false,
       "sandbox": [],
@@ -47,7 +49,7 @@
     {
       "id": 3,
       "title": "Autocommit off, no first commit",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `policy.git.autocommit` is `null`.\n- The user answers the autocommit question with `off`.]\n\nInitialize git here.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `policy.git.autocommit` is `null`.\n- `policy.git.snapshot` is `skipped`.\n- The user answers the autocommit question with `off`.]\n\nInitialize git here.",
       "expected_output": "Behavioural response satisfying: - Run `git init -b main` so the initial branch is `main`. - Run `python -m skore_skills git ignore-merge`. - Persist `python -m skore_skills policy set git.autocommit off`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave the initial branch as `master`. - Run `git commit`.",
       "files": [],
       "expectations": [
@@ -58,7 +60,8 @@
         "The response does NOT: Leave the initial branch as `master`.",
         "The response does NOT: Run `git commit`.",
         "The response does NOT: Run `git push`.",
-        "The response does NOT: Use `python -m skore_skills git end-turn` to create a commit."
+        "The response does NOT: Use `python -m skore_skills git end-turn` to create a commit.",
+        "The response does NOT: Run the pre-change snapshot section."
       ],
       "tools": false,
       "sandbox": [],
@@ -67,7 +70,7 @@
     {
       "id": 4,
       "title": "Resolve hidden paths",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `python -m skore_skills git ignore-merge` returns\n  `action: resolve-dotfiles` with `.cursor/` listed.\n- `python -m skore_skills git review` returns `review_paths` empty.\n- `policy.git.autocommit` is already `on`.\n- No HEAD yet.]\n\nSet up git and keep the `.cursor` folder tracked.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `python -m skore_skills git ignore-merge` returns\n  `action: resolve-dotfiles` with `.cursor/` listed.\n- `python -m skore_skills git review` returns `review_paths` empty.\n- `policy.git.autocommit` is already `on`.\n- `policy.git.snapshot` is `skipped`.\n- No HEAD yet.]\n\nSet up git and keep the `.cursor` folder tracked.",
       "expected_output": "Behavioural response satisfying: - Run `git init -b main` so the initial branch is `main`. - Run `python -m skore_skills git ignore-merge`. - Ask which hidden paths to keep, then re-run `python -m skore_skills git ignore-merge --decide --keep .cursor`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave the initial branch as `master`. - `--keep` `.env` or `.skore`.",
       "files": [],
       "expectations": [
@@ -79,7 +82,8 @@
         "The response does NOT: Leave the initial branch as `master`.",
         "The response does NOT: `--keep` `.env` or `.skore`.",
         "The response does NOT: Ask a second question for review paths when `review_paths` is empty.",
-        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit."
+        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit.",
+        "The response does NOT: Run the pre-change snapshot section."
       ],
       "tools": false,
       "sandbox": [],
@@ -88,20 +92,22 @@
     {
       "id": 5,
       "title": "Ignore a review folder",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- A git repository exists and has no HEAD yet.\n- `policy.git.autocommit` is already `on`.\n- `python -m skore_skills git ignore-merge` returns no\n  `ambiguous_dotfiles`.\n- `python -m skore_skills git review` returns\n  `action: resolve-review` with `checkpoints/` kind `artifact`.\n- `src/pkg/data.py` is also dirty.]\n\nSet up git and make the first commit. Do not track `checkpoints/`.",
-      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills git review`. - Ask which review paths to keep, listing `checkpoints/` and kind `artifact`, and saying the rest are ignored. - Run `python -m skore_skills git review-decide --ignore checkpoints/`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - `--keep` `checkpoints/`. - Stage `checkpoints/`.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- A git repository exists and has no HEAD yet.\n- `policy.git.autocommit` is already `on`.\n- `policy.git.snapshot` is `skipped`.\n- `python -m skore_skills git ignore-merge` returns no\n  `ambiguous_dotfiles`.\n- `python -m skore_skills git review` returns\n  `action: resolve-review` with `checkpoints/` kind `artifact`.\n- `src/pkg/data.py` is also dirty.]\n\nSet up git and make the first commit. Do not track `checkpoints/`.",
+      "expected_output": "Behavioural response satisfying: - Run `python -m skore_skills git review`. - Ask which review paths to keep, listing `checkpoints/` and kind `artifact`, and saying the rest are ignored. - Run `python -m skore_skills git review-decide --ignore checkpoints/`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Use a commit subject that says this is the state before setup changes. - `--keep` `checkpoints/`.",
       "files": [],
       "expectations": [
         "Run `python -m skore_skills git review`.",
         "Ask which review paths to keep, listing `checkpoints/` and kind `artifact`, and saying the rest are ignored.",
         "Run `python -m skore_skills git review-decide --ignore checkpoints/`.",
-        "`git add` and `git commit` the source file.",
+        "`git add` and `git commit` the source file. The subject describes this setup turn. It does not say the commit is the state before setup changes.",
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Use a commit subject that says this is the state before setup changes.",
         "The response does NOT: `--keep` `checkpoints/`.",
         "The response does NOT: Stage `checkpoints/`.",
         "The response does NOT: Ask a separate hidden-file question when `ambiguous_dotfiles` is empty.",
         "The response does NOT: Choose the ignore path by size or extension instead of the JSON.",
-        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit."
+        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit.",
+        "The response does NOT: Run the pre-change snapshot section."
       ],
       "tools": false,
       "sandbox": [],
@@ -110,7 +116,7 @@
     {
       "id": 6,
       "title": "Change an existing autocommit choice",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- A git repository exists and already has a HEAD commit.\n- `policy.git.autocommit` is `on`.\n- The user asked to change that choice. They answer `off`.]\n\nStop committing at the end of each stage.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- A git repository exists and already has a HEAD commit.\n- `policy.git.autocommit` is `on`.\n- `policy.git.snapshot` is `skipped`.\n- The user asked to change that choice. They answer `off`.]\n\nStop committing at the end of each stage.",
       "expected_output": "Behavioural response satisfying: - Re-ask whether later stages may commit, and persist `python -m skore_skills policy set git.autocommit off`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `git init`. - Run `python -m skore_skills git ignore-merge`.",
       "files": [],
       "expectations": [
@@ -118,7 +124,8 @@
         "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
         "The response does NOT: Run `git init`.",
         "The response does NOT: Run `python -m skore_skills git ignore-merge`.",
-        "The response does NOT: Invent another `git commit` on this turn."
+        "The response does NOT: Invent another `git commit` on this turn.",
+        "The response does NOT: Run the pre-change snapshot section."
       ],
       "tools": false,
       "sandbox": [],
@@ -127,7 +134,7 @@
     {
       "id": 7,
       "title": "One question for hidden files and review paths",
-      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `policy.git.autocommit` is already `on`.\n- No HEAD yet.\n- `python -m skore_skills git ignore-merge` returns\n  `action: resolve-dotfiles` with `.python-version` listed.\n- `python -m skore_skills git review` returns\n  `action: resolve-review` with `checkpoints/` kind `artifact`.\n- `src/pkg/data.py` is also dirty.]\n\nSet up git and make the first commit. Keep `.python-version` tracked and do not track `checkpoints/`.",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- Scaffolded workspace, not yet a git repository.\n- `policy.git.autocommit` is already `on`.\n- `policy.git.snapshot` is `skipped`.\n- No HEAD yet.\n- `python -m skore_skills git ignore-merge` returns\n  `action: resolve-dotfiles` with `.python-version` listed.\n- `python -m skore_skills git review` returns\n  `action: resolve-review` with `checkpoints/` kind `artifact`.\n- `src/pkg/data.py` is also dirty.]\n\nSet up git and make the first commit. Keep `.python-version` tracked and do not track `checkpoints/`.",
       "expected_output": "Behavioural response satisfying: - Run `git init -b main` so the initial branch is `main`. - Run `python -m skore_skills git ignore-merge` and `python -m skore_skills git review` before asking. - Ask **once**, listing `.python-version` and `checkpoints/` with kind `artifact`, and saying paths that are not kept are ignored. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave the initial branch as `master`. - Ask two questions, one for hidden files and another for review paths.",
       "files": [],
       "expectations": [
@@ -142,7 +149,127 @@
         "The response does NOT: Ask two questions, one for hidden files and another for review paths.",
         "The response does NOT: `--keep` `checkpoints/`, `.env`, or `.skore`.",
         "The response does NOT: Stage `checkpoints/`.",
-        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit."
+        "The response does NOT: Use `python -m skore_skills git end-turn` to create the first commit.",
+        "The response does NOT: Run the pre-change snapshot section."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 8,
+      "title": "Snapshot a dirty repository",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `setup-ml-project` loaded this skill for the pre-change snapshot\n  only.\n- A git repository exists and already has a HEAD commit.\n- `notes.txt` is dirty. `.env` is dirty and must stay untracked.\n- `python -m skore_skills git snapshot` returns `action: ask`,\n  `reason: dirty`, `repo: true`, `staged` includes `notes.txt`,\n  `blocked` includes `.env`, `ambiguous_dotfiles` empty, and\n  `review_paths` empty.\n- `policy.git.snapshot` is null.\n- The user agrees to the snapshot commit.]\n\nCommit the current files before setup changes anything.",
+      "expected_output": "Behavioural response satisfying: - Run only the pre-change snapshot section. Do not run Lookup. - Run `python -m skore_skills git snapshot`. - Ask once, recommending the commit. Say it records the workspace as it is now so the user can return to it before setup changes anything. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - `scaffold`, or run `python -m skore_skills git ignore-merge`. - Stage `.env`.",
+      "files": [],
+      "expectations": [
+        "Run only the pre-change snapshot section. Do not run Lookup.",
+        "Run `python -m skore_skills git snapshot`.",
+        "Ask once, recommending the commit. Say it records the workspace as it is now so the user can return to it before setup changes anything.",
+        "`git add` `notes.txt` and `git commit -m` with a subject that states this is the state before setup changes.",
+        "After the commit exits 0, persist `python -m skore_skills policy set git.snapshot committed`.",
+        "Return to `setup-ml-project`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: `scaffold`, or run `python -m skore_skills git ignore-merge`.",
+        "The response does NOT: Stage `.env`.",
+        "The response does NOT: Run `git init`.",
+        "The response does NOT: Ask whether later stages commit.",
+        "The response does NOT: Ask which hidden files or review paths to keep."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 9,
+      "title": "Decline the snapshot",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `setup-ml-project` loaded this skill for the pre-change snapshot\n  only.\n- A git repository exists. `notes.txt` is dirty.\n- `python -m skore_skills git snapshot` returns `action: ask`,\n  `reason: dirty`, `repo: true`.\n- `policy.git.snapshot` is null.\n- The user declines the snapshot commit.]\n\nDo not commit the current files.",
+      "expected_output": "Behavioural response satisfying: - Ask once, recommending the commit, then accept the decline. - Persist `python -m skore_skills policy set git.snapshot declined`. - Return to `setup-ml-project`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run `git add`, `git commit`, or `git init`. - Run `python -m skore_skills git ignore-merge`.",
+      "files": [],
+      "expectations": [
+        "Ask once, recommending the commit, then accept the decline.",
+        "Persist `python -m skore_skills policy set git.snapshot declined`.",
+        "Return to `setup-ml-project`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Run `git add`, `git commit`, or `git init`.",
+        "The response does NOT: Run `python -m skore_skills git ignore-merge`.",
+        "The response does NOT: `scaffold`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 10,
+      "title": "Clean repository, no snapshot question",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `setup-ml-project` loaded this skill for the pre-change snapshot\n  only.\n- A git repository exists and the worktree is clean.\n- `python -m skore_skills git snapshot` returns `action: skip`,\n  `reason: clean`.\n- `policy.git.snapshot` is null.]\n\nCheck the current files before setup changes anything.",
+      "expected_output": "Behavioural response satisfying: - Persist `python -m skore_skills policy set git.snapshot skipped`. - Return to `setup-ml-project`. Do not ask. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - AskUserQuestion. - Run `git commit` or `git init`.",
+      "files": [],
+      "expectations": [
+        "Persist `python -m skore_skills policy set git.snapshot skipped`.",
+        "Return to `setup-ml-project`. Do not ask.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: AskUserQuestion.",
+        "The response does NOT: Run `git commit` or `git init`.",
+        "The response does NOT: `scaffold`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 11,
+      "title": "Empty folder has nothing to commit",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `setup-ml-project` loaded this skill for the pre-change snapshot\n  only.\n- Empty folder. Not a git repository.\n- `python -m skore_skills git snapshot` returns `action: skip`,\n  `reason: nothing_to_commit`, `repo: false`.\n- `policy.git.snapshot` is null.]\n\nCheck the current files before setup changes anything.",
+      "expected_output": "Behavioural response satisfying: - Persist `python -m skore_skills policy set git.snapshot skipped`. - Return to `setup-ml-project`. Do not ask. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - AskUserQuestion. - Run `git init` or `git commit`.",
+      "files": [],
+      "expectations": [
+        "Persist `python -m skore_skills policy set git.snapshot skipped`.",
+        "Return to `setup-ml-project`. Do not ask.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: AskUserQuestion.",
+        "The response does NOT: Run `git init` or `git commit`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 12,
+      "title": "Snapshot files that are not yet a repository",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `setup-ml-project` loaded this skill for the pre-change snapshot\n  only.\n- No `.git` directory. `README.md` is the only project file.\n- `python -m skore_skills git snapshot` returns `action: ask`,\n  `reason: dirty`, `repo: false`, `staged` is `README.md`,\n  `ambiguous_dotfiles` empty, and `review_paths` empty.\n- `policy.git.snapshot` is null.\n- The user agrees to the snapshot commit.]\n\nCommit the current files before setup changes anything.",
+      "expected_output": "Behavioural response satisfying: - Ask once, recommending the commit. - Run `git init -b main`, then `git add` `README.md` and `git commit -m` with a subject that states this is the state before setup changes. - Persist `python -m skore_skills policy set git.snapshot committed` after the commit exits 0. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Leave the initial branch as `master`. - Run `git config`.",
+      "files": [],
+      "expectations": [
+        "Ask once, recommending the commit.",
+        "Run `git init -b main`, then `git add` `README.md` and `git commit -m` with a subject that states this is the state before setup changes.",
+        "Persist `python -m skore_skills policy set git.snapshot committed` after the commit exits 0.",
+        "Return to `setup-ml-project`.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Leave the initial branch as `master`.",
+        "The response does NOT: Run `git config`.",
+        "The response does NOT: Run `python -m skore_skills git ignore-merge`.",
+        "The response does NOT: `scaffold`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 13,
+      "title": "Commit the setup delta after a snapshot",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- This is a normal git setup, not the pre-change snapshot load.\n- `policy.git.autocommit` is `on`.\n- `policy.git.snapshot` is `committed`.\n- HEAD exists. `git status` is dirty: `src/pkg/data.py`.\n- `python -m skore_skills git ignore-merge` adds ignore rules and\n  returns no `ambiguous_dotfiles`.\n- `python -m skore_skills git review` returns `review_paths` empty.]\n\nFinish setting up git. The earlier snapshot commit is already done.",
+      "expected_output": "Behavioural response satisfying: - Read the lookup table and take the row for `git.snapshot` `committed` and a dirty worktree. - Run `python -m skore_skills git ignore-merge` and `python -m skore_skills git review`. - `git add` and `git commit` the setup changes only. Do not ask to snapshot again. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Run the pre-change snapshot section. - Ask whether later stages commit.",
+      "files": [],
+      "expectations": [
+        "Read the lookup table and take the row for `git.snapshot` `committed` and a dirty worktree.",
+        "Run `python -m skore_skills git ignore-merge` and `python -m skore_skills git review`.",
+        "`git add` and `git commit` the setup changes only. Do not ask to snapshot again.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Run the pre-change snapshot section.",
+        "The response does NOT: Ask whether later stages commit.",
+        "The response does NOT: Ask which review paths to keep when `review_paths` is empty.",
+        "The response does NOT: Leave `src/pkg/data.py` uncommitted."
       ],
       "tools": false,
       "sandbox": [],

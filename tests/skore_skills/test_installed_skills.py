@@ -39,17 +39,17 @@ def test_sidecar_scan_skips_files_bad_json_and_non_ids(tmp_path: Path) -> None:
     assert flags == {"setup-git": True, "setup-workspace": False}
 
 
-def test_catalog_errors_fall_through_to_the_next_file(tmp_path: Path) -> None:
-    """A corrupt ``.catalog.json`` is skipped in favor of ``catalog.json``."""
+def test_catalog_errors_ignore_catalog_json(tmp_path: Path) -> None:
+    """A corrupt ``.catalog.json`` does not fall back to ``catalog.json``."""
     target = tmp_path / ".agents" / "skills"
     _write(target / ".catalog.json", "{")
     _write(
         target / "catalog.json",
-        json.dumps({"skills": [{"id": "setup-git"}, "not-an-object"]}) + "\n",
+        json.dumps({"skills": [{"id": "setup-git"}, {"id": "setup-workspace"}]}) + "\n",
     )
     _write(target / "setup-git" / SIDECAR, json.dumps({"id": "setup-git"}) + "\n")
 
-    assert _catalog_ids(target) == {"setup-git"}
+    assert _catalog_ids(target) == set()
     flags = installed_skills(tmp_path, home=tmp_path / "empty-home")
     assert flags == {"setup-git": True}
 

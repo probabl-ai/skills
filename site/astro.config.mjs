@@ -2,10 +2,10 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
-// Project site: https://probabl-ai.github.io/skills/
+// Project site: https://probabl-ai.github.io/skore-skills/
 export default defineConfig({
   site: 'https://probabl-ai.github.io',
-  base: '/skills',
+  base: '/skore-skills',
   trailingSlash: 'always',
   vite: {
     plugins: [tailwindcss()],

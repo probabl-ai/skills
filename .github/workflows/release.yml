@@ -1,0 +1,94 @@
+# Publish skore-skills to PyPI when a GitHub Release is published.
+#
+# That release is also the source archive ``skore skills install`` downloads
+# from probabl-ai/skore-skills. The tag must be X.Y.Z. It becomes the package
+# version and the catalog version embedded in the distributions.
+#
+# Example of a valid tag: `0.8.0`.
+
+name: release
+
+on:
+  release:
+    types: [released]
+
+env:
+  UUID: ${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build package distributions
+    if: ${{ github.repository == 'probabl-ai/skore-skills' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Write the release version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          [[ "${RELEASE_TAG}" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] \
+            || { >&2 echo "Invalid tag: ${RELEASE_TAG}"; exit 1; }
+          printf '%s\n' "${RELEASE_TAG}" > VERSION.txt
+          python -c 'import json, os; from pathlib import Path; tag = os.environ["RELEASE_TAG"]; path = Path(".catalog.json"); catalog = json.loads(path.read_text(encoding="utf-8")); catalog["version"] = tag; path.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")'
+
+      - name: Build package distributions
+        run: python -m pip install build && python -m build
+
+      - name: Check whether the distribution long description will render on PyPI
+        continue-on-error: true
+        run: |
+          python -m pip install twine
+          python -m twine check dist/*
+
+      - name: Upload package distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.UUID }}
+          path: dist/
+
+  publish:
+    name: Publish package distributions to PyPI using trusted publisher
+    if: ${{ github.repository == 'probabl-ai/skore-skills' }}
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      actions: read
+      id-token: write
+    needs: [build]
+    steps:
+      - name: Download package distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.UUID }}
+          path: dist/
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          verify-metadata: false
+
+  clean:
+    name: Delete package distributions artifacts
+    runs-on: ubuntu-latest
+    if: ${{ (github.repository == 'probabl-ai/skore-skills') && always() }}
+    permissions:
+      actions: write
+    needs: [publish]
+    steps:
+      - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
+        with:
+          name: ${{ env.UUID }}

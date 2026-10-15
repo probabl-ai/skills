@@ -13,10 +13,10 @@ from pathlib import Path
 from typing import Any
 
 POLICY_FILENAME = ".skore"
-LEGACY_POLICY_FILENAME = ".skore-workspace.json"
 WORKSPACE_KEY = "workspace"
 
 AUTOCOMMIT_VALUES = ("off", "on")
+SNAPSHOT_VALUES = ("committed", "declined", "skipped")
 LOOP_STAGES = (
     "setup",
     "data_analysis",
@@ -37,6 +37,7 @@ POLICY_SET_KEYS = (
     "notebooks",
     "site",
     "git.autocommit",
+    "git.snapshot",
     "loop.stage",
     "loop.stem",
     "setup.env",
@@ -45,20 +46,6 @@ POLICY_SET_KEYS = (
     "setup.git",
 )
 
-_POLICY_FLAT_KEYS = frozenset(
-    {
-        "env_manager",
-        "env",
-        "package",
-        "tabular",
-        "skore_mode",
-        "notebooks",
-        "site",
-        "git",
-        "loop",
-        "setup",
-    }
-)
 MANAGED_TRUE = ("true", "on", "yes")
 MANAGED_FALSE = ("false", "off", "no")
 BOOL_KEYS = frozenset({"notebooks", "site"})
@@ -74,7 +61,7 @@ def empty_policy() -> dict[str, Any]:
         "notebooks": None,
         "site": None,
         "env": {"managed": None},
-        "git": {"autocommit": None},
+        "git": {"autocommit": None, "snapshot": None},
         "loop": {"stage": None, "stem": None},
         "setup": dict.fromkeys(SETUP_PIECES),
     }
@@ -109,11 +96,12 @@ def _merge_loaded(raw: Any) -> dict[str, Any]:
         elif isinstance(managed, str) and managed.lower() in MANAGED_FALSE:
             data["env"] = {"managed": False}
     git = raw.get("git")
-    if isinstance(git, dict) and "autocommit" in git:
+    if isinstance(git, dict):
+        autocommit = git.get("autocommit")
+        recorded = git.get("snapshot")
         data["git"] = {
-            "autocommit": git["autocommit"]
-            if git["autocommit"] in AUTOCOMMIT_VALUES
-            else None
+            "autocommit": autocommit if autocommit in AUTOCOMMIT_VALUES else None,
+            "snapshot": recorded if recorded in SNAPSHOT_VALUES else None,
         }
     loop = raw.get("loop")
     if isinstance(loop, dict):
@@ -152,11 +140,7 @@ def _load_document(root: Path) -> dict[str, Any]:
 
 
 def load_policy(root: Path) -> dict[str, Any]:
-    """Read the ``workspace`` section, or defaults when missing.
-
-    Also accepts a leftover flat ``.skore-workspace.json`` for one
-    release when ``.skore`` has no ``workspace`` section.
-    """
+    """Read the ``workspace`` section, or defaults when missing."""
     path = policy_path(root)
     if path.is_dir():
         raise ValueError(".skore is a directory; expected a JSON file")
@@ -165,13 +149,6 @@ def load_policy(root: Path) -> dict[str, Any]:
         inner = doc.get(WORKSPACE_KEY)
         if isinstance(inner, dict):
             return _merge_loaded(inner)
-        if _POLICY_FLAT_KEYS & doc.keys() and WORKSPACE_KEY not in doc:
-            return _merge_loaded(doc)
-    legacy = _read_json_object(root / LEGACY_POLICY_FILENAME)
-    if legacy is not None:
-        if isinstance(legacy.get(WORKSPACE_KEY), dict):
-            return _merge_loaded(legacy[WORKSPACE_KEY])
-        return _merge_loaded(legacy)
     return empty_policy()
 
 
@@ -221,6 +198,8 @@ def set_policy_value(root: Path, key: str, value: str) -> dict[str, Any]:
         and parsed not in AUTOCOMMIT_VALUES
     ):
         raise ValueError("git.autocommit must be off or on")
+    if key == "git.snapshot" and parsed is not None and parsed not in SNAPSHOT_VALUES:
+        raise ValueError("git.snapshot must be committed, declined, or skipped")
     if key == "loop.stage" and parsed is not None and parsed not in LOOP_STAGES:
         raise ValueError(f"loop.stage must be one of {', '.join(LOOP_STAGES)}")
     if key.startswith("setup.") and parsed is not None and parsed not in SETUP_VALUES:

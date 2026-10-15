@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+from importlib.metadata import version
 
 import pytest
 from click.testing import CliRunner
@@ -60,8 +61,8 @@ def test_module_help_subprocess() -> None:
 
 
 def test_import_version() -> None:
-    """The installed package exposes a version string."""
-    assert __version__ == "0.7.0"
+    """The installed package version matches the distribution metadata."""
+    assert __version__ == version("skore-skills")
 
 
 def test_module_main_imports() -> None:

@@ -11,13 +11,12 @@ pixi run hash           # refresh per-skill + aggregate hashes in .catalog.json
 pixi run hash-check     # verify hashes match the on-disk skills (no writes)
 pixi run evals-check    # verify generated evals.json files match eval prompts
 pixi run validate       # validate .catalog.json structure (skills, categories, workflows)
-pixi run check-versions # verify the version matches across all declaring sources
 pixi run integration-validate # verify integration scenario files and the seed snapshot
-pixi run bump-major     # bump the major version across all version sources
-pixi run bump-minor     # bump the minor version across all version sources
-pixi run bump-patch     # bump the patch version across all version sources
-pixi run check          # composite: hash-check + evals-check + validate + check-versions + integration-validate
+pixi run check          # composite: hash-check + evals-check + validate + integration-validate
 ```
+
+The release version is the GitHub Release tag. See
+[`RELEASE_PROCESS.md`](../RELEASE_PROCESS.md).
 
 `pixi run check` is what CI invokes via `prefix-dev/setup-pixi` — see
 `.github/workflows/validate-catalog.yml`.
@@ -71,21 +70,6 @@ Checks these invariants:
 Run directly with `python tools/validate_catalog.py` or via
 `pixi run validate`.
 
-## check_versions.py
-
-Checks that the package version agrees across every source that declares
-it by hand, so a release bump can't leave one file lagging behind:
-
-1. `.catalog.json` — top-level `version`.
-2. `pixi.toml` — `[workspace] version`.
-3. `pyproject.toml` — `[project] version`.
-4. `.claude-plugin/plugin.json` — `version`.
-5. `.claude-plugin/marketplace.json` — each `plugins[].version`.
-6. `.cursor-plugin/plugin.json` — `version`.
-
-Run directly with `python tools/check_versions.py` or via
-`pixi run check-versions`.
-
 ## integration_scenario.py
 
 Validates, copies, prints, checks, and runs the scenarios under
@@ -117,24 +101,3 @@ checkout skill paths with `--skill`, and prepends this checkout's `src`
 to `PYTHONPATH`. The copied `SCENARIO.md` requires extension `skill(...)`
 calls and adds this checkout's `skore-skills` as an editable pixi
 dependency after pixi is initialized.
-
-## bump_version.py
-
-Increments the semver `major`, `minor`, or `patch` component and writes
-the new version consistently to every source that declares it:
-
-1. `.catalog.json` — top-level `version`.
-2. `pixi.toml` — `[workspace] version`.
-3. `pyproject.toml` — `[project] version`.
-4. `.claude-plugin/plugin.json` — `version`.
-5. `.claude-plugin/marketplace.json` — each `plugins[].version`.
-6. `.cursor-plugin/plugin.json` — `version`.
-
-The script refuses to run when those sources disagree. Use `--dry-run`
-to preview the bump without writing files. It does not create git commits
-or tags — review and commit the changes yourself.
-
-```bash
-python tools/bump_version.py patch --dry-run
-pixi run bump-patch
-```

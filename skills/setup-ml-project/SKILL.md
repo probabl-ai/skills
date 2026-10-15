@@ -11,10 +11,13 @@ description: >
   Then, in that same opening phase, ask the environment manager,
   whether we manage the env, the import name, and git autocommit
   — only for pieces the user selects, and answers that are not
-  already recorded. Persist those answers, then run only what
-  the user selects. Git may ask once, just before the first
-  commit, which unknown files to keep. Return to the skill that
-  dispatched this turn.
+  already recorded. Persist those answers. When Git is selected,
+  run the pre-change snapshot check before any setup write. Ask
+  to commit the current files only when that check says ask. An
+  empty folder or a clean tree records skipped and does not ask.
+  Then run only what the user selects. Git may ask once, just
+  before the first commit, which unknown files to keep. Return
+  to the skill that dispatched this turn.
 metadata:
   modelTier: small
 ---
@@ -39,8 +42,8 @@ matches. Do not stop after reading the table.
 
 | `setup.pending` | Then |
 |---|---|
-| empty | step 8. Do not ask. |
-| every pending piece's skill id is false | name the missing skills in one line, then step 8 |
+| empty | step 9. Do not ask. |
+| every pending piece's skill id is false | name the missing skills in one line, then step 9 |
 | non-empty | step 3 multi-select, then step 4, then the stop row, then the choice table |
 
 Stop row: editable is selected, `has_src` is false, and workspace
@@ -59,7 +62,8 @@ already recorded. Ask and persist before any write.
 | Workspace layout | fresh or manager-only, `policy.package` unset, `src/<pkg>/` does not name it | ask the import name (folder name is the default), then `policy set package` |
 | Git | `policy.git.autocommit` is null | ask `on` or `off` once, then persist |
 
-Then step 7 in order env, workspace, editable, git, then step 8.
+Then step 7 when Git is selected, then step 8 in order env,
+workspace, editable, git, then step 9.
 
 ## Sequence
 
@@ -70,7 +74,7 @@ Then step 7 in order env, workspace, editable, git, then step 8.
    ordered list of `missing` pieces. Do not `env init`,
    `scaffold`, install a package, or `git init` in this opening
    phase.
-2. If `setup.pending` is empty, ask nothing. Go to step 8.
+2. If `setup.pending` is empty, ask nothing. Go to step 9.
    `done` and `declined` pieces are already answered. Do not
    offer them. Do not ask their environment manager, whether we
    manage the env, import name, or automatic commits again.
@@ -102,7 +106,7 @@ Then step 7 in order env, workspace, editable, git, then step 8.
    `declined` piece because the layout already looks
    unfinished. If every pending
    piece's skill id is false, skip the ask, name the missing
-   skills in one line, and go to step 8.
+   skills in one line, and go to step 9.
 4. After the answer, and not in the question, persist each piece
    the user does not select:
    `python -m skore_skills policy set setup.<piece> declined`
@@ -141,10 +145,24 @@ Then step 7 in order env, workspace, editable, git, then step 8.
      That answer consents to the first commit. It does not
      authorize tracking unknown hidden files or review paths.
      Persist `policy set git.autocommit on` or `off`.
+     That answer does not decide the pre-change snapshot.
 
    Do not ask notebooks, the documentation site, tabular
    library, or where reports go.
-7. Load **selected** skills only, in this order: env →
+7. Pre-change snapshot, before any setup write. Run this only
+   when Git was selected, `status.skills.setup-git` is true, and
+   `policy.git.snapshot` is null. Load `setup-git` and do only
+   its pre-change snapshot section, then return here. Do not
+   `env init`, `scaffold`, or `git ignore-merge` in this step.
+   Do not ask the snapshot question in this skill. The loaded
+   section asks only when `git snapshot` returns `ask`. `clean`
+   and `nothing_to_commit`, including an empty folder, persist
+   `skipped` and do not ask. If Git was not selected,
+   `git.snapshot` is already set, or `setup-git` is not
+   installed, skip this step. A missing `setup-git` is one
+   line, then continue. When the check returns `ask`, the
+   commit is still offered if autocommit is `off`.
+8. Load **selected** skills only, in this order: env →
    workspace → editable (`has_src`) → git. Load `<id>` only if
    `status.skills.<id>` is true; else one-line skip. Do not
    invent that skill's steps. The loaded skills must not ask
@@ -155,7 +173,7 @@ Then step 7 in order env, workspace, editable, git, then step 8.
    `env add --editable --execute` exits 0. A non-zero exit leaves
    `setup.editable` missing. Do not mark a skipped piece, or a
    piece the user does not select, `done`.
-8. Return to the skill that dispatched this turn (a lifecycle
+9. Return to the skill that dispatched this turn (a lifecycle
    stage, or triage waiting on a lifecycle request). Do not
    open the entry board and do not start exploratory data
    analysis or a pipeline from here. When the user asked only
@@ -166,8 +184,8 @@ Then step 7 in order env, workspace, editable, git, then step 8.
 
 ## Stop conditions
 
-- Do not `env init`, `scaffold`, install a package, or `git init`
-  until step 6 has finished.
+- Do not `env init`, `scaffold`, or install a package before
+  step 8. Do not `git init` before step 7.
 - Do not offer a `done` or `declined` piece again.
 - Do not ask tabular library, skore mode, notebooks, or site.
 - Do not ask which hidden files or review paths to keep; `setup-git`

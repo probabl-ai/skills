@@ -19,6 +19,7 @@ from skore_skills.git import (
     merge_gitignore,
     run_end_turn,
     run_review,
+    run_snapshot,
 )
 from skore_skills.policy import set_policy_value
 
@@ -667,6 +668,105 @@ def test_end_turn_rejects_unknown_stage(tmp_path: Path) -> None:
     """Library callers cannot invent a stage the CLI choice already rejects."""
     with pytest.raises(ValueError, match="stage must be one of"):
         run_end_turn(tmp_path, "audit")
+
+
+def _head_missing(root: Path) -> bool:
+    head = subprocess.run(
+        ["git", "rev-parse", "--verify", "HEAD"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return head.returncode != 0
+
+
+def test_snapshot_dirty_repo_asks_without_committing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A dirty repo is an ask. The command does not commit or write gitignore."""
+    monkeypatch.chdir(tmp_path)
+    _init_repo(tmp_path)
+    _write(tmp_path / "notes.txt", "keep\n")
+    _write(tmp_path / ".env", "SECRET=1\n")
+    _write(tmp_path / ".venv" / "lib.py", "x\n")
+    _write(tmp_path / "model.pkl", "pkl\n")
+    payload, code = run_snapshot(tmp_path)
+    assert code == 0
+    assert payload["action"] == "ask"
+    assert payload["reason"] == "dirty"
+    assert payload["repo"] is True
+    assert "notes.txt" in payload["staged"]
+    assert ".env" in payload["blocked"]
+    assert ".env" not in payload["staged"]
+    assert ".venv/lib.py" not in payload["staged"]
+    assert "model.pkl" not in payload["staged"]
+    assert [item["path"] for item in payload["review_paths"]] == ["model.pkl"]
+    assert not (tmp_path / ".gitignore").exists()
+    assert _head_missing(tmp_path)
+    result = CliRunner().invoke(cli, ["git", "snapshot"])
+    assert result.exit_code == 0, result.output
+    echoed = json.loads(result.output)
+    assert echoed["action"] == "ask"
+    assert ".env" not in echoed["staged"]
+
+
+def test_snapshot_hides_ambiguous_dotfiles_from_staged(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Unknown hidden files are listed for a decision and are not pre-staged."""
+    monkeypatch.chdir(tmp_path)
+    _init_repo(tmp_path)
+    _write(tmp_path / ".python-version", "3.12\n")
+    _write(tmp_path / ".cursor" / "settings.json", "{}\n")
+    payload, code = run_snapshot(tmp_path)
+    assert code == 0
+    assert payload["action"] == "ask"
+    assert ".python-version" in payload["ambiguous_dotfiles"]
+    assert ".cursor/" in payload["ambiguous_dotfiles"]
+    assert ".python-version" not in payload["staged"]
+    assert ".cursor/settings.json" not in payload["staged"]
+    assert not (tmp_path / ".gitignore").exists()
+
+
+def test_snapshot_clean_and_already_set_skip(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A clean repo skips, and a recorded snapshot skips even when dirty."""
+    monkeypatch.chdir(tmp_path)
+    _init_repo(tmp_path)
+    clean, code = run_snapshot(tmp_path)
+    assert code == 0
+    assert clean["action"] == "skip"
+    assert clean["reason"] == "clean"
+    _write(tmp_path / "notes.txt", "later\n")
+    set_policy_value(tmp_path, "git.snapshot", "skipped")
+    again = json.loads(CliRunner().invoke(cli, ["git", "snapshot"]).output)
+    assert again["action"] == "skip"
+    assert again["reason"] == "already"
+    assert not (tmp_path / ".gitignore").exists()
+    assert _head_missing(tmp_path)
+
+
+def test_snapshot_without_a_repo(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Files outside a repo are an ask. An empty folder has nothing to commit."""
+    monkeypatch.chdir(tmp_path)
+    empty, code = run_snapshot(tmp_path)
+    assert code == 0
+    assert empty["repo"] is False
+    assert empty["action"] == "skip"
+    assert empty["reason"] == "nothing_to_commit"
+    _write(tmp_path / "README.md", "hi\n")
+    _write(tmp_path / ".env", "SECRET=1\n")
+    payload = json.loads(CliRunner().invoke(cli, ["git", "snapshot"]).output)
+    assert payload["action"] == "ask"
+    assert payload["repo"] is False
+    assert payload["staged"] == ["README.md"]
+    assert ".env" in payload["blocked"]
+    assert not (tmp_path / ".git").exists()
+    assert not (tmp_path / ".gitignore").exists()
 
 
 def test_review_without_a_repo_is_ready(
