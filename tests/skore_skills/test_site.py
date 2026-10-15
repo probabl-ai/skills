@@ -1222,6 +1222,35 @@ def test_site_build_keeps_authored_iframe(
     assert 'class="skore-embed"' in staged
 
 
+def test_site_build_links_thumbnail_to_a_separate_plot_page(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A thumbnail anchor stays a link; the PNG and the HTML are both staged."""
+    _scaffold(tmp_path)
+    (tmp_path / "data_analysis").mkdir()
+    anchor = (
+        '<a href="target_vs_time.html" target="_blank">'
+        '<img src="target_vs_time.png" alt="Load over time"></a>'
+    )
+    (tmp_path / "data_analysis" / "data_analysis.md").write_text(
+        anchor + "\n", encoding="utf-8"
+    )
+    (tmp_path / "data_analysis" / "target_vs_time.html").write_text(
+        "<html></html>\n", encoding="utf-8"
+    )
+    (tmp_path / "data_analysis" / "target_vs_time.png").write_bytes(b"png")
+    monkeypatch.setattr(site_mod.subprocess, "run", _ok_mkdocs(tmp_path))
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(cli, ["site", "build"])
+    assert result.exit_code == 0, result.output
+    docs = tmp_path / "_build" / "docs"
+    staged = (docs / "data_analysis.md").read_text(encoding="utf-8")
+    assert anchor in staged
+    assert "skore-embed" not in staged
+    assert (docs / "target_vs_time.png").is_file()
+    assert (docs / "target_vs_time.html").is_file()
+
+
 def test_site_build_stub_index_in_nav(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

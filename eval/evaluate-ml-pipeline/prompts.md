@@ -977,3 +977,47 @@ violated.
 - Call `report.metrics.add`.
 - Return the learner to build.
 - Pass `scoring=` to `skore.evaluate`.
+
+---
+
+## CASE_30 — A time lock scores the baseline and plots the forecast
+
+**User prompt:**
+> Evaluate `02_load_forecast` and plot the forecasts.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty. `status.policy.skore_mode` is
+  `local`.
+- `frame show` returned `proceed`. `translation.scheme` is
+  `date_time`, `horizons` `[24]`, `n_splits` 4,
+  `covariate_vintage` `actuals_only`, `metric` `MAE`. Baseline is
+  `seasonal_naive` with the note "same hour last week".
+- The matching smoke pytest is green. The user already answered
+  **Evaluate** this turn.
+- `references/forecasting.md` is on disk at the project root. Open
+  it with `read_file` before writing the plots.
+
+**Tools:** yes
+
+**Sandbox:**
+- copy: `skills/evaluate-ml-pipeline/references/forecasting.md` as `references/forecasting.md`
+
+**Expect reads:**
+- `references/forecasting.md`
+
+**Must do:**
+- Call `skore.evaluate(learner, data={...})` without `splitter=`.
+- Score the same-hour-last-week forecast on the same test rows
+  with MAE, and report it next to the model.
+- Plot observed and predicted values against the target time with
+  a vertical dashed line at the start of each test fold, using
+  `plot-ml-figure`.
+- Put the caveat that scores are optimistic because measured
+  values stood in for forecasts on the plot and in the close.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Plot against the prediction time.
+- Fold the baseline into an average and omit it per horizon.
+- Skip the caveat because the user did not ask for it.
+- Pass `splitter=` to `skore.evaluate`.

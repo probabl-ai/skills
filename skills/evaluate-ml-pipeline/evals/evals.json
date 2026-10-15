@@ -581,6 +581,36 @@
       "tools": false,
       "sandbox": [],
       "expect_files": []
+    },
+    {
+      "id": 30,
+      "title": "A time lock scores the baseline and plots the forecast",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty. `status.policy.skore_mode` is\n  `local`.\n- `frame show` returned `proceed`. `translation.scheme` is\n  `date_time`, `horizons` `[24]`, `n_splits` 4,\n  `covariate_vintage` `actuals_only`, `metric` `MAE`. Baseline is\n  `seasonal_naive` with the note \"same hour last week\".\n- The matching smoke pytest is green. The user already answered\n  **Evaluate** this turn.\n- `references/forecasting.md` is on disk at the project root. Open\n  it with `read_file` before writing the plots.]\n\nEvaluate `02_load_forecast` and plot the forecasts.",
+      "expected_output": "Behavioural response satisfying: - Call `skore.evaluate(learner, data={...})` without `splitter=`. - Score the same-hour-last-week forecast on the same test rows with MAE, and report it next to the model. - Plot observed and predicted values against the target time with a vertical dashed line at the start of each test fold, using `plot-ml-figure`. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Plot against the prediction time. - Fold the baseline into an average and omit it per horizon.",
+      "files": [],
+      "expectations": [
+        "Call `skore.evaluate(learner, data={...})` without `splitter=`.",
+        "Score the same-hour-last-week forecast on the same test rows with MAE, and report it next to the model.",
+        "Plot observed and predicted values against the target time with a vertical dashed line at the start of each test fold, using `plot-ml-figure`.",
+        "Put the caveat that scores are optimistic because measured values stood in for forecasts on the plot and in the close.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Plot against the prediction time.",
+        "The response does NOT: Fold the baseline into an average and omit it per horizon.",
+        "The response does NOT: Skip the caveat because the user did not ask for it.",
+        "The response does NOT: Pass `splitter=` to `skore.evaluate`."
+      ],
+      "tools": true,
+      "sandbox": [
+        {
+          "kind": "copy",
+          "source": "skills/evaluate-ml-pipeline/references/forecasting.md",
+          "path": "references/forecasting.md"
+        }
+      ],
+      "expect_files": [],
+      "expect_reads": [
+        "references/forecasting.md"
+      ]
     }
   ]
 }

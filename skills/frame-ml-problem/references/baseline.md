@@ -19,3 +19,16 @@ comparison is the next experiment.
 
 The note is one short phrase: the season, the known column, or the
 production system.
+
+When the deployment is time, the only token is `seasonal_naive`.
+The note names which naive forecast is the honest one for this
+series and horizon, in the data's own words:
+
+- the same time one week earlier, when a weekly cycle dominates
+- the same time one day earlier, when a daily cycle dominates
+- the latest value known at prediction time, when the series has
+  no strong cycle or the horizon is short
+
+A candidate must be computable from values already known at
+prediction time. Ask which fits when the EDA report or the user
+does not say.

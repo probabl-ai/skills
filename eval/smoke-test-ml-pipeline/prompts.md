@@ -282,3 +282,39 @@ violated.
 - Stop after the row-count assertion.
 - Import `skore` in the test.
 - Write `skore.evaluate`.
+
+---
+
+## CASE_10 — A time lock also checks the boundary row
+
+**User prompt:**
+> Write the smoke test for `02_load_forecast`.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- `journal/02_load_forecast.md` approved with Status.headline
+  `MAE 310 (4-fold CV)`.
+- `translation.scheme` is `date_time`. `translation.horizons` is
+  `[1, 24]`, `horizon_unit` `hour`, `gap` 0.
+- `experiments/02_load_forecast.py` exists. The history is bound
+  from the full `data/` source.
+- `pytest` is installed.
+- `tests/smoke/test_02_load_forecast.py` is an empty scaffold.
+
+**Must do:**
+- Wire `assert len(predictions) == n_predict_grid_rows` for the
+  held-out slice.
+- After the fit, predict for a one-row grid whose prediction time
+  is the last observation, with the history bound to the full
+  source.
+- Assert that the boundary prediction has one row, two columns for
+  the two horizons, and finite values.
+- Wire the soft MAE assertion with literal `310`.
+- Run `python -m skore_skills smoke run --stem 02_load_forecast`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Score the boundary row against a ground truth.
+- Pad the history or filter the boundary prediction to make it pass.
+- Import `skore` in the test.
+- Write `skore.evaluate`.

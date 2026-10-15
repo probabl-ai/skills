@@ -30,6 +30,7 @@
 | Generalize to | <n/a or column> |
 | Known at predict | <n/a or columns> |
 | Time role | <n/a \| sort_key \| covariate> |
+| Covariate vintage | <n/a \| none \| known_future \| forecast_vintage \| actuals_only> |
 | Metric role | <imposed \| proper_score \| ranking \| thresholded \| point_error> |
 | Metric | <comparison name> |
 | Baseline | <one of seasonal_naive, group_mean, logistic, production, dummy> |

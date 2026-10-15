@@ -15,8 +15,9 @@
   column `label`, task `classification`.
 - `python -m skore_skills frame show` returns `ask` /
   `missing_keys`. `missing` lists prediction_goal, deployment,
-  horizon, gap, time_role, generalize_to, known_at_predict,
-  metric_role, metric, baseline, baseline_note, and folds.
+  horizon, gap, time_role, covariate_vintage, generalize_to,
+  known_at_predict, metric_role, metric, baseline, baseline_note,
+  and folds.
 - `questions` names a reference for each of those keys.
   prediction_goal candidates are `probabilities`, `point_labels`,
   and `uncovered`. The horizon and gap questions cite
@@ -30,9 +31,9 @@
   and `references/baseline.md`.
 - Ask every key in `missing` in one message. Prediction-goal
   options are only `probabilities`, `point_labels`, and
-  `uncovered`. Say horizon and gap are n/a unless the deployment
-  is time, and generalize-to is n/a unless the deployment is
-  groups.
+  `uncovered`. Say horizon, gap, and covariate vintage are n/a
+  unless the deployment is time, and generalize-to is n/a unless
+  the deployment is groups.
 - Ask for one baseline token for the Baseline cell.
 
 **Must NOT do:**
@@ -53,17 +54,26 @@
 - Prediction goal is `point_predictions` and Deployment is `time`.
   Status is `draft`.
 - `frame show` returns `missing` with horizon, gap, time_role,
-  known_at_predict, metric_role, metric, baseline, baseline_note,
-  and folds. The horizon and gap questions cite
-  `references/horizon-gap.md` and have no candidates.
+  covariate_vintage, known_at_predict, metric_role, metric,
+  baseline, baseline_note, and folds. The horizon and gap
+  questions cite `references/horizon-gap.md` and have no
+  candidates. The covariate_vintage question cites
+  `references/covariate-vintage.md` with candidates `none`,
+  `known_future`, `forecast_vintage`, and `actuals_only`. The
+  baseline candidates are only `seasonal_naive`.
 
 **Must do:**
-- Read `references/horizon-gap.md` once.
+- Read `references/horizon-gap.md` and
+  `references/covariate-vintage.md` once.
 - Ask every still-missing key in one message.
 - Explain horizon as the lead from prediction time to the target,
-  and gap as the delay from the end of training to when the
-  forecast is issued. Ask for the horizons as numbers in one
-  unit, and for the gap in that same unit. A gap of 0 is allowed.
+  and gap as the delay from the target time of the last training
+  row to when the model trained on it first forecasts. Say the gap
+  includes how late the true value is published and how long a
+  retrain takes. Ask for the horizons as numbers in one unit, and
+  for the gap in that same unit. A gap of 0 is allowed.
+- Offer the four covariate-vintage candidates and no others. Offer
+  only `seasonal_naive` for the baseline.
 
 **Must NOT do:**
 - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
@@ -423,10 +433,12 @@
 
 **Assumed workspace state:**
 - `status.setup.pending` is empty.
-- Status is `draft`. Deployment, horizon, gap, time role, and
-  generalize-to are empty. The other required cells are valid.
+- Status is `draft`. Deployment, horizon, gap, time role, covariate
+  vintage, and generalize-to are empty. The other required cells
+  are valid.
 - `frame show` returns `ask` / `missing_keys`. `missing` lists
-  deployment, horizon, gap, time_role, and generalize_to.
+  deployment, horizon, gap, time_role, covariate_vintage, and
+  generalize_to.
 
 **Must do:**
 - Write the generalize-to cell from the user message.
@@ -579,3 +591,40 @@
 - Treat the pair as one multiclass column or as multi-output
   regression.
 - Write a splitter class or Python.
+
+---
+
+## CASE_21 — Observed values in place of forecasts are flagged, not blocked
+
+**User prompt:**
+> Hourly load, forecast 24 hours ahead. The temperature column is
+> the measured temperature; we never kept the weather forecasts.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Status is `draft`. Prediction goal is `point_predictions`,
+  Deployment is `time`, Horizon is `24 hour`, Gap is `0 hour`, and
+  Time role is `sort_key`. Covariate vintage is empty. The other
+  required cells are valid.
+- `frame show` returns `ask` / `missing_keys` with `missing`
+  `["covariate_vintage"]`. The question cites
+  `references/covariate-vintage.md` with candidates `none`,
+  `known_future`, `forecast_vintage`, and `actuals_only`.
+- After the cell is written, a second `frame show` returns
+  `proceed`.
+
+**Must do:**
+- Write Covariate vintage `actuals_only` from the user message
+  without asking again.
+- Say in one line that scores will be optimistic because the
+  features use measured values where deployment will have
+  forecasts, and that the report and the forecast plots will carry
+  that caveat.
+- Set Status to `locked` and run `frame show` again in this turn.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Refuse to continue because historical forecasts are missing.
+- Ask the user to confirm `actuals_only`.
+- Offer a covariate vintage that is not one of the four candidates.
+- Write Python or a splitter class.

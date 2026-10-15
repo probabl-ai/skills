@@ -630,6 +630,48 @@
       "tools": false,
       "sandbox": [],
       "expect_files": []
+    },
+    {
+      "id": 33,
+      "title": "A forecast always plots the target against time",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Scaffold exists. G-TABULAR is `pandas`.\n- User chose **run** for G-DATA-ANALYSIS.\n- `time` is a datetime column. `load` is numeric with many\n  distinct values.\n- `plotly` is not installed. `add-python-package` is installed.]\n\nExplore `data/load.csv`. We want to forecast `load` 24 hours\nahead. The file has `time` and `load`, one row per hour for\n12 years (about 105,000 rows).",
+      "expected_output": "Behavioural response satisfying: - Load `add-python-package` for `plotly` with the other analysis libraries. - Append `templates/target_vs_time.py` with `time` as the time column and `load` as the target, and drop the seaborn datetime `relplot`. - Draw at most 50,000 points of the full span, say that every n-th row is kept, and add the recent rows at full resolution. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Replace the Plotly plots with a seaborn or PNG-only plot. - Plot all 105,000 rows in one trace.",
+      "files": [],
+      "expectations": [
+        "Load `add-python-package` for `plotly` with the other analysis libraries.",
+        "Append `templates/target_vs_time.py` with `time` as the time column and `load` as the target, and drop the seaborn datetime `relplot`.",
+        "Draw at most 50,000 points of the full span, say that every n-th row is kept, and add the recent rows at full resolution.",
+        "Write both Plotly HTML files under `data_analysis/` and embed each beside a sentence that cites the span, the row count, and the step kept.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Replace the Plotly plots with a seaborn or PNG-only plot.",
+        "The response does NOT: Plot all 105,000 rows in one trace.",
+        "The response does NOT: Write the subset to disk or change the raw file.",
+        "The response does NOT: Put the plot in the glance section.",
+        "The response does NOT: Use a CDN for Plotly.js."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
+    },
+    {
+      "id": 34,
+      "title": "A heavy forecast plot is a thumbnail that links to the page",
+      "prompt": "[Workspace state \u2014 read but do not narrate back:\n- `status.setup.pending` is empty.\n- Scaffold exists. G-TABULAR is `pandas`.\n- User chose **run** for G-DATA-ANALYSIS.\n- `load`, `temp`, and `wind` are numeric with many distinct\n  values. `time` is a datetime column. About 105,000 rows.\n- `plotly` and `matplotlib` are installed. `kaleido` is not.\n- The target plot would draw more than 100,000 points in total.]\n\nExplore `data/regional_load.csv`. Forecast `load`, `temp`, and\n`wind` for the next day. Hourly rows from `time`, 12 years.",
+      "expected_output": "Behavioural response satisfying: - Draw the three targets as facet rows in one Plotly figure. - Save the full interactive figure as HTML with Plotly and a small PNG preview of the same subset made with matplotlib (through pandas), next to it. - In `data_analysis.md`, show the thumbnail inside an anchor that links to the HTML, opened in a new tab, beside a sentence citing the span and the rows kept. It must NOT: - Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed). - Embed the heavy HTML as an iframe. - Leave the thumbnail PNG without the link to its HTML.",
+      "files": [],
+      "expectations": [
+        "Draw the three targets as facet rows in one Plotly figure.",
+        "Save the full interactive figure as HTML with Plotly and a small PNG preview of the same subset made with matplotlib (through pandas), next to it.",
+        "In `data_analysis.md`, show the thumbnail inside an anchor that links to the HTML, opened in a new tab, beside a sentence citing the span and the rows kept.",
+        "The response does NOT: Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).",
+        "The response does NOT: Embed the heavy HTML as an iframe.",
+        "The response does NOT: Leave the thumbnail PNG without the link to its HTML.",
+        "The response does NOT: Replace the interactive plot with the PNG alone.",
+        "The response does NOT: Install `kaleido` or call `write_image`."
+      ],
+      "tools": false,
+      "sandbox": [],
+      "expect_files": []
     }
   ]
 }

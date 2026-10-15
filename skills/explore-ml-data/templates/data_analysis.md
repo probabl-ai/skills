@@ -14,7 +14,9 @@ gates make the picks.
 Every saved PNG and extra HTML is embedded here —
 `![<caption>](<name>.png)` or
 `<iframe src="<slug>.html" width="100%" height="640"></iframe>`.
-A sibling of this file, never a bare link. Each embed sits beside a
+A sibling of this file, never a bare link. A heavy forecast plot is
+the one exception: its PNG thumbnail inside an anchor to the HTML
+(`references/forecasting.md`). Each embed sits beside a
 sentence that cites numbers from the analysis. If a figure earns no
 such sentence, do not save it. Glance stays TableReport-only.
 

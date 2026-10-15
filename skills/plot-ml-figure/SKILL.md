@@ -71,5 +71,6 @@ still follows this tree.
 - Do not load `choose-python-library` for matplotlib vs seaborn
   vs plotly.
 - Do not `pixi add` / `uv add` / `env add`.
-- Do not install plotly on the default EDA path.
+- Do not install plotly on the default EDA path. A forecast is not
+  the default path (`explore-ml-data` `references/forecasting.md`).
 - Do not `plt.close` a figure that should appear in a notebook.

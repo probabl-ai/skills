@@ -13,9 +13,11 @@ For each case the model is given:
 - The case's `User prompt` (verbatim), prefixed with the
   `Assumed workspace state` block.
 
-Case 3 sets `**Tools:** yes` and seeds `references/layer_examples.md`
-so the target can `read_file` the history-dependent JOIN example
-(the same file `SKILL.md` points at). Other cases stay single-turn.
+Cases 3 and 28 set `**Tools:** yes`. Case 3 seeds
+`references/layer_examples.md` so the target can `read_file` the
+history-dependent JOIN example (the same file `SKILL.md` points
+at). Case 28 seeds `references/forecasting.md`. Other cases stay
+single-turn.
 
 Pass criterion per case: every `Must do` ticked, zero `Must NOT do`
 violated.
@@ -804,4 +806,57 @@ violated.
 - Leave the other target in X.
 - Use `MultiOutputClassifier`.
 - Skip `with_scoring` because MAE is a single-output skore default.
+- Call `skore.evaluate`.
+
+---
+
+## CASE_28 — A time lock builds the forecasting graph
+
+**User prompt:**
+> Write the learner for the 24 and 48 hour ahead load forecast.
+> The Method names lags at 24 and 168 hours and the calendar.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- `frame show` returned `proceed`. `translation.scheme` is
+  `date_time`, `horizons` `[24, 48]`, `horizon_unit` `hour`, `gap`
+  0, `gap_unit` `hour`, `n_splits` 4, `covariate_vintage`
+  `known_future`. Time role is `sort_key`.
+- The history is an hourly CSV with a few missing hours, in UTC.
+- No existing `src/<pkg>/pipeline.py`.
+- The skill's `references/` tree is on disk at the project root.
+  Open `references/forecasting.md` with `read_file` before writing
+  the graph.
+
+**Tools:** yes
+
+**Sandbox:**
+- copy: `skills/build-ml-pipeline/references/forecasting.md` as `references/forecasting.md`
+- copy: `skills/build-ml-pipeline/references/layer_examples.md` as `references/layer_examples.md`
+- copy: `skills/build-ml-pipeline/references/custom-splitter.md` as `references/custom-splitter.md`
+
+**Expect reads:**
+- `references/forecasting.md`
+
+**Must do:**
+- Put the history on a regular hourly grid with explicit empty
+  rows, extended past the last observation by at least 48 hours.
+- Align X and y by joining the prediction-time grid to observed
+  values at `t + h` for each horizon, and return the whole grid
+  at predict time.
+- Build the features once per horizon from a target time of
+  `prediction_time + h`, with every lag at least `h` hours back.
+- Compute calendar features from the local time zone and keep the
+  grid in UTC.
+- Use one predictor per horizon and a final step that reads
+  `skrub.eval_mode()` and returns the fitted predictors unchanged
+  in `fit`.
+- Guard the lag function against future values.
+- Keep the locked date splitter on `mark_as_X`.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Shift the target in the loader and drop the null rows.
+- Place `mark_as_X` after the lag features.
+- Pass a lag shorter than the horizon.
 - Call `skore.evaluate`.

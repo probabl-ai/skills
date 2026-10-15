@@ -970,3 +970,73 @@
 - End the turn because Graphviz SVG rendering failed.
 - Prescribe `dot -c` or a Homebrew Graphviz install from this skill.
 - Discard the analysis that was already underway.
+
+---
+
+## CASE_33 — A forecast always plots the target against time
+
+**User prompt:**
+> Explore `data/load.csv`. We want to forecast `load` 24 hours
+> ahead. The file has `time` and `load`, one row per hour for
+> 12 years (about 105,000 rows).
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Scaffold exists. G-TABULAR is `pandas`.
+- User chose **run** for G-DATA-ANALYSIS.
+- `time` is a datetime column. `load` is numeric with many
+  distinct values.
+- `plotly` is not installed. `add-python-package` is installed.
+
+**Must do:**
+- Load `add-python-package` for `plotly` with the other analysis
+  libraries.
+- Append `templates/target_vs_time.py` with `time` as the time
+  column and `load` as the target, and drop the seaborn datetime
+  `relplot`.
+- Draw at most 50,000 points of the full span, say that every
+  n-th row is kept, and add the recent rows at full resolution.
+- Write both Plotly HTML files under `data_analysis/` and embed
+  each beside a sentence that cites the span, the row count, and
+  the step kept.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Replace the Plotly plots with a seaborn or PNG-only plot.
+- Plot all 105,000 rows in one trace.
+- Write the subset to disk or change the raw file.
+- Put the plot in the glance section.
+- Use a CDN for Plotly.js.
+
+---
+
+## CASE_34 — A heavy forecast plot is a thumbnail that links to the page
+
+**User prompt:**
+> Explore `data/regional_load.csv`. Forecast `load`, `temp`, and
+> `wind` for the next day. Hourly rows from `time`, 12 years.
+
+**Assumed workspace state:**
+- `status.setup.pending` is empty.
+- Scaffold exists. G-TABULAR is `pandas`.
+- User chose **run** for G-DATA-ANALYSIS.
+- `load`, `temp`, and `wind` are numeric with many distinct
+  values. `time` is a datetime column. About 105,000 rows.
+- `plotly` and `matplotlib` are installed. `kaleido` is not.
+- The target plot would draw more than 100,000 points in total.
+
+**Must do:**
+- Draw the three targets as facet rows in one Plotly figure.
+- Save the full interactive figure as HTML with Plotly and a
+  small PNG preview of the same subset made with matplotlib
+  (through pandas), next to it.
+- In `data_analysis.md`, show the thumbnail inside an anchor that
+  links to the HTML, opened in a new tab, beside a sentence
+  citing the span and the rows kept.
+
+**Must NOT do:**
+- Put catalog skill ids, HITL, `G-PKG-NAME` / `G-ENV-MGR` / `G-SKORE-MODE` / `G-TABULAR` / `G-CV-SPLITTER`, or `python -m skore_skills` / `env add` in user-facing questions or the close narrative (trailing `G-REPORT-LOCATOR` / `G-AUDIT-FINDING` and unmanaged `pixi add` / `uv add` / `pip install` lines are allowed).
+- Embed the heavy HTML as an iframe.
+- Leave the thumbnail PNG without the link to its HTML.
+- Replace the interactive plot with the PNG alone.
+- Install `kaleido` or call `write_image`.

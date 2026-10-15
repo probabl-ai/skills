@@ -22,6 +22,7 @@ _LABELS = (
     "Generalize to",
     "Known at predict",
     "Time role",
+    "Covariate vintage",
     "Metric role",
     "Metric",
     "Baseline",
@@ -60,6 +61,7 @@ def _locked_iid(**overrides: str) -> dict[str, str]:
         "Generalize to": "n/a",
         "Known at predict": "n/a",
         "Time role": "n/a",
+        "Covariate vintage": "n/a",
         "Metric role": "point_error",
         "Metric": "MAE",
         "Baseline": "dummy",
@@ -112,6 +114,7 @@ def test_blank_journal_asks_every_missing_decision(tmp_path: Path) -> None:
         "horizon",
         "gap",
         "time_role",
+        "covariate_vintage",
         "generalize_to",
         "known_at_predict",
         "metric_role",
@@ -182,6 +185,7 @@ def test_locked_iid_translates_to_kfold(tmp_path: Path) -> None:
         "horizon_unit": None,
         "gap": None,
         "gap_unit": None,
+        "covariate_vintage": None,
         "groups": None,
         "report": None,
         "metric": "MAE",
@@ -198,6 +202,7 @@ def test_locked_time_translates_to_a_date_splitter(tmp_path: Path) -> None:
             Horizon="7 day",
             Gap="7 day",
             **{"Time role": "sort_key"},
+            **{"Covariate vintage": "none"},
             **{"Generalize to": "n/a"},
             Baseline="seasonal_naive",
             **{"Baseline note": "last observed week"},
@@ -270,6 +275,7 @@ def test_predefined_time_does_not_become_a_date_splitter(tmp_path: Path) -> None
             Horizon="7 day",
             Gap="7 day",
             **{"Time role": "sort_key"},
+            **{"Covariate vintage": "none"},
             **{"Generalize to": "n/a"},
             Baseline="seasonal_naive",
             **{"Baseline note": "last observed week"},
@@ -302,6 +308,7 @@ def test_horizon_list_locks_with_one_baseline(tmp_path: Path) -> None:
             Horizon="1 hour, 24 hour",
             Gap="0 hour",
             **{"Time role": "sort_key"},
+            **{"Covariate vintage": "none"},
             Baseline="seasonal_naive",
             **{"Baseline note": "last week"},
         ),
@@ -340,6 +347,7 @@ def test_zero_gap_with_a_longer_horizon_proceeds(tmp_path: Path) -> None:
             Horizon="7 day",
             Gap="0 day",
             **{"Time role": "sort_key"},
+            **{"Covariate vintage": "none"},
             Baseline="seasonal_naive",
             **{"Baseline note": "last observed week"},
         ),
@@ -360,6 +368,7 @@ def test_mismatched_gap_units_ask_instead_of_converting(tmp_path: Path) -> None:
             Horizon="7 day",
             Gap="24 hour",
             **{"Time role": "sort_key"},
+            **{"Covariate vintage": "none"},
             Baseline="seasonal_naive",
             **{"Baseline note": "last observed week"},
         ),
@@ -409,6 +418,85 @@ def test_iid_baseline_omits_seasonal_naive(tmp_path: Path) -> None:
     assert "baseline" in payload["missing"]
     assert _question(payload, "baseline")["candidates"] == ["production", "dummy"]
     assert _question(payload, "baseline")["reference"] == "references/baseline.md"
+
+
+def _locked_time(**overrides: str) -> dict[str, str]:
+    rows = _locked_iid(
+        Deployment="time",
+        Horizon="24 hour",
+        Gap="0 hour",
+        **{"Time role": "sort_key"},
+        **{"Covariate vintage": "forecast_vintage"},
+        Baseline="seasonal_naive",
+        **{"Baseline note": "same hour last week"},
+        Folds="4",
+    )
+    rows.update(overrides)
+    return rows
+
+
+def test_time_deployment_asks_covariate_vintage_from_a_closed_menu(
+    tmp_path: Path,
+) -> None:
+    _journal(
+        tmp_path,
+        **{
+            "Status": "draft",
+            "Prediction goal": "point_predictions",
+            "Deployment": "time",
+        },
+    )
+
+    payload = frame_show(tmp_path)
+
+    question = _question(payload, "covariate_vintage")
+    assert question["reference"] == "references/covariate-vintage.md"
+    assert question["candidates"] == [
+        "none",
+        "known_future",
+        "forecast_vintage",
+        "actuals_only",
+    ]
+
+
+def test_locked_time_translation_carries_the_covariate_vintage(
+    tmp_path: Path,
+) -> None:
+    _journal(tmp_path, **_locked_time(**{"Covariate vintage": "actuals_only"}))
+
+    payload = frame_show(tmp_path)
+
+    assert payload["action"] == "proceed"
+    assert payload["translation"]["covariate_vintage"] == "actuals_only"
+
+
+def test_unknown_covariate_vintage_stays_open(tmp_path: Path) -> None:
+    _journal(tmp_path, **_locked_time(**{"Covariate vintage": "sometimes"}))
+
+    payload = frame_show(tmp_path)
+
+    assert payload["action"] == "ask"
+    assert payload["missing"] == ["covariate_vintage"]
+
+
+def test_iid_never_asks_covariate_vintage(tmp_path: Path) -> None:
+    rows = _locked_iid(Status="draft")
+    rows["Covariate vintage"] = ""
+    _journal(tmp_path, **rows)
+
+    payload = frame_show(tmp_path)
+
+    assert payload["reason"] == "set"
+    assert payload["context"]["covariate_vintage"] == "n/a"
+
+
+def test_time_baseline_is_always_seasonal_naive(tmp_path: Path) -> None:
+    _journal(tmp_path, **_locked_time(Baseline="dummy"))
+
+    payload = frame_show(tmp_path)
+
+    assert payload["missing"] == ["baseline"]
+    assert payload["candidates"] == ["seasonal_naive"]
 
 
 def test_revise_asks_and_draft_blocks_proceed(tmp_path: Path) -> None:
@@ -789,7 +877,7 @@ def test_frame_clear_keeps_a_non_group_baseline(tmp_path: Path) -> None:
 
 
 def test_frame_clear_deployment_blanks_time_and_group_cells(tmp_path: Path) -> None:
-    """A deployment reopen clears horizon, gap, time role, and generalize-to."""
+    """A deployment reopen clears every time cell and generalize-to."""
     from skore_skills.frame import frame_clear
 
     _journal(tmp_path, **_locked_iid())
@@ -800,6 +888,7 @@ def test_frame_clear_deployment_blanks_time_and_group_cells(tmp_path: Path) -> N
         "horizon",
         "gap",
         "time_role",
+        "covariate_vintage",
         "generalize_to",
     ]
 

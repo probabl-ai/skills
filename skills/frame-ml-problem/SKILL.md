@@ -111,9 +111,10 @@ wrapper CLI.
    Value the user answered in this turn. Do not rename the
    Variable column. Do not stop after the first decision.
    When the deployment makes other rows inapplicable, set those
-   rows to `n/a` in the same edit. Horizon, gap, and time role
-   are `n/a` unless deployment is time. Generalize-to is `n/a`
-   unless deployment is groups. A fold count of `1` is one
+   rows to `n/a` in the same edit. Horizon, gap, time role, and
+   covariate vintage are `n/a` unless deployment is time.
+   Generalize-to is `n/a` unless deployment is groups. A fold
+   count of `1` is one
    train/test split drawn from a single table. When the EDA
    report, the text shipped with the data, or the user already
    names a separate training table and test table, offer using

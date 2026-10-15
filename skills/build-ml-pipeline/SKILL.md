@@ -201,6 +201,8 @@ Per-row math and fit-time encoders: marker on the loaded frame.
 Any cross-row step: marker upstream of that step. Code for the
 three layers, including the loader-baked horizon refusal:
 `references/layer_examples.md`. Read it before proposing Layer 2.
+When the lock is a time deployment, also read
+`references/forecasting.md`.
 
 `value=` is preview only. Expose `data_dir_preview=None` on
 `build_learner`. Do not bake a relative path into `pipeline.py`.
@@ -414,6 +416,8 @@ Re-emit it with evidence before the final message.
 - `references/custom-splitter.md` — the split copies the locked
   deployment. The time series section is the date splitter when
   `translation.scheme` is `date_time`.
+- `references/forecasting.md` — X, y, features, and the boundary
+  forecast when `translation.scheme` is `date_time`.
 - `evaluate-ml-pipeline/references/metadata-routing.md` — evaluate
   omits `splitter=`.
 - `evaluate-ml-pipeline/references/custom-metrics.md` — a score

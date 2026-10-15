@@ -255,6 +255,10 @@ is by id. Do not re-run `evaluate` to paper over that.
 Plots that skore does not already draw load `plot-ml-figure`
 when that skill is installed.
 
+When the lock is a time deployment, also read
+`references/forecasting.md`: baseline comparison, the forecast plots,
+and the covariate-vintage caveat.
+
 ## After `put`
 
 `Project.put` returns `None`. `materialize.py` writes the newest
@@ -439,5 +443,7 @@ Pre-flight (evaluate-ml-pipeline):
 - `references/custom-metrics.md` — a non-default metric via
   `with_scoring`.
 - `references/custom-checks.md` — a check the user asked for.
+- `references/forecasting.md` — the baseline score, forecast plots,
+  and the caveat on a time deployment.
 - `templates/materialize.py` — the only evaluation run. Copy
   to `scratch/results/<stem>/materialize.py`.

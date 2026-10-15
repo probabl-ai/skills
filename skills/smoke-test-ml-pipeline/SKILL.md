@@ -178,6 +178,7 @@ Pre-flight (smoke-test-ml-pipeline):
 - [ ] Hard assertion wired: `len(predictions) == n_predict_grid_rows`,
       plus output width (1 for one target; `translation.targets`
       for multi-output regression, including column names)
+- [ ] Boundary row wired for a `date_time` lock (or n/a otherwise)
 - [ ] Soft assertion wired (or explicitly skipped): smoke MAE within
       `3 × CV_MEAN_HARDCODED_FROM_PLAN` (or task-appropriate
       analogue). Value is a literal pulled from the matching
@@ -333,6 +334,21 @@ described in `build-ml-pipeline` Rule 2, with worked code in
 `build-ml-pipeline/references/layer_examples.md`. Read that
 reference before constructing the predict env for an early-mark
 pipeline.
+
+### Time deployments — the boundary row
+
+The held-out slice lies inside the data, so it cannot show that the
+history grid stops at the last observation and the lags of a
+forecast issued there fall off its end. When `translation.scheme`
+is `date_time`, add one more block to the same test function, with
+the learner already fitted: predict for a one-row grid whose
+prediction time is the last observation, so every target time is
+past the data. The history binding is the full source, as in
+deployment. Assert one row, one column per entry in
+`translation.horizons`, and finite values. There is no ground
+truth and no soft metric for this row. A failure goes back to
+build like the row-count failure: the history needs empty rows
+past its end (`build-ml-pipeline` `references/forecasting.md`).
 
 ### IID flat-table problems — what the smoke test still buys you
 

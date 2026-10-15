@@ -2,7 +2,7 @@
   "name": "probabl-skills",
   "repository": "probabl-ai/skore-skills",
   "description": "Skills to support Machine Learning experimentation using the Python ecosystem.",
-  "catalog_hash": "c410c600dbf482967eae1158963ae24508caf4ff65e4bd6ccf77f0662a4c62d4",
+  "catalog_hash": "a213cb0cdc8ebf7d744d61cd9a118853e2b60580c9d39d7bc550d64be6f93a95",
   "skills": [
     {
       "id": "explore-ml-data",
@@ -11,7 +11,7 @@
       "summary": "Explore the dataset before designing any model.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "9439d558325b8eaac5da484d63ccb741411ed7ab759e01ca4aba1384282a1c9d"
+      "hash": "476943a6b4497fb35b3d634460cdfadf00e85ea8d3291d05c194112a48771a0c"
     },
     {
       "id": "frame-ml-problem",
@@ -20,7 +20,7 @@
       "summary": "Record the problem, deployment setting, metric, baseline, and fold count before any model code.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "7cee68fb4c14a5132ae8a78d06da3307aef79860e9a8003bf0dad5b26f4d58f5"
+      "hash": "2692d617eb432ec5c5226985f8b1a5bacbe342097826573b71602cf967eb37ce"
     },
     {
       "id": "build-ml-pipeline",
@@ -29,7 +29,7 @@
       "summary": "Declare a skrub DataOps graph from the data source to the predictor after framing is locked.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "9efbf42c74fa2e7dc6c1660d0b28874737990f494a80e9e57de2b0bb003a8b63"
+      "hash": "eafd98f45ddbf03c2b8e19ffd6060369c09507a6a5b6156d7bc810ba6a49b68c"
     },
     {
       "id": "evaluate-ml-pipeline",
@@ -38,7 +38,7 @@
       "summary": "Evaluate one sklearn-compatible learner with the locked validation scheme and persist structured skore reports.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "d0bca172ab40ef4c41bc6c4fa662f4c1c70237613bb9b56114f45280d7d2027a"
+      "hash": "a5ea722f55869e04d149a801996860341db9fdf2bcb1a553ba18e24dcf9f7640"
     },
     {
       "id": "smoke-test-ml-pipeline",
@@ -47,7 +47,7 @@
       "summary": "Structural pytest: prediction count must match the predict-grid row count.",
       "category": "methodology",
       "subcategory": null,
-      "hash": "c035e84b7926e9efe1d32cf275a5d252f3ae850347ec2c8a175b56485b52b3c2"
+      "hash": "8d8b60c467dc934502afcd5def18a6d5cba47317a2824cc0eb4bd8632461c0b7"
     },
     {
       "id": "audit-ml-pipeline",
@@ -134,7 +134,7 @@
       "id": "setup-ml-project",
       "path": "skills/setup-ml-project",
       "title": "Set Up ML Project",
-      "summary": "Ask setup choices up front. When Git is selected, commit the current files before setup writes only if that check finds files to preserve.",
+      "summary": "Ask setup choices up front, then coordinate workspace, environment, and git.",
       "category": "meta",
       "subcategory": null,
       "hash": "6224a849176f61456260c4d9883669f99775d55dd3cc9d79c93191026325d527"
@@ -143,7 +143,7 @@
       "id": "setup-git",
       "path": "skills/setup-git",
       "title": "Set Up Git",
-      "summary": "Initialize safe version control, including an optional commit of the tree before setup changes it.",
+      "summary": "Initialize safe version control for an ML workspace.",
       "category": "action",
       "subcategory": null,
       "hash": "2d4c8859e92f7dfa353ab19aa0c5166d7540748ee6324aa5b933b631d02ab763"
@@ -182,7 +182,7 @@
       "summary": "Pick pandas, seaborn, plotly, or matplotlib before writing figure code.",
       "category": "action",
       "subcategory": null,
-      "hash": "0f7375d919b742a636d9a801a965c5489cb136167c40e4a662842524eb9947e6"
+      "hash": "c2524fabe423cad2b236c7685ac59b926564839ce8a555f835a37e46f2f424b8"
     },
     {
       "id": "research-ml-practice",

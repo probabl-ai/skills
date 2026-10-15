@@ -26,6 +26,7 @@ _LABELS = (
     ("Generalize to", "generalize_to"),
     ("Known at predict", "known_at_predict"),
     ("Time role", "time_role"),
+    ("Covariate vintage", "covariate_vintage"),
     ("Metric role", "metric_role"),
     ("Metric", "metric"),
     ("Baseline", "baseline"),
@@ -40,6 +41,7 @@ _REFERENCES = {
     "horizon": "references/horizon-gap.md",
     "gap": "references/horizon-gap.md",
     "time_role": "references/deployment.md",
+    "covariate_vintage": "references/covariate-vintage.md",
     "generalize_to": "references/generalize-to.md",
     "known_at_predict": "references/generalize-to.md",
     "metric_role": "references/metric-role.md",
@@ -55,6 +57,14 @@ _BASELINES = (
     "production",
     "dummy",
 )
+
+_COVARIATE_VINTAGES = (
+    "none",
+    "known_future",
+    "forecast_vintage",
+    "actuals_only",
+)
+_TIME_KEYS = ("horizon", "gap", "time_role", "covariate_vintage")
 
 _GOALS = (
     "probabilities",
@@ -192,9 +202,9 @@ def _note_parts(value: str) -> list[str]:
 def _baseline_candidates(rows: dict[str, str]) -> list[str]:
     if not rows["deployment"]:
         return list(_BASELINES)
-    candidates: list[str] = []
     if rows["deployment"] == "time":
-        candidates.append("seasonal_naive")
+        return ["seasonal_naive"]
+    candidates: list[str] = []
     known = rows["known_at_predict"]
     if known and known != "n/a":
         candidates.append("group_mean")
@@ -211,6 +221,8 @@ def _candidates(root: Path, key: str, rows: dict[str, str]) -> list[str] | None:
         return ["iid", "time", "groups"]
     if key == "time_role":
         return ["sort_key", "covariate"]
+    if key == "covariate_vintage":
+        return list(_COVARIATE_VINTAGES)
     if key == "metric_role":
         return _metric_candidates(rows["prediction_goal"])
     if key == "baseline":
@@ -248,7 +260,7 @@ def _inapplicable(rows: dict[str, str], key: str) -> bool:
     if rows["prediction_goal"] == "uncovered":
         return key not in {"prediction_goal", "metric", "baseline_note"}
     deployment = rows["deployment"]
-    if key in {"horizon", "gap", "time_role"}:
+    if key in _TIME_KEYS:
         return deployment in {"iid", "groups"}
     if key == "generalize_to":
         return deployment in {"iid", "time"}
@@ -291,7 +303,7 @@ def _ask_keys(rows: dict[str, str]) -> list[str]:
     deployment = rows["deployment"]
     keys = ["prediction_goal", "deployment"]
     if deployment in {"", "time"}:
-        keys.extend(["horizon", "gap", "time_role"])
+        keys.extend(_TIME_KEYS)
     if deployment in {"", "groups"}:
         keys.append("generalize_to")
     keys.extend(
@@ -313,7 +325,7 @@ def _required(rows: dict[str, str]) -> list[str]:
     keys = ["prediction_goal", "deployment"]
     deployment = rows["deployment"]
     if deployment == "time":
-        keys.extend(["horizon", "gap", "time_role"])
+        keys.extend(_TIME_KEYS)
     elif deployment == "groups":
         keys.append("generalize_to")
     keys.extend(
@@ -399,6 +411,7 @@ def _translation(root: Path, rows: dict[str, str]) -> dict[str, Any] | None:
         "horizon_unit": None if horizons is None else horizons[0][1],
         "gap": None if gap is None else _number(gap[0]),
         "gap_unit": None if gap is None else gap[1],
+        "covariate_vintage": effective["covariate_vintage"] if time else None,
         "groups": groups,
         "report": "EstimatorReport" if scored_once else None,
         "metric": effective["metric"],
@@ -524,7 +537,7 @@ def _blank_keys(cell: str, rows: dict[str, str]) -> list[str]:
     if cell == "prediction_goal":
         extra = ["metric_role", "metric"]
     elif cell == "deployment":
-        extra = ["horizon", "gap", "time_role", "generalize_to"]
+        extra = [*_TIME_KEYS, "generalize_to"]
     elif cell == "known_at_predict" and "group_mean" in _baseline_tokens(
         rows["baseline"]
     ):

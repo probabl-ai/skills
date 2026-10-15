@@ -69,12 +69,21 @@ do not save a PNG.
 
 Only if a datetime column exists. Lib: statsmodels.
 
+Grid cell first, table-only: the median step between sorted
+timestamps, the share of steps that differ from it, the number of
+duplicated timestamps, the number and longest length of missing
+stretches, and whether the timestamps carry a time zone. The
+forecasting steps need this: the build resamples to a regular grid
+and a gap or a duplicate changes the labels.
+
 Table cell: ADF on each numeric confirmed target, or on one
 numeric series when there is no target; last expression is the
 statistic table. Figure cell:
 ACF/PACF via seaborn/statsmodels plot, save `acf.png`, last
 expression the figure. Additive seasonal decomposition only when
 the series is regular, same split (table vs figure cells).
+Name the strongest seasonal lag in `data_analysis.md` (for example
+24 or 168 steps). The baseline question reads it later.
 
 ## Join keys / coverage
 

@@ -12,7 +12,9 @@ How a new row arrives, so later evaluation can copy that.
 On a time deployment, also record the time column's role.
 `sort_key` means the column only orders rows. `covariate` means
 the model may use it as a feature. That choice is not a splitter
-setting.
+setting. Also record the covariate vintage
+(`references/covariate-vintage.md`).
 
-When the deployment does not use horizon, gap, time role, or a
-generalize-to column, those cells are `n/a`.
+When the deployment does not use horizon, gap, time role,
+covariate vintage, or a generalize-to column, those cells are
+`n/a`.

@@ -62,14 +62,18 @@ before the forecast. `split` takes the timestamp array as
 timestamps. `n_splits` is the locked retrain count. When that
 count is 1 there is no `cv`.
 
-**Gap** is the delay from the last training row to prediction
-time, the first moment a forecast can be issued. **Horizon** is
-the lead from that prediction time to the target time. For each
-horizon `h`, training ends at least `gap + h` before that
-target. Both durations come from the lock (`translation.horizons`,
-`translation.horizon_unit`, `translation.gap`,
-`translation.gap_unit`) and stay in that unit. A gap of 0 means
-the forecast is issued as soon as training data ends. Build one
+**Gap** is the delay from the target time of the last training
+row to the first prediction time of the model trained on it.
+**Horizon** is the lead from a prediction time to its target time.
+For each horizon `h`, training ends at least `gap + h` before that
+target, where "training ends" is the target time of the last
+training row. A row is in the train side only when its true
+value is known by then (`frame-ml-problem`
+`references/horizon-gap.md`). Both durations come from the lock
+(`translation.horizons`, `translation.horizon_unit`,
+`translation.gap`, `translation.gap_unit`) and stay in that unit.
+A gap of 0 means the forecast is issued as soon as training data
+ends. Build one
 `DateTimeSplit` per horizon. Each one is one predictor.
 
 The sketch below is that deployment as one later test window

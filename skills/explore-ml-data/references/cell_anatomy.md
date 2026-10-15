@@ -103,3 +103,4 @@ Extra cells after the user picks extras: `references/extra_analyses.md`.
 | `<TASKS>` | list parallel to `<TARGETS>`: `classification` \| `regression` (materialize.py only) |
 | `<OTHER_FRAME>` | `templates/drift.py` when two families share column names |
 | `<JOIN_KEY>` | `templates/join_coverage.py` (Keep exploring only) |
+| `<TIME_COL>` | `templates/target_vs_time.py` (a forecast; `<TARGETS>` is the target list) |

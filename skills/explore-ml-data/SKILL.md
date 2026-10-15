@@ -65,6 +65,8 @@ duplicate TableReport in extra cells.
 
 Details: `references/cell_anatomy.md`. Extra recipes:
 `references/extra_analyses.md`.
+A forecast also needs target-against-time plots:
+`references/forecasting.md`.
 
 ## Next-step pointers
 
@@ -117,7 +119,8 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 - **G-TABULAR before `data_analysis/data_analysis.py`.**
   `status.policy.tabular`; else `choose-python-library` (recommend
   pandas) then `add-python-package` for that lib **and** `skrub`,
-  `matplotlib`, and `seaborn`. No silent default. A Graphviz
+  `matplotlib`, and `seaborn`, plus `plotly` for a forecast
+  (`references/forecasting.md`). No silent default. A Graphviz
   repair diagnostic from that `skrub` install does not discard
   this analysis. Quote it in one line and continue. The unfitted
   snapshot in `build-ml-pipeline` is what requires a renderable
@@ -164,9 +167,10 @@ Details: `references/cell_anatomy.md`. Extra recipes:
   TableReport cell per confirmed family (or per file if the
   user picked that). Re-run overwrites in place. Default
   notebook = those templates only (plus the matching target
-  snippet). Do not add extra histograms, `sns.heatmap` /
-  association matrices, unique-ratio (`nunique()/n`),
-  column-dicts, or `report.json()` cells. The duplicate cell
+  snippet, and for a forecast `templates/target_vs_time.py`). Do
+  not add extra histograms, `sns.heatmap` / association
+  matrices, unique-ratio (`nunique()/n`), column-dicts, or
+  `report.json()` cells. The duplicate cell
   prints the duplicate count only, not a uniqueness percentage
   and not `nunique()/n`. Leakage is the
   template table, not a comment. One target: seaborn `displot`
@@ -191,6 +195,7 @@ Details: `references/cell_anatomy.md`. Extra recipes:
 - [ ] Detect: status.data_analysis present|skipped|missing
 - [ ] G-DATA-ANALYSIS: run | skip when the analysis file is absent (skip → JOURNAL only, STOP). present → keep or re-run; never write skipped
 - [ ] G-TABULAR + add frame lib + skrub + matplotlib + seaborn
+      (+ plotly when the goal is a forecast)
 - [ ] Targets: inferred | AskUserQuestion | none
 - [ ] Families: one file | AskUserQuestion grouping
 - [ ] Load plot-ml-figure if installed; place
@@ -254,9 +259,12 @@ not write or execute the notebook.
    columns, or a mix → none of those snippets and no `TARGET` /
    `TARGETS` assignment. Datetime columns on a family →
    `templates/datetime.py` for that family (drop the relplot
-   cell unless there is exactly one numeric target). Two
-   families that share column names → `templates/drift.py` with
-   `<OTHER_FRAME>`. Disjoint schemas → no drift on the default
+   cell unless there is exactly one numeric target, and always
+   drop it for a forecast). A forecast also appends
+   `templates/target_vs_time.py`: read
+   `references/forecasting.md`. Two families that share column
+   names → `templates/drift.py` with `<OTHER_FRAME>`. Disjoint
+   schemas → no drift on the default
    pass. Do not append join-coverage cells here. Generated
    notebook must not contain `if TARGET`, `if TASK`,
    `OTHER = None`, empty datetime loops, or “skip this cell”.
@@ -295,7 +303,9 @@ not write or execute the notebook.
    feature-engineering *candidates*), open questions. Reports
    and figures are embedded, not linked; `![](<name>.png)` or an
    HTML iframe (`<iframe src="<slug>.html" …>`) sits beside the
-   implication it supports, never in the glance. Glance stays
+   implication it supports, never in the glance. The one exception
+   is a heavy forecast plot: a PNG thumbnail inside an anchor to
+   its HTML (`references/forecasting.md`). Glance stays
    TableReport-only. Every `extras["pngs"]` and `extras["htmls"]`
    path is embedded, each with a sentence citing numbers from
    those JSON files (or a notebook summary table). Do not save a

@@ -10,7 +10,7 @@ from skore_skills.frame import _LABELS, frame_show
 from skore_skills.workspace import snapshot
 
 _SKORE_MODES = frozenset({"local", "hub", "mlflow"})
-_TIME_CELLS = frozenset({"horizon", "gap", "time_role"})
+_TIME_CELLS = frozenset({"horizon", "gap", "time_role", "covariate_vintage"})
 
 
 def _installed(skills: dict[str, bool | None], skill_id: str) -> bool:
