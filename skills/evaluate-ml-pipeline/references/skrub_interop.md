@@ -212,8 +212,8 @@ project = skore.Project(
     mode="local",
     workspace=str(PROJECT_ROOT / "reports"),
 )
-df = project.summarize().frame().reset_index()
-id_ = df[df["key"] == "01_baseline"]["id"].iloc[0]
+frame = project.summarize().frame()
+id_ = frame.index[frame["key"] == "01_baseline"][0]
 report = project.get(id_)
 report.metrics.summarize().frame()  # task-appropriate headline metrics
 report.checks.summarize().frame()    # automated checks (passed / issue / tip)
@@ -222,9 +222,9 @@ report.checks.summarize().frame()    # automated checks (passed / issue / tip)
 `project.summarize()` returns a display. `.frame()` is the pandas
 DataFrame, indexed by id, with columns: `key`, `date`, `learner`,
 `ml_task`, `report_type`, `dataset` (hash), plus the per-metric
-`<metric>_mean` columns. `reset_index()` moves that id into a column
-so the lookup below can filter on `key`. The exact columns evolve
-with skore; see `python -m skore_skills api get` § skore.
+`<metric>_mean` columns. The lookup filters `key` and reads that
+index. The exact columns evolve with skore; see
+`python -m skore_skills api get` § skore.
 
 ## Worked example — `experiments/01_baseline.py`
 

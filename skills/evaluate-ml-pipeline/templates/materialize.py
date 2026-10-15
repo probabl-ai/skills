@@ -40,8 +40,8 @@ metrics = report.metrics.summarize().frame(verbose_name=True, flat_index=False)
 (results / "report.txt").write_text(repr(report) + "\n", encoding="utf-8")
 (results / "checks.html").write_text(checks._repr_html_(), encoding="utf-8")
 (results / "metrics.html").write_text(metrics._repr_html_(), encoding="utf-8")
-summary = project.summarize().frame().reset_index()
-report_id = summary.loc[summary["key"] == STEM, "id"].iloc[-1]
+summary = project.summarize().frame()
+report_id = summary.index[summary["key"] == STEM][-1]
 (results / "id.txt").write_text(f"{report_id}\n", encoding="utf-8")
 
 learner = (
